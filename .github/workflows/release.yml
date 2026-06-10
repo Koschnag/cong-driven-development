@@ -21,16 +21,17 @@ jobs:
       - name: Tests (kein Release ohne grüne Tests)
         run: dotnet test -c Release
 
-      - name: Binaries bauen
+      - name: Binaries bauen (CLI + Web-Cockpit)
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
           for rid in linux-x64 win-x64 osx-arm64; do
             dotnet publish src/Cdd.Cli -c Release -r "$rid" \
-              --self-contained \
-              -p:PublishSingleFile=true \
-              -p:Version="$version" \
-              -o "publish/$rid"
+              --self-contained -p:PublishSingleFile=true -p:Version="$version" \
+              -o "publish/$rid/cli"
+            dotnet publish src/Cdd.Web -c Release -r "$rid" \
+              --self-contained -p:PublishSingleFile=true -p:Version="$version" \
+              -o "publish/$rid/web"
           done
           mkdir dist
           tar -czf "dist/cdd-$version-linux-x64.tar.gz" -C publish/linux-x64 .
