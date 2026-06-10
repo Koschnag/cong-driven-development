@@ -16,4 +16,8 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../src/Cdd.Core/Cdd.Core.fsproj" />
+  </ItemGroup>
+
 </Project>

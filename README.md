@@ -51,25 +51,42 @@ tests/Cdd.Tests/      — Spec→Test-Generation, Round-Trip-Tests
 - **C#** für IO-Adapter (LLM-Clients, Git, FS) wenn nötig
 - **.NET 10**
 - **Lean 4** später für Beweise (wenn Theoreme entstehen)
-- **GPL-3 oder MPL-2** Lizenz (TBD)
+- **MPL-2.0** Lizenz
 
 Kein Python. Nie.
 
+## Usage
+
+```bash
+dotnet build
+dotnet run --project src/Cdd.Cli -- init           # SPOT-Store (.spot/) mit Seed-Knoten anlegen
+dotnet run --project src/Cdd.Cli -- list           # Knoten + Konvergenz-Status
+dotnet run --project src/Cdd.Cli -- validate       # Modell prüfen (Exit 1 bei Fehlern)
+dotnet run --project src/Cdd.Cli -- derive-tests --write   # Tests aus Spec-Kriterien ableiten
+dotnet run --project src/Cdd.Cli -- diff           # Drift-/Konvergenz-Report
+```
+
+Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
+diffbar, mergebar.
+
 ## Status
 
-**Seed.** Solution kompiliert, sonst leer. Vision steht, Implementierung beginnt.
+**v0.1.** Erster vertikaler Slice steht:
 
-Inkrementelle Roadmap:
-1. SPOT-Modell als F#-Discriminated-Union (Entities, Specs, Tests, Risks, Infra)
-2. SPOT-Persistenz (SQLite oder JSON-pro-Entity)
-3. CLI: `cdd validate`, `cdd diff`, `cdd derive-tests`
-4. Erster Agent-Interface (LLM-agnostic)
-5. Round-Trip: Code → Modell und Modell → Code
-6. Multi-Agent-Choreographie
+- ✅ SPOT-Modell als F#-Discriminated-Union (Spec, Test, Risk, Infra, Component)
+- ✅ SPOT-Persistenz (JSON-pro-Entity unter `.spot/`)
+- ✅ CLI: `cdd init|list|validate|diff|derive-tests`
+- ✅ Validierung: Referenz-Integrität, Zyklenerkennung, Konvergenz-Hygiene
+- ✅ Spec→Test-Ableitung (idempotent, ein Test pro Akzeptanzkriterium)
+
+Roadmap als Nächstes:
+1. Erstes Agent-Interface (LLM-agnostic)
+2. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code statt Status-Spiegel)
+3. Multi-Agent-Choreographie
 
 ## Lizenz
 
-TBD.
+[MPL-2.0](LICENSE).
 
 ## Bezug zum Cong-Universum
 
