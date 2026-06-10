@@ -73,6 +73,15 @@ dotnet run --project src/Cdd.Cli -- diff           # Drift-/Konvergenz-Report
 Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
 diffbar, mergebar.
 
+### Demo
+
+Die jeweils neueste `main`-Version läuft als Demo auf der Projekt-VM:
+**http://cdd.cong42.de** *(derzeit nur im privaten Tailnet erreichbar)*.
+Alternativ ohne eigene Installation: Repo in **GitHub Codespaces** öffnen
+(devcontainer ist konfiguriert), `dotnet run --project src/Cdd.Web` — der
+Port wird automatisch weitergeleitet. Container-Image:
+`docker run -p 8080:8080 -v $PWD/.spot-demo:/data ghcr.io/koschnag/cdd:latest`
+
 ### Cockpit (Web-GUI)
 
 ```bash

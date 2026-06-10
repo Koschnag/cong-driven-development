@@ -1,7 +1,7 @@
 <Project>
   <!-- Zentrale Version für alle Projekte — Release-Workflow überschreibt via -p:Version. -->
   <PropertyGroup>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>Koschnag</Authors>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Koschnag/cong-driven-development</RepositoryUrl>
