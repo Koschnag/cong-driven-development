@@ -101,10 +101,20 @@ let private cmdDeriveTests write =
             printfn "%d Test-Knoten ableitbar (--write zum Persistieren)." (List.length derived)
     0
 
+/// Version aus Directory.Build.props (AssemblyInformationalVersion, ohne Build-Hash).
+let private version () =
+    let info =
+        System.Reflection.Assembly.GetExecutingAssembly()
+            .GetCustomAttributes(typeof<System.Reflection.AssemblyInformationalVersionAttribute>, false)
+    match info with
+    | [| :? System.Reflection.AssemblyInformationalVersionAttribute as a |] ->
+        a.InformationalVersion.Split('+').[0]
+    | _ -> "unknown"
+
 [<EntryPoint>]
 let main argv =
     match argv with
-    | [| "version" |]            -> printfn "cdd 0.1.0"; 0
+    | [| "version" |]            -> printfn "cdd %s" (version ()); 0
     | [| "init" |]               -> cmdInit ()
     | [| "list" |]               -> cmdList ()
     | [| "validate" |]           -> cmdValidate ()

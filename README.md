@@ -1,5 +1,8 @@
 # cong-driven-development (CDD)
 
+[![CI](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml/badge.svg)](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml)
+[![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-brightgreen.svg)](LICENSE)
+
 > **Vision:** AI-natives Software-Entwicklungs-Framework, das Modell, Spezifikation,
 > Test, Architektur, Infrastruktur und Wissensbasis in einem **Single Point of Truth**
 > (SPOT) vereint. Mensch beschreibt was, AI-Agents konvergieren auf das wie.
@@ -84,12 +87,11 @@ Roadmap als Nächstes:
 2. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code statt Status-Spiegel)
 3. Multi-Agent-Choreographie
 
+## Mitmachen / Entwicklung
+
+Git-Strategie, CI/CD, Releases und Qualitäts-Gates sind in [docs/devops.md](docs/devops.md)
+beschrieben.
+
 ## Lizenz
 
 [MPL-2.0](LICENSE).
-
-## Bezug zum Cong-Universum
-
-- **Eigenständiges Repo** (nicht Teil von `cong-portfolio`)
-- **Erlebnis-/Stack-Vorgänger:** `cong-portfolio/13_dc/model/dc-model.fsx` (F#-SoT mit Drift-Reconciler) ist ein Proof-of-Concept des SPOT-Patterns
-- **Zukünftige Integration:** CDD könnte 13_dc und 14_platform als ersten Real-World-Konsumenten haben

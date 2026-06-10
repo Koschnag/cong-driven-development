@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Frage / Diskussion
+    url: https://github.com/Koschnag/cong-driven-development/discussions
+    about: Für offene Fragen und Konzept-Diskussionen bitte Discussions nutzen.
+  - name: 🔒 Sicherheitslücke melden
+    url: https://github.com/Koschnag/cong-driven-development/security/advisories/new
+    about: Bitte nicht als öffentliches Issue — siehe SECURITY.md.

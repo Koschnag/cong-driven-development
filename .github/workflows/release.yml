@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write  # Release anlegen
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Tests (kein Release ohne grüne Tests)
+        run: dotnet test -c Release
+
+      - name: Binaries bauen
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          for rid in linux-x64 win-x64 osx-arm64; do
+            dotnet publish src/Cdd.Cli -c Release -r "$rid" \
+              --self-contained \
+              -p:PublishSingleFile=true \
+              -p:Version="$version" \
+              -o "publish/$rid"
+          done
+          mkdir dist
+          tar -czf "dist/cdd-$version-linux-x64.tar.gz" -C publish/linux-x64 .
+          tar -czf "dist/cdd-$version-osx-arm64.tar.gz" -C publish/osx-arm64 .
+          (cd publish/win-x64 && zip -qr "../../dist/cdd-$version-win-x64.zip" .)
+
+      - name: GitHub Release erstellen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

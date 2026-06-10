@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build (Release)
+        run: dotnet build -c Release -warnaserror
+
+      - name: Test mit Coverage
+        run: >
+          dotnet test -c Release --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+          --logger trx
+
+      - name: CLI-Smoke-Test
+        run: |
+          set -euo pipefail
+          cli="dotnet run -c Release --no-build --project src/Cdd.Cli --"
+          tmp=$(mktemp -d)
+          cd "$tmp"
+          $cli version
+          $cli init
+          $cli list
+          $cli validate
+          $cli derive-tests --write
+          $cli validate
+          $cli diff
+
+      - name: Testergebnisse hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+
+  sonar:
+    runs-on: ubuntu-latest
+    # Forks haben kein SONAR_TOKEN — Job überspringt sich dann selbst (Schritt 1).
+    steps:
+      - name: Prüfe SONAR_TOKEN
+        id: token
+        run: echo "present=${{ secrets.SONAR_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.present == 'true'
+        with:
+          fetch-depth: 0  # Sonar braucht volle Historie für Blame/New-Code
+
+      - name: Setup .NET
+        if: steps.token.outputs.present == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Java (Sonar-Scanner)
+        if: steps.token.outputs.present == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Sonar-Analyse
+        if: steps.token.outputs.present == 'true'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet sonarscanner begin \
+            /k:"Koschnag_cong-driven-development" \
+            /o:"koschnag" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+          dotnet build -c Release
+          dotnet test -c Release --no-build \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
