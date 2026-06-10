@@ -90,6 +90,51 @@ let ``derive-tests is idempotent`` () =
     Assert.Empty secondPass
 
 [<Fact>]
+let ``new node kinds round-trip`` () =
+    let entries =
+        [ { Id = EntityId "premise-a"; Convergence = Pending
+            Payload = PremiseNode { Statement = "s"; Rationale = "r" } }
+          { Id = EntityId "adr-1"; Convergence = Aligned
+            Payload = DecisionNode { Title = "t"; Context = "c"; Choice = "ch"
+                                     Consequences = "co"; Supersedes = Some(EntityId "premise-a") } }
+          { Id = EntityId "kb-fowler"; Convergence = Pending
+            Payload = KnowledgeNode { Title = "Refactoring"; Source = "https://martinfowler.com"
+                                      MediaType = "blog"; Takeaways = [ "a"; "b" ] } }
+          { Id = EntityId "tool-grep"; Convergence = Pending
+            Payload = ToolNode { Name = "grep"; Purpose = "suchen"; Endpoint = None } } ]
+    let restored = entries |> List.map (Json.serialize >> Json.deserialize<SpotEntry>)
+    Assert.Equal<SpotEntry list>(entries, restored)
+
+[<Fact>]
+let ``validate flags decision superseding unknown node`` () =
+    let entries =
+        [ { Id = EntityId "adr-1"; Convergence = Pending
+            Payload = DecisionNode { Title = "t"; Context = "c"; Choice = "ch"
+                                     Consequences = "co"; Supersedes = Some(EntityId "ghost") } } ]
+    Assert.NotEmpty(Validate.validate entries |> Validate.errors)
+
+[<Fact>]
+let ``store rejects path-traversal ids`` () =
+    Assert.False(Store.isValidId (EntityId "../evil"))
+    Assert.False(Store.isValidId (EntityId "a/b"))
+    Assert.False(Store.isValidId (EntityId ""))
+    Assert.True(Store.isValidId (EntityId "spec-login_v2"))
+    let entry = { sampleSpec "x" [ crit 1 ] with Id = EntityId "../evil" }
+    Assert.Throws<System.ArgumentException>(fun () -> Store.save "/tmp" entry) |> ignore
+
+[<Fact>]
+let ``store delete removes a node`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-test-" + System.Guid.NewGuid().ToString("N"))
+    try
+        let entry = sampleSpec "spec-del" [ crit 1 ]
+        Store.save tmp entry
+        Assert.True(Store.delete tmp (EntityId "spec-del"))
+        Assert.Empty(Store.load tmp)
+        Assert.False(Store.delete tmp (EntityId "spec-del"))
+    finally
+        if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact>]
 let ``store saves and loads round-trip`` () =
     let tmp = Path.Combine(Path.GetTempPath(), "cdd-test-" + System.Guid.NewGuid().ToString("N"))
     try

@@ -32,7 +32,7 @@ jobs:
       - name: CLI-Smoke-Test
         run: |
           set -euo pipefail
-          cli="dotnet run -c Release --no-build --project src/Cdd.Cli --"
+          cli="dotnet run -c Release --no-build --project $GITHUB_WORKSPACE/src/Cdd.Cli --"
           tmp=$(mktemp -d)
           cd "$tmp"
           $cli version

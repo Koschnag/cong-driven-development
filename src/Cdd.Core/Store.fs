@@ -10,6 +10,12 @@ module Store =
     /// Verzeichnis, in dem die SPOT-Knoten liegen.
     let spotDir (root: string) = Path.Combine(root, ".spot")
 
+    let private idPattern =
+        System.Text.RegularExpressions.Regex("^[a-zA-Z0-9][a-zA-Z0-9_-]*$")
+
+    /// Ids werden Dateinamen — nur [a-zA-Z0-9_-], kein Path-Traversal möglich.
+    let isValidId (id: EntityId) = idPattern.IsMatch(idValue id)
+
     let private pathFor root (id: EntityId) =
         Path.Combine(spotDir root, idValue id + ".json")
 
@@ -17,9 +23,20 @@ module Store =
     let exists (root: string) = Directory.Exists(spotDir root)
 
     /// Schreibt einen Knoten (legt das .spot-Verzeichnis bei Bedarf an).
+    /// Wirft bei ungültiger Id (Dateinamen-Sicherheit).
     let save (root: string) (entry: SpotEntry) =
+        if not (isValidId entry.Id) then
+            invalidArg "entry" (sprintf "Ungültige Entity-Id '%s' (erlaubt: a-zA-Z0-9_-)" (idValue entry.Id))
         Directory.CreateDirectory(spotDir root) |> ignore
         File.WriteAllText(pathFor root entry.Id, Json.serialize entry)
+
+    /// Löscht einen Knoten; false, wenn er nicht existiert.
+    let delete (root: string) (id: EntityId) =
+        if not (isValidId id) then false
+        else
+            let p = pathFor root id
+            if File.Exists p then File.Delete p; true
+            else false
 
     /// Lädt alle Knoten, deterministisch nach Dateinamen sortiert.
     let load (root: string) : SpotEntry list =

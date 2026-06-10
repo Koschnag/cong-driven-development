@@ -14,6 +14,7 @@ module Json =
             ||| JsonUnionEncoding.NamedFields
             ||| JsonUnionEncoding.UnwrapOption
             ||| JsonUnionEncoding.UnwrapSingleCaseUnions
+            ||| JsonUnionEncoding.UnwrapFieldlessTags  // Convergence/Level als nackte Strings
         o.Converters.Add(JsonFSharpConverter(encoding))
         o
 

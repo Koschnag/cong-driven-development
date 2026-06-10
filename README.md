@@ -45,6 +45,7 @@ definiert.
 ```
 src/Cdd.Core/         — Domain: SPOT-Typen, Spec-Sprache, Convergence-Algebra
 src/Cdd.Cli/          — `cdd` CLI: Modell-Validation, Agent-Trigger, SPOT-Sync
+src/Cdd.Web/          — Cockpit: Web-GUI + REST-API über dem SPOT-Graphen
 tests/Cdd.Tests/      — Spec→Test-Generation, Round-Trip-Tests
 ```
 
@@ -72,20 +73,35 @@ dotnet run --project src/Cdd.Cli -- diff           # Drift-/Konvergenz-Report
 Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
 diffbar, mergebar.
 
+### Cockpit (Web-GUI)
+
+```bash
+dotnet run --project src/Cdd.Web -- --root . --urls http://localhost:5179
+```
+
+Knoten anlegen/editieren/löschen, Graph-Ansicht (Mermaid), Validierungs- und
+Drift-Report, Test-Ableitung per Klick. Knotenarten: Spec, Test, Risk, Infra,
+Component, **Prämisse, Entscheidung (ADR), Knowledge-Quelle, Tool** — alles
+Abbildungen desselben SPOT.
+
 ## Status
 
-**v0.1.** Erster vertikaler Slice steht:
+**v0.2.** Cockpit-Slice steht:
 
-- ✅ SPOT-Modell als F#-Discriminated-Union (Spec, Test, Risk, Infra, Component)
-- ✅ SPOT-Persistenz (JSON-pro-Entity unter `.spot/`)
+- ✅ SPOT-Modell als F#-Discriminated-Union (Spec, Test, Risk, Infra, Component,
+  Premise, Decision/ADR, Knowledge, Tool)
+- ✅ SPOT-Persistenz (JSON-pro-Entity unter `.spot/`, Id-Sanitization gegen Path-Traversal)
 - ✅ CLI: `cdd init|list|validate|diff|derive-tests`
+- ✅ Web-Cockpit: REST-API + GUI (Editor, Mermaid-Graph, Validierung, Drift)
 - ✅ Validierung: Referenz-Integrität, Zyklenerkennung, Konvergenz-Hygiene
 - ✅ Spec→Test-Ableitung (idempotent, ein Test pro Akzeptanzkriterium)
 
 Roadmap als Nächstes:
-1. Erstes Agent-Interface (LLM-agnostic)
-2. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code statt Status-Spiegel)
-3. Multi-Agent-Choreographie
+1. `cdd export-context`: SPOT-Graph als LLM-Kontextpaket (die „Vorlage" für Agents)
+2. Knowledge-Ingestion: PDFs/Links/Bücher als Knowledge-Knoten mit Takeaways
+3. Erstes Agent-Interface (LLM-agnostic), Tool-Knoten als Capability-Registry
+4. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code)
+5. Multi-Agent-Choreographie
 
 ## Mitmachen / Entwicklung
 

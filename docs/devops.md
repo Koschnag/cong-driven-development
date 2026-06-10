@@ -107,6 +107,10 @@ neues PATCH-Release. Kein Überschreiben von Tags.
   Injection-/Supply-Chain-Risiken (F#-Quellcode unterstützt CodeQL nicht).
   Befunde erscheinen unter *Security → Code scanning*.
 - **Dependabot Alerts + Security Updates**: automatische CVE-Meldungen und Fix-PRs.
+- **gitleaks** (`gitleaks.yml`): Secret-Scanning über die gesamte Git-Historie bei
+  jedem Push/PR + wöchentlich — verhindert geleakte Tokens/Keys im öffentlichen Repo.
+  Zusätzlich Privatsphäre-Regel: keine personenbezogenen Daten, lokalen Pfade oder
+  internen Hostnamen in Commits, Issues oder `.spot/`-Beispieldaten.
 
 ## 6. GitHub-Features: Wofür nutzen wir was?
 

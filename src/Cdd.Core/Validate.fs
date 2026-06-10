@@ -78,7 +78,17 @@ module Validate =
                 if r.Impact = Critical && r.Mitigation.IsNone then
                     yield { Severity = Warning; EntityId = e.Id
                             Message = "Kritisches Risiko ohne Mitigation" }
-            | InfraNode _ -> ()
+            | DecisionNode d ->
+                match d.Supersedes with
+                | Some old when not (Set.contains old ids) ->
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = sprintf "Supersedes verweist auf unbekannten Knoten '%s'" (idValue old) }
+                | _ -> ()
+            | KnowledgeNode k ->
+                if k.Source.Trim() = "" then
+                    yield { Severity = Warning; EntityId = e.Id
+                            Message = "Knowledge-Quelle ohne Source (URL/Pfad/ISBN)" }
+            | PremiseNode _ | ToolNode _ | InfraNode _ -> ()
 
             match e.Convergence with
             | Orphaned ->

@@ -57,6 +57,32 @@ module Spot =
         { Name      : string
           DependsOn : EntityId list }
 
+    /// Prämisse: gesetzte Annahme, von der KI und Mensch ableiten dürfen.
+    type Premise =
+        { Statement : string
+          Rationale : string }
+
+    /// Architektur-/Projekt-Entscheidung (ADR-Stil), optional eine ältere ersetzend.
+    type Decision =
+        { Title        : string
+          Context      : string
+          Choice       : string
+          Consequences : string
+          Supersedes   : EntityId option }
+
+    /// Wissensquelle (Buch, PDF, Link, Blog), aus der Agents lernen und ableiten.
+    type Knowledge =
+        { Title     : string
+          Source    : string        // URL, Pfad oder ISBN
+          MediaType : string        // book | pdf | link | blog
+          Takeaways : string list }
+
+    /// Tool, mit dem Agents angereichert werden (Fähigkeits-Erweiterung).
+    type Tool =
+        { Name     : string
+          Purpose  : string
+          Endpoint : string option }
+
     /// Die Nutzlast eines SPOT-Knotens. Erweiterbar, sobald neue Knotenarten entstehen.
     type Payload =
         | SpecNode      of Spec
@@ -64,6 +90,10 @@ module Spot =
         | RiskNode      of Risk
         | InfraNode     of Infra
         | ComponentNode of Component
+        | PremiseNode   of Premise
+        | DecisionNode  of Decision
+        | KnowledgeNode of Knowledge
+        | ToolNode      of Tool
 
     /// Ein Knoten im SPOT-Graph: Identität + Nutzlast + Konvergenzstatus.
     type SpotEntry =
@@ -82,3 +112,7 @@ module Spot =
         | RiskNode _      -> "risk"
         | InfraNode _     -> "infra"
         | ComponentNode _ -> "component"
+        | PremiseNode _   -> "premise"
+        | DecisionNode _  -> "decision"
+        | KnowledgeNode _ -> "knowledge"
+        | ToolNode _      -> "tool"

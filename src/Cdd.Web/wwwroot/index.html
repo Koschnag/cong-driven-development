@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDD Cockpit — SPOT</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>CDD <span>Cockpit</span></h1>
+    <div class="toolbar">
+      <select id="new-kind">
+        <option value="spec">+ Spec</option>
+        <option value="component">+ Component</option>
+        <option value="risk">+ Risk</option>
+        <option value="infra">+ Infra</option>
+        <option value="premise">+ Prämisse</option>
+        <option value="decision">+ Entscheidung</option>
+        <option value="knowledge">+ Knowledge</option>
+        <option value="tool">+ Tool</option>
+      </select>
+      <button id="btn-new">Neu</button>
+      <button id="btn-derive">Tests ableiten</button>
+      <button id="btn-refresh">↻</button>
+    </div>
+  </header>
+
+  <main>
+    <nav id="sidebar"></nav>
+
+    <section id="editor">
+      <div class="editor-head">
+        <h2 id="editor-title">Kein Knoten gewählt</h2>
+        <div>
+          <button id="btn-save" disabled>Speichern</button>
+          <button id="btn-delete" class="danger" disabled>Löschen</button>
+        </div>
+      </div>
+      <textarea id="editor-json" spellcheck="false"
+        placeholder="Knoten links wählen oder oben „Neu" klicken …"></textarea>
+      <div id="editor-msg"></div>
+    </section>
+
+    <section id="panels">
+      <div class="tabs">
+        <button class="tab active" data-tab="graph">Graph</button>
+        <button class="tab" data-tab="validate">Validierung</button>
+        <button class="tab" data-tab="drift">Drift</button>
+      </div>
+      <div id="tab-graph" class="tab-body active"><div id="graph"></div></div>
+      <div id="tab-validate" class="tab-body"></div>
+      <div id="tab-drift" class="tab-body"></div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
