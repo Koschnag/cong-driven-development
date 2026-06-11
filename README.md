@@ -70,6 +70,7 @@ dotnet run --project src/Cdd.Cli -- list           # Knoten + Konvergenz-Status
 dotnet run --project src/Cdd.Cli -- validate       # Modell prüfen (Exit 1 bei Fehlern)
 dotnet run --project src/Cdd.Cli -- derive-tests --write   # Tests aus Spec-Kriterien ableiten
 dotnet run --project src/Cdd.Cli -- diff           # Drift-/Konvergenz-Report
+dotnet run --project src/Cdd.Cli -- export-context --out kontext.md  # SPOT als LLM-Vorlage + Doku
 ```
 
 Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
@@ -114,12 +115,15 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 - ✅ Validierung: Referenz-Integrität, Zyklenerkennung, Konvergenz-Hygiene
 - ✅ Spec→Test-Ableitung (idempotent, ein Test pro Akzeptanzkriterium)
 
+- ✅ `cdd export-context`: SPOT-Graph als LLM-Kontextpaket — zugleich die generierte,
+  lebende Doku (Cockpit-Tab „Doku" mit Download/Copy)
+- ✅ Dashboard: Monitoring über Knoten, Konvergenz, Validierung und offene Arbeit
+
 Roadmap als Nächstes:
-1. `cdd export-context`: SPOT-Graph als LLM-Kontextpaket (die „Vorlage" für Agents)
-2. Knowledge-Ingestion: PDFs/Links/Bücher als Knowledge-Knoten mit Takeaways
-3. Erstes Agent-Interface (LLM-agnostic), Tool-Knoten als Capability-Registry
-4. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code)
-5. Multi-Agent-Choreographie
+1. Knowledge-Ingestion: PDFs/Links/Bücher als Knowledge-Knoten mit Takeaways
+2. Erstes Agent-Interface (LLM-agnostic), Tool-Knoten als Capability-Registry
+3. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code)
+4. Multi-Agent-Choreographie
 
 ## Mitmachen / Entwicklung
 

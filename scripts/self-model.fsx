@@ -111,7 +111,7 @@ let entries =
               [ { Given = "Begriffe mit IsA/PartOf/RelatesTo-Beziehungen"
                   When = "der UML-Tab geöffnet wird"
                   Then = "erscheint ein Klassendiagramm mit Generalisierung, Komposition und Assoziation" } ] } }
-      { Id = EntityId "spec-export-context"; Convergence = Pending
+      { Id = EntityId "spec-export-context"; Convergence = Aligned
         Payload = SpecNode
           { Title = "LLM-Kontextexport"
             Intent = "Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut"

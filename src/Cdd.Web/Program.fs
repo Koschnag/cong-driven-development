@@ -64,6 +64,9 @@ let main argv =
     app.MapGet("/api/diff", Func<IResult>(fun () ->
         Store.load root |> Diff.report |> json)) |> ignore
 
+    app.MapGet("/api/export", Func<IResult>(fun () ->
+        Results.Text(Store.load root |> Export.toMarkdown, "text/markdown"))) |> ignore
+
     app.MapPost("/api/derive-tests", Func<HttpRequest, IResult>(fun req ->
         let write = req.Query.["write"].ToString() = "true"
         let derived = Store.load root |> Derive.deriveTests
