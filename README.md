@@ -80,10 +80,10 @@ diffbar, mergebar.
 **▶ Sofort im Browser testen:** https://koschnag.github.io/cong-driven-development/
 (Cockpit im Demo-Modus — Daten bleiben im localStorage deines Browsers).
 
-Weitere Wege:
+Weitere Wege (alle GitHub-nativ):
 - **Codespaces:** Repo öffnen (devcontainer konfiguriert), `dotnet run --project src/Cdd.Web`
 - **Container:** `docker run -p 8080:8080 -v $PWD/.spot-demo:/data ghcr.io/koschnag/cdd:latest`
-- **VM-Demo** (privates Tailnet, immer neueste `main`): http://cdd.cong42.de
+- **Releases:** self-contained Binaries (CLI + Cockpit) für Linux/Windows/macOS
 
 ### Cockpit (Web-GUI)
 
