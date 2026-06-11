@@ -116,8 +116,7 @@ async function del() {
   await refresh();
 }
 
-function newNode() {
-  const kind = $("#new-kind").value;
+function newNode(kind) {
   const draft = {
     Id: `${kind}-neu`,
     Payload: structuredClone(templates[kind]),
@@ -328,11 +327,131 @@ async function renderDrift() {
   }
 }
 
+// — Toolbox (VS-Style): klicken oder in den Editor ziehen —
+const kindMeta = {
+  spec: ["📋", "Spec"], term: ["🔤", "Begriff (Ontologie)"], component: ["📦", "Component"],
+  decision: ["⚖️", "Entscheidung (ADR)"], premise: ["🧭", "Prämisse"], risk: ["⚠️", "Risk"],
+  knowledge: ["📚", "Knowledge"], tool: ["🔧", "Tool"], infra: ["🖥️", "Infra"],
+};
+{
+  const tb = $("#toolbox-items");
+  for (const [kind, [icon, label]] of Object.entries(kindMeta)) {
+    const b = document.createElement("button");
+    b.className = "tool-item";
+    b.draggable = true;
+    b.innerHTML = `<span>${icon}</span>`;
+    b.appendChild(document.createTextNode(label));
+    b.onclick = () => newNode(kind);
+    b.addEventListener("dragstart", (ev) => ev.dataTransfer.setData("text/cdd-kind", kind));
+    tb.appendChild(b);
+  }
+  const ed = $("#editor-json");
+  ed.addEventListener("dragover", (ev) => {
+    if (ev.dataTransfer.types.includes("text/cdd-kind")) {
+      ev.preventDefault();
+      ed.classList.add("dragover");
+    }
+  });
+  ed.addEventListener("dragleave", () => ed.classList.remove("dragover"));
+  ed.addEventListener("drop", (ev) => {
+    const kind = ev.dataTransfer.getData("text/cdd-kind");
+    if (!kind) return;
+    ev.preventDefault();
+    ed.classList.remove("dragover");
+    newNode(kind);
+  });
+}
+
+// — Fenstermanagement (VS-Style): Splitter + ein-/ausblendbare Panels —
+const layoutKey = "cdd-layout";
+const layout = JSON.parse(localStorage.getItem(layoutKey) ?? "{}");
+const panels = [...document.querySelectorAll(".panel[data-panel]")];
+const saveLayout = () => localStorage.setItem(layoutKey, JSON.stringify(layout));
+const resizeTarget = (s) => (s.dataset.inverse ? s.nextElementSibling : s.previousElementSibling);
+
+function renderViewMenu() {
+  const m = $("#view-menu");
+  m.innerHTML = "";
+  for (const p of panels) {
+    const hidden = layout.hidden?.includes(p.dataset.panel);
+    const b = document.createElement("button");
+    b.className = "menu-item";
+    b.textContent = `${hidden ? "  " : "✓ "}${p.dataset.title}`;
+    b.onclick = () => {
+      layout.hidden = (layout.hidden ?? []).filter((x) => x !== p.dataset.panel);
+      if (!hidden) layout.hidden.push(p.dataset.panel);
+      saveLayout();
+      applyPanelVisibility();
+    };
+    m.appendChild(b);
+  }
+}
+
+function applyPanelVisibility() {
+  for (const p of panels) {
+    p.style.display = layout.hidden?.includes(p.dataset.panel) ? "none" : "";
+  }
+  for (const s of document.querySelectorAll(".splitter")) {
+    const t = resizeTarget(s);
+    s.style.display = t && t.style.display === "none" ? "none" : "";
+  }
+  renderViewMenu();
+}
+
+for (const s of document.querySelectorAll(".splitter")) {
+  const saved = layout.widths?.[s.dataset.resize];
+  if (saved) {
+    const t = resizeTarget(s);
+    t.style.width = saved;
+    t.style.flex = "none";
+  }
+  s.addEventListener("mousedown", (ev) => {
+    ev.preventDefault();
+    const target = resizeTarget(s);
+    const startX = ev.clientX;
+    const startW = target.getBoundingClientRect().width;
+    const inverse = !!s.dataset.inverse;
+    s.classList.add("dragging");
+    const move = (e) => {
+      const w = Math.max(80, inverse ? startW - (e.clientX - startX) : startW + (e.clientX - startX));
+      target.style.width = w + "px";
+      target.style.flex = "none";
+    };
+    const up = () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+      s.classList.remove("dragging");
+      (layout.widths ??= {})[s.dataset.resize] = resizeTarget(s).style.width;
+      saveLayout();
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  });
+}
+
+for (const btn of document.querySelectorAll(".panel-close")) {
+  btn.onclick = () => {
+    const p = btn.closest(".panel");
+    (layout.hidden ??= []).push(p.dataset.panel);
+    saveLayout();
+    applyPanelVisibility();
+  };
+}
+
+$("#btn-view").onclick = (ev) => {
+  ev.stopPropagation();
+  const m = $("#view-menu");
+  m.hidden = !m.hidden;
+};
+document.addEventListener("click", (ev) => {
+  if (!ev.target.closest(".menu")) $("#view-menu").hidden = true;
+});
+applyPanelVisibility();
+
 // — Wiring —
 $("#btn-refresh").onclick = refresh;
 $("#btn-save").onclick = save;
 $("#btn-delete").onclick = del;
-$("#btn-new").onclick = newNode;
 $("#btn-derive").onclick = deriveTests;
 $("#btn-theme").onclick = () => {
   applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");

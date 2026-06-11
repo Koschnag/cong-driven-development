@@ -10,31 +10,32 @@
   <header>
     <h1>CDD <span>Cockpit</span></h1>
     <div class="toolbar">
-      <select id="new-kind">
-        <option value="spec">+ Spec</option>
-        <option value="component">+ Component</option>
-        <option value="risk">+ Risk</option>
-        <option value="infra">+ Infra</option>
-        <option value="premise">+ Prämisse</option>
-        <option value="decision">+ Entscheidung</option>
-        <option value="knowledge">+ Knowledge</option>
-        <option value="tool">+ Tool</option>
-        <option value="term">+ Begriff (Ontologie)</option>
-      </select>
-      <button id="btn-new">Neu</button>
+      <div class="menu">
+        <button id="btn-view">Ansicht ▾</button>
+        <div id="view-menu" class="menu-body" hidden></div>
+      </div>
       <button id="btn-derive">Tests ableiten</button>
       <button id="btn-theme" title="Light/Dark umschalten">🌓</button>
-      <button id="btn-refresh">↻</button>
+      <button id="btn-refresh" title="Neu laden">↻</button>
     </div>
   </header>
 
-  <main>
-    <nav id="sidebar">
+  <main id="layout">
+    <aside id="toolbox" class="panel" data-panel="toolbox" data-title="Toolbox">
+      <div class="panel-title">Toolbox <button class="panel-close" title="Ausblenden">✕</button></div>
+      <div id="toolbox-items"></div>
+      <p class="toolbox-hint">Klicken oder in den Editor ziehen, um einen Knoten anzulegen.</p>
+    </aside>
+    <div class="splitter" data-resize="toolbox"></div>
+
+    <nav id="sidebar" class="panel" data-panel="explorer" data-title="SPOT-Explorer">
+      <div class="panel-title">SPOT-Explorer <button class="panel-close" title="Ausblenden">✕</button></div>
       <input id="filter" type="search" placeholder="Filtern (Id, Art, Inhalt) …">
       <div id="node-list"></div>
     </nav>
+    <div class="splitter" data-resize="explorer"></div>
 
-    <section id="editor">
+    <section id="editor" class="panel" data-panel="editor" data-title="Editor">
       <div class="editor-head">
         <h2 id="editor-title">Kein Knoten gewählt</h2>
         <div>
@@ -43,11 +44,13 @@
         </div>
       </div>
       <textarea id="editor-json" spellcheck="false"
-        placeholder="Knoten links wählen oder oben „Neu" klicken …"></textarea>
+        placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
       <div id="editor-msg"></div>
     </section>
+    <div class="splitter" data-resize="views" data-inverse="true"></div>
 
-    <section id="panels">
+    <section id="panels" class="panel" data-panel="views" data-title="Sichten">
+      <div class="panel-title">Sichten <button class="panel-close" title="Ausblenden">✕</button></div>
       <div class="tabs">
         <button class="tab active" data-tab="dashboard">Dashboard</button>
         <button class="tab" data-tab="graph">Graph</button>
@@ -56,17 +59,19 @@
         <button class="tab" data-tab="drift">Drift</button>
         <button class="tab" data-tab="doku">Doku</button>
       </div>
-      <div id="tab-dashboard" class="tab-body active"></div>
-      <div id="tab-graph" class="tab-body"><div id="graph"></div></div>
-      <div id="tab-uml" class="tab-body"><div id="uml"></div></div>
-      <div id="tab-validate" class="tab-body"></div>
-      <div id="tab-drift" class="tab-body"></div>
-      <div id="tab-doku" class="tab-body">
-        <div class="doku-actions">
-          <button id="btn-doku-download">⬇ Markdown herunterladen</button>
-          <button id="btn-doku-copy">⧉ Kopieren</button>
+      <div class="tab-scroll">
+        <div id="tab-dashboard" class="tab-body active"></div>
+        <div id="tab-graph" class="tab-body"><div id="graph"></div></div>
+        <div id="tab-uml" class="tab-body"><div id="uml"></div></div>
+        <div id="tab-validate" class="tab-body"></div>
+        <div id="tab-drift" class="tab-body"></div>
+        <div id="tab-doku" class="tab-body">
+          <div class="doku-actions">
+            <button id="btn-doku-download">⬇ Markdown herunterladen</button>
+            <button id="btn-doku-copy">⧉ Kopieren</button>
+          </div>
+          <pre id="doku-md"></pre>
         </div>
-        <pre id="doku-md"></pre>
       </div>
     </section>
   </main>
