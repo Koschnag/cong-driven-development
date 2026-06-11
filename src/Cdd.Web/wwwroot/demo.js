@@ -117,10 +117,52 @@ function deriveTests(es) {
   return derived;
 }
 
+// Vereinfachter Markdown-Export (Spiegel von Cdd.Core.Export.toMarkdown).
+function exportMarkdown(es) {
+  const L = [];
+  const byCase = (c) => es.filter((e) => e.Payload.Case === c);
+  L.push("# SPOT-Kontext", "");
+  L.push(`Generiert aus ${es.length} Knoten (Demo-Modus). Der SPOT-Graph ist die Quelle.`, "");
+  const conv = ["Aligned", "Pending", "Diverged", "Orphaned"]
+    .map((c) => `${c} ${es.filter((e) => e.Convergence === c).length}`).join(" · ");
+  L.push(`**Konvergenz:** ${conv}`, "");
+  const section = (title, items, fmt) => {
+    if (!items.length) return;
+    L.push(`## ${title}`, "");
+    for (const e of items) fmt(e, item(e));
+    L.push("");
+  };
+  section("Ubiquitäre Sprache (Ontologie)", byCase("TermNode"), (e, d) => {
+    const syn = d.Synonyms?.length ? ` *(auch: ${d.Synonyms.join(", ")})*` : "";
+    L.push(`- **${d.Name}**${syn} — ${d.Definition}`);
+    for (const r of d.Relations ?? []) L.push(`  - ${r.Case} \`${r.Fields?.Item}\``);
+  });
+  section("Prämissen (nicht verhandelbar)", byCase("PremiseNode"), (e, d) =>
+    L.push(`- **${d.Statement}** — ${d.Rationale}`));
+  section("Entscheidungen (ADRs)", byCase("DecisionNode"), (e, d) =>
+    L.push(`- **${d.Title}** (\`${e.Id}\`): ${d.Choice}`));
+  section("Spezifikationen", byCase("SpecNode"), (e, d) => {
+    L.push(`### ${d.Title} (\`${e.Id}\`, ${e.Convergence})`, `**Intent:** ${d.Intent}`);
+    for (const c of d.Criteria ?? []) L.push(`- GIVEN ${c.Given} WHEN ${c.When} THEN ${c.Then}`);
+  });
+  section("Risiken", byCase("RiskNode"), (e, d) =>
+    L.push(`- **${d.Statement}** (${d.Likelihood}/${d.Impact})${d.Mitigation ? ` — Mitigation: ${d.Mitigation}` : ""}`));
+  section("Komponenten", byCase("ComponentNode"), (e, d) =>
+    L.push(`- **${d.Name}** (\`${e.Id}\`)${d.DependsOn?.length ? ` → ${d.DependsOn.join(", ")}` : ""}`));
+  section("Wissensquellen", byCase("KnowledgeNode"), (e, d) =>
+    L.push(`- **${d.Title}** (${d.MediaType}, ${d.Source})`));
+  section("Tools (Agent-Capabilities)", byCase("ToolNode"), (e, d) =>
+    L.push(`- **${d.Name}** — ${d.Purpose}`));
+  const open = es.filter((e) => e.Convergence !== "Aligned");
+  section("Offene Arbeit (nicht Aligned)", open, (e) => L.push(`- \`${e.Id}\` (${e.Convergence})`));
+  return L.join("\n");
+}
+
 export async function demoApi(path, opts) {
   let es = await load();
   if (path === "spot") return es;
   if (path === "validate") return validate(es);
+  if (path === "export") return exportMarkdown(es);
   if (path === "diff") {
     const by = (c) => es.filter((e) => e.Convergence === c);
     return { Aligned: by("Aligned"), Pending: by("Pending"), Diverged: by("Diverged"), Orphaned: by("Orphaned") };

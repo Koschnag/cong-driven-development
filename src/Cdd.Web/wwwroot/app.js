@@ -47,10 +47,12 @@ async function api(path, opts) {
 async function refresh() {
   entries = await api("spot");
   renderSidebar();
+  renderDashboard();
   renderGraph();
   renderUml();
   renderValidate();
   renderDrift();
+  renderDoku();
 }
 
 function renderSidebar() {
@@ -136,6 +138,90 @@ async function deriveTests() {
 }
 
 // — Panels —
+
+// Dashboard: Monitoring über Modell, Konvergenz, Qualität und offene Arbeit.
+async function renderDashboard() {
+  const el = $("#tab-dashboard");
+  const findings = await api("validate");
+  const total = entries.length;
+  const conv = { Aligned: 0, Pending: 0, Diverged: 0, Orphaned: 0 };
+  const kinds = {};
+  for (const e of entries) {
+    conv[e.Convergence] = (conv[e.Convergence] ?? 0) + 1;
+    const k = kindOfCase(e.Payload.Case);
+    kinds[k] = (kinds[k] ?? 0) + 1;
+  }
+  const errors = findings.filter((f) => f.Severity === "Error").length;
+  const warnings = findings.length - errors;
+  const pctAligned = total ? Math.round((conv.Aligned / total) * 100) : 0;
+
+  el.innerHTML = "";
+  const cards = document.createElement("div");
+  cards.className = "cards";
+  const card = (num, label, color) => {
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `<div class="card-num"${color ? ` style="color:${color}"` : ""}></div>`;
+    c.querySelector(".card-num").textContent = num;
+    c.appendChild(document.createTextNode(label));
+    cards.appendChild(c);
+  };
+  card(total, "Knoten im SPOT");
+  card(`${pctAligned}%`, "konvergent", "var(--aligned)");
+  card(errors, "Fehler", errors ? "var(--diverged)" : "var(--aligned)");
+  card(warnings, "Warnungen", warnings ? "var(--pending)" : "var(--aligned)");
+  el.appendChild(cards);
+
+  const h = (t) => { const x = document.createElement("h4"); x.textContent = t; el.appendChild(x); };
+
+  h("Konvergenz");
+  const bar = document.createElement("div");
+  bar.className = "convbar";
+  for (const key of ["Aligned", "Pending", "Diverged", "Orphaned"]) {
+    if (!conv[key]) continue;
+    const seg = document.createElement("div");
+    seg.className = `convseg ${key}`;
+    seg.style.flex = conv[key];
+    seg.title = `${key}: ${conv[key]}`;
+    seg.textContent = conv[key];
+    bar.appendChild(seg);
+  }
+  el.appendChild(bar);
+
+  h("Knotenarten");
+  const kb = document.createElement("div");
+  kb.className = "kind-badges";
+  for (const k of Object.keys(kinds).sort()) {
+    const b = document.createElement("button");
+    b.className = "badge";
+    b.textContent = `${k} ${kinds[k]}`;
+    b.onclick = () => { filterText = k; $("#filter").value = k; renderSidebar(); };
+    kb.appendChild(b);
+  }
+  el.appendChild(kb);
+
+  const open = entries.filter((e) => e.Convergence !== "Aligned");
+  h(`Offene Arbeit (${open.length})`);
+  for (const e of open) {
+    const b = document.createElement("button");
+    b.className = "node-item";
+    b.innerHTML = `<span class="dot ${e.Convergence}"></span>`;
+    b.appendChild(document.createTextNode(`${e.Id} (${kindOfCase(e.Payload.Case)})`));
+    b.onclick = () => select(e.Id);
+    el.appendChild(b);
+  }
+}
+
+// Doku: das generierte Kontextpaket — lebende Dokumentation + LLM-Vorlage.
+let dokuText = "";
+async function renderDoku() {
+  try {
+    dokuText = DEMO ? await demoApi("export") : await (await fetch("/api/export")).text();
+    $("#doku-md").textContent = dokuText;
+  } catch {
+    $("#doku-md").textContent = "Export nicht verfügbar.";
+  }
+}
 
 // Klick auf einen Diagramm-Knoten selektiert ihn im Editor.
 function wireDiagramClicks(container) {
@@ -260,6 +346,18 @@ for (const t of document.querySelectorAll(".tab")) {
     $("#tab-" + t.dataset.tab).classList.add("active");
   };
 }
+$("#btn-doku-download").onclick = () => {
+  const blob = new Blob([dokuText], { type: "text/markdown" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "spot-context.md";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+$("#btn-doku-copy").onclick = async () => {
+  await navigator.clipboard.writeText(dokuText);
+  setMsg("Kontextpaket kopiert ✔ — direkt an eine KI übergeben.", "ok");
+};
 $("#filter").oninput = (ev) => {
   filterText = ev.target.value;
   renderSidebar();

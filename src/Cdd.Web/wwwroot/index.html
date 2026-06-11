@@ -49,15 +49,25 @@
 
     <section id="panels">
       <div class="tabs">
-        <button class="tab active" data-tab="graph">Graph</button>
+        <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="graph">Graph</button>
         <button class="tab" data-tab="uml">UML</button>
         <button class="tab" data-tab="validate">Validierung</button>
         <button class="tab" data-tab="drift">Drift</button>
+        <button class="tab" data-tab="doku">Doku</button>
       </div>
-      <div id="tab-graph" class="tab-body active"><div id="graph"></div></div>
+      <div id="tab-dashboard" class="tab-body active"></div>
+      <div id="tab-graph" class="tab-body"><div id="graph"></div></div>
       <div id="tab-uml" class="tab-body"><div id="uml"></div></div>
       <div id="tab-validate" class="tab-body"></div>
       <div id="tab-drift" class="tab-body"></div>
+      <div id="tab-doku" class="tab-body">
+        <div class="doku-actions">
+          <button id="btn-doku-download">⬇ Markdown herunterladen</button>
+          <button id="btn-doku-copy">⧉ Kopieren</button>
+        </div>
+        <pre id="doku-md"></pre>
+      </div>
     </section>
   </main>
 

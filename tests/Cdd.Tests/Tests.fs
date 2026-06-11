@@ -141,6 +141,25 @@ let ``validate warns on term without definition`` () =
     Assert.NotEmpty(Validate.validate entries |> Validate.warnings)
 
 [<Fact>]
+let ``export-context renders all sections and content`` () =
+    let entries =
+        [ { Id = EntityId "term-a"; Convergence = Aligned
+            Payload = TermNode { Name = "Begriff"; Definition = "Def"; Synonyms = [ "Syn" ]
+                                 Relations = [ IsA(EntityId "term-a") ] } }
+          sampleSpec "spec-a" [ crit 1 ]
+          { Id = EntityId "risk-a"; Convergence = Pending
+            Payload = RiskNode { Statement = "Gefahr"; Likelihood = Low; Impact = High
+                                 Mitigation = Some "Plan" } } ]
+    let md = Export.toMarkdown entries
+    Assert.Contains("# SPOT-Kontext", md)
+    Assert.Contains("## Ubiquitäre Sprache (Ontologie)", md)
+    Assert.Contains("**Begriff** *(auch: Syn)* — Def", md)
+    Assert.Contains("GIVEN g1 WHEN w1 THEN t1", md)
+    Assert.Contains("**Gefahr** (Likelihood Low, Impact High) — Mitigation: Plan", md)
+    Assert.Contains("## Offene Arbeit (nicht Aligned)", md)
+    Assert.Contains("`spec-a`", md)
+
+[<Fact>]
 let ``store rejects path-traversal ids`` () =
     Assert.False(Store.isValidId (EntityId "../evil"))
     Assert.False(Store.isValidId (EntityId "a/b"))
