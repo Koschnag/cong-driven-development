@@ -45,5 +45,15 @@ module Store =
         else
             Directory.GetFiles(dir, "*.json")
             |> Array.sort
-            |> Array.map (fun f -> Json.deserialize<SpotEntry> (File.ReadAllText f))
+            |> Array.map (fun f ->
+                try
+                    let entry = Json.deserialize<SpotEntry> (File.ReadAllText f)
+                    if obj.ReferenceEquals(entry, null) then
+                        raise (IOException(sprintf "'%s' enthält keinen SPOT-Knoten" (Path.GetFileName f)))
+                    entry
+                with
+                | :? IOException -> reraise ()
+                | ex ->
+                    raise (IOException(sprintf "'%s' ist kein gültiger SPOT-Knoten: %s"
+                                           (Path.GetFileName f) ex.Message)))
             |> Array.toList

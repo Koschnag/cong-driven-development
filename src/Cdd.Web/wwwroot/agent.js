@@ -54,7 +54,8 @@ export async function callClaude({ apiKey, model, prose, contextMd }) {
     body: JSON.stringify({
       model,
       max_tokens: 16000,
-      thinking: { type: "adaptive" },
+      // Adaptives Thinking gibt es erst ab Opus/Sonnet 4.6 — Haiku 4.5 würde mit 400 ablehnen.
+      ...(model.startsWith("claude-haiku") ? {} : { thinking: { type: "adaptive" } }),
       system: `Du bist ein präziser Modellierungs-Agent für SPOT-Graphen (CDD). ${contract}`,
       messages: [
         {

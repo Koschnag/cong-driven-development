@@ -181,6 +181,17 @@ let ``store delete removes a node`` () =
         if Directory.Exists tmp then Directory.Delete(tmp, true)
 
 [<Fact>]
+let ``store load reports corrupt files instead of crashing`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-test-" + System.Guid.NewGuid().ToString("N"))
+    try
+        Store.save tmp (sampleSpec "spec-ok" [ crit 1 ])
+        File.WriteAllText(Path.Combine(Store.spotDir tmp, "kaputt.json"), "kein json")
+        let ex = Assert.Throws<IOException>(fun () -> Store.load tmp |> ignore)
+        Assert.Contains("kaputt.json", ex.Message)
+    finally
+        if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact>]
 let ``store saves and loads round-trip`` () =
     let tmp = Path.Combine(Path.GetTempPath(), "cdd-test-" + System.Guid.NewGuid().ToString("N"))
     try
