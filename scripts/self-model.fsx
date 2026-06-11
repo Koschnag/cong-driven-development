@@ -1,0 +1,150 @@
+// CDD modelliert sich selbst: generiert das .spot/-Selbstmodell des Projekts.
+// Ausführen (nach `dotnet build -c Release`):
+//   dotnet fsi scripts/self-model.fsx
+// Danach: dotnet run --project src/Cdd.Cli -- derive-tests --write && cdd validate
+
+#r "nuget: FSharp.SystemTextJson, 1.4.36"
+#r "../src/Cdd.Core/bin/Release/net9.0/Cdd.Core.dll"
+
+open Cdd.Core
+open Cdd.Core.Spot
+
+let term id name definition synonyms relations =
+    { Id = EntityId id; Convergence = Aligned
+      Payload = TermNode { Name = name; Definition = definition
+                           Synonyms = synonyms; Relations = relations } }
+
+let premise id statement rationale =
+    { Id = EntityId id; Convergence = Aligned
+      Payload = PremiseNode { Statement = statement; Rationale = rationale } }
+
+let decision id title context choice consequences =
+    { Id = EntityId id; Convergence = Aligned
+      Payload = DecisionNode { Title = title; Context = context; Choice = choice
+                               Consequences = consequences; Supersedes = None } }
+
+let risk id statement likelihood impact mitigation =
+    { Id = EntityId id; Convergence = Aligned
+      Payload = RiskNode { Statement = statement; Likelihood = likelihood
+                           Impact = impact; Mitigation = Some mitigation } }
+
+let entries =
+    [
+      // ── Ontologie: die ubiquitäre Sprache von CDD selbst ──────────────
+      term "term-spot" "SPOT" "Single Point of Truth — der eine Graph, in dem Modell, Spec, Tests, Risiken, Wissen und Infrastruktur leben" [ "Single Point of Truth" ] []
+      term "term-knoten" "Knoten" "Eintrag im SPOT-Graphen mit Identität, Nutzlast und Konvergenz-Status" [ "Entry"; "Node" ] [ PartOf(EntityId "term-spot") ]
+      term "term-spec" "Spec" "Maschinenlesbarer Vertrag: Intent plus Akzeptanzkriterien in Given/When/Then" [ "Spezifikation" ] [ IsA(EntityId "term-knoten") ]
+      term "term-konvergenz" "Konvergenz" "Grad der Übereinstimmung zwischen Modell-Knoten und Implementierung (Pending/Aligned/Diverged/Orphaned)" [] [ RelatesTo(EntityId "term-knoten") ]
+      term "term-drift" "Drift" "Auseinanderlaufen von Modell und Code — das, was klassische MDA scheitern ließ" [] [ RelatesTo(EntityId "term-konvergenz") ]
+      term "term-ontologie" "Ontologie" "Begriffsnetz der Domäne: Begriffe mit Definition und typisierten Beziehungen" [ "Begriffsmodell" ] [ PartOf(EntityId "term-spot") ]
+      term "term-ubiquitaere-sprache" "Ubiquitäre Sprache" "Gemeinsames Vokabular von Fachseite, Technik und AI-Agents — definiert in der Ontologie" [ "Ubiquitous Language" ] [ RelatesTo(EntityId "term-ontologie") ]
+      term "term-cockpit" "Cockpit" "Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift" [ "IDE" ] [ RelatesTo(EntityId "term-spot") ]
+      term "term-agent" "Agent" "LLM-gestützter Worker, der aus dem SPOT Implementierung, Tests und Doku ableitet" [ "AI-Agent" ] [ RelatesTo(EntityId "term-spot") ]
+
+      // ── Prämissen ──────────────────────────────────────────────────────
+      premise "premise-kein-python" "Kein Python — nie." "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
+      premise "premise-cloud-first" "Cloud-first: nichts muss lokal laufen." "Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) trägt alles"
+      premise "premise-typsicherheit" "Typsicherheit vor Flexibilität." "Illegale SPOT-Zustände sollen nicht repräsentierbar sein — das Typsystem ist das Schema"
+
+      // ── Entscheidungen (ADRs) ─────────────────────────────────────────
+      decision "adr-001-fsharp" "F# für die Domain"
+        "Das SPOT-Modell braucht Summen-Typen, Pattern-Matching und Unveränderlichkeit"
+        "F# mit Discriminated Unions als Modellsprache; C# nur für IO-Adapter"
+        "Kleinere Community, dafür beweisbar korrektere Modelle und Lean-4-Anschlussfähigkeit"
+      decision "adr-002-json-store" "Ein JSON-File pro Knoten"
+        "Der SPOT muss git-diffbar, mergebar und ohne Server nutzbar sein"
+        "Persistenz als .spot/<id>.json via FSharp.SystemTextJson"
+        "Kein Query-Layer; bei Wachstum später SQLite/Index möglich, Format bleibt Austauschformat"
+      decision "adr-003-github-only" "GitHub-native Infrastruktur"
+        "Eigene Domains/Server erzeugen Pflegekosten und private Abhängigkeiten"
+        "Pages für die Demo, Actions für CI/CD, GHCR für Container, Releases für Binaries"
+        "Demo-Modus braucht localStorage statt Backend; volle Version via Codespaces/Container"
+      decision "adr-004-mpl2" "Lizenz MPL-2.0"
+        "Offenheit gewünscht, aber Datei-Copyleft statt viralem Projekt-Copyleft"
+        "MPL-2.0"
+        "Kommerzielle Nutzung möglich, Änderungen an CDD-Dateien bleiben offen"
+
+      // ── Risiken ────────────────────────────────────────────────────────
+      risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
+        "Konvergenz-Status je Knoten + Round-Trip (Code→Modell) auf der Roadmap"
+      risk "risk-spec-vollstaendigkeit" "Spec-Vollständigkeits-Falle: die Spec wird so komplex wie Code" Medium High
+        "Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents füllen Lücken, Validierung fängt Drift"
+      risk "risk-pflegekosten" "SPOT-Pflege wird teurer als der Code, den er erzeugt" Medium High
+        "Alles Ableitbare wird abgeleitet (Tests, Diagramme), nie handgepflegt"
+
+      // ── Komponenten ───────────────────────────────────────────────────
+      { Id = EntityId "comp-core"; Convergence = Aligned
+        Payload = ComponentNode { Name = "Cdd.Core"; DependsOn = [] } }
+      { Id = EntityId "comp-cli"; Convergence = Aligned
+        Payload = ComponentNode { Name = "Cdd.Cli"; DependsOn = [ EntityId "comp-core" ] } }
+      { Id = EntityId "comp-web"; Convergence = Aligned
+        Payload = ComponentNode { Name = "Cdd.Web"; DependsOn = [ EntityId "comp-core" ] } }
+
+      // ── Specs: was CDD kann (Aligned) und können soll (Pending) ───────
+      { Id = EntityId "spec-validate"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Modell-Validierung"
+            Intent = "Der SPOT-Graph ist jederzeit strukturell konsistent"
+            Criteria =
+              [ { Given = "ein Knoten mit Referenz auf eine nicht existierende Id"
+                  When = "cdd validate läuft"
+                  Then = "wird ein Fehler mit Knoten-Id und Ziel gemeldet" }
+                { Given = "Komponenten mit zyklischen Abhängigkeiten"
+                  When = "cdd validate läuft"
+                  Then = "werden alle Zyklus-Teilnehmer als Fehler markiert" } ] } }
+      { Id = EntityId "spec-derive-tests"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Spec→Test-Ableitung"
+            Intent = "Tests sind Derivat der Spezifikation, nicht handgeschrieben"
+            Criteria =
+              [ { Given = "eine Spec mit n Akzeptanzkriterien"
+                  When = "cdd derive-tests --write läuft"
+                  Then = "existiert genau ein Test-Knoten pro Kriterium" }
+                { Given = "bereits abgeleitete Tests"
+                  When = "derive-tests erneut läuft"
+                  Then = "entstehen keine Duplikate (Idempotenz)" } ] } }
+      { Id = EntityId "spec-cockpit-uml"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Multidimensionale Sicht"
+            Intent = "Ein Modell, mehrere Projektionen — Graph und UML aus demselben SPOT"
+            Criteria =
+              [ { Given = "Begriffe mit IsA/PartOf/RelatesTo-Beziehungen"
+                  When = "der UML-Tab geöffnet wird"
+                  Then = "erscheint ein Klassendiagramm mit Generalisierung, Komposition und Assoziation" } ] } }
+      { Id = EntityId "spec-export-context"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "LLM-Kontextexport"
+            Intent = "Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut"
+            Criteria =
+              [ { Given = "ein gefüllter SPOT-Graph"
+                  When = "cdd export-context läuft"
+                  Then = "entsteht ein einzelnes Markdown-Bundle mit Ontologie, Prämissen, Entscheidungen, Specs und offenen Risiken" }
+                { Given = "das exportierte Bundle"
+                  When = "es einem LLM als Kontext übergeben wird"
+                  Then = "kann es Implementierungsaufgaben ohne Rückfragen zur Domänensprache bearbeiten" } ] } }
+
+      // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
+      { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Martin Fowler — Blog"; Source = "https://martinfowler.com"
+            MediaType = "blog"
+            Takeaways = [ "Refactoring-Katalog"; "Evolutionäre Architektur"; "Spec-by-Example" ] } }
+      { Id = EntityId "kb-evans-ddd"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Eric Evans — Domain-Driven Design"; Source = "ISBN 978-0321125217"
+            MediaType = "book"
+            Takeaways = [ "Ubiquitous Language ist die Brücke zwischen Fachseite und Code"
+                          "Bounded Contexts begrenzen Modellgültigkeit" ] } }
+
+      // ── Tools: Capabilities für Agents ────────────────────────────────
+      { Id = EntityId "tool-mermaid"; Convergence = Aligned
+        Payload = ToolNode { Name = "Mermaid"; Purpose = "Diagramm-Rendering (Graph, UML) aus dem SPOT"
+                             Endpoint = Some "https://cdn.jsdelivr.net/npm/mermaid@11" } }
+      { Id = EntityId "tool-github-actions"; Convergence = Aligned
+        Payload = ToolNode { Name = "GitHub Actions"; Purpose = "CI/CD, Releases, Pages, Container — der Automatisierungs-Arm"
+                             Endpoint = None } }
+    ]
+
+let root = __SOURCE_DIRECTORY__ + "/.."
+entries |> List.iter (Store.save root)
+printfn "%d Knoten geschrieben nach %s/.spot" (List.length entries) root

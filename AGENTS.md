@@ -33,5 +33,14 @@ in einem Temp-Verzeichnis ausführen.
 ## Was Agents NICHT tun sollen
 
 - Keine neuen NuGet-Pakete ohne triftigen Grund (Minimal-Dependencies-Prinzip)
-- `.spot/`-Beispieldaten nicht ins Repo-Root committen
 - Release-Tags (`v*`) nur nach explizitem Maintainer-Auftrag
+
+## Das Selbstmodell (`.spot/` im Repo-Root)
+
+CDD modelliert sich selbst: `.spot/` enthält das gepflegte Selbstmodell
+(Ontologie, Prämissen, ADRs, Risiken, Specs des Projekts) — es ist Demo-Projekt
+und Dogfood zugleich. Die CI validiert es bei jedem PR (`cdd validate`).
+Regeln: Änderungen daran bewusst vornehmen, danach lokal `cdd validate` laufen
+lassen; neue Features sollten zuerst als Spec-Knoten (Pending) dort erscheinen.
+Regenerierbar via `dotnet fsi scripts/self-model.fsx` (überschreibt die
+generierten Knoten).

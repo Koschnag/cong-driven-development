@@ -1,0 +1,24 @@
+{
+  "Id": "term-ontologie",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Ontologie",
+        "Definition": "Begriffsnetz der Dom\u00E4ne: Begriffe mit Definition und typisierten Beziehungen",
+        "Synonyms": [
+          "Begriffsmodell"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

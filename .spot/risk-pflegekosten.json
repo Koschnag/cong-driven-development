@@ -1,0 +1,15 @@
+{
+  "Id": "risk-pflegekosten",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "SPOT-Pflege wird teurer als der Code, den er erzeugt",
+        "Likelihood": "Medium",
+        "Impact": "High",
+        "Mitigation": "Alles Ableitbare wird abgeleitet (Tests, Diagramme), nie handgepflegt"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

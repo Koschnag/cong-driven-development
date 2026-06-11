@@ -1,0 +1,19 @@
+{
+  "Id": "kb-fowler-blog",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Martin Fowler \u2014 Blog",
+        "Source": "https://martinfowler.com",
+        "MediaType": "blog",
+        "Takeaways": [
+          "Refactoring-Katalog",
+          "Evolution\u00E4re Architektur",
+          "Spec-by-Example"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

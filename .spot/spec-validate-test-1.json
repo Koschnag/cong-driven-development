@@ -1,0 +1,14 @@
+{
+  "Id": "spec-validate-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-validate",
+        "Name": "Modell-Validierung \u2014 when cdd validate l\u00E4uft then wird ein Fehler mit Knoten-Id und Ziel gemeldet",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

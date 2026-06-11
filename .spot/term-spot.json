@@ -1,0 +1,17 @@
+{
+  "Id": "term-spot",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "SPOT",
+        "Definition": "Single Point of Truth \u2014 der eine Graph, in dem Modell, Spec, Tests, Risiken, Wissen und Infrastruktur leben",
+        "Synonyms": [
+          "Single Point of Truth"
+        ],
+        "Relations": []
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

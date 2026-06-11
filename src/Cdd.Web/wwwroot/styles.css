@@ -35,6 +35,12 @@ main { flex: 1; display: grid; grid-template-columns: 230px 1fr 1.2fr; min-heigh
 main > * { min-height: 0; overflow: auto; }
 
 #sidebar { border-right: 1px solid var(--border); padding: 8px; background: var(--panel); }
+#filter {
+  width: 100%; padding: 5px 8px; margin-bottom: 4px;
+  background: var(--input-bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 3px; font-size: 13px; outline: none;
+}
+#filter:focus { border-color: var(--accent); }
 #sidebar h3 {
   font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
   color: var(--muted); margin: 14px 6px 4px;

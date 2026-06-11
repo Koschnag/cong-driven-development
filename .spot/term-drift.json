@@ -1,0 +1,22 @@
+{
+  "Id": "term-drift",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Drift",
+        "Definition": "Auseinanderlaufen von Modell und Code \u2014 das, was klassische MDA scheitern lie\u00DF",
+        "Synonyms": [],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-konvergenz"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

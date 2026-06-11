@@ -1,0 +1,14 @@
+{
+  "Id": "spec-validate-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-validate",
+        "Name": "Modell-Validierung \u2014 when cdd validate l\u00E4uft then werden alle Zyklus-Teilnehmer als Fehler markiert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

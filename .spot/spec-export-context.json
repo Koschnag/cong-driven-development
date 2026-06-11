@@ -1,0 +1,25 @@
+{
+  "Id": "spec-export-context",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "LLM-Kontextexport",
+        "Intent": "Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut",
+        "Criteria": [
+          {
+            "Given": "ein gef\u00FCllter SPOT-Graph",
+            "When": "cdd export-context l\u00E4uft",
+            "Then": "entsteht ein einzelnes Markdown-Bundle mit Ontologie, Pr\u00E4missen, Entscheidungen, Specs und offenen Risiken"
+          },
+          {
+            "Given": "das exportierte Bundle",
+            "When": "es einem LLM als Kontext \u00FCbergeben wird",
+            "Then": "kann es Implementierungsaufgaben ohne R\u00FCckfragen zur Dom\u00E4nensprache bearbeiten"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

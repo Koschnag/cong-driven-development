@@ -1,0 +1,14 @@
+{
+  "Id": "spec-cockpit-uml-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-cockpit-uml",
+        "Name": "Multidimensionale Sicht \u2014 when der UML-Tab ge\u00F6ffnet wird then erscheint ein Klassendiagramm mit Generalisierung, Komposition und Assoziation",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

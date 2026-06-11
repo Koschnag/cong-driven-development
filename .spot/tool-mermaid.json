@@ -1,0 +1,14 @@
+{
+  "Id": "tool-mermaid",
+  "Payload": {
+    "Case": "ToolNode",
+    "Fields": {
+      "Item": {
+        "Name": "Mermaid",
+        "Purpose": "Diagramm-Rendering (Graph, UML) aus dem SPOT",
+        "Endpoint": "https://cdn.jsdelivr.net/npm/mermaid@11"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

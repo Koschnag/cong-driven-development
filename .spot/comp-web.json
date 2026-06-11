@@ -1,0 +1,15 @@
+{
+  "Id": "comp-web",
+  "Payload": {
+    "Case": "ComponentNode",
+    "Fields": {
+      "Item": {
+        "Name": "Cdd.Web",
+        "DependsOn": [
+          "comp-core"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

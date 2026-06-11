@@ -35,8 +35,23 @@ const seed = [
       Synonyms: [], Relations: [{ Case: "PartOf", Fields: { Item: "term-nutzer" } }] } } } },
 ];
 
-const load = () => JSON.parse(localStorage.getItem(KEY) ?? "null") ?? structuredClone(seed);
 const store = (es) => localStorage.setItem(KEY, JSON.stringify(es));
+
+// Seed-Priorität: localStorage → spot-seed.json (das echte CDD-Selbstmodell,
+// von Pages aus .spot/ gebündelt) → eingebauter Fallback.
+async function load() {
+  const stored = JSON.parse(localStorage.getItem(KEY) ?? "null");
+  if (stored) return stored;
+  try {
+    const res = await fetch("./spot-seed.json");
+    if (res.ok) {
+      const es = await res.json();
+      store(es);
+      return es;
+    }
+  } catch { /* offline oder lokal ohne Bundle */ }
+  return structuredClone(seed);
+}
 const validId = (id) => /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(id);
 const item = (e) => e.Payload?.Fields?.Item ?? {};
 
@@ -103,7 +118,7 @@ function deriveTests(es) {
 }
 
 export async function demoApi(path, opts) {
-  let es = load();
+  let es = await load();
   if (path === "spot") return es;
   if (path === "validate") return validate(es);
   if (path === "diff") {
@@ -132,6 +147,12 @@ export async function demoApi(path, opts) {
 export function demoBanner() {
   const b = document.createElement("div");
   b.style.cssText = "background:#2d333b;color:#d29922;padding:4px 16px;font-size:12px;text-align:center";
-  b.textContent = "🧪 Demo-Modus — Daten liegen nur in deinem Browser (localStorage). Volle Version: GitHub Releases.";
+  b.textContent = "🧪 Demo-Modus — Daten liegen nur in deinem Browser. Gezeigt wird das CDD-Selbstmodell. ";
+  const reset = document.createElement("a");
+  reset.href = "#";
+  reset.textContent = "Demo zurücksetzen";
+  reset.style.color = "#4ea1ff";
+  reset.onclick = (ev) => { ev.preventDefault(); localStorage.removeItem(KEY); location.reload(); };
+  b.appendChild(reset);
   document.body.prepend(b);
 }

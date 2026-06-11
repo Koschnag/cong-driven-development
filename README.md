@@ -78,7 +78,9 @@ diffbar, mergebar.
 ### Demo
 
 **▶ Sofort im Browser testen:** https://koschnag.github.io/cong-driven-development/
-(Cockpit im Demo-Modus — Daten bleiben im localStorage deines Browsers).
+— die Demo zeigt das **CDD-Selbstmodell**: dieses Repo modelliert sich selbst in
+[`.spot/`](.spot/) (Ontologie, Prämissen, ADRs, Risiken, Specs), die CI validiert
+es bei jedem PR. Änderungen bleiben im localStorage deines Browsers.
 
 Weitere Wege (alle GitHub-nativ):
 - **Codespaces:** Repo öffnen (devcontainer konfiguriert), `dotnet run --project src/Cdd.Web`

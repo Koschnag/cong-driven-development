@@ -1,0 +1,24 @@
+{
+  "Id": "term-spec",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Spec",
+        "Definition": "Maschinenlesbarer Vertrag: Intent plus Akzeptanzkriterien in Given/When/Then",
+        "Synonyms": [
+          "Spezifikation"
+        ],
+        "Relations": [
+          {
+            "Case": "IsA",
+            "Fields": {
+              "Item": "term-knoten"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
