@@ -3,6 +3,7 @@
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 import { DEMO, demoApi, demoBanner } from "./demo.js";
 import { buildPrompt, callClaude, parseChanges, getApiKey, setApiKey } from "./agent.js";
+import { buildForm } from "./form.js";
 
 // Theme: Light (Visual-Studio-Look) ist Default, Dark optional, persistiert.
 const themeKey = "cdd-theme";
@@ -181,13 +182,31 @@ function renderSidebar() {
   }
 }
 
+let formInstance = null;
+let draftEntry = null; // neuer, noch nicht gespeicherter Knoten
+
 function setEditorMode(mode) {
   editorMode = mode;
   $("#inspector").hidden = mode !== "inspect";
+  $("#editor-form").hidden = mode !== "form";
   $("#editor-json").hidden = mode !== "json";
   $("#btn-mode-inspect").classList.toggle("active", mode === "inspect");
+  $("#btn-mode-form").classList.toggle("active", mode === "form");
   $("#btn-mode-json").classList.toggle("active", mode === "json");
-  $("#btn-save").disabled = mode !== "json" || !$("#editor-json").value;
+  if (mode === "form") {
+    const base = draftEntry ?? entries.find((x) => x.Id === selectedId);
+    const box = $("#editor-form");
+    box.innerHTML = "";
+    if (base) {
+      formInstance = buildForm(base, entries, { idEditable: !!draftEntry });
+      box.appendChild(formInstance.el);
+    } else {
+      formInstance = null;
+      box.innerHTML = "<p class='insp-hint'>Knoten wählen oder aus der Toolbox anlegen.</p>";
+    }
+  }
+  const editable = mode === "form" ? !!formInstance : mode === "json" && !!$("#editor-json").value;
+  $("#btn-save").disabled = !editable;
 }
 
 function updateHistButtons() {
@@ -202,14 +221,15 @@ function select(id, opts = {}) {
     hist.fwd.length = 0;
   }
   selectedId = id;
+  draftEntry = null;
   const e = entries.find((x) => x.Id === id);
   $("#editor-title").textContent = id ?? "Kein Knoten gewählt";
   $("#editor-json").value = e ? JSON.stringify(e, null, 2) : "";
-  $("#btn-save").disabled = editorMode !== "json" || !e;
   $("#btn-delete").disabled = !e;
   if (e) history.replaceState(null, "", "#" + encodeURIComponent(id));
   setMsg("");
   updateHistButtons();
+  setEditorMode(editorMode); // Formular/JSON auf neue Auswahl umbauen
   renderInspector();
   renderSidebar();
   if (cube.focus) { renderGraph(); renderUml(); }
@@ -228,6 +248,10 @@ function renderInspector() {
   const head = document.createElement("div");
   head.className = "insp-head";
   head.innerHTML = `<span class="badge">${kindOfCase(e.Payload.Case)}</span> <span class="dot ${e.Convergence}"></span> ${e.Convergence}`;
+  const editBtn = document.createElement("button");
+  editBtn.textContent = "✏️ Bearbeiten";
+  editBtn.onclick = () => setEditorMode("form");
+  head.appendChild(editBtn);
   el.appendChild(head);
 
   const fields = { Name: d.Name, Titel: d.Title, Definition: d.Definition, Intent: d.Intent,
@@ -295,13 +319,22 @@ function setMsg(text, cls = "") {
 
 async function save() {
   let entry;
-  try { entry = JSON.parse($("#editor-json").value); }
-  catch { return setMsg("JSON ist nicht parsebar", "error"); }
+  if (editorMode === "form") {
+    if (!formInstance) return;
+    entry = formInstance.getValue();
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(entry.Id))
+      return setMsg("Bitte eine gültige Id vergeben (a-z, 0-9, -, _).", "error");
+  } else {
+    try { entry = JSON.parse($("#editor-json").value); }
+    catch { return setMsg("JSON ist nicht parsebar", "error"); }
+  }
   try {
     await api("spot/" + encodeURIComponent(entry.Id), { method: "PUT", body: JSON.stringify(entry) });
     setMsg("Gespeichert ✔", "ok");
     selectedId = entry.Id;
+    draftEntry = null;
     await refresh();
+    select(entry.Id, { fromHistory: true });
   } catch (err) { setMsg(err.message, "error"); }
 }
 
@@ -314,18 +347,18 @@ async function del() {
 }
 
 function newNode(kind) {
-  const draft = {
-    Id: `${kind}-neu`,
+  draftEntry = {
+    Id: `${kind}-`,
     Payload: structuredClone(templates[kind]),
     Convergence: "Pending",
   };
+  if (kind === "term") draftEntry.Payload.Fields.Item.Relations = [];
   selectedId = null;
-  setEditorMode("json");
-  $("#editor-title").textContent = "Neuer Knoten (Id anpassen!)";
-  $("#editor-json").value = JSON.stringify(draft, null, 2);
-  $("#btn-save").disabled = false;
+  $("#editor-title").textContent = `Neu: ${kind}`;
+  $("#editor-json").value = JSON.stringify(draftEntry, null, 2);
+  setEditorMode("form");
   $("#btn-delete").disabled = true;
-  setMsg("Id vergeben, Felder füllen, Speichern.");
+  setMsg("Felder ausfüllen und Speichern.");
 }
 
 async function deriveTests() {
@@ -660,7 +693,16 @@ $("#btn-save").onclick = save;
 $("#btn-delete").onclick = del;
 $("#btn-derive").onclick = deriveTests;
 $("#btn-mode-inspect").onclick = () => setEditorMode("inspect");
+$("#btn-mode-form").onclick = () => setEditorMode("form");
 $("#btn-mode-json").onclick = () => setEditorMode("json");
+$("#editor-json").addEventListener("input", () => {
+  if (editorMode === "json") $("#btn-save").disabled = !$("#editor-json").value;
+});
+$("#btn-help").onclick = () => { $("#help-overlay").hidden = false; };
+$("#help-overlay").onclick = (ev) => {
+  if (ev.target.id === "help-overlay" || ev.target.id === "btn-help-close")
+    $("#help-overlay").hidden = true;
+};
 $("#btn-back").onclick = () => {
   const prev = hist.back.pop();
   if (!prev) return;
