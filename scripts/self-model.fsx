@@ -123,6 +123,15 @@ let entries =
                   When = "es einem LLM als Kontext übergeben wird"
                   Then = "kann es Implementierungsaufgaben ohne Rückfragen zur Domänensprache bearbeiten" } ] } }
 
+      { Id = EntityId "spec-agent-interface"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Agent-Interface"
+            Intent = "Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt"
+            Criteria =
+              [ { Given = "eine Prosa-Beschreibung einer Modelländerung"
+                  When = "der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt)"
+                  Then = "entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode

@@ -58,6 +58,7 @@
         <button class="tab" data-tab="validate">Validierung</button>
         <button class="tab" data-tab="drift">Drift</button>
         <button class="tab" data-tab="doku">Doku</button>
+        <button class="tab" data-tab="agent">🤖 Agent</button>
       </div>
       <div class="tab-scroll">
         <div id="tab-dashboard" class="tab-body active"></div>
@@ -71,6 +72,40 @@
             <button id="btn-doku-copy">⧉ Kopieren</button>
           </div>
           <pre id="doku-md"></pre>
+        </div>
+        <div id="tab-agent" class="tab-body">
+          <p class="agent-intro">Beschreibe in Prosa, was sich am Modell ändern soll — eine KI
+            setzt es um. Entweder direkt (API-Key nötig) oder per kopiertem Prompt in einer
+            beliebigen KI (z. B. Claude, auch im Terminal).</p>
+          <textarea id="agent-prose" rows="4"
+            placeholder="z. B.: Füge den Begriff 'Bounded Context' zur Ontologie hinzu, verwandt mit der ubiquitären Sprache. Und markiere das Risiko risk-pflegekosten als mitigiert."></textarea>
+          <div class="agent-row">
+            <input id="agent-key" type="password" placeholder="Anthropic API-Key (optional, bleibt im Browser)">
+            <select id="agent-model">
+              <option value="claude-opus-4-8">Opus 4.8 (Standard)</option>
+              <option value="claude-sonnet-4-6">Sonnet 4.6 (günstiger)</option>
+              <option value="claude-haiku-4-5">Haiku 4.5 (am günstigsten)</option>
+            </select>
+          </div>
+          <div class="agent-row">
+            <button id="btn-agent-run">▶ Mit Claude ausführen</button>
+            <button id="btn-agent-prompt">⧉ Prompt für andere KI kopieren</button>
+          </div>
+          <div id="agent-status"></div>
+          <div id="agent-result" hidden>
+            <h4>Vorgeschlagene Änderungen</h4>
+            <p id="agent-summary"></p>
+            <div id="agent-changes"></div>
+            <div class="agent-row">
+              <button id="btn-agent-apply">✔ Anwenden</button>
+              <button id="btn-agent-discard" class="danger">✕ Verwerfen</button>
+            </div>
+          </div>
+          <details class="agent-paste">
+            <summary>Antwort einer anderen KI einfügen …</summary>
+            <textarea id="agent-paste" rows="4" placeholder='{"summary": "...", "upsert": [...], "delete": [...]}'></textarea>
+            <button id="btn-agent-parse">Prüfen & übernehmen</button>
+          </details>
         </div>
       </div>
     </section>

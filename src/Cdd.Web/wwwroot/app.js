@@ -2,6 +2,7 @@
 // Auf GitHub Pages (oder mit ?demo) läuft er ohne Backend gegen localStorage.
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 import { DEMO, demoApi, demoBanner } from "./demo.js";
+import { buildPrompt, callClaude, parseChanges, getApiKey, setApiKey } from "./agent.js";
 
 // Theme: Light (Visual-Studio-Look) ist Default, Dark optional, persistiert.
 const themeKey = "cdd-theme";
@@ -465,6 +466,111 @@ for (const t of document.querySelectorAll(".tab")) {
     $("#tab-" + t.dataset.tab).classList.add("active");
   };
 }
+// — Agent-Tab: Prosa → Modelländerung (direkt via Claude oder per Prompt) —
+let pendingChanges = null;
+
+function agentStatus(text, cls = "") {
+  const s = $("#agent-status");
+  s.textContent = text;
+  s.className = cls;
+}
+
+function showChanges(changes) {
+  pendingChanges = changes;
+  $("#agent-summary").textContent = changes.summary ?? "";
+  const list = $("#agent-changes");
+  list.innerHTML = "";
+  for (const e of changes.upsert) {
+    const exists = entries.some((x) => x.Id === e.Id);
+    const d = document.createElement("div");
+    d.className = "finding";
+    d.textContent = `${exists ? "ändern" : "neu"}: ${e.Id} (${kindOfCase(e.Payload?.Case ?? "?")})`;
+    list.appendChild(d);
+  }
+  for (const id of changes.delete) {
+    const d = document.createElement("div");
+    d.className = "finding Error";
+    d.textContent = `löschen: ${id}`;
+    list.appendChild(d);
+  }
+  $("#agent-result").hidden = false;
+}
+
+async function applyChanges() {
+  if (!pendingChanges) return;
+  let ok = 0;
+  const errors = [];
+  for (const e of pendingChanges.upsert) {
+    try {
+      await api("spot/" + encodeURIComponent(e.Id), { method: "PUT", body: JSON.stringify(e) });
+      ok++;
+    } catch (err) { errors.push(`${e.Id}: ${err.message}`); }
+  }
+  for (const id of pendingChanges.delete) {
+    try {
+      await api("spot/" + encodeURIComponent(id), { method: "DELETE" });
+      ok++;
+    } catch (err) { errors.push(`${id}: ${err.message}`); }
+  }
+  pendingChanges = null;
+  $("#agent-result").hidden = true;
+  agentStatus(
+    errors.length ? `${ok} Änderungen angewendet, ${errors.length} Fehler: ${errors.join("; ")}` : `✔ ${ok} Änderungen angewendet.`,
+    errors.length ? "error" : "ok",
+  );
+  await refresh();
+}
+
+$("#agent-key").value = getApiKey();
+$("#agent-key").onchange = (ev) => setApiKey(ev.target.value.trim());
+
+$("#btn-agent-prompt").onclick = async () => {
+  const prose = $("#agent-prose").value.trim();
+  if (!prose) return agentStatus("Bitte erst eine Änderung beschreiben.", "error");
+  await navigator.clipboard.writeText(buildPrompt(prose, dokuText));
+  agentStatus("Prompt kopiert ✔ — in eine KI einfügen, die JSON-Antwort unten einfügen.", "ok");
+};
+
+$("#btn-agent-run").onclick = async () => {
+  const prose = $("#agent-prose").value.trim();
+  const apiKey = $("#agent-key").value.trim();
+  if (!prose) return agentStatus("Bitte erst eine Änderung beschreiben.", "error");
+  if (!apiKey) return agentStatus("Für den Direktaufruf wird ein API-Key benötigt — alternativ den Prompt kopieren.", "error");
+  setApiKey(apiKey);
+  agentStatus("Claude arbeitet …");
+  $("#btn-agent-run").disabled = true;
+  try {
+    const changes = await callClaude({
+      apiKey,
+      model: $("#agent-model").value,
+      prose,
+      contextMd: dokuText,
+    });
+    agentStatus("Vorschlag erhalten — prüfen und anwenden.", "ok");
+    showChanges(changes);
+  } catch (err) {
+    agentStatus("Fehler: " + err.message, "error");
+  } finally {
+    $("#btn-agent-run").disabled = false;
+  }
+};
+
+$("#btn-agent-parse").onclick = () => {
+  try {
+    showChanges(parseChanges($("#agent-paste").value));
+    agentStatus("Antwort gelesen — prüfen und anwenden.", "ok");
+  } catch (err) {
+    agentStatus("Antwort nicht lesbar: " + err.message, "error");
+  }
+};
+
+$("#btn-agent-apply").onclick = applyChanges;
+$("#btn-agent-discard").onclick = () => {
+  pendingChanges = null;
+  $("#agent-result").hidden = true;
+  agentStatus("Verworfen.");
+};
+
 $("#btn-doku-download").onclick = () => {
   const blob = new Blob([dokuText], { type: "text/markdown" });
   const a = document.createElement("a");

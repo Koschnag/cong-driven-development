@@ -157,3 +157,21 @@ button.danger:hover { border-color: var(--diverged); color: var(--diverged); }
   padding: 12px; font: 12px/1.6 Consolas, ui-monospace, monospace;
   white-space: pre-wrap; word-break: break-word; margin: 0;
 }
+
+/* Agent-Tab */
+.agent-intro { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+#agent-prose, #agent-paste {
+  width: 100%; background: var(--input-bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 3px; padding: 8px;
+  font: 13px/1.5 "Segoe UI", system-ui, sans-serif; resize: vertical;
+}
+.agent-row { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+#agent-key { flex: 1; min-width: 200px; background: var(--input-bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 3px; padding: 4px 8px; font-size: 13px; }
+#agent-status { font-size: 12px; color: var(--muted); min-height: 20px; margin: 4px 0; }
+#agent-status.error { color: var(--diverged); }
+#agent-status.ok { color: var(--aligned); }
+#agent-result h4 { margin: 10px 0 6px; font-size: 13px; }
+.agent-paste { margin-top: 12px; font-size: 13px; }
+.agent-paste summary { color: var(--muted); cursor: pointer; }
+.agent-paste textarea { margin: 8px 0; }

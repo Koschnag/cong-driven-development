@@ -1,0 +1,20 @@
+{
+  "Id": "spec-agent-interface",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Agent-Interface",
+        "Intent": "Prosa-Eingaben werden durch eine KI in validierte Modell\u00E4nderungen \u00FCbersetzt",
+        "Criteria": [
+          {
+            "Given": "eine Prosa-Beschreibung einer Modell\u00E4nderung",
+            "When": "der Agent ausgef\u00FChrt wird (Claude direkt oder via kopiertem Prompt)",
+            "Then": "entsteht ein pr\u00FCfbarer \u00C4nderungsvorschlag (upsert/delete), der erst nach Best\u00E4tigung angewendet wird"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
