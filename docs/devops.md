@@ -131,6 +131,9 @@ neues PATCH-Release. Kein Überschreiben von Tags.
 
 `.github/dependabot.yml`: wöchentliche Updates für NuGet-Pakete und
 GitHub Actions, jeweils als PR durch die normale CI-Pipeline.
+`dependabot-automerge.yml` mergt minor/patch-Updates automatisch, sobald die
+Pflicht-Checks grün sind — Major-Updates bleiben offen und brauchen ein
+menschliches Review.
 
 ## 8. Einmaliges manuelles Setup (GitHub-Web-UI)
 
