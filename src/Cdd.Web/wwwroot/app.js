@@ -2,7 +2,15 @@
 // Auf GitHub Pages (oder mit ?demo) läuft er ohne Backend gegen localStorage.
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 import { DEMO, demoApi, demoBanner } from "./demo.js";
-mermaid.initialize({ startOnLoad: false, theme: "dark" });
+
+// Theme: Light (Visual-Studio-Look) ist Default, Dark optional, persistiert.
+const themeKey = "cdd-theme";
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem(themeKey, theme);
+  mermaid.initialize({ startOnLoad: false, theme: theme === "dark" ? "dark" : "default" });
+}
+applyTheme(localStorage.getItem(themeKey) ?? "light");
 if (DEMO) demoBanner();
 
 const $ = (s) => document.querySelector(s);
@@ -19,6 +27,8 @@ const templates = {
   decision:  { Case: "DecisionNode",  Fields: { Item: { Title: "", Context: "", Choice: "", Consequences: "", Supersedes: null } } },
   knowledge: { Case: "KnowledgeNode", Fields: { Item: { Title: "", Source: "", MediaType: "link", Takeaways: [] } } },
   tool:      { Case: "ToolNode",      Fields: { Item: { Name: "", Purpose: "", Endpoint: null } } },
+  term:      { Case: "TermNode",      Fields: { Item: { Name: "", Definition: "", Synonyms: [],
+                Relations: [{ Case: "RelatesTo", Fields: { Item: "term-anderer-begriff" } }] } } },
 };
 const kindOfCase = (c) => c.replace("Node", "").toLowerCase();
 const payloadData = (e) => e.Payload?.Fields?.Item ?? {};
@@ -37,6 +47,7 @@ async function refresh() {
   entries = await api("spot");
   renderSidebar();
   renderGraph();
+  renderUml();
   renderValidate();
   renderDrift();
 }
@@ -144,6 +155,37 @@ async function renderGraph() {
   }
 }
 
+// UML-Klassendiagramm aus der Ontologie (Term-Knoten der ubiquitären Sprache).
+async function renderUml() {
+  const terms = entries.filter((e) => e.Payload.Case === "TermNode");
+  const el = $("#uml");
+  if (!terms.length) {
+    el.innerHTML = "<p>Keine Begriffe im SPOT. Über „+ Begriff (Ontologie)“ anlegen — daraus entsteht hier das UML-Klassendiagramm der ubiquitären Sprache.</p>";
+    return;
+  }
+  const safe = (id) => id.replaceAll("-", "_");
+  const lines = ["classDiagram"];
+  for (const t of terms) {
+    const d = payloadData(t);
+    lines.push(`class ${safe(t.Id)}["${d.Name || t.Id}"]`);
+    for (const syn of d.Synonyms ?? []) lines.push(`${safe(t.Id)} : ${syn}`);
+    for (const r of d.Relations ?? []) {
+      const target = r.Fields?.Item;
+      if (!target) continue;
+      const a = safe(t.Id), b = safe(target);
+      if (r.Case === "IsA") lines.push(`${b} <|-- ${a} : ist ein`);
+      else if (r.Case === "PartOf") lines.push(`${b} *-- ${a} : Teil von`);
+      else lines.push(`${a} ..> ${b}`);
+    }
+  }
+  try {
+    const { svg } = await mermaid.render("umlDiagram", lines.join("\n"));
+    el.innerHTML = svg;
+  } catch {
+    el.textContent = "UML konnte nicht gerendert werden.";
+  }
+}
+
 async function renderValidate() {
   const findings = await api("validate");
   const el = $("#tab-validate");
@@ -183,6 +225,11 @@ $("#btn-save").onclick = save;
 $("#btn-delete").onclick = del;
 $("#btn-new").onclick = newNode;
 $("#btn-derive").onclick = deriveTests;
+$("#btn-theme").onclick = () => {
+  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+  renderGraph();
+  renderUml();
+};
 for (const t of document.querySelectorAll(".tab")) {
   t.onclick = () => {
     document.querySelectorAll(".tab, .tab-body").forEach((x) => x.classList.remove("active"));

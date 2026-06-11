@@ -51,6 +51,13 @@ module Validate =
                 | SpecNode _ -> Some e.Id
                 | _ -> None)
             |> Set.ofList
+        let termIds =
+            entries
+            |> List.choose (fun e ->
+                match e.Payload with
+                | TermNode _ -> Some e.Id
+                | _ -> None)
+            |> Set.ofList
         let cyclic = cyclicComponents entries
 
         [ for e in entries do
@@ -88,6 +95,18 @@ module Validate =
                 if k.Source.Trim() = "" then
                     yield { Severity = Warning; EntityId = e.Id
                             Message = "Knowledge-Quelle ohne Source (URL/Pfad/ISBN)" }
+            | TermNode t ->
+                if t.Definition.Trim() = "" then
+                    yield { Severity = Warning; EntityId = e.Id
+                            Message = "Begriff ohne Definition — ubiquitäre Sprache braucht Bedeutung" }
+                for rel in t.Relations do
+                    let target = relationTarget rel
+                    if target = e.Id then
+                        yield { Severity = Error; EntityId = e.Id
+                                Message = "Begriff bezieht sich auf sich selbst" }
+                    elif not (Set.contains target termIds) then
+                        yield { Severity = Error; EntityId = e.Id
+                                Message = sprintf "Term-Beziehung zeigt auf '%s' — kein existierender Begriff" (idValue target) }
             | PremiseNode _ | ToolNode _ | InfraNode _ -> ()
 
             match e.Convergence with

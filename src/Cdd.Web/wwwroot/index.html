@@ -19,9 +19,11 @@
         <option value="decision">+ Entscheidung</option>
         <option value="knowledge">+ Knowledge</option>
         <option value="tool">+ Tool</option>
+        <option value="term">+ Begriff (Ontologie)</option>
       </select>
       <button id="btn-new">Neu</button>
       <button id="btn-derive">Tests ableiten</button>
+      <button id="btn-theme" title="Light/Dark umschalten">🌓</button>
       <button id="btn-refresh">↻</button>
     </div>
   </header>
@@ -45,10 +47,12 @@
     <section id="panels">
       <div class="tabs">
         <button class="tab active" data-tab="graph">Graph</button>
+        <button class="tab" data-tab="uml">UML</button>
         <button class="tab" data-tab="validate">Validierung</button>
         <button class="tab" data-tab="drift">Drift</button>
       </div>
       <div id="tab-graph" class="tab-body active"><div id="graph"></div></div>
+      <div id="tab-uml" class="tab-body"><div id="uml"></div></div>
       <div id="tab-validate" class="tab-body"></div>
       <div id="tab-drift" class="tab-body"></div>
     </section>

@@ -114,6 +114,33 @@ let ``validate flags decision superseding unknown node`` () =
     Assert.NotEmpty(Validate.validate entries |> Validate.errors)
 
 [<Fact>]
+let ``term nodes round-trip with relations`` () =
+    let entries =
+        [ { Id = EntityId "term-a"; Convergence = Aligned
+            Payload = TermNode { Name = "A"; Definition = "d"; Synonyms = [ "x" ]
+                                 Relations = [ IsA(EntityId "term-b"); PartOf(EntityId "term-b") ] } }
+          { Id = EntityId "term-b"; Convergence = Aligned
+            Payload = TermNode { Name = "B"; Definition = "d"; Synonyms = []; Relations = [] } } ]
+    let restored = entries |> List.map (Json.serialize >> Json.deserialize<SpotEntry>)
+    Assert.Equal<SpotEntry list>(entries, restored)
+    Assert.Empty(Validate.validate entries |> Validate.errors)
+
+[<Fact>]
+let ``validate flags term relation to unknown term`` () =
+    let entries =
+        [ { Id = EntityId "term-a"; Convergence = Pending
+            Payload = TermNode { Name = "A"; Definition = "d"; Synonyms = []
+                                 Relations = [ RelatesTo(EntityId "ghost") ] } } ]
+    Assert.NotEmpty(Validate.validate entries |> Validate.errors)
+
+[<Fact>]
+let ``validate warns on term without definition`` () =
+    let entries =
+        [ { Id = EntityId "term-a"; Convergence = Pending
+            Payload = TermNode { Name = "A"; Definition = " "; Synonyms = []; Relations = [] } } ]
+    Assert.NotEmpty(Validate.validate entries |> Validate.warnings)
+
+[<Fact>]
 let ``store rejects path-traversal ids`` () =
     Assert.False(Store.isValidId (EntityId "../evil"))
     Assert.False(Store.isValidId (EntityId "a/b"))
