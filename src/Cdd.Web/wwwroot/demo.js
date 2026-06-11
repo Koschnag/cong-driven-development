@@ -21,6 +21,18 @@ const seed = [
       Likelihood: "Medium", Impact: "High", Mitigation: "Rate-Limiting + Account-Lockout" } } } },
   { Id: "comp-auth", Convergence: "Pending",
     Payload: { Case: "ComponentNode", Fields: { Item: { Name: "AuthService", DependsOn: ["spec-login"] } } } },
+  { Id: "term-nutzer", Convergence: "Aligned",
+    Payload: { Case: "TermNode", Fields: { Item: {
+      Name: "Nutzer", Definition: "Person mit registriertem Konto, die sich authentifizieren kann",
+      Synonyms: ["User", "Account-Inhaber"], Relations: [] } } } },
+  { Id: "term-session", Convergence: "Aligned",
+    Payload: { Case: "TermNode", Fields: { Item: {
+      Name: "Session", Definition: "Zeitlich begrenzter, authentifizierter Zugriffskontext eines Nutzers",
+      Synonyms: ["Sitzung"], Relations: [{ Case: "RelatesTo", Fields: { Item: "term-nutzer" } }] } } } },
+  { Id: "term-credential", Convergence: "Aligned",
+    Payload: { Case: "TermNode", Fields: { Item: {
+      Name: "Credential", Definition: "Nachweis zur Authentifizierung, z. B. E-Mail + Passwort",
+      Synonyms: [], Relations: [{ Case: "PartOf", Fields: { Item: "term-nutzer" } }] } } } },
 ];
 
 const load = () => JSON.parse(localStorage.getItem(KEY) ?? "null") ?? structuredClone(seed);
@@ -57,6 +69,16 @@ function validate(es) {
       case "KnowledgeNode":
         if (!d.Source?.trim()) f("Warning", e.Id, "Knowledge-Quelle ohne Source (URL/Pfad/ISBN)");
         break;
+      case "TermNode": {
+        if (!d.Definition?.trim()) f("Warning", e.Id, "Begriff ohne Definition — ubiquitäre Sprache braucht Bedeutung");
+        const termIds = new Set(es.filter((x) => x.Payload.Case === "TermNode").map((x) => x.Id));
+        for (const r of d.Relations ?? []) {
+          const target = r.Fields?.Item;
+          if (target === e.Id) f("Error", e.Id, "Begriff bezieht sich auf sich selbst");
+          else if (!termIds.has(target)) f("Error", e.Id, `Term-Beziehung zeigt auf '${target}' — kein existierender Begriff`);
+        }
+        break;
+      }
     }
     if (e.Convergence === "Orphaned") f("Warning", e.Id, "Orphaned: Code ohne Modell");
     if (e.Convergence === "Diverged") f("Warning", e.Id, "Diverged: Implementierung weicht vom Modell ab");

@@ -83,6 +83,20 @@ module Spot =
           Purpose  : string
           Endpoint : string option }
 
+    /// Beziehung zwischen Begriffen der Ontologie (UML-abbildbar).
+    type TermRelation =
+        | IsA       of EntityId   // Generalisierung:  Ziel <|-- Begriff
+        | PartOf    of EntityId   // Komposition:      Ziel *-- Begriff
+        | RelatesTo of EntityId   // Assoziation:      Begriff ..> Ziel
+
+    /// Begriff der ubiquitären Sprache — ein Knoten der Projekt-Ontologie.
+    /// Fachseite und Technik sprechen über dieselben, hier definierten Worte.
+    type Term =
+        { Name       : string
+          Definition : string
+          Synonyms   : string list
+          Relations  : TermRelation list }
+
     /// Die Nutzlast eines SPOT-Knotens. Erweiterbar, sobald neue Knotenarten entstehen.
     type Payload =
         | SpecNode      of Spec
@@ -94,6 +108,7 @@ module Spot =
         | DecisionNode  of Decision
         | KnowledgeNode of Knowledge
         | ToolNode      of Tool
+        | TermNode      of Term
 
     /// Ein Knoten im SPOT-Graph: Identität + Nutzlast + Konvergenzstatus.
     type SpotEntry =
@@ -116,3 +131,8 @@ module Spot =
         | DecisionNode _  -> "decision"
         | KnowledgeNode _ -> "knowledge"
         | ToolNode _      -> "tool"
+        | TermNode _      -> "term"
+
+    /// Ziel-Id einer Term-Beziehung.
+    let relationTarget = function
+        | IsA id | PartOf id | RelatesTo id -> id

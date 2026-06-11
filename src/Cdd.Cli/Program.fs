@@ -43,7 +43,31 @@ let private seed : SpotEntry list =
         Payload =
           ComponentNode
             { Name = "AuthService"
-              DependsOn = [ EntityId "spec-login" ] } } ]
+              DependsOn = [ EntityId "spec-login" ] } }
+      { Id = EntityId "term-nutzer"
+        Convergence = Aligned
+        Payload =
+          TermNode
+            { Name = "Nutzer"
+              Definition = "Person mit registriertem Konto, die sich authentifizieren kann"
+              Synonyms = [ "User"; "Account-Inhaber" ]
+              Relations = [] } }
+      { Id = EntityId "term-session"
+        Convergence = Aligned
+        Payload =
+          TermNode
+            { Name = "Session"
+              Definition = "Zeitlich begrenzter, authentifizierter Zugriffskontext eines Nutzers"
+              Synonyms = [ "Sitzung" ]
+              Relations = [ RelatesTo(EntityId "term-nutzer") ] } }
+      { Id = EntityId "term-credential"
+        Convergence = Aligned
+        Payload =
+          TermNode
+            { Name = "Credential"
+              Definition = "Nachweis zur Authentifizierung, z. B. E-Mail + Passwort"
+              Synonyms = []
+              Relations = [ PartOf(EntityId "term-nutzer") ] } } ]
 
 let private cmdInit () =
     if Store.exists root then

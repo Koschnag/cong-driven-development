@@ -91,17 +91,21 @@ Weitere Wege (alle GitHub-nativ):
 dotnet run --project src/Cdd.Web -- --root . --urls http://localhost:5179
 ```
 
-Knoten anlegen/editieren/löschen, Graph-Ansicht (Mermaid), Validierungs- und
-Drift-Report, Test-Ableitung per Klick. Knotenarten: Spec, Test, Risk, Infra,
-Component, **Prämisse, Entscheidung (ADR), Knowledge-Quelle, Tool** — alles
-Abbildungen desselben SPOT.
+Knoten anlegen/editieren/löschen, **multidimensionale Sichten** auf denselben
+SPOT: Abhängigkeits-Graph, **UML-Klassendiagramm der Ontologie**, Validierung,
+Drift-Report — plus Test-Ableitung per Klick und Light/Dark-Theme
+(Light im Visual-Studio-Look). Knotenarten: Spec, Test, Risk, Infra, Component,
+Prämisse, Entscheidung (ADR), Knowledge-Quelle, Tool und **Begriff** —
+die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Beziehungen.
 
 ## Status
 
 **v0.2.** Cockpit-Slice steht:
 
 - ✅ SPOT-Modell als F#-Discriminated-Union (Spec, Test, Risk, Infra, Component,
-  Premise, Decision/ADR, Knowledge, Tool)
+  Premise, Decision/ADR, Knowledge, Tool, Term/Ontologie)
+- ✅ Ubiquitäre Sprache: Begriffe mit Definition, Synonymen und UML-Beziehungen
+  (Generalisierung, Komposition, Assoziation), als Klassendiagramm gerendert
 - ✅ SPOT-Persistenz (JSON-pro-Entity unter `.spot/`, Id-Sanitization gegen Path-Traversal)
 - ✅ CLI: `cdd init|list|validate|diff|derive-tests`
 - ✅ Web-Cockpit: REST-API + GUI (Editor, Mermaid-Graph, Validierung, Drift)
