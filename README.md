@@ -1,6 +1,8 @@
 # cong-driven-development (CDD)
 
 [![CI](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml/badge.svg)](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Koschnag/cong-driven-development)](https://github.com/Koschnag/cong-driven-development/releases/latest)
+[![Live-Demo](https://img.shields.io/badge/Demo-koschnag.github.io-4ea1ff)](https://koschnag.github.io/cong-driven-development/)
 [![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-brightgreen.svg)](LICENSE)
 
 > **Vision:** AI-natives Software-Entwicklungs-Framework, das Modell, Spezifikation,
