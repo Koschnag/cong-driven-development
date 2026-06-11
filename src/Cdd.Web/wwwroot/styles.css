@@ -175,3 +175,40 @@ button.danger:hover { border-color: var(--diverged); color: var(--diverged); }
 .agent-paste { margin-top: 12px; font-size: 13px; }
 .agent-paste summary { color: var(--muted); cursor: pointer; }
 .agent-paste textarea { margin: 8px 0; }
+
+/* Cube-Bar (Slice/Dice/Drill-down) */
+#cube-bar {
+  flex: none; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 4px 8px; background: var(--panel); border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.cube-label { font-size: 14px; }
+.cube-sep { width: 1px; height: 16px; background: var(--border); }
+.cube-focus { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+#focus-depth { padding: 2px 6px; font-size: 12px; }
+.chip-row { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 1px 8px; border-radius: 10px;
+  background: var(--input-bg); color: var(--muted);
+  border: 1px solid var(--border); cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip.active .dot { outline: 1px solid #fff; }
+.chip.link { color: var(--fg); }
+.chip.link:hover { color: var(--accent); }
+
+/* Inspektor (Modell-Debugger) */
+#inspector { flex: 1; overflow: auto; padding: 12px; font-size: 13px; }
+.insp-hint { color: var(--muted); }
+.insp-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.insp-field { margin: 4px 0; }
+.insp-crit { font: 12px/1.5 Consolas, ui-monospace, monospace; color: var(--muted); }
+#inspector h4 { margin: 12px 0 6px; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--muted); }
+.editor-nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.editor-nav h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor-nav button { padding: 2px 8px; }
+button.mode { padding: 4px 8px; color: var(--muted); }
+button.mode.active { border-color: var(--accent); color: var(--accent); }
