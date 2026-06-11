@@ -43,6 +43,9 @@ jobs:
           $cli validate
           $cli diff
 
+      - name: Selbstmodell validieren (CDD prüft CDD)
+        run: dotnet run -c Release --no-build --project src/Cdd.Cli -- validate
+
       - name: Testergebnisse hochladen
         if: always()
         uses: actions/upload-artifact@v7

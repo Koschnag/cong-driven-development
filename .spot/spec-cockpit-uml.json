@@ -1,0 +1,20 @@
+{
+  "Id": "spec-cockpit-uml",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Multidimensionale Sicht",
+        "Intent": "Ein Modell, mehrere Projektionen \u2014 Graph und UML aus demselben SPOT",
+        "Criteria": [
+          {
+            "Given": "Begriffe mit IsA/PartOf/RelatesTo-Beziehungen",
+            "When": "der UML-Tab ge\u00F6ffnet wird",
+            "Then": "erscheint ein Klassendiagramm mit Generalisierung, Komposition und Assoziation"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

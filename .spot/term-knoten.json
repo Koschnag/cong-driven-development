@@ -1,0 +1,25 @@
+{
+  "Id": "term-knoten",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Knoten",
+        "Definition": "Eintrag im SPOT-Graphen mit Identit\u00E4t, Nutzlast und Konvergenz-Status",
+        "Synonyms": [
+          "Entry",
+          "Node"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

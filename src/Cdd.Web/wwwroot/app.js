@@ -16,6 +16,7 @@ if (DEMO) demoBanner();
 const $ = (s) => document.querySelector(s);
 let entries = [];
 let selectedId = null;
+let filterText = "";
 
 // Payload-Vorlagen für neue Knoten (Server-Form: { Case, Fields: { Item } })
 const templates = {
@@ -53,10 +54,14 @@ async function refresh() {
 }
 
 function renderSidebar() {
+  const q = filterText.toLowerCase();
+  const visible = entries.filter((e) =>
+    !q || e.Id.toLowerCase().includes(q) || kindOfCase(e.Payload.Case).includes(q) ||
+    JSON.stringify(payloadData(e)).toLowerCase().includes(q));
   const groups = {};
-  for (const e of entries) (groups[kindOfCase(e.Payload.Case)] ??= []).push(e);
-  const nav = $("#sidebar");
-  nav.innerHTML = "";
+  for (const e of visible) (groups[kindOfCase(e.Payload.Case)] ??= []).push(e);
+  const nav = $("#node-list");
+  nav.innerHTML = Object.keys(groups).length ? "" : "<p style='padding:8px;color:var(--muted)'>Kein Treffer.</p>";
   for (const kind of Object.keys(groups).sort()) {
     const h = document.createElement("h3");
     h.textContent = `${kind} (${groups[kind].length})`;
@@ -132,6 +137,17 @@ async function deriveTests() {
 
 // — Panels —
 
+// Klick auf einen Diagramm-Knoten selektiert ihn im Editor.
+function wireDiagramClicks(container) {
+  const byUnderscore = new Map(entries.map((e) => [e.Id.replaceAll("-", "_"), e.Id]));
+  for (const node of container.querySelectorAll("g.node, g.nodes > g")) {
+    const hit = [...byUnderscore.keys()].find((k) => node.id?.includes(k));
+    if (!hit) continue;
+    node.style.cursor = "pointer";
+    node.addEventListener("click", () => select(byUnderscore.get(hit)));
+  }
+}
+
 async function renderGraph() {
   const lines = ["graph LR"];
   const safe = (id) => id.replaceAll("-", "_");
@@ -150,6 +166,7 @@ async function renderGraph() {
   try {
     const { svg } = await mermaid.render("spotGraph", lines.join("\n"));
     $("#graph").innerHTML = svg;
+    wireDiagramClicks($("#graph"));
   } catch {
     $("#graph").textContent = "Graph konnte nicht gerendert werden.";
   }
@@ -181,6 +198,7 @@ async function renderUml() {
   try {
     const { svg } = await mermaid.render("umlDiagram", lines.join("\n"));
     el.innerHTML = svg;
+    wireDiagramClicks(el);
   } catch {
     el.textContent = "UML konnte nicht gerendert werden.";
   }
@@ -189,6 +207,8 @@ async function renderUml() {
 async function renderValidate() {
   const findings = await api("validate");
   const el = $("#tab-validate");
+  document.querySelector('[data-tab="validate"]').textContent =
+    findings.length ? `Validierung (${findings.length})` : "Validierung";
   el.innerHTML = findings.length ? "" : "<p>✔ Keine Befunde.</p>";
   for (const f of findings) {
     const d = document.createElement("div");
@@ -203,6 +223,9 @@ async function renderValidate() {
 async function renderDrift() {
   const r = await api("diff");
   const el = $("#tab-drift");
+  const drifting = r.Pending.length + r.Diverged.length + r.Orphaned.length;
+  document.querySelector('[data-tab="drift"]').textContent =
+    drifting ? `Drift (${drifting})` : "Drift";
   el.innerHTML = "";
   for (const key of ["Aligned", "Pending", "Diverged", "Orphaned"]) {
     const g = document.createElement("div");
@@ -237,5 +260,15 @@ for (const t of document.querySelectorAll(".tab")) {
     $("#tab-" + t.dataset.tab).classList.add("active");
   };
 }
+$("#filter").oninput = (ev) => {
+  filterText = ev.target.value;
+  renderSidebar();
+};
+document.addEventListener("keydown", (ev) => {
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
+    ev.preventDefault();
+    if (!$("#btn-save").disabled) save();
+  }
+});
 
 refresh().catch((e) => setMsg("API nicht erreichbar: " + e.message, "error"));

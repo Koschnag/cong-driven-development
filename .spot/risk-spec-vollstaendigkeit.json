@@ -1,0 +1,15 @@
+{
+  "Id": "risk-spec-vollstaendigkeit",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Spec-Vollst\u00E4ndigkeits-Falle: die Spec wird so komplex wie Code",
+        "Likelihood": "Medium",
+        "Impact": "High",
+        "Mitigation": "Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents f\u00FCllen L\u00FCcken, Validierung f\u00E4ngt Drift"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

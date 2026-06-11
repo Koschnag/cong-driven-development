@@ -1,0 +1,24 @@
+{
+  "Id": "term-agent",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Agent",
+        "Definition": "LLM-gest\u00FCtzter Worker, der aus dem SPOT Implementierung, Tests und Doku ableitet",
+        "Synonyms": [
+          "AI-Agent"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

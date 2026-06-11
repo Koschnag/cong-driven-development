@@ -1,0 +1,14 @@
+{
+  "Id": "spec-export-context-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-export-context",
+        "Name": "LLM-Kontextexport \u2014 when es einem LLM als Kontext \u00FCbergeben wird then kann es Implementierungsaufgaben ohne R\u00FCckfragen zur Dom\u00E4nensprache bearbeiten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

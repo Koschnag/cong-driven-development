@@ -1,0 +1,16 @@
+{
+  "Id": "adr-001-fsharp",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "F# f\u00FCr die Domain",
+        "Context": "Das SPOT-Modell braucht Summen-Typen, Pattern-Matching und Unver\u00E4nderlichkeit",
+        "Choice": "F# mit Discriminated Unions als Modellsprache; C# nur f\u00FCr IO-Adapter",
+        "Consequences": "Kleinere Community, daf\u00FCr beweisbar korrektere Modelle und Lean-4-Anschlussf\u00E4higkeit",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
