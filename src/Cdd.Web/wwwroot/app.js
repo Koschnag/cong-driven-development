@@ -1,6 +1,9 @@
 // CDD Cockpit — dünner Client über der SPOT-API. Kein Framework, kein Build-Schritt.
+// Auf GitHub Pages (oder mit ?demo) läuft er ohne Backend gegen localStorage.
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+import { DEMO, demoApi, demoBanner } from "./demo.js";
 mermaid.initialize({ startOnLoad: false, theme: "dark" });
+if (DEMO) demoBanner();
 
 const $ = (s) => document.querySelector(s);
 let entries = [];
@@ -21,6 +24,7 @@ const kindOfCase = (c) => c.replace("Node", "").toLowerCase();
 const payloadData = (e) => e.Payload?.Fields?.Item ?? {};
 
 async function api(path, opts) {
+  if (DEMO) return demoApi(path, opts);
   const res = await fetch("/api/" + path, opts);
   if (res.status === 204) return null;
   const text = await res.text();

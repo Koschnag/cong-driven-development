@@ -75,12 +75,13 @@ diffbar, mergebar.
 
 ### Demo
 
-Die jeweils neueste `main`-Version läuft als Demo auf der Projekt-VM:
-**http://cdd.cong42.de** *(derzeit nur im privaten Tailnet erreichbar)*.
-Alternativ ohne eigene Installation: Repo in **GitHub Codespaces** öffnen
-(devcontainer ist konfiguriert), `dotnet run --project src/Cdd.Web` — der
-Port wird automatisch weitergeleitet. Container-Image:
-`docker run -p 8080:8080 -v $PWD/.spot-demo:/data ghcr.io/koschnag/cdd:latest`
+**▶ Sofort im Browser testen:** https://koschnag.github.io/cong-driven-development/
+(Cockpit im Demo-Modus — Daten bleiben im localStorage deines Browsers).
+
+Weitere Wege:
+- **Codespaces:** Repo öffnen (devcontainer konfiguriert), `dotnet run --project src/Cdd.Web`
+- **Container:** `docker run -p 8080:8080 -v $PWD/.spot-demo:/data ghcr.io/koschnag/cdd:latest`
+- **VM-Demo** (privates Tailnet, immer neueste `main`): http://cdd.cong42.de
 
 ### Cockpit (Web-GUI)
 
