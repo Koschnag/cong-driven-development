@@ -16,9 +16,25 @@
       </div>
       <button id="btn-derive">Tests ableiten</button>
       <button id="btn-theme" title="Light/Dark umschalten">🌓</button>
+      <button id="btn-help" title="Hilfe">?</button>
       <button id="btn-refresh" title="Neu laden">↻</button>
     </div>
   </header>
+
+  <div id="help-overlay" hidden>
+    <div class="help-box">
+      <h3>So funktioniert das Cockpit</h3>
+      <ol>
+        <li><b>🧰 Toolbox:</b> Knotenart anklicken → Formular ausfüllen → Speichern. Fertig.</li>
+        <li><b>📋 SPOT-Explorer:</b> Alle Knoten, filterbar. Klick öffnet den Inspektor.</li>
+        <li><b>🔍 Inspektor:</b> Lesen &amp; springen — Verlinkungen anklicken, ←/→ wie im Browser. <b>✏️ Bearbeiten</b> öffnet das Formular.</li>
+        <li><b>🧊 Cube-Bar:</b> Filter-Chips (Art, Status) + <b>Fokus</b> = nur die Nachbarschaft des gewählten Knotens in Graph/UML.</li>
+        <li><b>Sichten:</b> Dashboard (Überblick) · Graph &amp; UML (Diagramme, klickbar) · Doku (generiert, für KI kopierbar) · 🤖 Agent (Änderungen in Prosa beschreiben).</li>
+      </ol>
+      <p class="insp-hint">Farben: <span class="dot Aligned"></span> umgesetzt · <span class="dot Pending"></span> offen · <span class="dot Diverged"></span> abweichend · <span class="dot Orphaned"></span> ohne Modell</p>
+      <button id="btn-help-close">Verstanden</button>
+    </div>
+  </div>
 
   <main id="layout">
     <aside id="toolbox" class="panel" data-panel="toolbox" data-title="Toolbox">
@@ -43,13 +59,15 @@
           <h2 id="editor-title">Kein Knoten gewählt</h2>
         </div>
         <div>
-          <button id="btn-mode-inspect" class="mode active" title="Inspektor">🔍</button>
-          <button id="btn-mode-json" class="mode" title="JSON bearbeiten">{ }</button>
+          <button id="btn-mode-inspect" class="mode active" title="Inspektor (lesen & navigieren)">🔍</button>
+          <button id="btn-mode-form" class="mode" title="Formular (bearbeiten)">✏️</button>
+          <button id="btn-mode-json" class="mode" title="JSON (Experten-Modus)">{ }</button>
           <button id="btn-save" disabled>Speichern</button>
           <button id="btn-delete" class="danger" disabled>Löschen</button>
         </div>
       </div>
       <div id="inspector"></div>
+      <div id="editor-form" hidden></div>
       <textarea id="editor-json" spellcheck="false" hidden
         placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
       <div id="editor-msg"></div>

@@ -1,0 +1,20 @@
+{
+  "Id": "spec-form-editor",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Formular-Editor",
+        "Intent": "Knoten werden \u00FCber Eingabefelder gepflegt \u2014 JSON ist Experten-Option, nicht Voraussetzung",
+        "Criteria": [
+          {
+            "Given": "eine Knotenart aus der Toolbox",
+            "When": "ein neuer Knoten angelegt wird",
+            "Then": "\u00F6ffnet sich ein Formular mit passenden Feldern und Dropdowns f\u00FCr Referenzen"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

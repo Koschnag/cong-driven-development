@@ -144,6 +144,15 @@ let entries =
                   When = "Graph oder UML gerendert werden"
                   Then = "zeigen sie nur die gefilterte Teilmenge bzw. die N-Hop-Nachbarschaft" } ] } }
 
+      { Id = EntityId "spec-form-editor"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Formular-Editor"
+            Intent = "Knoten werden über Eingabefelder gepflegt — JSON ist Experten-Option, nicht Voraussetzung"
+            Criteria =
+              [ { Given = "eine Knotenart aus der Toolbox"
+                  When = "ein neuer Knoten angelegt wird"
+                  Then = "öffnet sich ein Formular mit passenden Feldern und Dropdowns für Referenzen" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode
