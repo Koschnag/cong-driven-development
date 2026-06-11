@@ -1,0 +1,14 @@
+{
+  "Id": "spec-vs2015-ea-layout-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-vs2015-ea-layout",
+        "Name": "VS2015-Design mit EA-Anatomie \u2014 when ein Knoten gew\u00E4hlt ist then zeigen Diagramme als zentrales Dokument, Eigenschaften rechts und die blaue Statusleiste Auswahl, Z\u00E4hler und Validierungsstand",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

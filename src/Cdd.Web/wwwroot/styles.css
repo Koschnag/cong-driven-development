@@ -1,16 +1,16 @@
 /* Default: Light Mode im Visual-Studio-Look. Dark via [data-theme="dark"]. */
 :root {
   --bg: #ffffff; --panel: #f3f3f3; --border: #cccedb;
-  --fg: #1e1e1e; --muted: #616161; --accent: #005fb8;
-  --input-bg: #ffffff; --hover: #e8e8e8; --titlebar: #005fb8; --titlebar-fg: #ffffff;
-  --paneltitle: #e6e7e8;
+  --fg: #1e1e1e; --muted: #616161; --accent: #007acc;
+  --input-bg: #ffffff; --hover: #c9def5; --titlebar: #eeeef2; --titlebar-fg: #1e1e1e;
+  --paneltitle: #e6e7e8; --statusbar: #007acc; --accent: #007acc;
   --aligned: #1a7f37; --pending: #9a6700; --diverged: #cf222e; --orphaned: #8250df;
 }
 [data-theme="dark"] {
   --bg: #0f1419; --panel: #161c24; --border: #2a3442;
   --fg: #d8e1ec; --muted: #7f8da0; --accent: #4ea1ff;
   --input-bg: #1f2937; --hover: #1f2937; --titlebar: #161c24; --titlebar-fg: #d8e1ec;
-  --paneltitle: #1c2530;
+  --paneltitle: #1c2530; --statusbar: #007acc;
   --aligned: #3fb950; --pending: #d29922; --diverged: #f85149; --orphaned: #a371f7;
 }
 * { box-sizing: border-box; }
@@ -21,8 +21,13 @@ body {
 }
 header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 16px; background: var(--titlebar); color: var(--titlebar-fg);
+  padding: 3px 12px; background: var(--titlebar); color: var(--titlebar-fg);
+  border-bottom: 1px solid var(--border);
 }
+header .toolbar button, header .toolbar select {
+  border-color: transparent; background: transparent; color: var(--titlebar-fg);
+}
+header .toolbar button:hover { background: var(--hover); border-color: var(--hover); }
 h1 { font-size: 16px; margin: 0; font-weight: 600; } h1 span { font-weight: 300; opacity: .85; }
 .toolbar { display: flex; gap: 8px; }
 button, select {
@@ -102,7 +107,7 @@ button.danger:hover { border-color: var(--diverged); color: var(--diverged); }
 .dot.Diverged { background: var(--diverged); } .dot.Orphaned { background: var(--orphaned); }
 
 /* Editor */
-#editor { flex: 1 1 0; }
+#editor { flex: none; width: 340px; border-left: 1px solid var(--border); }
 .editor-head {
   flex: none; display: flex; justify-content: space-between; align-items: center;
   padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--panel);
@@ -118,10 +123,11 @@ button.danger:hover { border-color: var(--diverged); color: var(--diverged); }
 #editor-msg.ok { color: var(--aligned); }
 
 /* Sichten */
-#panels { flex: none; width: 44%; }
+#panels { flex: 1 1 0; }
 .tabs { flex: none; display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 8px; background: var(--panel); overflow-x: auto; }
-.tab { border: none; background: none; padding: 7px 14px; color: var(--muted); border-radius: 0; white-space: nowrap; }
-.tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); font-weight: 600; }
+.tab { border: none; background: none; padding: 6px 14px; color: var(--fg); border-radius: 0; white-space: nowrap; }
+.tab:hover:not(.active) { background: var(--hover); }
+.tab.active { background: var(--accent); color: #fff; font-weight: 400; }
 .tab-scroll { flex: 1; overflow: auto; }
 .tab-body { display: none; padding: 12px; }
 .tab-body.active { display: block; }
@@ -250,3 +256,13 @@ textarea.f-input { resize: vertical; font-family: inherit; }
 .help-box ol { margin: 0 0 10px; padding-left: 20px; }
 .help-box li { margin-bottom: 6px; }
 .help-box .dot { display: inline-block; vertical-align: middle; }
+
+
+/* Statusleiste — VS2015 */
+#statusbar {
+  flex: none; display: flex; align-items: center; gap: 16px;
+  background: var(--statusbar); color: #fff;
+  padding: 2px 12px; font-size: 12px; min-height: 22px;
+}
+#statusbar .sb-spacer { flex: 1; }
+#sb-validate.error { font-weight: 600; }

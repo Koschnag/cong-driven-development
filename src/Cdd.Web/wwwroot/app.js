@@ -63,6 +63,22 @@ async function refresh() {
   renderValidate();
   renderDrift();
   renderDoku();
+  renderStatusbar();
+}
+
+// — Statusleiste (VS2015): Auswahl, Zähler, Validierungsstand —
+function renderStatusbar() {
+  const conv = { Aligned: 0, Pending: 0, Diverged: 0, Orphaned: 0 };
+  for (const e of entries) conv[e.Convergence] = (conv[e.Convergence] ?? 0) + 1;
+  $("#sb-counts").textContent =
+    `${entries.length} Knoten · ${conv.Aligned} ✓ · ${conv.Pending} offen` +
+    (conv.Diverged ? ` · ${conv.Diverged} abweichend` : "");
+  const errors = lastFindings.filter((f) => f.Severity === "Error").length;
+  const warns = lastFindings.length - errors;
+  const v = $("#sb-validate");
+  v.textContent = errors ? `❌ ${errors} Fehler` : warns ? `⚠ ${warns} Warnungen` : "✓ Modell konsistent";
+  v.className = errors ? "error" : "";
+  $("#sb-sel").textContent = selectedId ? `▸ ${selectedId}` : "";
 }
 
 // Re-Render aller Sichten nach Slice/Dice/Fokus-Änderung (ohne Daten neu zu laden).
@@ -230,6 +246,7 @@ function select(id, opts = {}) {
   setMsg("");
   updateHistButtons();
   setEditorMode(editorMode); // Formular/JSON auf neue Auswahl umbauen
+  renderStatusbar();
   renderInspector();
   renderSidebar();
   if (cube.focus) { renderGraph(); renderUml(); }
@@ -530,6 +547,7 @@ async function renderValidate() {
   const findings = await api("validate");
   lastFindings = findings;
   renderInspector();
+  renderStatusbar();
   const el = $("#tab-validate");
   document.querySelector('[data-tab="validate"]').textContent =
     findings.length ? `Validierung (${findings.length})` : "Validierung";

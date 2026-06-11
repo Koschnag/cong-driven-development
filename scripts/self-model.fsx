@@ -153,6 +153,15 @@ let entries =
                   When = "ein neuer Knoten angelegt wird"
                   Then = "öffnet sich ein Formular mit passenden Feldern und Dropdowns für Referenzen" } ] } }
 
+      { Id = EntityId "spec-vs2015-ea-layout"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "VS2015-Design mit EA-Anatomie"
+            Intent = "Das Cockpit folgt Visual Studio 2015 (Chrome) und Enterprise Architect (Fensteranordnung)"
+            Criteria =
+              [ { Given = "das geöffnete Cockpit"
+                  When = "ein Knoten gewählt ist"
+                  Then = "zeigen Diagramme als zentrales Dokument, Eigenschaften rechts und die blaue Statusleiste Auswahl, Zähler und Validierungsstand" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode
