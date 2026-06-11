@@ -51,29 +51,6 @@
     </nav>
     <div class="splitter" data-resize="explorer"></div>
 
-    <section id="editor" class="panel" data-panel="editor" data-title="Editor">
-      <div class="editor-head">
-        <div class="editor-nav">
-          <button id="btn-back" title="Zurück (Navigations-Historie)" disabled>←</button>
-          <button id="btn-fwd" title="Vor" disabled>→</button>
-          <h2 id="editor-title">Kein Knoten gewählt</h2>
-        </div>
-        <div>
-          <button id="btn-mode-inspect" class="mode active" title="Inspektor (lesen & navigieren)">🔍</button>
-          <button id="btn-mode-form" class="mode" title="Formular (bearbeiten)">✏️</button>
-          <button id="btn-mode-json" class="mode" title="JSON (Experten-Modus)">{ }</button>
-          <button id="btn-save" disabled>Speichern</button>
-          <button id="btn-delete" class="danger" disabled>Löschen</button>
-        </div>
-      </div>
-      <div id="inspector"></div>
-      <div id="editor-form" hidden></div>
-      <textarea id="editor-json" spellcheck="false" hidden
-        placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
-      <div id="editor-msg"></div>
-    </section>
-    <div class="splitter" data-resize="views" data-inverse="true"></div>
-
     <section id="panels" class="panel" data-panel="views" data-title="Sichten">
       <div class="panel-title">Sichten <button class="panel-close" title="Ausblenden">✕</button></div>
       <div id="cube-bar">
@@ -149,7 +126,40 @@
         </div>
       </div>
     </section>
+    <div class="splitter" data-resize="props" data-inverse="true"></div>
+
+    <section id="editor" class="panel" data-panel="editor" data-title="Eigenschaften">
+      <div class="panel-title">Eigenschaften <button class="panel-close" title="Ausblenden">✕</button></div>
+      <div class="editor-head">
+        <div class="editor-nav">
+          <button id="btn-back" title="Zurück (Navigations-Historie)" disabled>←</button>
+          <button id="btn-fwd" title="Vor" disabled>→</button>
+          <h2 id="editor-title">Kein Knoten gewählt</h2>
+        </div>
+        <div>
+          <button id="btn-mode-inspect" class="mode active" title="Inspektor (lesen & navigieren)">🔍</button>
+          <button id="btn-mode-form" class="mode" title="Formular (bearbeiten)">✏️</button>
+          <button id="btn-mode-json" class="mode" title="JSON (Experten-Modus)">{ }</button>
+          <button id="btn-save" disabled>Speichern</button>
+          <button id="btn-delete" class="danger" disabled>Löschen</button>
+        </div>
+      </div>
+      <div id="inspector"></div>
+      <div id="editor-form" hidden></div>
+      <textarea id="editor-json" spellcheck="false" hidden
+        placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
+      <div id="editor-msg"></div>
+    </section>
+
   </main>
+
+  <footer id="statusbar">
+    <span id="sb-state">Bereit</span>
+    <span id="sb-sel"></span>
+    <span class="sb-spacer"></span>
+    <span id="sb-counts"></span>
+    <span id="sb-validate"></span>
+  </footer>
 
   <script type="module" src="app.js"></script>
 </body>
