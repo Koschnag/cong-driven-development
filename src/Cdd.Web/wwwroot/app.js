@@ -18,6 +18,13 @@ const $ = (s) => document.querySelector(s);
 let entries = [];
 let selectedId = null;
 let filterText = "";
+let lastFindings = [];
+
+// — Cube-Zustand (Slice/Dice/Drill-down) —
+const cube = { kinds: new Set(), conv: new Set(), focus: false, depth: 2 };
+// — Navigations-Historie (Modell-Debugger: ← / →) —
+const hist = { back: [], fwd: [] };
+let editorMode = "inspect"; // "inspect" | "json"
 
 // Payload-Vorlagen für neue Knoten (Server-Form: { Case, Fields: { Item } })
 const templates = {
@@ -47,6 +54,7 @@ async function api(path, opts) {
 
 async function refresh() {
   entries = await api("spot");
+  renderCubeBar();
   renderSidebar();
   renderDashboard();
   renderGraph();
@@ -56,9 +64,102 @@ async function refresh() {
   renderDoku();
 }
 
+// Re-Render aller Sichten nach Slice/Dice/Fokus-Änderung (ohne Daten neu zu laden).
+function rerenderViews() {
+  renderCubeBar();
+  renderSidebar();
+  renderGraph();
+  renderUml();
+}
+
+// — Cube-Bar: Slice (Knotenarten), Dice (Konvergenz), Drill-down (Fokus) —
+function renderCubeBar() {
+  const kindsPresent = [...new Set(entries.map((e) => kindOfCase(e.Payload.Case)))].sort();
+  const mkChip = (row, label, active, onToggle, dotClass) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (active ? " active" : "");
+    if (dotClass) b.innerHTML = `<span class="dot ${dotClass}"></span>`;
+    b.appendChild(document.createTextNode(label));
+    b.onclick = onToggle;
+    row.appendChild(b);
+  };
+  const kindRow = $("#cube-kinds");
+  kindRow.innerHTML = "";
+  for (const k of kindsPresent) {
+    mkChip(kindRow, k, cube.kinds.has(k), () => {
+      cube.kinds.has(k) ? cube.kinds.delete(k) : cube.kinds.add(k);
+      rerenderViews();
+    });
+  }
+  const convRow = $("#cube-conv");
+  convRow.innerHTML = "";
+  for (const c of ["Aligned", "Pending", "Diverged", "Orphaned"]) {
+    mkChip(convRow, "", cube.conv.has(c), () => {
+      cube.conv.has(c) ? cube.conv.delete(c) : cube.conv.add(c);
+      rerenderViews();
+    }, c);
+  }
+}
+
+// — Referenz-Index: ausgehende und eingehende Verlinkungen pro Knoten —
+function outRefs(e) {
+  const d = payloadData(e);
+  switch (e.Payload.Case) {
+    case "ComponentNode": return (d.DependsOn ?? []).map((t) => ({ target: t, label: "hängt ab von" }));
+    case "TestNode": return d.SpecRef ? [{ target: d.SpecRef, label: "testet" }] : [];
+    case "DecisionNode": return d.Supersedes ? [{ target: d.Supersedes, label: "ersetzt" }] : [];
+    case "TermNode": return (d.Relations ?? []).map((r) => ({
+      target: r.Fields?.Item,
+      label: r.Case === "IsA" ? "ist ein" : r.Case === "PartOf" ? "Teil von" : "bezieht sich auf",
+    })).filter((r) => r.target);
+    default: return [];
+  }
+}
+
+function refIndex() {
+  const incoming = new Map();
+  for (const e of entries) {
+    for (const r of outRefs(e)) {
+      if (!incoming.has(r.target)) incoming.set(r.target, []);
+      incoming.get(r.target).push({ source: e.Id, label: r.label });
+    }
+  }
+  return incoming;
+}
+
+// Drill-down: BFS-Nachbarschaft (ungerichtet) um den gewählten Knoten.
+function focusNeighborhood() {
+  if (!cube.focus || !selectedId) return null;
+  const adj = new Map();
+  const link = (a, b) => {
+    if (!adj.has(a)) adj.set(a, new Set());
+    adj.get(a).add(b);
+  };
+  for (const e of entries) for (const r of outRefs(e)) { link(e.Id, r.target); link(r.target, e.Id); }
+  const seen = new Set([selectedId]);
+  let frontier = [selectedId];
+  for (let hop = 0; hop < cube.depth; hop++) {
+    const next = [];
+    for (const id of frontier) for (const n of adj.get(id) ?? []) {
+      if (!seen.has(n)) { seen.add(n); next.push(n); }
+    }
+    frontier = next;
+  }
+  return seen;
+}
+
+// Slice/Dice + Fokus: die sichtbare Teilmenge für Graph, UML und Explorer.
+function visibleEntries() {
+  const focus = focusNeighborhood();
+  return entries.filter((e) =>
+    (!cube.kinds.size || cube.kinds.has(kindOfCase(e.Payload.Case))) &&
+    (!cube.conv.size || cube.conv.has(e.Convergence)) &&
+    (!focus || focus.has(e.Id)));
+}
+
 function renderSidebar() {
   const q = filterText.toLowerCase();
-  const visible = entries.filter((e) =>
+  const visible = visibleEntries().filter((e) =>
     !q || e.Id.toLowerCase().includes(q) || kindOfCase(e.Payload.Case).includes(q) ||
     JSON.stringify(payloadData(e)).toLowerCase().includes(q));
   const groups = {};
@@ -80,15 +181,110 @@ function renderSidebar() {
   }
 }
 
-function select(id) {
+function setEditorMode(mode) {
+  editorMode = mode;
+  $("#inspector").hidden = mode !== "inspect";
+  $("#editor-json").hidden = mode !== "json";
+  $("#btn-mode-inspect").classList.toggle("active", mode === "inspect");
+  $("#btn-mode-json").classList.toggle("active", mode === "json");
+  $("#btn-save").disabled = mode !== "json" || !$("#editor-json").value;
+}
+
+function updateHistButtons() {
+  $("#btn-back").disabled = !hist.back.length;
+  $("#btn-fwd").disabled = !hist.fwd.length;
+}
+
+function select(id, opts = {}) {
+  if (!opts.fromHistory && selectedId && id && id !== selectedId) {
+    hist.back.push(selectedId);
+    if (hist.back.length > 50) hist.back.shift();
+    hist.fwd.length = 0;
+  }
   selectedId = id;
   const e = entries.find((x) => x.Id === id);
   $("#editor-title").textContent = id ?? "Kein Knoten gewählt";
   $("#editor-json").value = e ? JSON.stringify(e, null, 2) : "";
-  $("#btn-save").disabled = !e;
+  $("#btn-save").disabled = editorMode !== "json" || !e;
   $("#btn-delete").disabled = !e;
+  if (e) history.replaceState(null, "", "#" + encodeURIComponent(id));
   setMsg("");
+  updateHistButtons();
+  renderInspector();
   renderSidebar();
+  if (cube.focus) { renderGraph(); renderUml(); }
+}
+
+// — Inspektor: der Modell-Debugger (Details, Verlinkungen, Befunde) —
+function renderInspector() {
+  const el = $("#inspector");
+  el.innerHTML = "";
+  const e = entries.find((x) => x.Id === selectedId);
+  if (!e) {
+    el.innerHTML = "<p class='insp-hint'>Knoten wählen — oder im Graph/UML anklicken. ← / → navigieren wie im Debugger durch die Historie.</p>";
+    return;
+  }
+  const d = payloadData(e);
+  const head = document.createElement("div");
+  head.className = "insp-head";
+  head.innerHTML = `<span class="badge">${kindOfCase(e.Payload.Case)}</span> <span class="dot ${e.Convergence}"></span> ${e.Convergence}`;
+  el.appendChild(head);
+
+  const fields = { Name: d.Name, Titel: d.Title, Definition: d.Definition, Intent: d.Intent,
+    Aussage: d.Statement, Begründung: d.Rationale, Entscheidung: d.Choice, Quelle: d.Source,
+    Zweck: d.Purpose };
+  for (const [label, val] of Object.entries(fields)) {
+    if (!val) continue;
+    const p = document.createElement("p");
+    p.className = "insp-field";
+    p.innerHTML = `<b>${label}:</b> `;
+    p.appendChild(document.createTextNode(val));
+    el.appendChild(p);
+  }
+  if (d.Criteria?.length) {
+    for (const c of d.Criteria) {
+      const p = document.createElement("p");
+      p.className = "insp-field insp-crit";
+      p.textContent = `GIVEN ${c.Given} WHEN ${c.When} THEN ${c.Then}`;
+      el.appendChild(p);
+    }
+  }
+
+  const chipList = (title, items, render) => {
+    const h = document.createElement("h4");
+    h.textContent = `${title} (${items.length})`;
+    el.appendChild(h);
+    const row = document.createElement("div");
+    row.className = "chip-row";
+    if (!items.length) row.innerHTML = "<span class='insp-hint'>—</span>";
+    for (const it of items) row.appendChild(render(it));
+    el.appendChild(row);
+  };
+  const chip = (id, label) => {
+    const b = document.createElement("button");
+    b.className = "chip link";
+    b.title = label;
+    const target = entries.find((x) => x.Id === id);
+    b.innerHTML = target ? `<span class="dot ${target.Convergence}"></span>` : "❓ ";
+    b.appendChild(document.createTextNode(`${label} → ${id}`));
+    b.onclick = () => (target ? select(id) : null);
+    return b;
+  };
+  chipList("Ausgehende Verlinkungen", outRefs(e), (r) => chip(r.target, r.label));
+  chipList("Eingehende Verlinkungen", refIndex().get(e.Id) ?? [], (r) => chip(r.source, `wird ${r.label}`));
+
+  const findings = lastFindings.filter((f) => f.EntityId === e.Id);
+  if (findings.length) {
+    const h = document.createElement("h4");
+    h.textContent = `Befunde (${findings.length})`;
+    el.appendChild(h);
+    for (const f of findings) {
+      const div = document.createElement("div");
+      div.className = `finding ${f.Severity}`;
+      div.textContent = f.Message;
+      el.appendChild(div);
+    }
+  }
 }
 
 function setMsg(text, cls = "") {
@@ -124,6 +320,7 @@ function newNode(kind) {
     Convergence: "Pending",
   };
   selectedId = null;
+  setEditorMode("json");
   $("#editor-title").textContent = "Neuer Knoten (Id anpassen!)";
   $("#editor-json").value = JSON.stringify(draft, null, 2);
   $("#btn-save").disabled = false;
@@ -237,13 +434,17 @@ function wireDiagramClicks(container) {
 async function renderGraph() {
   const lines = ["graph LR"];
   const safe = (id) => id.replaceAll("-", "_");
-  for (const e of entries) {
+  const visible = visibleEntries();
+  const visibleIds = new Set(visible.map((e) => e.Id));
+  for (const e of visible) {
     const kind = kindOfCase(e.Payload.Case);
     const d = payloadData(e);
     lines.push(`${safe(e.Id)}["${kind}: ${e.Id}"]:::${e.Convergence}`);
-    if (kind === "component") for (const dep of d.DependsOn ?? []) lines.push(`${safe(e.Id)} --> ${safe(dep)}`);
-    if (kind === "test" && d.SpecRef) lines.push(`${safe(e.Id)} -. testet .-> ${safe(d.SpecRef)}`);
-    if (kind === "decision" && d.Supersedes) lines.push(`${safe(e.Id)} -. ersetzt .-> ${safe(d.Supersedes)}`);
+    if (kind === "component") for (const dep of d.DependsOn ?? []) {
+      if (visibleIds.has(dep)) lines.push(`${safe(e.Id)} --> ${safe(dep)}`);
+    }
+    if (kind === "test" && d.SpecRef && visibleIds.has(d.SpecRef)) lines.push(`${safe(e.Id)} -. testet .-> ${safe(d.SpecRef)}`);
+    if (kind === "decision" && d.Supersedes && visibleIds.has(d.Supersedes)) lines.push(`${safe(e.Id)} -. ersetzt .-> ${safe(d.Supersedes)}`);
   }
   lines.push("classDef Aligned stroke:#3fb950,stroke-width:2px");
   lines.push("classDef Pending stroke:#d29922,stroke-width:2px");
@@ -260,10 +461,12 @@ async function renderGraph() {
 
 // UML-Klassendiagramm aus der Ontologie (Term-Knoten der ubiquitären Sprache).
 async function renderUml() {
-  const terms = entries.filter((e) => e.Payload.Case === "TermNode");
+  const visible = visibleEntries();
+  const terms = visible.filter((e) => e.Payload.Case === "TermNode");
+  const termIds = new Set(terms.map((t) => t.Id));
   const el = $("#uml");
   if (!terms.length) {
-    el.innerHTML = "<p>Keine Begriffe im SPOT. Über „+ Begriff (Ontologie)“ anlegen — daraus entsteht hier das UML-Klassendiagramm der ubiquitären Sprache.</p>";
+    el.innerHTML = "<p>Keine Begriffe in der aktuellen Sicht. Filter/Fokus prüfen oder über „+ Begriff (Ontologie)“ anlegen.</p>";
     return;
   }
   const safe = (id) => id.replaceAll("-", "_");
@@ -274,7 +477,7 @@ async function renderUml() {
     for (const syn of d.Synonyms ?? []) lines.push(`${safe(t.Id)} : ${syn}`);
     for (const r of d.Relations ?? []) {
       const target = r.Fields?.Item;
-      if (!target) continue;
+      if (!target || !termIds.has(target)) continue;
       const a = safe(t.Id), b = safe(target);
       if (r.Case === "IsA") lines.push(`${b} <|-- ${a} : ist ein`);
       else if (r.Case === "PartOf") lines.push(`${b} *-- ${a} : Teil von`);
@@ -292,6 +495,8 @@ async function renderUml() {
 
 async function renderValidate() {
   const findings = await api("validate");
+  lastFindings = findings;
+  renderInspector();
   const el = $("#tab-validate");
   document.querySelector('[data-tab="validate"]').textContent =
     findings.length ? `Validierung (${findings.length})` : "Validierung";
@@ -454,6 +659,34 @@ $("#btn-refresh").onclick = refresh;
 $("#btn-save").onclick = save;
 $("#btn-delete").onclick = del;
 $("#btn-derive").onclick = deriveTests;
+$("#btn-mode-inspect").onclick = () => setEditorMode("inspect");
+$("#btn-mode-json").onclick = () => setEditorMode("json");
+$("#btn-back").onclick = () => {
+  const prev = hist.back.pop();
+  if (!prev) return;
+  if (selectedId) hist.fwd.push(selectedId);
+  select(prev, { fromHistory: true });
+  updateHistButtons();
+};
+$("#btn-fwd").onclick = () => {
+  const next = hist.fwd.pop();
+  if (!next) return;
+  if (selectedId) hist.back.push(selectedId);
+  select(next, { fromHistory: true });
+  updateHistButtons();
+};
+$("#focus-toggle").onchange = (ev) => {
+  cube.focus = ev.target.checked;
+  rerenderViews();
+};
+$("#focus-depth").onchange = (ev) => {
+  cube.depth = Number(ev.target.value);
+  if (cube.focus) rerenderViews();
+};
+window.addEventListener("hashchange", () => {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (id && entries.some((e) => e.Id === id)) select(id);
+});
 $("#btn-theme").onclick = () => {
   applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
   renderGraph();
@@ -594,4 +827,11 @@ document.addEventListener("keydown", (ev) => {
   }
 });
 
-refresh().catch((e) => setMsg("API nicht erreichbar: " + e.message, "error"));
+refresh()
+  .then(() => {
+    // Deeplink: #<knoten-id> öffnet direkt den Inspektor dieses Knotens.
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (id && entries.some((e) => e.Id === id)) select(id);
+    else renderInspector();
+  })
+  .catch((e) => setMsg("API nicht erreichbar: " + e.message, "error"));

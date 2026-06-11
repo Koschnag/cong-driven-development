@@ -37,13 +37,20 @@
 
     <section id="editor" class="panel" data-panel="editor" data-title="Editor">
       <div class="editor-head">
-        <h2 id="editor-title">Kein Knoten gewählt</h2>
+        <div class="editor-nav">
+          <button id="btn-back" title="Zurück (Navigations-Historie)" disabled>←</button>
+          <button id="btn-fwd" title="Vor" disabled>→</button>
+          <h2 id="editor-title">Kein Knoten gewählt</h2>
+        </div>
         <div>
+          <button id="btn-mode-inspect" class="mode active" title="Inspektor">🔍</button>
+          <button id="btn-mode-json" class="mode" title="JSON bearbeiten">{ }</button>
           <button id="btn-save" disabled>Speichern</button>
           <button id="btn-delete" class="danger" disabled>Löschen</button>
         </div>
       </div>
-      <textarea id="editor-json" spellcheck="false"
+      <div id="inspector"></div>
+      <textarea id="editor-json" spellcheck="false" hidden
         placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
       <div id="editor-msg"></div>
     </section>
@@ -51,6 +58,21 @@
 
     <section id="panels" class="panel" data-panel="views" data-title="Sichten">
       <div class="panel-title">Sichten <button class="panel-close" title="Ausblenden">✕</button></div>
+      <div id="cube-bar">
+        <span class="cube-label" title="Slice & Dice: Filter wirken auf Graph, UML und Explorer">🧊</span>
+        <div id="cube-kinds" class="chip-row"></div>
+        <span class="cube-sep"></span>
+        <div id="cube-conv" class="chip-row"></div>
+        <span class="cube-sep"></span>
+        <label class="cube-focus" title="Drill-down: nur Nachbarschaft des gewählten Knotens">
+          <input type="checkbox" id="focus-toggle"> Fokus
+        </label>
+        <select id="focus-depth">
+          <option value="1">1 Hop</option>
+          <option value="2" selected>2 Hops</option>
+          <option value="3">3 Hops</option>
+        </select>
+      </div>
       <div class="tabs">
         <button class="tab active" data-tab="dashboard">Dashboard</button>
         <button class="tab" data-tab="graph">Graph</button>

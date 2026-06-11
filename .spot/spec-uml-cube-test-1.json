@@ -1,0 +1,14 @@
+{
+  "Id": "spec-uml-cube-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-uml-cube",
+        "Name": "Modell-Navigation als W\u00FCrfel \u2014 when der Inspektor ge\u00F6ffnet ist then sind ein- und ausgehende Verlinkungen klickbar und die Historie per Zur\u00FCck/Vor navigierbar",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

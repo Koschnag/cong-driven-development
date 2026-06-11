@@ -1,0 +1,14 @@
+{
+  "Id": "spec-uml-cube-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-uml-cube",
+        "Name": "Modell-Navigation als W\u00FCrfel \u2014 when Graph oder UML gerendert werden then zeigen sie nur die gefilterte Teilmenge bzw. die N-Hop-Nachbarschaft",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

@@ -132,6 +132,18 @@ let entries =
                   When = "der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt)"
                   Then = "entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird" } ] } }
 
+      { Id = EntityId "spec-uml-cube"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Modell-Navigation als Würfel"
+            Intent = "Der SPOT-Graph ist wie ein OLAP-Cube navigierbar: Slice, Dice, Drill-down, Verlinkungen"
+            Criteria =
+              [ { Given = "ein gewählter Knoten"
+                  When = "der Inspektor geöffnet ist"
+                  Then = "sind ein- und ausgehende Verlinkungen klickbar und die Historie per Zurück/Vor navigierbar" }
+                { Given = "aktive Filter (Knotenart/Konvergenz) oder Fokus-Modus"
+                  When = "Graph oder UML gerendert werden"
+                  Then = "zeigen sie nur die gefilterte Teilmenge bzw. die N-Hop-Nachbarschaft" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode
