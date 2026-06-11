@@ -138,19 +138,23 @@ let private version () =
 
 [<EntryPoint>]
 let main argv =
-    match argv with
-    | [| "version" |]            -> printfn "cdd %s" (version ()); 0
-    | [| "init" |]               -> cmdInit ()
-    | [| "list" |]               -> cmdList ()
-    | [| "validate" |]           -> cmdValidate ()
-    | [| "diff" |]               -> cmdDiff ()
-    | [| "derive-tests" |]       -> cmdDeriveTests false
-    | [| "derive-tests"; "--write" |] -> cmdDeriveTests true
-    | [| "export-context" |] ->
-        printf "%s" (Store.load root |> Export.toMarkdown)
-        0
-    | [| "export-context"; "--out"; path |] ->
-        System.IO.File.WriteAllText(path, Store.load root |> Export.toMarkdown)
-        printfn "Kontextpaket geschrieben: %s" path
-        0
-    | _                          -> usage (); 0
+    try
+        match argv with
+        | [| "version" |]            -> printfn "cdd %s" (version ()); 0
+        | [| "init" |]               -> cmdInit ()
+        | [| "list" |]               -> cmdList ()
+        | [| "validate" |]           -> cmdValidate ()
+        | [| "diff" |]               -> cmdDiff ()
+        | [| "derive-tests" |]       -> cmdDeriveTests false
+        | [| "derive-tests"; "--write" |] -> cmdDeriveTests true
+        | [| "export-context" |] ->
+            printf "%s" (Store.load root |> Export.toMarkdown)
+            0
+        | [| "export-context"; "--out"; path |] ->
+            System.IO.File.WriteAllText(path, Store.load root |> Export.toMarkdown)
+            printfn "Kontextpaket geschrieben: %s" path
+            0
+        | _                          -> usage (); 0
+    with ex ->
+        eprintfn "Fehler: %s" ex.Message
+        1

@@ -14,6 +14,14 @@ let private json (value: 'T) : IResult =
 let private badRequest (msg: string) : IResult =
     Results.Text(Json.serialize {| error = msg |}, "application/json", statusCode = 400)
 
+/// Lädt den Store und wandelt Lade-Fehler (z. B. korrupte JSON-Files)
+/// in saubere 500-JSON-Antworten statt unbehandelter Exceptions.
+let private withStore (root: string) (f: SpotEntry list -> IResult) : IResult =
+    try
+        f (Store.load root)
+    with ex ->
+        Results.Text(Json.serialize {| error = ex.Message |}, "application/json", statusCode = 500)
+
 [<EntryPoint>]
 let main argv =
     // "--root <pfad>" gehört uns; alle übrigen Argumente (z. B. --urls) gehen an ASP.NET.
@@ -35,7 +43,7 @@ let main argv =
     app.UseStaticFiles() |> ignore
 
     app.MapGet("/api/spot", Func<IResult>(fun () ->
-        Store.load root |> json)) |> ignore
+        withStore root json)) |> ignore
 
     app.MapPut("/api/spot/{id}", Func<string, HttpRequest, Task<IResult>>(fun id req ->
         task {
@@ -59,19 +67,21 @@ let main argv =
         else Results.NotFound())) |> ignore
 
     app.MapGet("/api/validate", Func<IResult>(fun () ->
-        Store.load root |> Validate.validate |> json)) |> ignore
+        withStore root (Validate.validate >> json))) |> ignore
 
     app.MapGet("/api/diff", Func<IResult>(fun () ->
-        Store.load root |> Diff.report |> json)) |> ignore
+        withStore root (Diff.report >> json))) |> ignore
 
     app.MapGet("/api/export", Func<IResult>(fun () ->
-        Results.Text(Store.load root |> Export.toMarkdown, "text/markdown"))) |> ignore
+        withStore root (fun entries ->
+            Results.Text(Export.toMarkdown entries, "text/markdown")))) |> ignore
 
     app.MapPost("/api/derive-tests", Func<HttpRequest, IResult>(fun req ->
         let write = req.Query.["write"].ToString() = "true"
-        let derived = Store.load root |> Derive.deriveTests
-        if write then derived |> List.iter (Store.save root)
-        json {| derived = derived; written = write |})) |> ignore
+        withStore root (fun entries ->
+            let derived = Derive.deriveTests entries
+            if write then derived |> List.iter (Store.save root)
+            json {| derived = derived; written = write |}))) |> ignore
 
     printfn "CDD Web — SPOT-Root: %s" root
     app.Run()
