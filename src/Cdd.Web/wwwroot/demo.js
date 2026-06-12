@@ -86,6 +86,26 @@ function validate(es) {
         break;
       case "TermNode": {
         if (!d.Definition?.trim()) f("Warning", e.Id, "Begriff ohne Definition — ubiquitäre Sprache braucht Bedeutung");
+        { // Widerspruch: IsA/PartOf-Zyklus
+          const adj = new Map();
+          for (const x of es.filter((y) => y.Payload.Case === "TermNode"))
+            adj.set(x.Id, (item(x).Relations ?? []).filter((r) => r.Case !== "RelatesTo").map((r) => r.Fields?.Item).filter(Boolean));
+          const seen = new Set();
+          const stack = [e.Id];
+          let cyclic = false;
+          const walk = (id, path) => {
+            if (path.has(id)) { if (id === e.Id || path.has(e.Id)) cyclic = true; return; }
+            const p2 = new Set(path); p2.add(id);
+            for (const n of adj.get(id) ?? []) walk(n, p2);
+          };
+          walk(e.Id, new Set());
+          if (cyclic) f("Error", e.Id, "Widerspruch: zyklische Begriffshierarchie (IsA/PartOf)");
+        }
+        { // Mehrdeutigkeit: doppelte Namen
+          const name = (d.Name ?? "").trim().toLowerCase();
+          const same = es.filter((x) => x.Payload.Case === "TermNode" && (item(x).Name ?? "").trim().toLowerCase() === name);
+          if (name && same.length > 1) f("Warning", e.Id, `Mehrdeutigkeit: Begriff '${d.Name}' ist mehrfach definiert`);
+        }
         const termIds = new Set(es.filter((x) => x.Payload.Case === "TermNode").map((x) => x.Id));
         for (const r of d.Relations ?? []) {
           const target = r.Fields?.Item;
