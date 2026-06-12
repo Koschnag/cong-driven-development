@@ -5,7 +5,9 @@ Kontext für AI-Agents (GitHub Copilot, Claude Code, etc.), die in diesem Repo a
 ## Projekt
 
 F#-Monorepo (.NET 9): `Cdd.Core` (Domain), `Cdd.Cli` (CLI `cdd`), `Cdd.Web`
-(Cockpit: REST-API + statisches Frontend, kein Node-Toolchain), `Cdd.Tests` (xUnit).
+(Cockpit: REST-API + statisches Frontend, kein Node-Toolchain), `Cdd.Mcp`
+(MCP-Server, C#-IO-Adapter — bevorzugter Weg für KI-Clients, den SPOT zu
+bearbeiten), `Cdd.Tests` (xUnit).
 Kernkonzept: SPOT-Graph (Single Point of Truth) als Discriminated Union,
 persistiert als ein JSON-File pro Knoten unter `.spot/`.
 

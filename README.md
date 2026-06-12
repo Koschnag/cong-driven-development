@@ -48,6 +48,7 @@ definiert.
 src/Cdd.Core/         — Domain: SPOT-Typen, Spec-Sprache, Convergence-Algebra
 src/Cdd.Cli/          — `cdd` CLI: Modell-Validation, Agent-Trigger, SPOT-Sync
 src/Cdd.Web/          — Cockpit: Web-GUI + REST-API über dem SPOT-Graphen
+src/Cdd.Mcp/          — MCP-Server: SPOT als Werkzeugkasten für KI-Clients (C#-IO-Adapter)
 tests/Cdd.Tests/      — Spec→Test-Generation, Round-Trip-Tests
 ```
 
@@ -87,6 +88,17 @@ Weitere Wege (alle GitHub-nativ):
 - **Codespaces:** Repo öffnen (devcontainer konfiguriert), `dotnet run --project src/Cdd.Web`
 - **Container:** `docker run -p 8080:8080 -v $PWD/.spot-demo:/data ghcr.io/koschnag/cdd:latest`
 - **Releases:** self-contained Binaries (CLI + Cockpit) für Linux/Windows/macOS
+
+### MCP-Server (KI-Integration)
+
+```bash
+claude mcp add cdd -- dotnet run --project src/Cdd.Mcp -- --root .
+```
+
+Danach kann z. B. Claude Code den SPOT direkt bearbeiten: `spot_list`, `spot_get`,
+`spot_upsert`, `spot_delete`, `spot_validate`, `spot_export_context`,
+`spot_derive_tests`, `spot_sync_code` — jede Mutation antwortet mit dem
+Validierungs-Stand inklusive Invarianten.
 
 ### Cockpit (Web-GUI)
 

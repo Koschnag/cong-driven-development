@@ -79,6 +79,8 @@ let entries =
         Payload = ComponentNode { Name = "Cdd.Cli"; DependsOn = [ EntityId "comp-core" ] } }
       { Id = EntityId "comp-web"; Convergence = Aligned
         Payload = ComponentNode { Name = "Cdd.Web"; DependsOn = [ EntityId "comp-core" ] } }
+      { Id = EntityId "comp-mcp"; Convergence = Aligned
+        Payload = ComponentNode { Name = "Cdd.Mcp"; DependsOn = [ EntityId "comp-core" ] } }
 
       // ── Specs: was CDD kann (Aligned) und können soll (Pending) ───────
       { Id = EntityId "spec-validate"; Convergence = Aligned
@@ -204,6 +206,23 @@ let entries =
               [ { Given = "zwei Begriffe im UML-Diagramm"
                   When = "von einem zum anderen gezogen wird"
                   Then = "wird die gewählte Beziehung (IsA/PartOf/RelatesTo) nach Bestätigung gespeichert" } ] } }
+
+      { Id = EntityId "spec-mcp-server"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "MCP-Server"
+            Intent = "Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren"
+            Criteria =
+              [ { Given = "ein verbundener MCP-Client"
+                  When = "spot_upsert oder spot_delete aufgerufen wird"
+                  Then = "wird die Änderung gespeichert und die Validierung (inkl. Invarianten) zurückgemeldet" } ] } }
+      { Id = EntityId "spec-interactive-graph"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Interaktiver Graph"
+            Intent = "Diagramm-Elemente sind frei positionierbar wie in Enterprise Architect; Layouts bleiben erhalten"
+            Criteria =
+              [ { Given = "ein verschobener Knoten im Graph"
+                  When = "die Seite neu geladen wird"
+                  Then = "behält der Knoten seine Position; Rechtsklick startet eine neue Beziehung" } ] } }
 
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
