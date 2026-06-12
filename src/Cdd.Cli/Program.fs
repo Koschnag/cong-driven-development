@@ -18,6 +18,7 @@ let private usage () =
     printfn "  cdd sync-code [--write]  Round-Trip: Komponenten gegen src/*.fsproj abgleichen"
     printfn "  cdd sync-tests [--write] Round-Trip: Test-Knoten gegen echte Tests (Trait/Marker) messen"
     printfn "  cdd sync-docs [--check]  README-Status aus dem Modell generieren"
+    printfn "  cdd derive-code [--out <datei>]  Test-Skelette für unabgedeckte Test-Knoten generieren"
 
 /// Seed-Knoten für `cdd init` — zeigt jede Knotenart einmal.
 let private seed : SpotEntry list =
@@ -217,6 +218,17 @@ let private cmdSyncDocs check =
                 printfn "docs/decisions.md neu generiert."
             0
 
+
+let private cmdDeriveCode out =
+    let covered = Sync.scanTestMarkers "tests"
+    let code = Store.load root |> Generate.testSkeletons covered
+    match out with
+    | Some path ->
+        System.IO.File.WriteAllText(path, code)
+        printfn "Test-Skelette geschrieben: %s" path
+    | None -> printf "%s" code
+    0
+
 [<EntryPoint>]
 let main argv =
     try
@@ -232,6 +244,8 @@ let main argv =
         | [| "sync-code"; "--write" |] -> cmdSyncCode true
         | [| "sync-tests" |]         -> cmdSyncTests false
         | [| "sync-tests"; "--write" |] -> cmdSyncTests true
+        | [| "derive-code" |]        -> cmdDeriveCode None
+        | [| "derive-code"; "--out"; path |] -> cmdDeriveCode (Some path)
         | [| "sync-docs" |]          -> cmdSyncDocs false
         | [| "sync-docs"; "--check" |] -> cmdSyncDocs true
         | [| "export-context" |] ->

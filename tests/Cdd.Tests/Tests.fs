@@ -220,6 +220,23 @@ let ``scanTestMarkers finds traits and comment markers`` () =
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
 
+[<Fact; Trait("spot", "spec-derive-code-test-1")>]
+let ``derive-code generates skeletons only for uncovered test nodes`` () =
+    let entries =
+        [ sampleSpec "spec-x" [ crit 1 ]
+          { Id = EntityId "spec-x-test-1"; Convergence = Pending
+            Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "T — when w1 then t1"; Derived = true } }
+          { Id = EntityId "spec-x-test-2"; Convergence = Aligned
+            Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "schon abgedeckt"; Derived = true } } ]
+    let code = Generate.testSkeletons (Set.ofList [ "spec-x-test-2" ]) entries
+    Assert.Contains("Trait(\"spot\", \"spec-x-test-1\")", code)
+    Assert.DoesNotContain("spec-x-test-2", code)
+    Assert.Contains("GIVEN g1 WHEN w1 THEN t1", code)
+    Assert.Contains("failwith", code)
+    // Vollständig abgedeckt → freundlicher Hinweis statt Stubs
+    let none = Generate.testSkeletons (Set.ofList [ "spec-x-test-1"; "spec-x-test-2" ]) entries
+    Assert.DoesNotContain("failwith", none)
+
 [<Fact; Trait("spot", "spec-sync-docs-test-2")>]
 let ``decisionsMarkdown documents premises decisions and invariants`` () =
     let entries =
