@@ -116,7 +116,7 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 ## Status
 
 <!-- spot:status -->
-**71 Knoten im Selbstmodell** · 4 aktive Invarianten · 11/23 abgeleitete Tests automatisiert
+**71 Knoten im Selbstmodell** · 4 aktive Invarianten · 15/23 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 

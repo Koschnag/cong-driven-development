@@ -55,6 +55,13 @@ jobs:
       - name: Doku-Konvergenz prüfen (README ↔ Modell)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-docs --check
 
+      - name: E2E (Cockpit im echten Browser)
+        run: |
+          cd tests/e2e
+          npm install --no-fund --no-audit
+          cd ../..
+          node tests/e2e/smoke.mjs
+
       - name: Testergebnisse hochladen
         if: always()
         uses: actions/upload-artifact@v7
