@@ -16,6 +16,8 @@ let private usage () =
     printfn "  cdd derive-tests [--write]  Tests aus Specs ableiten"
     printfn "  cdd export-context [--out <datei>]  SPOT als LLM-Kontextpaket/Doku (Markdown)"
     printfn "  cdd sync-code [--write]  Round-Trip: Komponenten gegen src/*.fsproj abgleichen"
+    printfn "  cdd sync-tests [--write] Round-Trip: Test-Knoten gegen echte Tests (Trait/Marker) messen"
+    printfn "  cdd sync-docs [--check]  README-Status aus dem Modell generieren"
 
 /// Seed-Knoten für `cdd init` — zeigt jede Knotenart einmal.
 let private seed : SpotEntry list =
@@ -155,6 +157,54 @@ let private cmdSyncCode write =
         let drift = results |> List.exists (fun r -> r.Status = Diverged || r.Status = Orphaned)
         if drift then 1 else 0
 
+
+let private cmdSyncTests write =
+    let covered = Sync.scanTestMarkers "tests"
+    let entries = Store.load root
+    let mismatches, updated = Sync.syncTests covered entries
+    if List.isEmpty mismatches then
+        printfn "Test-Konvergenz synchron (%d Marker gefunden)." (Set.count covered)
+        0
+    else
+        for id, stored, measured in mismatches do
+            printfn "%-28s gespeichert: %-8A gemessen: %A" (idValue id) stored measured
+        if write then
+            updated
+            |> List.filter (fun e -> entries |> List.exists (fun o -> o.Id = e.Id && o <> e))
+            |> List.iter (fun e -> Store.save root e; printfn "aktualisiert: %s" (idValue e.Id))
+            0
+        else
+            printfn "%d Abweichungen — mit --write übernehmen." (List.length mismatches)
+            1
+
+let private docMarkerStart = "<!-- spot:status -->"
+let private docMarkerEnd = "<!-- /spot:status -->"
+
+let private cmdSyncDocs check =
+    let path = "README.md"
+    let readme = System.IO.File.ReadAllText path
+    let s = readme.IndexOf docMarkerStart
+    let e = readme.IndexOf docMarkerEnd
+    if s < 0 || e < s then
+        eprintfn "Fehler: Marker %s … %s nicht im README gefunden." docMarkerStart docMarkerEnd
+        1
+    else
+        let generated = Store.load root |> Export.statusMarkdown
+        let updated =
+            readme.Substring(0, s + docMarkerStart.Length)
+            + "\n" + generated
+            + readme.Substring(e)
+        if updated = readme then
+            printfn "README-Status ist aktuell."
+            0
+        elif check then
+            eprintfn "README-Status ist veraltet — 'cdd sync-docs' ausführen und committen."
+            1
+        else
+            System.IO.File.WriteAllText(path, updated)
+            printfn "README-Status neu generiert."
+            0
+
 [<EntryPoint>]
 let main argv =
     try
@@ -168,6 +218,10 @@ let main argv =
         | [| "derive-tests"; "--write" |] -> cmdDeriveTests true
         | [| "sync-code" |]          -> cmdSyncCode false
         | [| "sync-code"; "--write" |] -> cmdSyncCode true
+        | [| "sync-tests" |]         -> cmdSyncTests false
+        | [| "sync-tests"; "--write" |] -> cmdSyncTests true
+        | [| "sync-docs" |]          -> cmdSyncDocs false
+        | [| "sync-docs"; "--check" |] -> cmdSyncDocs true
         | [| "export-context" |] ->
             printf "%s" (Store.load root |> Export.toMarkdown)
             0

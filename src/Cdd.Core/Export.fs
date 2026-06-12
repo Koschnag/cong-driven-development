@@ -148,3 +148,30 @@ module Export =
             blank ()
 
         sb.ToString()
+
+    /// README-Status-Sektion — generiert aus dem Modell (cdd sync-docs).
+    let statusMarkdown (entries: SpotEntry list) : string =
+        let sb = StringBuilder()
+        let line (t: string) = sb.AppendLine(t) |> ignore
+        let specs = entries |> List.choose (fun e -> match e.Payload with SpecNode sp -> Some(e, sp) | _ -> None)
+        let aligned = specs |> List.filter (fun (e, _) -> e.Convergence = Aligned)
+        let pending = specs |> List.filter (fun (e, _) -> e.Convergence <> Aligned)
+        let tests = entries |> List.choose (fun e -> match e.Payload with TestNode _ -> Some e | _ -> None)
+        let testsAligned = tests |> List.filter (fun e -> e.Convergence = Aligned) |> List.length
+        let invariants = entries |> List.filter (fun e -> kindOf e = "invariant") |> List.length
+        line (sprintf "**%d Knoten im Selbstmodell** · %d aktive Invarianten · %d/%d abgeleitete Tests automatisiert"
+                (List.length entries) invariants testsAligned (List.length tests))
+        line ""
+        line "### Kann es (Specs, gemessen Aligned)"
+        line ""
+        for _, sp in aligned |> List.sortBy (fun (_, sp) -> sp.Title) do
+            line (sprintf "- ✅ **%s** — %s" sp.Title sp.Intent)
+        if not pending.IsEmpty then
+            line ""
+            line "### In Arbeit / geplant (Pending)"
+            line ""
+            for _, sp in pending |> List.sortBy (fun (_, sp) -> sp.Title) do
+                line (sprintf "- 🔜 **%s** — %s" sp.Title sp.Intent)
+        line ""
+        line "*Diese Sektion wird aus dem SPOT-Selbstmodell generiert (`cdd sync-docs`) — Hand-Edits werden überschrieben.*"
+        sb.ToString()

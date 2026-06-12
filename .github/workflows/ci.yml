@@ -49,6 +49,12 @@ jobs:
       - name: Round-Trip prüfen (Code ↔ Modell)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-code
 
+      - name: Test-Konvergenz prüfen (Tests ↔ Modell)
+        run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-tests
+
+      - name: Doku-Konvergenz prüfen (README ↔ Modell)
+        run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-docs --check
+
       - name: Testergebnisse hochladen
         if: always()
         uses: actions/upload-artifact@v7
