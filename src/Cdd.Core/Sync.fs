@@ -27,7 +27,15 @@ module Sync =
                         Path.GetFileNameWithoutExtension(m.Groups.[1].Value.Replace('\\', '/')))
                     |> List.ofSeq
                 { Name = Path.GetFileNameWithoutExtension f; References = refs })
-            |> Array.toList
+            |> List.ofArray
+
+    /// Konventionelle Code-Wurzeln eines Repos — Werkzeuge sind Code wie alles andere.
+    let projectRoots = [ "src"; "tools"; "apps" ]
+
+    /// Scannt alle Projekt-Wurzeln unter root (src, tools, apps).
+    let scanRepo (root: string) : CodeProject list =
+        projectRoots
+        |> List.collect (fun d -> scanProjects (Path.Combine(root, d)))
 
     type SyncResult =
         { Id     : EntityId
