@@ -89,7 +89,7 @@ public static class SpotTools
     [Description("Round-Trip: gleicht Component-Knoten gegen die .fsproj-Referenzen unter <root>/src ab.")]
     public static string SyncCode()
     {
-        var projects = Sync.scanProjects(Path.Combine(Root, "src"));
+        var projects = Sync.scanRepo(Root);
         if (!projects.Any()) return "Keine .fsproj unter src/ gefunden.";
         var (results, _) = Sync.compare(projects, Load());
         return string.Join("\n", results.Select(r => $"{r.Status}  {Spot.idValue(r.Id)}  {r.Detail}"));

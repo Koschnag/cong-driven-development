@@ -142,9 +142,9 @@ let private version () =
 
 
 let private cmdSyncCode write =
-    let projects = Sync.scanProjects "src"
+    let projects = Sync.scanRepo root
     if List.isEmpty projects then
-        printfn "Keine .fsproj unter ./src gefunden."
+        printfn "Keine Projekte unter %s gefunden (src, tools, apps)." root
         0
     else
         let entries = Store.load root

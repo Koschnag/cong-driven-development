@@ -376,3 +376,17 @@ let ``store saves and loads round-trip`` () =
         Assert.Equal<SpotEntry list>([ entry ], loaded)
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact>]
+let ``scanRepo findet Projekte auch unter tools und apps`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-scanrepo-" + System.Guid.NewGuid().ToString("N"))
+    Directory.CreateDirectory(Path.Combine(tmp, "src", "A")) |> ignore
+    Directory.CreateDirectory(Path.Combine(tmp, "tools", "B")) |> ignore
+    File.WriteAllText(Path.Combine(tmp, "src", "A", "A.fsproj"), "<Project/>")
+    File.WriteAllText(Path.Combine(tmp, "tools", "B", "B.csproj"),
+        """<Project><ItemGroup><ProjectReference Include="..\..\src\A\A.fsproj" /></ItemGroup></Project>""")
+    let projekte = Sync.scanRepo tmp
+    Directory.Delete(tmp, true)
+    Assert.Equal(2, List.length projekte)
+    let b = projekte |> List.find (fun p -> p.Name = "B")
+    Assert.Equal<string list>([ "A" ], b.References)
