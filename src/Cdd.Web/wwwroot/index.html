@@ -79,8 +79,7 @@
       </div>
       <div class="tabs">
         <button class="tab active" data-tab="dashboard">Dashboard</button>
-        <button class="tab" data-tab="graph">Graph</button>
-        <button class="tab" data-tab="uml">UML</button>
+        <button class="tab" data-tab="designer">Designer</button>
         <button class="tab" data-tab="validate">Validierung</button>
         <button class="tab" data-tab="drift">Drift</button>
         <button class="tab" data-tab="doku">Doku</button>
@@ -88,8 +87,20 @@
       </div>
       <div class="tab-scroll">
         <div id="tab-dashboard" class="tab-body active"></div>
-        <div id="tab-graph" class="tab-body"><div id="graph"></div></div>
-        <div id="tab-uml" class="tab-body"><div id="uml"></div></div>
+        <div id="tab-designer" class="tab-body">
+          <div id="designer-views">
+            <button class="dview" data-view="klassen" title="UML-Klassendiagramm der Ontologie">Klassen</button>
+            <button class="dview" data-view="usecase" title="Use-Case-Sicht: Specs, Komponenten, Tests">Use Case</button>
+            <button class="dview" data-view="sequenz" title="Sequenzdiagramm aus Spec-Kriterien">Sequenz</button>
+            <button class="dview" data-view="architektur" title="Systemarchitektur: Komponenten + Abhängigkeiten">Architektur</button>
+            <button class="dview" data-view="topologie" title="Gesamttopologie aller Knoten">Topologie</button>
+            <button class="dview" data-view="grid" title="Kachel-Ansicht zum Durchklicken (Drill-down)">Grid</button>
+            <select id="seq-spec" hidden></select>
+          </div>
+          <div id="designer-cy"></div>
+          <div id="designer-mermaid" hidden></div>
+          <div id="designer-grid" hidden></div>
+        </div>
         <div id="tab-validate" class="tab-body"></div>
         <div id="tab-drift" class="tab-body"></div>
         <div id="tab-doku" class="tab-body">
