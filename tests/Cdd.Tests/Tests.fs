@@ -46,7 +46,7 @@ let ``validate flags a spec without criteria`` () =
     Assert.Contains(findings, fun f ->
         f.Severity = Validate.Error && f.EntityId = EntityId "spec-empty")
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-validate-test-1")>]
 let ``validate flags a test referencing an unknown spec`` () =
     let entries =
         [ { Id = EntityId "test-x"
@@ -54,7 +54,7 @@ let ``validate flags a test referencing an unknown spec`` () =
             Payload = TestNode { SpecRef = EntityId "nope"; Name = "n"; Derived = false } } ]
     Assert.NotEmpty(Validate.validate entries |> Validate.errors)
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-validate-test-2")>]
 let ``validate detects a dependency cycle`` () =
     let comp id dep =
         { Id = EntityId id
@@ -73,7 +73,7 @@ let ``validate accepts a well-formed graph`` () =
             Payload = TestNode { SpecRef = EntityId "spec-ok"; Name = "n"; Derived = true } } ]
     Assert.Empty(Validate.validate entries |> Validate.errors)
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-derive-tests-test-1")>]
 let ``derive-tests creates one test per criterion`` () =
     let derived = Derive.deriveTests [ sampleSpec "spec-a" [ crit 1; crit 2; crit 3 ] ]
     Assert.Equal(3, List.length derived)
@@ -82,7 +82,7 @@ let ``derive-tests creates one test per criterion`` () =
         | TestNode t -> Assert.True t.Derived
         | _ -> failwith "expected a test node")
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-derive-tests-test-2")>]
 let ``derive-tests is idempotent`` () =
     let spec = sampleSpec "spec-a" [ crit 1; crit 2 ]
     let firstPass = Derive.deriveTests [ spec ]
@@ -140,7 +140,7 @@ let ``validate warns on term without definition`` () =
             Payload = TermNode { Name = "A"; Definition = " "; Synonyms = []; Relations = [] } } ]
     Assert.NotEmpty(Validate.validate entries |> Validate.warnings)
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-export-context-test-1")>]
 let ``export-context renders all sections and content`` () =
     let entries =
         [ { Id = EntityId "term-a"; Convergence = Aligned
@@ -159,7 +159,7 @@ let ``export-context renders all sections and content`` () =
     Assert.Contains("## Offene Arbeit (nicht Aligned)", md)
     Assert.Contains("`spec-a`", md)
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-governance-test-1")>]
 let ``invariant SpecsNeedTests flags untested specs`` () =
     let inv = { Id = EntityId "inv-1"; Convergence = Aligned
                 Payload = InvariantNode { Description = "Specs brauchen Tests"; Rule = SpecsNeedTests } }
@@ -195,7 +195,42 @@ let ``invariant round-trips through json`` () =
                 Payload = InvariantNode { Description = "d"; Rule = IdPrefix("spec", "spec-") } }
     Assert.Equal(inv, Json.serialize inv |> Json.deserialize<SpotEntry>)
 
+[<Fact; Trait("spot", "spec-sync-tests-test-1")>]
+let ``sync-tests measures coverage via markers`` () =
+    let testNode id =
+        { Id = EntityId id; Convergence = Pending
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "n"; Derived = true } }
+    let entries = [ testNode "spec-x-test-1"; testNode "spec-x-test-2" ]
+    let covered = Set.ofList [ "spec-x-test-1" ]
+    let mismatches, updated = Sync.syncTests covered entries
+    Assert.Equal(1, List.length mismatches)   // test-1: Pending → Aligned
+    Assert.Equal(Aligned, (updated |> List.find (fun e -> e.Id = EntityId "spec-x-test-1")).Convergence)
+    Assert.Equal(Pending, (updated |> List.find (fun e -> e.Id = EntityId "spec-x-test-2")).Convergence)
+
 [<Fact>]
+let ``scanTestMarkers finds traits and comment markers`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-mk-" + System.Guid.NewGuid().ToString("N"))
+    try
+        Directory.CreateDirectory tmp |> ignore
+        File.WriteAllText(Path.Combine(tmp, "a.fs"), """[<Fact; Trait("spot", "spec-a-test-1")>]""")
+        File.WriteAllText(Path.Combine(tmp, "b.mjs"), "// [spot: spec-b-test-1]\nconsole.log(1)")
+        let found = Sync.scanTestMarkers tmp
+        Assert.Contains("spec-a-test-1", found)
+        Assert.Contains("spec-b-test-1", found)
+    finally
+        if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact; Trait("spot", "spec-sync-docs-test-1")>]
+let ``statusMarkdown reflects aligned and pending specs`` () =
+    let entries =
+        [ { sampleSpec "spec-fertig" [ crit 1 ] with Convergence = Aligned }
+          sampleSpec "spec-offen" [ crit 1 ] ]
+    let md = Export.statusMarkdown entries
+    Assert.Contains("✅ **T**", md)
+    Assert.Contains("🔜 **T**", md)
+    Assert.Contains("generiert", md)
+
+[<Fact; Trait("spot", "spec-roundtrip-sync-test-1")>]
 let ``sync-code compares model components against code projects`` () =
     let comp name deps =
         { Id = EntityId ("comp-" + name); Convergence = Pending
@@ -246,7 +281,7 @@ let ``sync scanProjects reads fsproj references`` () =
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-fehlerliste-test-1")>]
 let ``validate detects contradictory term hierarchy cycles`` () =
     let term id rels =
         { Id = EntityId id; Convergence = Aligned
@@ -257,7 +292,7 @@ let ``validate detects contradictory term hierarchy cycles`` () =
     let ok = [ term "term-a" [ RelatesTo(EntityId "term-b") ]; term "term-b" [ RelatesTo(EntityId "term-a") ] ]
     Assert.Empty(Validate.validate ok |> Validate.errors)
 
-[<Fact>]
+[<Fact; Trait("spot", "spec-fehlerliste-test-2")>]
 let ``validate warns on ambiguous duplicate term names`` () =
     let term id name =
         { Id = EntityId id; Convergence = Aligned

@@ -248,6 +248,23 @@ let entries =
                   When = "validiert wird"
                   Then = "wird Mehrdeutigkeit als Warnung gemeldet" } ] } }
 
+      { Id = EntityId "spec-sync-tests"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Test-Konvergenz messen"
+            Intent = "Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet"
+            Criteria =
+              [ { Given = "ein Test-Knoten und ein Test mit Trait(\"spot\", id) oder [spot: id]-Marker"
+                  When = "cdd sync-tests läuft"
+                  Then = "wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI" } ] } }
+      { Id = EntityId "spec-sync-docs"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Doku-Konvergenz"
+            Intent = "Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler"
+            Criteria =
+              [ { Given = "ein veralteter README-Status"
+                  When = "cdd sync-docs --check in der CI läuft"
+                  Then = "schlägt der Build fehl, bis sync-docs den Status neu generiert hat" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode

@@ -84,3 +84,40 @@ module Sync =
                 | ComponentNode _, Some s -> { e with Convergence = s }
                 | _ -> e)
         results, updated
+
+    /// Welche Test-Knoten sind durch echte automatisierte Tests abgedeckt?
+    /// Erkennung über Marker im Test-Quellcode:
+    ///   F#/C#:  [<Trait("spot", "<test-knoten-id>")>]
+    ///   beliebig: Kommentar  [spot: <test-knoten-id>]
+    let scanTestMarkers (testDir: string) : Set<string> =
+        if not (Directory.Exists testDir) then Set.empty
+        else
+            let exts = set [ ".fs"; ".fsx"; ".cs"; ".mjs"; ".js" ]
+            Directory.GetFiles(testDir, "*.*", SearchOption.AllDirectories)
+            |> Array.filter (fun f ->
+                Set.contains (Path.GetExtension(f).ToLowerInvariant()) exts
+                && not (f.Contains "/obj/") && not (f.Contains "/bin/"))
+            |> Array.collect (fun f ->
+                let text = File.ReadAllText f
+                [| for m in Regex.Matches(text, "Trait\(\"spot\",\s*\"([^\"]+)\"\)") -> m.Groups.[1].Value
+                   for m in Regex.Matches(text, "\[spot:\s*([a-zA-Z0-9_-]+)\]") -> m.Groups.[1].Value |])
+            |> Set.ofArray
+
+    /// Misst die Konvergenz der Test-Knoten: abgedeckt → Aligned, sonst Pending.
+    /// Liefert (Id, gespeichert, gemessen) für alle Abweichungen + aktualisierte Knoten.
+    let syncTests (covered: Set<string>) (entries: SpotEntry list) =
+        let measured (e: SpotEntry) =
+            if Set.contains (idValue e.Id) covered then Aligned else Pending
+        let mismatches =
+            entries
+            |> List.choose (fun e ->
+                match e.Payload with
+                | TestNode _ when e.Convergence <> measured e -> Some(e.Id, e.Convergence, measured e)
+                | _ -> None)
+        let updated =
+            entries
+            |> List.map (fun e ->
+                match e.Payload with
+                | TestNode _ -> { e with Convergence = measured e }
+                | _ -> e)
+        mismatches, updated

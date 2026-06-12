@@ -29,6 +29,13 @@ jobs:
       - name: Selbstmodell als Demo-Seed bündeln
         run: jq -s . .spot/*.json > src/Cdd.Web/wwwroot/spot-seed.json
 
+      - name: Cache-Busting (Assets versionieren)
+        run: |
+          V="${GITHUB_SHA::8}"
+          cd src/Cdd.Web/wwwroot
+          sed -i "s|href=\"styles.css\"|href=\"styles.css?v=$V\"|; s|src=\"app.js\"|src=\"app.js?v=$V\"|" index.html
+          sed -i "s|\"./demo.js\"|\"./demo.js?v=$V\"|; s|\"./agent.js\"|\"./agent.js?v=$V\"|; s|\"./form.js\"|\"./form.js?v=$V\"|" app.js
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true

@@ -115,27 +115,31 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 
 ## Status
 
-**v0.2.** Cockpit-Slice steht:
+<!-- spot:status -->
+**71 Knoten im Selbstmodell** · 4 aktive Invarianten · 11/23 abgeleitete Tests automatisiert
 
-- ✅ SPOT-Modell als F#-Discriminated-Union (Spec, Test, Risk, Infra, Component,
-  Premise, Decision/ADR, Knowledge, Tool, Term/Ontologie)
-- ✅ Ubiquitäre Sprache: Begriffe mit Definition, Synonymen und UML-Beziehungen
-  (Generalisierung, Komposition, Assoziation), als Klassendiagramm gerendert
-- ✅ SPOT-Persistenz (JSON-pro-Entity unter `.spot/`, Id-Sanitization gegen Path-Traversal)
-- ✅ CLI: `cdd init|list|validate|diff|derive-tests`
-- ✅ Web-Cockpit: REST-API + GUI (Editor, Mermaid-Graph, Validierung, Drift)
-- ✅ Validierung: Referenz-Integrität, Zyklenerkennung, Konvergenz-Hygiene
-- ✅ Spec→Test-Ableitung (idempotent, ein Test pro Akzeptanzkriterium)
+### Kann es (Specs, gemessen Aligned)
 
-- ✅ `cdd export-context`: SPOT-Graph als LLM-Kontextpaket — zugleich die generierte,
-  lebende Doku (Cockpit-Tab „Doku" mit Download/Copy)
-- ✅ Dashboard: Monitoring über Knoten, Konvergenz, Validierung und offene Arbeit
+- ✅ **Agent-Interface** — Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt
+- ✅ **Diagramm-Designer** — Eine Zeichenfläche, viele Projektionen: Klassen, Use Case, Sequenz, Architektur, Topologie, Grid — alle Cube-gefiltert
+- ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
+- ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
+- ✅ **Formular-Editor** — Knoten werden über Eingabefelder gepflegt — JSON ist Experten-Option, nicht Voraussetzung
+- ✅ **Governance by Invariance** — Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal + CI) erzwungen
+- ✅ **Interaktiver Graph** — Diagramm-Elemente sind frei positionierbar wie in Enterprise Architect; Layouts bleiben erhalten
+- ✅ **LLM-Kontextexport** — Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut
+- ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
+- ✅ **Modell-Navigation als Würfel** — Der SPOT-Graph ist wie ein OLAP-Cube navigierbar: Slice, Dice, Drill-down, Verlinkungen
+- ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
+- ✅ **Multidimensionale Sicht** — Ein Modell, mehrere Projektionen — Graph und UML aus demselben SPOT
+- ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
+- ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
+- ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
+- ✅ **UML-Editor mit Drag and Drop** — Beziehungen entstehen durch Ziehen zwischen Diagramm-Knoten, Doppelklick öffnet das Formular
+- ✅ **VS2015-Design mit EA-Anatomie** — Das Cockpit folgt Visual Studio 2015 (Chrome) und Enterprise Architect (Fensteranordnung)
 
-Roadmap als Nächstes:
-1. Knowledge-Ingestion: PDFs/Links/Bücher als Knowledge-Knoten mit Takeaways
-2. Erstes Agent-Interface (LLM-agnostic), Tool-Knoten als Capability-Registry
-3. Round-Trip: Code → Modell und Modell → Code (echter `diff` gegen Code)
-4. Multi-Agent-Choreographie
+*Diese Sektion wird aus dem SPOT-Selbstmodell generiert (`cdd sync-docs`) — Hand-Edits werden überschrieben.*
+<!-- /spot:status -->
 
 ## Mitmachen / Entwicklung
 
