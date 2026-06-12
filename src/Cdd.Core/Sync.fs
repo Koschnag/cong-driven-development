@@ -13,11 +13,12 @@ module Sync =
         { Name       : string
           References : string list }
 
-    /// Liest alle *.fsproj unter srcDir (rekursiv) und extrahiert ProjectReferences.
+    /// Liest alle *.fsproj/*.csproj unter srcDir (rekursiv) und extrahiert ProjectReferences.
     let scanProjects (srcDir: string) : CodeProject list =
         if not (Directory.Exists srcDir) then []
         else
-            Directory.GetFiles(srcDir, "*.fsproj", SearchOption.AllDirectories)
+            [| "*.fsproj"; "*.csproj" |]
+            |> Array.collect (fun pat -> Directory.GetFiles(srcDir, pat, SearchOption.AllDirectories))
             |> Array.sort
             |> Array.map (fun f ->
                 let refs =

@@ -1,6 +1,7 @@
 // CDD Cockpit — dünner Client über der SPOT-API. Kein Framework, kein Build-Schritt.
 // Auf GitHub Pages (oder mit ?demo) läuft er ohne Backend gegen localStorage.
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+import cytoscape from "https://cdn.jsdelivr.net/npm/cytoscape@3/+esm";
 import { DEMO, demoApi, demoBanner } from "./demo.js";
 import { buildPrompt, callClaude, parseChanges, getApiKey, setApiKey } from "./agent.js";
 import { buildForm } from "./form.js";
@@ -571,32 +572,82 @@ function proposeRelation(srcId, targetId, x, y) {
   }), 0);
 }
 
+// — Interaktiver Graph (Cytoscape): frei positionieren, zoomen, verbinden —
+let cy = null;
+let graphDirty = true;
+let pendingLink = null;
+const posKey = "cdd-graph-pos";
+const savedPos = JSON.parse(localStorage.getItem(posKey) ?? "{}");
+const savePositions = () => {
+  if (!cy) return;
+  for (const n of cy.nodes()) savedPos[n.id()] = n.position();
+  localStorage.setItem(posKey, JSON.stringify(savedPos));
+};
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
 async function renderGraph() {
-  const lines = ["graph LR"];
-  const safe = (id) => id.replaceAll("-", "_");
+  // Cytoscape braucht reale Container-Maße — unsichtbar nur als 'dirty' merken.
+  if (!$("#tab-graph").classList.contains("active")) { graphDirty = true; return; }
+  graphDirty = false;
   const visible = visibleEntries();
   const visibleIds = new Set(visible.map((e) => e.Id));
+  const elements = [];
   for (const e of visible) {
-    const kind = kindOfCase(e.Payload.Case);
-    const d = payloadData(e);
-    lines.push(`${safe(e.Id)}["${kind}: ${e.Id}"]:::${e.Convergence}`);
-    if (kind === "component") for (const dep of d.DependsOn ?? []) {
-      if (visibleIds.has(dep)) lines.push(`${safe(e.Id)} --> ${safe(dep)}`);
+    elements.push({
+      data: { id: e.Id, label: `${kindOfCase(e.Payload.Case)}\n${e.Id}`, conv: e.Convergence },
+      position: savedPos[e.Id] ? { ...savedPos[e.Id] } : undefined,
+    });
+    for (const r of outRefs(e)) {
+      if (visibleIds.has(r.target))
+        elements.push({ data: { id: `${e.Id}->${r.target}:${r.label}`, source: e.Id, target: r.target, label: r.label } });
     }
-    if (kind === "test" && d.SpecRef && visibleIds.has(d.SpecRef)) lines.push(`${safe(e.Id)} -. testet .-> ${safe(d.SpecRef)}`);
-    if (kind === "decision" && d.Supersedes && visibleIds.has(d.Supersedes)) lines.push(`${safe(e.Id)} -. ersetzt .-> ${safe(d.Supersedes)}`);
   }
-  lines.push("classDef Aligned stroke:#3fb950,stroke-width:2px");
-  lines.push("classDef Pending stroke:#d29922,stroke-width:2px");
-  lines.push("classDef Diverged stroke:#f85149,stroke-width:2px");
-  lines.push("classDef Orphaned stroke:#a371f7,stroke-width:2px");
-  try {
-    const { svg } = await mermaid.render("spotGraph", lines.join("\n"));
-    $("#graph").innerHTML = svg;
-    wireDiagramClicks($("#graph"));
-  } catch {
-    $("#graph").textContent = "Graph konnte nicht gerendert werden.";
-  }
+  if (cy) { cy.destroy(); cy = null; }
+  const allPositioned = visible.length > 0 && visible.every((e) => savedPos[e.Id]);
+  cy = cytoscape({
+    container: $("#graph"),
+    elements,
+    layout: { name: allPositioned ? "preset" : "cose", animate: false, padding: 30 },
+    wheelSensitivity: 0.2,
+    style: [
+      { selector: "node", style: {
+          shape: "round-rectangle", width: "label", height: "label",
+          padding: "8px", "background-color": "#e3eefb", "border-width": 2,
+          label: "data(label)", "text-wrap": "wrap", "font-size": "10px",
+          "font-family": "Segoe UI, sans-serif", "text-valign": "center",
+          color: cssVar("--fg") || "#1e1e1e" } },
+      { selector: 'node[conv = "Aligned"]', style: { "border-color": cssVar("--aligned") } },
+      { selector: 'node[conv = "Pending"]', style: { "border-color": cssVar("--pending") } },
+      { selector: 'node[conv = "Diverged"]', style: { "border-color": cssVar("--diverged") } },
+      { selector: 'node[conv = "Orphaned"]', style: { "border-color": cssVar("--orphaned") } },
+      { selector: "node:selected", style: { "background-color": "#c9def5", "border-width": 3 } },
+      { selector: "edge", style: {
+          width: 1.5, "line-color": "#5b7da8", "target-arrow-color": "#5b7da8",
+          "target-arrow-shape": "triangle", "curve-style": "bezier",
+          label: "data(label)", "font-size": "8px", color: cssVar("--muted") || "#666",
+          "text-rotation": "autorotate", "text-background-color": cssVar("--bg") || "#fff",
+          "text-background-opacity": 0.8 } },
+    ],
+  });
+  cy.on("layoutstop", savePositions);
+  cy.on("dragfree", "node", savePositions);
+  cy.on("tap", "node", (ev) => {
+    const id = ev.target.id();
+    if (pendingLink && pendingLink !== id) {
+      const src = pendingLink;
+      pendingLink = null;
+      const oe = ev.originalEvent ?? { clientX: 200, clientY: 200 };
+      proposeRelation(src, id, oe.clientX, oe.clientY);
+    } else {
+      select(id);
+    }
+  });
+  cy.on("dbltap", "node", (ev) => { select(ev.target.id()); setEditorMode("form"); });
+  cy.on("cxttap", "node", (ev) => {
+    pendingLink = ev.target.id();
+    setMsg(`Beziehung von '${pendingLink}': Ziel-Knoten anklicken (Esc bricht ab) …`);
+  });
+  cy.on("tap", (ev) => { if (ev.target === cy) pendingLink = null; });
 }
 
 // UML-Klassendiagramm aus der Ontologie (Term-Knoten der ubiquitären Sprache).
@@ -848,6 +899,10 @@ for (const t of document.querySelectorAll(".tab")) {
     document.querySelectorAll(".tab, .tab-body").forEach((x) => x.classList.remove("active"));
     t.classList.add("active");
     $("#tab-" + t.dataset.tab).classList.add("active");
+    if (t.dataset.tab === "graph") {
+      if (graphDirty || !cy) renderGraph();
+      else cy.resize();
+    }
   };
 }
 // — Agent-Tab: Prosa → Modelländerung (direkt via Claude oder per Prompt) —
@@ -972,6 +1027,7 @@ $("#filter").oninput = (ev) => {
   renderSidebar();
 };
 document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && pendingLink) { pendingLink = null; setMsg(""); }
   if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
     ev.preventDefault();
     if (!$("#btn-save").disabled) save();

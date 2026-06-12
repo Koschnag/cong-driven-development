@@ -1,0 +1,14 @@
+{
+  "Id": "spec-mcp-server-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-mcp-server",
+        "Name": "MCP-Server \u2014 when spot_upsert oder spot_delete aufgerufen wird then wird die \u00C4nderung gespeichert und die Validierung (inkl. Invarianten) zur\u00FCckgemeldet",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}
