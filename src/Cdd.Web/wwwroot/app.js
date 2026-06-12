@@ -839,11 +839,20 @@ for (const btn of document.querySelectorAll(".panel-close")) {
 
 $("#btn-view").onclick = (ev) => {
   ev.stopPropagation();
+  $("#model-menu").hidden = true;
   const m = $("#view-menu");
   m.hidden = !m.hidden;
 };
+$("#btn-model-menu").onclick = (ev) => {
+  ev.stopPropagation();
+  $("#view-menu").hidden = true;
+  const m = $("#model-menu");
+  m.hidden = !m.hidden;
+};
+$("#mi-derive").onclick = () => { $("#model-menu").hidden = true; deriveTests(); };
+$("#mi-refresh").onclick = () => { $("#model-menu").hidden = true; refresh(); };
 document.addEventListener("click", (ev) => {
-  if (!ev.target.closest(".menu")) $("#view-menu").hidden = true;
+  if (!ev.target.closest(".menu")) { $("#view-menu").hidden = true; $("#model-menu").hidden = true; }
 });
 applyPanelVisibility();
 

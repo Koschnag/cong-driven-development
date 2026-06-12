@@ -277,3 +277,95 @@ textarea.f-input { resize: vertical; font-family: inherit; }
 
 /* Interaktiver Graph */
 #graph { height: calc(100vh - 240px); min-height: 320px; }
+
+/* ════════════════ VS-Classic-Skin (2005/2008-Ära) — Light Theme ════════════════ */
+html[data-theme="light"] {
+  --chrome: #e7edf7; --border: #99a8c3; --panel: #eef2f9;
+  --paneltitle: #dce6f4; --hover: #ffe8a6; --accent: #316ac5;
+  --statusbar: #e7edf7;
+}
+html[data-theme="light"] body {
+  font: 12px/1.5 Tahoma, "Segoe UI", sans-serif;
+  background: var(--chrome);
+}
+/* Menüzeile */
+html[data-theme="light"] header {
+  background: linear-gradient(#f9fbfe, #dde6f3);
+  border-bottom: 1px solid var(--border);
+  padding: 2px 8px;
+}
+html[data-theme="light"] h1 { font-size: 13px; }
+.menubar { align-items: center; flex: 1; margin-left: 16px; }
+.menubar .sb-spacer { flex: 1; }
+.menu-top { font-size: 12px; padding: 3px 10px; }
+html[data-theme="light"] .menu-top,
+html[data-theme="light"] header .toolbar button {
+  border: 1px solid transparent; background: transparent; color: #1e1e1e; border-radius: 0;
+}
+html[data-theme="light"] .menu-top:hover,
+html[data-theme="light"] header .toolbar button:hover {
+  background: var(--hover); border-color: #e5c365;
+}
+/* Toolfenster-Captions: klassischer Verlauf */
+html[data-theme="light"] .panel-title {
+  background: linear-gradient(#ffffff, #c6d5ef);
+  border-bottom: 1px solid var(--border);
+  color: #1e3a6e; font-size: 11px; font-weight: 700;
+  text-transform: none; letter-spacing: 0; padding: 4px 8px;
+}
+/* Klassische Chrome-Fugen zwischen Toolfenstern */
+html[data-theme="light"] #layout { gap: 0; background: var(--chrome); }
+html[data-theme="light"] .panel { background: #ffffff; border: 1px solid var(--border); margin: 3px 0 3px 3px; }
+html[data-theme="light"] #panels { margin-right: 3px; }
+html[data-theme="light"] .splitter { border: none; background: transparent; width: 4px; }
+html[data-theme="light"] .splitter:hover, html[data-theme="light"] .splitter.dragging { background: var(--accent); }
+html[data-theme="light"] #toolbox, html[data-theme="light"] #sidebar { background: #f4f7fc; }
+/* Dokument-Tabs: klassisch — Streifen mit Verlauf, aktiver Tab weiß und erhaben */
+html[data-theme="light"] .tabs {
+  background: linear-gradient(#e9eef7, #cdd9ec);
+  border-bottom: 1px solid var(--border); padding: 3px 6px 0; gap: 2px;
+}
+html[data-theme="light"] .tab {
+  background: linear-gradient(#f4f6fa, #d9e2f1);
+  border: 1px solid var(--border); border-bottom: none;
+  border-radius: 3px 3px 0 0; padding: 4px 12px; font-size: 12px; color: #2a3a55;
+}
+html[data-theme="light"] .tab:hover:not(.active) { background: var(--hover); border-color: #e5c365; }
+html[data-theme="light"] .tab.active {
+  background: #ffffff; color: #000; font-weight: 700;
+  border-top: 2px solid #e5a000; position: relative; top: 1px;
+}
+/* Buttons: klassisch flach mit Orange-Hover */
+html[data-theme="light"] button {
+  border-radius: 0; background: linear-gradient(#fdfdfe, #e8edf6);
+  border: 1px solid #aebbd3;
+}
+html[data-theme="light"] button:hover:not(:disabled) { background: var(--hover); border-color: #e5c365; }
+html[data-theme="light"] .node-item, html[data-theme="light"] .tool-item,
+html[data-theme="light"] .menu-item, html[data-theme="light"] .panel-close,
+html[data-theme="light"] .f-del, html[data-theme="light"] .f-add {
+  background: none; border-color: transparent;
+}
+html[data-theme="light"] .node-item:hover, html[data-theme="light"] .tool-item:hover,
+html[data-theme="light"] .menu-item:hover { background: var(--hover); border-color: #e5c365; }
+html[data-theme="light"] .node-item.selected { background: var(--accent); color: #fff; }
+/* Cube-Bar wie klassische Symbolleiste */
+html[data-theme="light"] #cube-bar {
+  background: linear-gradient(#f6f8fc, #dfe7f3);
+  border-bottom: 1px solid var(--border);
+}
+/* Statusleiste: klassisch grau mit versenkten Feldern */
+html[data-theme="light"] #statusbar {
+  background: linear-gradient(#eef2f9, #d8e1f0);
+  color: #1e1e1e; border-top: 1px solid var(--border);
+}
+html[data-theme="light"] #statusbar > span:not(.sb-spacer) {
+  border: 1px solid #b6c2d6; border-top-color: #8fa0bc;
+  background: #e9eef6; padding: 0 8px; border-radius: 0;
+}
+html[data-theme="light"] #sb-validate.error { color: #b00020; }
+/* Eingabefelder klassisch */
+html[data-theme="light"] .f-input, html[data-theme="light"] #filter,
+html[data-theme="light"] #editor-json, html[data-theme="light"] select {
+  border-radius: 0; border-color: #aebbd3;
+}
