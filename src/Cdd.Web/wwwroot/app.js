@@ -67,8 +67,7 @@ async function refresh() {
   renderCubeBar();
   renderSidebar();
   renderDashboard();
-  renderGraph();
-  renderUml();
+  renderDesigner();
   renderValidate();
   renderDrift();
   renderDoku();
@@ -94,8 +93,7 @@ function renderStatusbar() {
 function rerenderViews() {
   renderCubeBar();
   renderSidebar();
-  renderGraph();
-  renderUml();
+  renderDesigner();
 }
 
 // — Cube-Bar: Slice (Knotenarten), Dice (Konvergenz), Drill-down (Fokus) —
@@ -258,7 +256,7 @@ function select(id, opts = {}) {
   renderStatusbar();
   renderInspector();
   renderSidebar();
-  if (cube.focus) { renderGraph(); renderUml(); }
+  if (cube.focus) renderDesigner();
 }
 
 // — Inspektor: der Modell-Debugger (Details, Verlinkungen, Befunde) —
@@ -572,75 +570,135 @@ function proposeRelation(srcId, targetId, x, y) {
   }), 0);
 }
 
-// — Interaktiver Graph (Cytoscape): frei positionieren, zoomen, verbinden —
+// ═══ Diagramm-Designer: eine Zeichenfläche, viele Sichten ═══════════════
+// Alle Sichten speisen sich aus visibleEntries() — Slice/Dice/Fokus (Cube)
+// wirken überall. Drill-down: Grid-Kachel oder Fokus; Roll-up: Fokus aus.
 let cy = null;
-let graphDirty = true;
 let pendingLink = null;
-const posKey = "cdd-graph-pos";
-const savedPos = JSON.parse(localStorage.getItem(posKey) ?? "{}");
+let designerDirty = true;
+let designerView = localStorage.getItem("cdd-designer-view") ?? "klassen";
+const posStore = JSON.parse(localStorage.getItem("cdd-designer-pos") ?? "{}");
 const savePositions = () => {
   if (!cy) return;
-  for (const n of cy.nodes()) savedPos[n.id()] = n.position();
-  localStorage.setItem(posKey, JSON.stringify(savedPos));
+  const pos = (posStore[designerView] ??= {});
+  for (const n of cy.nodes()) pos[n.id()] = n.position();
+  localStorage.setItem("cdd-designer-pos", JSON.stringify(posStore));
 };
 const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-async function renderGraph() {
-  // Cytoscape braucht reale Container-Maße — unsichtbar nur als 'dirty' merken.
-  if (!$("#tab-graph").classList.contains("active")) { graphDirty = true; return; }
-  graphDirty = false;
-  const visible = visibleEntries();
-  const visibleIds = new Set(visible.map((e) => e.Id));
-  const elements = [];
-  for (const e of visible) {
-    elements.push({
-      data: { id: e.Id, label: `${kindOfCase(e.Payload.Case)}\n${e.Id}`, conv: e.Convergence },
-      position: savedPos[e.Id] ? { ...savedPos[e.Id] } : undefined,
-    });
-    for (const r of outRefs(e)) {
-      if (visibleIds.has(r.target))
-        elements.push({ data: { id: `${e.Id}->${r.target}:${r.label}`, source: e.Id, target: r.target, label: r.label } });
+// Element-Bauer je Sicht: Knotenmenge, Kanten, Form.
+const viewBuilders = {
+  klassen(visible, ids) {
+    const els = [];
+    for (const e of visible.filter((x) => x.Payload.Case === "TermNode")) {
+      const d = payloadData(e);
+      const syn = (d.Synonyms ?? []).join(", ");
+      els.push({ data: { id: e.Id, label: d.Name + (syn ? `\n«${syn}»` : ""), conv: e.Convergence, shape: "round-rectangle" } });
+      for (const r of d.Relations ?? []) {
+        if (!ids.has(r.Fields?.Item)) continue;
+        const lbl = r.Case === "IsA" ? "ist ein" : r.Case === "PartOf" ? "Teil von" : "";
+        els.push({ data: { id: `${e.Id}>${r.Fields.Item}:${r.Case}`, source: e.Id, target: r.Fields.Item,
+          label: lbl, arrow: r.Case === "IsA" ? "triangle-backcurve" : r.Case === "PartOf" ? "diamond" : "triangle",
+          dash: r.Case === "RelatesTo" ? [6, 3] : [] } });
+      }
     }
-  }
+    return els;
+  },
+  architektur(visible, ids) {
+    const els = [];
+    for (const e of visible.filter((x) => x.Payload.Case === "ComponentNode")) {
+      els.push({ data: { id: e.Id, label: payloadData(e).Name ?? e.Id, conv: e.Convergence, shape: "round-rectangle" } });
+      for (const dep of payloadData(e).DependsOn ?? []) {
+        if (!ids.has(dep)) continue;
+        const isComp = entries.some((x) => x.Id === dep && x.Payload.Case === "ComponentNode");
+        if (!isComp) els.push({ data: { id: dep, label: dep, conv: entries.find((x) => x.Id === dep)?.Convergence ?? "Pending", shape: "ellipse" } });
+        els.push({ data: { id: `${e.Id}>${dep}`, source: e.Id, target: dep, label: "nutzt", arrow: "triangle", dash: [] } });
+      }
+    }
+    return els;
+  },
+  usecase(visible, ids) {
+    const els = [];
+    for (const e of visible) {
+      const d = payloadData(e);
+      if (e.Payload.Case === "SpecNode")
+        els.push({ data: { id: e.Id, label: d.Title ?? e.Id, conv: e.Convergence, shape: "ellipse" } });
+      else if (e.Payload.Case === "ComponentNode")
+        els.push({ data: { id: e.Id, label: d.Name ?? e.Id, conv: e.Convergence, shape: "round-rectangle" } });
+      else if (e.Payload.Case === "TestNode" && ids.has(d.SpecRef))
+        els.push({ data: { id: e.Id, label: "✓ " + e.Id, conv: e.Convergence, shape: "tag" } });
+    }
+    const have = new Set(els.map((x) => x.data.id));
+    for (const e of visible) {
+      const d = payloadData(e);
+      if (e.Payload.Case === "ComponentNode")
+        for (const dep of d.DependsOn ?? [])
+          if (have.has(dep)) els.push({ data: { id: `${e.Id}>${dep}`, source: e.Id, target: dep, label: "", arrow: "triangle", dash: [4, 3] } });
+      if (e.Payload.Case === "TestNode" && have.has(d.SpecRef))
+        els.push({ data: { id: `${e.Id}>${d.SpecRef}`, source: e.Id, target: d.SpecRef, label: "testet", arrow: "triangle", dash: [2, 2] } });
+    }
+    return els;
+  },
+  topologie(visible, ids) {
+    const els = [];
+    for (const e of visible)
+      els.push({ data: { id: e.Id, label: `${kindOfCase(e.Payload.Case)}\n${e.Id}`, conv: e.Convergence,
+        shape: e.Payload.Case === "ComponentNode" ? "round-rectangle" : e.Payload.Case === "SpecNode" ? "ellipse" : "round-rectangle" } });
+    for (const e of visible)
+      for (const r of outRefs(e))
+        if (ids.has(r.target))
+          els.push({ data: { id: `${e.Id}>${r.target}:${r.label}`, source: e.Id, target: r.target, label: r.label, arrow: "triangle", dash: [] } });
+    return els;
+  },
+};
+
+function renderCyView() {
+  const visible = visibleEntries();
+  const ids = new Set(visible.map((e) => e.Id));
+  const elements = viewBuilders[designerView](visible, ids);
+  const saved = posStore[designerView] ?? {};
+  for (const el of elements) if (!el.data.source && saved[el.data.id]) el.position = { ...saved[el.data.id] };
   if (cy) { cy.destroy(); cy = null; }
-  const allPositioned = visible.length > 0 && visible.every((e) => savedPos[e.Id]);
+  const nodeEls = elements.filter((el) => !el.data.source);
+  const allPositioned = nodeEls.length > 0 && nodeEls.every((el) => el.position);
   cy = cytoscape({
-    container: $("#graph"),
+    container: $("#designer-cy"),
     elements,
-    layout: { name: allPositioned ? "preset" : "cose", animate: false, padding: 30 },
+    layout: { name: allPositioned ? "preset" : designerView === "topologie" ? "cose" : "breadthfirst", animate: false, padding: 30, spacingFactor: 1.2 },
     wheelSensitivity: 0.2,
     style: [
       { selector: "node", style: {
-          shape: "round-rectangle", width: "label", height: "label",
-          padding: "8px", "background-color": "#e3eefb", "border-width": 2,
-          label: "data(label)", "text-wrap": "wrap", "font-size": "10px",
-          "font-family": "Segoe UI, sans-serif", "text-valign": "center",
-          color: cssVar("--fg") || "#1e1e1e" } },
+          shape: "data(shape)", width: "label", height: "label", padding: "9px",
+          "background-color": cssVar("--diagram-node") || "#e3eefb",
+          "border-width": 2, label: "data(label)", "text-wrap": "wrap",
+          "font-size": "10px", "font-family": "Tahoma, Segoe UI, sans-serif",
+          "text-valign": "center", color: cssVar("--fg") || "#1e1e1e" } },
       { selector: 'node[conv = "Aligned"]', style: { "border-color": cssVar("--aligned") } },
       { selector: 'node[conv = "Pending"]', style: { "border-color": cssVar("--pending") } },
       { selector: 'node[conv = "Diverged"]', style: { "border-color": cssVar("--diverged") } },
       { selector: 'node[conv = "Orphaned"]', style: { "border-color": cssVar("--orphaned") } },
-      { selector: "node:selected", style: { "background-color": "#c9def5", "border-width": 3 } },
+      { selector: "node:selected", style: { "background-color": cssVar("--hover") || "#c9def5", "border-width": 3 } },
       { selector: "edge", style: {
-          width: 1.5, "line-color": "#5b7da8", "target-arrow-color": "#5b7da8",
-          "target-arrow-shape": "triangle", "curve-style": "bezier",
+          width: 1.5, "line-color": cssVar("--diagram-line") || "#5b7da8",
+          "target-arrow-color": cssVar("--diagram-line") || "#5b7da8",
+          "target-arrow-shape": "data(arrow)", "line-dash-pattern": "data(dash)",
+          "line-style": "solid", "curve-style": "bezier",
           label: "data(label)", "font-size": "8px", color: cssVar("--muted") || "#666",
           "text-rotation": "autorotate", "text-background-color": cssVar("--bg") || "#fff",
-          "text-background-opacity": 0.8 } },
+          "text-background-opacity": 0.85 } },
     ],
   });
   cy.on("layoutstop", savePositions);
   cy.on("dragfree", "node", savePositions);
   cy.on("tap", "node", (ev) => {
     const id = ev.target.id();
+    if (!entries.some((e) => e.Id === id)) return;
     if (pendingLink && pendingLink !== id) {
       const src = pendingLink;
       pendingLink = null;
-      const oe = ev.originalEvent ?? { clientX: 200, clientY: 200 };
+      const oe = ev.originalEvent ?? { clientX: 240, clientY: 240 };
       proposeRelation(src, id, oe.clientX, oe.clientY);
-    } else {
-      select(id);
-    }
+    } else select(id);
   });
   cy.on("dbltap", "node", (ev) => { select(ev.target.id()); setEditorMode("form"); });
   cy.on("cxttap", "node", (ev) => {
@@ -650,38 +708,75 @@ async function renderGraph() {
   cy.on("tap", (ev) => { if (ev.target === cy) pendingLink = null; });
 }
 
-// UML-Klassendiagramm aus der Ontologie (Term-Knoten der ubiquitären Sprache).
-async function renderUml() {
-  const visible = visibleEntries();
-  const terms = visible.filter((e) => e.Payload.Case === "TermNode");
-  const termIds = new Set(terms.map((t) => t.Id));
-  const el = $("#uml");
-  if (!terms.length) {
-    el.innerHTML = "<p>Keine Begriffe in der aktuellen Sicht. Filter/Fokus prüfen oder über „+ Begriff (Ontologie)“ anlegen.</p>";
-    return;
+// Sequenzdiagramm: Spec-Kriterien als Kontext↔System-Interaktion (mermaid).
+async function renderSequenz() {
+  const specs = visibleEntries().filter((e) => e.Payload.Case === "SpecNode");
+  const sel = $("#seq-spec");
+  sel.innerHTML = "";
+  for (const sp of specs) {
+    const o = document.createElement("option");
+    o.value = sp.Id;
+    o.textContent = payloadData(sp).Title ?? sp.Id;
+    sel.appendChild(o);
   }
-  const safe = (id) => id.replaceAll("-", "_");
-  const lines = ["classDiagram"];
-  for (const t of terms) {
-    const d = payloadData(t);
-    lines.push(`class ${safe(t.Id)}["${d.Name || t.Id}"]`);
-    for (const syn of d.Synonyms ?? []) lines.push(`${safe(t.Id)} : ${syn}`);
-    for (const r of d.Relations ?? []) {
-      const target = r.Fields?.Item;
-      if (!target || !termIds.has(target)) continue;
-      const a = safe(t.Id), b = safe(target);
-      if (r.Case === "IsA") lines.push(`${b} <|-- ${a} : ist ein`);
-      else if (r.Case === "PartOf") lines.push(`${b} *-- ${a} : Teil von`);
-      else lines.push(`${a} ..> ${b}`);
-    }
+  const box = $("#designer-mermaid");
+  if (!specs.length) { box.innerHTML = "<p class='insp-hint'>Keine Specs in der aktuellen Sicht.</p>"; return; }
+  if (![...sel.options].some((o) => o.value === sel.dataset.chosen)) sel.dataset.chosen = specs[0].Id;
+  sel.value = sel.dataset.chosen;
+  const spec = specs.find((e) => e.Id === sel.value) ?? specs[0];
+  const d = payloadData(spec);
+  const esc = (t) => String(t).replaceAll(";", ",");
+  const lines = ["sequenceDiagram", "  autonumber", "  participant K as Kontext (Given)", "  participant S as System"];
+  for (const c of d.Criteria ?? []) {
+    lines.push(`  Note over K,S: GIVEN ${esc(c.Given)}`);
+    lines.push(`  K->>S: WHEN ${esc(c.When)}`);
+    lines.push(`  S-->>K: THEN ${esc(c.Then)}`);
   }
   try {
-    const { svg } = await mermaid.render("umlDiagram", lines.join("\n"));
-    el.innerHTML = svg;
-    wireDiagramClicks(el);
-  } catch {
-    el.textContent = "UML konnte nicht gerendert werden.";
+    const { svg } = await mermaid.render("seqDiagram", lines.join("\n"));
+    box.innerHTML = `<h4>${d.Title ?? spec.Id}</h4>` + svg;
+  } catch { box.textContent = "Sequenz konnte nicht gerendert werden."; }
+}
+
+// Grid: Kacheln zum Durchklicken — Klick = Drill-down (Fokus auf den Knoten).
+function renderGrid() {
+  const box = $("#designer-grid");
+  box.innerHTML = "";
+  for (const e of visibleEntries()) {
+    const d = payloadData(e);
+    const card = document.createElement("button");
+    card.className = "gcard";
+    card.innerHTML = `<span class="gkind">${kindMeta[kindOfCase(e.Payload.Case)]?.[0] ?? "•"} ${kindOfCase(e.Payload.Case)}</span>
+      <b></b><small></small><span class="dot ${e.Convergence}"></span>`;
+    card.querySelector("b").textContent = d.Name ?? d.Title ?? d.Statement ?? d.Description ?? e.Id;
+    card.querySelector("small").textContent = e.Id;
+    card.onclick = () => {
+      select(e.Id);
+      cube.focus = true;
+      $("#focus-toggle").checked = true;
+      designerView = "topologie";
+      renderDesigner();
+      rerenderViews();
+    };
+    box.appendChild(card);
   }
+  if (!box.children.length) box.innerHTML = "<p class='insp-hint'>Keine Knoten in der aktuellen Sicht.</p>";
+}
+
+function renderDesigner() {
+  if (!$("#tab-designer").classList.contains("active")) { designerDirty = true; return; }
+  designerDirty = false;
+  localStorage.setItem("cdd-designer-view", designerView);
+  for (const b of document.querySelectorAll(".dview"))
+    b.classList.toggle("active", b.dataset.view === designerView);
+  const isCy = ["klassen", "architektur", "usecase", "topologie"].includes(designerView);
+  $("#designer-cy").hidden = !isCy;
+  $("#designer-mermaid").hidden = designerView !== "sequenz";
+  $("#designer-grid").hidden = designerView !== "grid";
+  $("#seq-spec").hidden = designerView !== "sequenz";
+  if (isCy) renderCyView();
+  else if (designerView === "sequenz") renderSequenz();
+  else renderGrid();
 }
 
 async function renderValidate() {
@@ -900,16 +995,15 @@ window.addEventListener("hashchange", () => {
 });
 $("#btn-theme").onclick = () => {
   applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
-  renderGraph();
-  renderUml();
+  renderDesigner();
 };
 for (const t of document.querySelectorAll(".tab")) {
   t.onclick = () => {
     document.querySelectorAll(".tab, .tab-body").forEach((x) => x.classList.remove("active"));
     t.classList.add("active");
     $("#tab-" + t.dataset.tab).classList.add("active");
-    if (t.dataset.tab === "graph") {
-      if (graphDirty || !cy) renderGraph();
+    if (t.dataset.tab === "designer") {
+      if (designerDirty || !cy) renderDesigner();
       else cy.resize();
     }
   };
@@ -1031,6 +1125,10 @@ $("#btn-doku-copy").onclick = async () => {
   await navigator.clipboard.writeText(dokuText);
   setMsg("Kontextpaket kopiert ✔ — direkt an eine KI übergeben.", "ok");
 };
+for (const b of document.querySelectorAll(".dview")) {
+  b.onclick = () => { designerView = b.dataset.view; renderDesigner(); };
+}
+$("#seq-spec").onchange = (ev) => { ev.target.dataset.chosen = ev.target.value; renderSequenz(); };
 $("#filter").oninput = (ev) => {
   filterText = ev.target.value;
   renderSidebar();

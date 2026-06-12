@@ -1,0 +1,14 @@
+{
+  "Id": "spec-diagram-designer-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-diagram-designer",
+        "Name": "Diagramm-Designer \u2014 when zwischen Designer-Sichten gewechselt wird then zeigt jede Sicht dieselbe gefilterte Teilmenge in ihrer Projektion",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

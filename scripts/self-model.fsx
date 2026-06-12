@@ -224,6 +224,18 @@ let entries =
                   When = "die Seite neu geladen wird"
                   Then = "behält der Knoten seine Position; Rechtsklick startet eine neue Beziehung" } ] } }
 
+      { Id = EntityId "spec-diagram-designer"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Diagramm-Designer"
+            Intent = "Eine Zeichenfläche, viele Projektionen: Klassen, Use Case, Sequenz, Architektur, Topologie, Grid — alle Cube-gefiltert"
+            Criteria =
+              [ { Given = "ein aktiver Cube-Filter oder Fokus"
+                  When = "zwischen Designer-Sichten gewechselt wird"
+                  Then = "zeigt jede Sicht dieselbe gefilterte Teilmenge in ihrer Projektion" }
+                { Given = "eine Grid-Kachel"
+                  When = "sie angeklickt wird"
+                  Then = "wird in die Topologie des Knotens gedrillt (Fokus an)" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode
