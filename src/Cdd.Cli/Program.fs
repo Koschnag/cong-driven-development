@@ -15,6 +15,7 @@ let private usage () =
     printfn "  cdd diff                 Konvergenz-/Drift-Report"
     printfn "  cdd derive-tests [--write]  Tests aus Specs ableiten"
     printfn "  cdd export-context [--out <datei>]  SPOT als LLM-Kontextpaket/Doku (Markdown)"
+    printfn "  cdd sync-code [--write]  Round-Trip: Komponenten gegen src/*.fsproj abgleichen"
 
 /// Seed-Knoten für `cdd init` — zeigt jede Knotenart einmal.
 let private seed : SpotEntry list =
@@ -136,6 +137,24 @@ let private version () =
         a.InformationalVersion.Split('+').[0]
     | _ -> "unknown"
 
+
+let private cmdSyncCode write =
+    let projects = Sync.scanProjects "src"
+    if List.isEmpty projects then
+        printfn "Keine .fsproj unter ./src gefunden."
+        0
+    else
+        let entries = Store.load root
+        let results, updated = Sync.compare projects entries
+        for r in results do
+            printfn "%-10A %-24s %s" r.Status (idValue r.Id) r.Detail
+        if write then
+            updated
+            |> List.filter (fun e -> entries |> List.exists (fun o -> o.Id = e.Id && o <> e))
+            |> List.iter (fun e -> Store.save root e; printfn "aktualisiert: %s" (idValue e.Id))
+        let drift = results |> List.exists (fun r -> r.Status = Diverged || r.Status = Orphaned)
+        if drift then 1 else 0
+
 [<EntryPoint>]
 let main argv =
     try
@@ -147,6 +166,8 @@ let main argv =
         | [| "diff" |]               -> cmdDiff ()
         | [| "derive-tests" |]       -> cmdDeriveTests false
         | [| "derive-tests"; "--write" |] -> cmdDeriveTests true
+        | [| "sync-code" |]          -> cmdSyncCode false
+        | [| "sync-code"; "--write" |] -> cmdSyncCode true
         | [| "export-context" |] ->
             printf "%s" (Store.load root |> Export.toMarkdown)
             0

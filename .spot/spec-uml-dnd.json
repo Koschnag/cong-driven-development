@@ -1,0 +1,20 @@
+{
+  "Id": "spec-uml-dnd",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "UML-Editor mit Drag and Drop",
+        "Intent": "Beziehungen entstehen durch Ziehen zwischen Diagramm-Knoten, Doppelklick \u00F6ffnet das Formular",
+        "Criteria": [
+          {
+            "Given": "zwei Begriffe im UML-Diagramm",
+            "When": "von einem zum anderen gezogen wird",
+            "Then": "wird die gew\u00E4hlte Beziehung (IsA/PartOf/RelatesTo) nach Best\u00E4tigung gespeichert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

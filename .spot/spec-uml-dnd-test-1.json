@@ -1,0 +1,14 @@
+{
+  "Id": "spec-uml-dnd-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-uml-dnd",
+        "Name": "UML-Editor mit Drag and Drop \u2014 when von einem zum anderen gezogen wird then wird die gew\u00E4hlte Beziehung (IsA/PartOf/RelatesTo) nach Best\u00E4tigung gespeichert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

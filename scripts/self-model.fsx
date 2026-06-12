@@ -162,6 +162,49 @@ let entries =
                   When = "ein Knoten gewählt ist"
                   Then = "zeigen Diagramme als zentrales Dokument, Eigenschaften rechts und die blaue Statusleiste Auswahl, Zähler und Validierungsstand" } ] } }
 
+      // ── Invarianten: Governance by Invariance ────────────────────────
+      { Id = EntityId "inv-specs-getestet"; Convergence = Aligned
+        Payload = InvariantNode
+          { Description = "Jede Spec hat mindestens einen Test"
+            Rule = SpecsNeedTests } }
+      { Id = EntityId "inv-kritische-risiken"; Convergence = Aligned
+        Payload = InvariantNode
+          { Description = "Kritische Risiken brauchen eine Mitigation"
+            Rule = CriticalRisksNeedMitigation } }
+      { Id = EntityId "inv-begriffe-definiert"; Convergence = Aligned
+        Payload = InvariantNode
+          { Description = "Jeder Begriff der ubiquitären Sprache ist definiert"
+            Rule = TermsNeedDefinition } }
+      { Id = EntityId "inv-term-praefix"; Convergence = Aligned
+        Payload = InvariantNode
+          { Description = "Begriffe heißen term-*"
+            Rule = IdPrefix("term", "term-") } }
+
+      { Id = EntityId "spec-governance"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Governance by Invariance"
+            Intent = "Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal + CI) erzwungen"
+            Criteria =
+              [ { Given = "eine Invariante im SPOT"
+                  When = "cdd validate läuft"
+                  Then = "werden Verstöße als Fehler am verletzenden Knoten gemeldet" } ] } }
+      { Id = EntityId "spec-roundtrip-sync"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Round-Trip: Code → Modell"
+            Intent = "Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet"
+            Criteria =
+              [ { Given = "src/*.fsproj und Component-Knoten"
+                  When = "cdd sync-code läuft"
+                  Then = "wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert" } ] } }
+      { Id = EntityId "spec-uml-dnd"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "UML-Editor mit Drag and Drop"
+            Intent = "Beziehungen entstehen durch Ziehen zwischen Diagramm-Knoten, Doppelklick öffnet das Formular"
+            Criteria =
+              [ { Given = "zwei Begriffe im UML-Diagramm"
+                  When = "von einem zum anderen gezogen wird"
+                  Then = "wird die gewählte Beziehung (IsA/PartOf/RelatesTo) nach Bestätigung gespeichert" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode

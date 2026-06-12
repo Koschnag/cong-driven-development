@@ -160,6 +160,93 @@ let ``export-context renders all sections and content`` () =
     Assert.Contains("`spec-a`", md)
 
 [<Fact>]
+let ``invariant SpecsNeedTests flags untested specs`` () =
+    let inv = { Id = EntityId "inv-1"; Convergence = Aligned
+                Payload = InvariantNode { Description = "Specs brauchen Tests"; Rule = SpecsNeedTests } }
+    let entries = [ inv; sampleSpec "spec-untested" [ crit 1 ] ]
+    Assert.Contains(Validate.validate entries |> Validate.errors, fun f ->
+        f.EntityId = EntityId "spec-untested" && f.Message.Contains "Invariante")
+    let withTest =
+        entries @ [ { Id = EntityId "t1"; Convergence = Pending
+                      Payload = TestNode { SpecRef = EntityId "spec-untested"; Name = "n"; Derived = true } } ]
+    Assert.Empty(Validate.validate withTest |> Validate.errors)
+
+[<Fact>]
+let ``invariant CriticalRisksNeedMitigation escalates to error`` () =
+    let inv = { Id = EntityId "inv-2"; Convergence = Aligned
+                Payload = InvariantNode { Description = "Krit. Risiken mitigieren"; Rule = CriticalRisksNeedMitigation } }
+    let risk = { Id = EntityId "risk-x"; Convergence = Pending
+                 Payload = RiskNode { Statement = "s"; Likelihood = Low; Impact = Critical; Mitigation = None } }
+    Assert.NotEmpty(Validate.validate [ inv; risk ] |> Validate.errors)
+
+[<Fact>]
+let ``invariant IdPrefix flags wrong prefixes`` () =
+    let inv = { Id = EntityId "inv-3"; Convergence = Aligned
+                Payload = InvariantNode { Description = "Begriffe heißen term-*"; Rule = IdPrefix("term", "term-") } }
+    let bad = { Id = EntityId "begriff-x"; Convergence = Aligned
+                Payload = TermNode { Name = "X"; Definition = "d"; Synonyms = []; Relations = [] } }
+    Assert.NotEmpty(Validate.validate [ inv; bad ] |> Validate.errors)
+    let good = { bad with Id = EntityId "term-x" }
+    Assert.Empty(Validate.validate [ inv; good ] |> Validate.errors)
+
+[<Fact>]
+let ``invariant round-trips through json`` () =
+    let inv = { Id = EntityId "inv-4"; Convergence = Aligned
+                Payload = InvariantNode { Description = "d"; Rule = IdPrefix("spec", "spec-") } }
+    Assert.Equal(inv, Json.serialize inv |> Json.deserialize<SpotEntry>)
+
+[<Fact>]
+let ``sync-code compares model components against code projects`` () =
+    let comp name deps =
+        { Id = EntityId ("comp-" + name); Convergence = Pending
+          Payload = ComponentNode { Name = name; DependsOn = deps } }
+    let entries =
+        [ comp "Core" []
+          comp "Cli" [ EntityId "comp-Core" ]
+          comp "Ghost" [] ]
+    let projects : Sync.CodeProject list =
+        [ { Name = "Core"; References = [] }
+          { Name = "Cli"; References = [ "Core" ] }
+          { Name = "Neu"; References = [] } ]
+    let results, updated = Sync.compare projects entries
+    let statusOf name = results |> List.find (fun r -> r.Name = name) |> fun r -> r.Status
+    Assert.Equal(Aligned, statusOf "Core")
+    Assert.Equal(Aligned, statusOf "Cli")
+    Assert.Equal(Orphaned, statusOf "Neu")     // Code ohne Modell
+    Assert.Equal(Pending, statusOf "Ghost")    // Modell ohne Code
+    let updatedCore = updated |> List.find (fun e -> e.Id = EntityId "comp-Core")
+    Assert.Equal(Aligned, updatedCore.Convergence)
+
+[<Fact>]
+let ``sync-code detects diverged dependencies`` () =
+    let entries =
+        [ { Id = EntityId "comp-a"; Convergence = Aligned
+            Payload = ComponentNode { Name = "A"; DependsOn = [] } }
+          { Id = EntityId "comp-b"; Convergence = Aligned
+            Payload = ComponentNode { Name = "B"; DependsOn = [] } } ]   // Modell: B hängt von nichts ab
+    let projects : Sync.CodeProject list =
+        [ { Name = "A"; References = [] }
+          { Name = "B"; References = [ "A" ] } ]                          // Code: B → A
+    let results, _ = Sync.compare projects entries
+    let b = results |> List.find (fun r -> r.Name = "B")
+    Assert.Equal(Diverged, b.Status)
+
+[<Fact>]
+let ``sync scanProjects reads fsproj references`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-sync-" + System.Guid.NewGuid().ToString("N"))
+    try
+        Directory.CreateDirectory(Path.Combine(tmp, "A")) |> ignore
+        Directory.CreateDirectory(Path.Combine(tmp, "B")) |> ignore
+        File.WriteAllText(Path.Combine(tmp, "A", "A.fsproj"), "<Project></Project>")
+        File.WriteAllText(Path.Combine(tmp, "B", "B.fsproj"),
+            """<Project><ItemGroup><ProjectReference Include="..\A\A.fsproj" /></ItemGroup></Project>""")
+        let ps = Sync.scanProjects tmp |> List.sortBy (fun p -> p.Name)
+        Assert.Equal(2, List.length ps)
+        Assert.Equal<string list>([ "A" ], (ps |> List.find (fun p -> p.Name = "B")).References)
+    finally
+        if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact>]
 let ``store rejects path-traversal ids`` () =
     Assert.False(Store.isValidId (EntityId "../evil"))
     Assert.False(Store.isValidId (EntityId "a/b"))

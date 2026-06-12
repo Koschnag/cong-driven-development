@@ -52,6 +52,20 @@ module Export =
                     line (sprintf "  - %s `%s`" kind (idValue target))
             blank ()
 
+        let invariants = pick (function InvariantNode i -> Some i | _ -> None)
+        if not invariants.IsEmpty then
+            line "## Invarianten (Governance — werden bei jeder Validierung erzwungen)"
+            blank ()
+            for _, i in invariants do
+                let rule =
+                    match i.Rule with
+                    | SpecsNeedTests -> "jede Spec braucht mindestens einen Test"
+                    | CriticalRisksNeedMitigation -> "kritische Risiken brauchen eine Mitigation"
+                    | TermsNeedDefinition -> "jeder Begriff braucht eine Definition"
+                    | IdPrefix(k, p) -> sprintf "Ids der Art '%s' beginnen mit '%s'" k p
+                line (sprintf "- **%s** — %s" i.Description rule)
+            blank ()
+
         let premises = pick (function PremiseNode p -> Some p | _ -> None)
         if not premises.IsEmpty then
             line "## Prämissen (nicht verhandelbar)"

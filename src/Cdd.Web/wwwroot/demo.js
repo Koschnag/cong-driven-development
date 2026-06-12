@@ -96,6 +96,25 @@ function validate(es) {
       }
     }
     if (e.Convergence === "Orphaned") f("Warning", e.Id, "Orphaned: Code ohne Modell");
+    if (e.Payload.Case === "InvariantNode") {
+      const rule = typeof d.Rule === "string" ? d.Rule : d.Rule?.Case;
+      const viol = (id, msg) => f("Error", id, `Invariante verletzt (${d.Description}): ${msg}`);
+      if (rule === "SpecsNeedTests") {
+        const tested = new Set(es.filter((x) => x.Payload.Case === "TestNode").map((x) => item(x).SpecRef));
+        for (const x of es) if (x.Payload.Case === "SpecNode" && !tested.has(x.Id)) viol(x.Id, "Spec ohne Test");
+      } else if (rule === "CriticalRisksNeedMitigation") {
+        for (const x of es) { const r = item(x);
+          if (x.Payload.Case === "RiskNode" && r.Impact === "Critical" && !r.Mitigation) viol(x.Id, "kritisches Risiko ohne Mitigation"); }
+      } else if (rule === "TermsNeedDefinition") {
+        for (const x of es) if (x.Payload.Case === "TermNode" && !item(x).Definition?.trim()) viol(x.Id, "Begriff ohne Definition");
+      } else if (rule === "IdPrefix") {
+        const { kind, prefix } = d.Rule.Fields ?? {};
+        for (const x of es) {
+          const k = x.Payload.Case.replace("Node", "").toLowerCase();
+          if (k === kind && !x.Id.startsWith(prefix)) viol(x.Id, `Id beginnt nicht mit '${prefix}'`);
+        }
+      }
+    }
     if (e.Convergence === "Diverged") f("Warning", e.Id, "Diverged: Implementierung weicht vom Modell ab");
   }
   return out;
@@ -137,6 +156,8 @@ function exportMarkdown(es) {
     L.push(`- **${d.Name}**${syn} — ${d.Definition}`);
     for (const r of d.Relations ?? []) L.push(`  - ${r.Case} \`${r.Fields?.Item}\``);
   });
+  section("Invarianten (Governance)", byCase("InvariantNode"), (e, d) =>
+    L.push(`- **${d.Description}** (${typeof d.Rule === "string" ? d.Rule : "IdPrefix " + JSON.stringify(d.Rule.Fields)})`));
   section("Prämissen (nicht verhandelbar)", byCase("PremiseNode"), (e, d) =>
     L.push(`- **${d.Statement}** — ${d.Rationale}`));
   section("Entscheidungen (ADRs)", byCase("DecisionNode"), (e, d) =>
