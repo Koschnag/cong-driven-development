@@ -268,6 +268,15 @@ let entries =
                   When = "cdd sync-docs läuft"
                   Then = "wird docs/decisions.md vollständig daraus generiert" } ] } }
 
+      { Id = EntityId "spec-derive-code"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Modell → Code (derive-code)"
+            Intent = "Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker"
+            Criteria =
+              [ { Given = "ein Test-Knoten ohne Marker im Test-Code"
+                  When = "cdd derive-code läuft"
+                  Then = "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden übersprungen" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode

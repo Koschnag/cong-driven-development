@@ -116,7 +116,7 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 ## Status
 
 <!-- spot:status -->
-**72 Knoten im Selbstmodell** · 4 aktive Invarianten · 16/24 abgeleitete Tests automatisiert
+**74 Knoten im Selbstmodell** · 4 aktive Invarianten · 17/25 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -129,6 +129,7 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 - ✅ **Interaktiver Graph** — Diagramm-Elemente sind frei positionierbar wie in Enterprise Architect; Layouts bleiben erhalten
 - ✅ **LLM-Kontextexport** — Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut
 - ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
+- ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Navigation als Würfel** — Der SPOT-Graph ist wie ein OLAP-Cube navigierbar: Slice, Dice, Drill-down, Verlinkungen
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
 - ✅ **Multidimensionale Sicht** — Ein Modell, mehrere Projektionen — Graph und UML aus demselben SPOT
