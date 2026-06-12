@@ -58,6 +58,10 @@ const schemas = {
     { key: "Provider", label: "Provider", type: "text" },
     { key: "Config", label: "Konfiguration (key=value pro Zeile)", type: "kv" },
   ],
+  InvariantNode: [
+    { key: "Description", label: "Beschreibung", type: "text" },
+    { key: "Rule", label: "Regel", type: "invrule" },
+  ],
   TestNode: [
     { key: "SpecRef", label: "Testet Spec", type: "ref", filterKind: "SpecNode" },
     { key: "Name", label: "Name", type: "text" },
@@ -241,6 +245,33 @@ export function buildForm(entry, entries, { idEditable = false } = {}) {
           "+ Beziehung");
         root.appendChild(labeled(f.label, box));
         readers[f.key] = () => read().filter((r) => r.Fields.Item);
+        break;
+      }
+      case "invrule": {
+        const RULES = [
+          ["SpecsNeedTests", "Jede Spec braucht einen Test"],
+          ["CriticalRisksNeedMitigation", "Kritische Risiken brauchen Mitigation"],
+          ["TermsNeedDefinition", "Begriffe brauchen Definition"],
+          ["IdPrefix", "Id-Präfix pro Knotenart"],
+        ];
+        const current = typeof val === "string" ? val : val?.Case ?? "SpecsNeedTests";
+        const ruleSel = mkSelect(RULES, current);
+        const kindIn = el("input", "f-input"); kindIn.placeholder = "Knotenart (z. B. term)";
+        const prefIn = el("input", "f-input"); prefIn.placeholder = "Präfix (z. B. term-)";
+        if (typeof val === "object" && val?.Fields) {
+          kindIn.value = val.Fields.kind ?? ""; prefIn.value = val.Fields.prefix ?? "";
+        }
+        const extra = el("div", "f-row");
+        extra.appendChild(kindIn); extra.appendChild(prefIn);
+        const syncVis = () => { extra.style.display = ruleSel.value === "IdPrefix" ? "" : "none"; };
+        ruleSel.onchange = syncVis; syncVis();
+        const box = el("div", "f-rows");
+        box.appendChild(ruleSel); box.appendChild(extra);
+        root.appendChild(labeled(f.label, box));
+        readers[f.key] = () =>
+          ruleSel.value === "IdPrefix"
+            ? { Case: "IdPrefix", Fields: { kind: kindIn.value.trim(), prefix: prefIn.value.trim() } }
+            : ruleSel.value;
         break;
       }
       case "criteria": {

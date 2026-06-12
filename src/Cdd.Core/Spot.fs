@@ -97,6 +97,18 @@ module Spot =
           Synonyms   : string list
           Relations  : TermRelation list }
 
+    /// Deklarative Governance-Regel — wird bei jeder Validierung erzwungen.
+    type InvariantRule =
+        | SpecsNeedTests               // jede Spec hat mindestens einen Test
+        | CriticalRisksNeedMitigation  // kritische Risiken brauchen eine Mitigation
+        | TermsNeedDefinition          // Begriffe ohne Definition sind verboten
+        | IdPrefix of kind: string * prefix: string  // Ids einer Art folgen einem Präfix
+
+    /// Invariante: Governance by Invariance — die Regel ist Teil des Modells.
+    type Invariant =
+        { Description : string
+          Rule        : InvariantRule }
+
     /// Die Nutzlast eines SPOT-Knotens. Erweiterbar, sobald neue Knotenarten entstehen.
     type Payload =
         | SpecNode      of Spec
@@ -109,6 +121,7 @@ module Spot =
         | KnowledgeNode of Knowledge
         | ToolNode      of Tool
         | TermNode      of Term
+        | InvariantNode of Invariant
 
     /// Ein Knoten im SPOT-Graph: Identität + Nutzlast + Konvergenzstatus.
     type SpotEntry =
@@ -132,6 +145,7 @@ module Spot =
         | KnowledgeNode _ -> "knowledge"
         | ToolNode _      -> "tool"
         | TermNode _      -> "term"
+        | InvariantNode _ -> "invariant"
 
     /// Ziel-Id einer Term-Beziehung.
     let relationTarget = function

@@ -10,7 +10,14 @@ const themeKey = "cdd-theme";
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
   localStorage.setItem(themeKey, theme);
-  mermaid.initialize({ startOnLoad: false, theme: theme === "dark" ? "dark" : "default" });
+  mermaid.initialize(
+    theme === "dark"
+      ? { startOnLoad: false, theme: "dark" }
+      : { startOnLoad: false, theme: "base", themeVariables: {
+          // Class-Designer-Look: hellblaue Boxen, dezente Linien
+          primaryColor: "#e3eefb", primaryBorderColor: "#7a96b8",
+          primaryTextColor: "#1e1e1e", lineColor: "#5b7da8",
+          tertiaryColor: "#f6f9fd", fontFamily: "Segoe UI, sans-serif" } });
 }
 applyTheme(localStorage.getItem(themeKey) ?? "light");
 if (DEMO) demoBanner();
@@ -39,6 +46,7 @@ const templates = {
   tool:      { Case: "ToolNode",      Fields: { Item: { Name: "", Purpose: "", Endpoint: null } } },
   term:      { Case: "TermNode",      Fields: { Item: { Name: "", Definition: "", Synonyms: [],
                 Relations: [{ Case: "RelatesTo", Fields: { Item: "term-anderer-begriff" } }] } } },
+  invariant: { Case: "InvariantNode", Fields: { Item: { Description: "", Rule: "SpecsNeedTests" } } },
 };
 const kindOfCase = (c) => c.replace("Node", "").toLowerCase();
 const payloadData = (e) => e.Payload?.Fields?.Item ?? {};
@@ -271,7 +279,7 @@ function renderInspector() {
   head.appendChild(editBtn);
   el.appendChild(head);
 
-  const fields = { Name: d.Name, Titel: d.Title, Definition: d.Definition, Intent: d.Intent,
+  const fields = { Name: d.Name, Titel: d.Title, Beschreibung: d.Description, Definition: d.Definition, Intent: d.Intent,
     Aussage: d.Statement, Begründung: d.Rationale, Entscheidung: d.Choice, Quelle: d.Source,
     Zweck: d.Purpose };
   for (const [label, val] of Object.entries(fields)) {
@@ -470,15 +478,97 @@ async function renderDoku() {
   }
 }
 
-// Klick auf einen Diagramm-Knoten selektiert ihn im Editor.
+// Diagramm-Interaktion: Klick = wählen, Doppelklick = bearbeiten,
+// Drag von Knoten zu Knoten = Beziehung anlegen (UML-Editor).
 function wireDiagramClicks(container) {
   const byUnderscore = new Map(entries.map((e) => [e.Id.replaceAll("-", "_"), e.Id]));
-  for (const node of container.querySelectorAll("g.node, g.nodes > g")) {
-    const hit = [...byUnderscore.keys()].find((k) => node.id?.includes(k));
-    if (!hit) continue;
-    node.style.cursor = "pointer";
-    node.addEventListener("click", () => select(byUnderscore.get(hit)));
+  const nodeIdOf = (target) => {
+    let n = target;
+    while (n && n !== container) {
+      if (n.id) {
+        const hit = [...byUnderscore.keys()].find((k) => n.id.includes(k));
+        if (hit) return byUnderscore.get(hit);
+      }
+      n = n.parentNode;
+    }
+    return null;
+  };
+  for (const node of container.querySelectorAll("g.node, g.nodes > g")) node.style.cursor = "pointer";
+
+  let dragSrc = null;
+  container.onpointerdown = (ev) => { dragSrc = nodeIdOf(ev.target); };
+  container.onpointerup = (ev) => {
+    const src = dragSrc;
+    dragSrc = null;
+    if (!src) return;
+    const target = nodeIdOf(ev.target);
+    if (!target || target === src) { select(src); return; }
+    proposeRelation(src, target, ev.clientX, ev.clientY);
+  };
+  container.ondblclick = (ev) => {
+    const id = nodeIdOf(ev.target);
+    if (id) { select(id); setEditorMode("form"); }
+  };
+}
+
+// Drag-Ziel erreicht: passende Beziehung anbieten und nach Bestätigung speichern.
+function proposeRelation(srcId, targetId, x, y) {
+  const src = entries.find((e) => e.Id === srcId);
+  if (!src) return;
+  const menu = document.createElement("div");
+  menu.id = "link-menu";
+  menu.style.left = x + "px";
+  menu.style.top = y + "px";
+  const close = () => menu.remove();
+  const option = (label, apply) => {
+    const b = document.createElement("button");
+    b.className = "menu-item";
+    b.textContent = label;
+    b.onclick = async () => {
+      close();
+      const updated = structuredClone(src);
+      apply(updated.Payload.Fields.Item);
+      try {
+        await api("spot/" + encodeURIComponent(srcId), { method: "PUT", body: JSON.stringify(updated) });
+        setMsg(`Beziehung angelegt: ${srcId} → ${targetId} ✔`, "ok");
+        await refresh();
+        select(srcId, { fromHistory: true });
+      } catch (err) { setMsg(err.message, "error"); }
+    };
+    menu.appendChild(b);
+  };
+  const header = document.createElement("div");
+  header.className = "insp-hint";
+  header.style.padding = "4px 10px";
+  header.textContent = `${srcId} → ${targetId}`;
+  menu.appendChild(header);
+
+  const targetIsTerm = entries.some((e) => e.Id === targetId && e.Payload.Case === "TermNode");
+  if (src.Payload.Case === "TermNode" && targetIsTerm) {
+    option("ist ein (Generalisierung)", (d) => d.Relations.push({ Case: "IsA", Fields: { Item: targetId } }));
+    option("Teil von (Komposition)", (d) => d.Relations.push({ Case: "PartOf", Fields: { Item: targetId } }));
+    option("bezieht sich auf (Assoziation)", (d) => d.Relations.push({ Case: "RelatesTo", Fields: { Item: targetId } }));
+  } else if (src.Payload.Case === "ComponentNode") {
+    option("hängt ab von (Dependency)", (d) => { if (!d.DependsOn.includes(targetId)) d.DependsOn.push(targetId); });
+  } else if (src.Payload.Case === "DecisionNode") {
+    option("ersetzt (Supersedes)", (d) => { d.Supersedes = targetId; });
+  } else {
+    const hint = document.createElement("div");
+    hint.className = "insp-hint";
+    hint.style.padding = "4px 10px";
+    hint.textContent = "Für diese Knotenart gibt es keine ziehbare Beziehung.";
+    menu.appendChild(hint);
   }
+  const cancel = document.createElement("button");
+  cancel.className = "menu-item";
+  cancel.textContent = "Abbrechen";
+  cancel.onclick = close;
+  menu.appendChild(cancel);
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener("click", function once(ev) {
+    if (!menu.contains(ev.target)) { close(); }
+    document.removeEventListener("click", once);
+  }), 0);
 }
 
 async function renderGraph() {
@@ -589,6 +679,7 @@ const kindMeta = {
   spec: ["📋", "Spec"], term: ["🔤", "Begriff (Ontologie)"], component: ["📦", "Component"],
   decision: ["⚖️", "Entscheidung (ADR)"], premise: ["🧭", "Prämisse"], risk: ["⚠️", "Risk"],
   knowledge: ["📚", "Knowledge"], tool: ["🔧", "Tool"], infra: ["🖥️", "Infra"],
+  invariant: ["🛡️", "Invariante"],
 };
 {
   const tb = $("#toolbox-items");

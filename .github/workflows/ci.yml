@@ -46,6 +46,9 @@ jobs:
       - name: Selbstmodell validieren (CDD prüft CDD)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- validate
 
+      - name: Round-Trip prüfen (Code ↔ Modell)
+        run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-code
+
       - name: Testergebnisse hochladen
         if: always()
         uses: actions/upload-artifact@v7

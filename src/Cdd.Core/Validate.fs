@@ -107,7 +107,7 @@ module Validate =
                     elif not (Set.contains target termIds) then
                         yield { Severity = Error; EntityId = e.Id
                                 Message = sprintf "Term-Beziehung zeigt auf '%s' — kein existierender Begriff" (idValue target) }
-            | PremiseNode _ | ToolNode _ | InfraNode _ -> ()
+            | PremiseNode _ | ToolNode _ | InfraNode _ | InvariantNode _ -> ()
 
             match e.Convergence with
             | Orphaned ->
@@ -116,7 +116,43 @@ module Validate =
             | Diverged ->
                 yield { Severity = Warning; EntityId = e.Id
                         Message = "Diverged: Implementierung weicht vom Modell ab" }
-            | Aligned | Pending -> () ]
+            | Aligned | Pending -> ()
+
+          // — Governance by Invariance: im Modell hinterlegte Regeln erzwingen —
+          for inv in entries do
+            match inv.Payload with
+            | InvariantNode i ->
+                let violation entityId detail =
+                    { Severity = Error; EntityId = entityId
+                      Message = sprintf "Invariante verletzt (%s): %s" i.Description detail }
+                match i.Rule with
+                | SpecsNeedTests ->
+                    let testedSpecs =
+                        entries
+                        |> List.choose (fun x -> match x.Payload with TestNode t -> Some t.SpecRef | _ -> None)
+                        |> Set.ofList
+                    for x in entries do
+                        match x.Payload with
+                        | SpecNode _ when not (Set.contains x.Id testedSpecs) ->
+                            yield violation x.Id "Spec ohne Test"
+                        | _ -> ()
+                | CriticalRisksNeedMitigation ->
+                    for x in entries do
+                        match x.Payload with
+                        | RiskNode r when r.Impact = Critical && r.Mitigation.IsNone ->
+                            yield violation x.Id "kritisches Risiko ohne Mitigation"
+                        | _ -> ()
+                | TermsNeedDefinition ->
+                    for x in entries do
+                        match x.Payload with
+                        | TermNode t when t.Definition.Trim() = "" ->
+                            yield violation x.Id "Begriff ohne Definition"
+                        | _ -> ()
+                | IdPrefix(kind, prefix) ->
+                    for x in entries do
+                        if kindOf x = kind && not ((idValue x.Id).StartsWith prefix) then
+                            yield violation x.Id (sprintf "Id beginnt nicht mit '%s'" prefix)
+            | _ -> () ]
 
     let errors findings   = findings |> List.filter (fun f -> f.Severity = Error)
     let warnings findings = findings |> List.filter (fun f -> f.Severity = Warning)

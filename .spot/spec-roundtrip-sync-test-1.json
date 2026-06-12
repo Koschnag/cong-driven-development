@@ -1,0 +1,14 @@
+{
+  "Id": "spec-roundtrip-sync-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-roundtrip-sync",
+        "Name": "Round-Trip: Code \u2192 Modell \u2014 when cdd sync-code l\u00E4uft then wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

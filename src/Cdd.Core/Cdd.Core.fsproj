@@ -12,6 +12,7 @@
     <Compile Include="Validate.fs" />
     <Compile Include="Derive.fs" />
     <Compile Include="Diff.fs" />
+    <Compile Include="Sync.fs" />
     <Compile Include="Export.fs" />
   </ItemGroup>
 

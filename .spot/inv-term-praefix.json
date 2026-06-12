@@ -1,0 +1,19 @@
+{
+  "Id": "inv-term-praefix",
+  "Payload": {
+    "Case": "InvariantNode",
+    "Fields": {
+      "Item": {
+        "Description": "Begriffe hei\u00DFen term-*",
+        "Rule": {
+          "Case": "IdPrefix",
+          "Fields": {
+            "kind": "term",
+            "prefix": "term-"
+          }
+        }
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
