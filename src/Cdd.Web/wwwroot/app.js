@@ -856,66 +856,85 @@ const kindMeta = {
   });
 }
 
-// — Fenstermanagement (VS-Style): Splitter + ein-/ausblendbare Panels —
-const layoutKey = "cdd-layout";
+// — Fenstermanagement (VS-Style): Docks, Caption-Drag mit Snap, Fokus —
+const layoutKey = "cdd-layout2";
 const layout = JSON.parse(localStorage.getItem(layoutKey) ?? "{}");
+layout.hidden ??= [];
+layout.dock ??= { toolbox: "left", explorer: "left", editor: "right" };
+layout.widths ??= {};
 const panels = [...document.querySelectorAll(".panel[data-panel]")];
 const saveLayout = () => localStorage.setItem(layoutKey, JSON.stringify(layout));
-const resizeTarget = (s) => (s.dataset.inverse ? s.nextElementSibling : s.previousElementSibling);
 
 function renderViewMenu() {
   const m = $("#view-menu");
   m.innerHTML = "";
   for (const p of panels) {
-    const hidden = layout.hidden?.includes(p.dataset.panel);
+    if (p.dataset.panel === "views") continue;
+    const hidden = layout.hidden.includes(p.dataset.panel);
     const b = document.createElement("button");
     b.className = "menu-item";
-    b.textContent = `${hidden ? "  " : "✓ "}${p.dataset.title}`;
+    b.textContent = `${hidden ? "   " : "✓ "}${p.dataset.title}`;
     b.onclick = () => {
-      layout.hidden = (layout.hidden ?? []).filter((x) => x !== p.dataset.panel);
+      layout.hidden = layout.hidden.filter((x) => x !== p.dataset.panel);
       if (!hidden) layout.hidden.push(p.dataset.panel);
       saveLayout();
-      applyPanelVisibility();
+      applyLayout();
     };
     m.appendChild(b);
   }
+  const sep = document.createElement("div");
+  sep.className = "menu-sep";
+  m.appendChild(sep);
+  const reset = document.createElement("button");
+  reset.className = "menu-item";
+  reset.textContent = "⟲ Layout zurücksetzen";
+  reset.onclick = () => {
+    localStorage.removeItem(layoutKey);
+    localStorage.removeItem("cdd-designer-pos");
+    location.reload();
+  };
+  m.appendChild(reset);
 }
 
-function applyPanelVisibility() {
+function applyLayout() {
   for (const p of panels) {
-    p.style.display = layout.hidden?.includes(p.dataset.panel) ? "none" : "";
+    if (p.dataset.panel === "views") continue;
+    const side = layout.dock[p.dataset.panel] ?? "left";
+    const dock = side === "right" ? $("#dock-right") : $("#dock-left");
+    if (p.parentElement !== dock) dock.appendChild(p);
+    p.style.display = layout.hidden.includes(p.dataset.panel) ? "none" : "";
   }
-  for (const s of document.querySelectorAll(".splitter")) {
-    const t = resizeTarget(s);
-    s.style.display = t && t.style.display === "none" ? "none" : "";
+  // Leere Docks samt Splitter ausblenden
+  for (const side of ["left", "right"]) {
+    const dock = $(`#dock-${side}`);
+    const visible = [...dock.children].some((c) => c.style.display !== "none");
+    dock.style.display = visible ? "" : "none";
+    const split = document.querySelector(`.splitter[data-resize="dock-${side}"]`);
+    if (split) split.style.display = visible ? "" : "none";
+    if (visible && layout.widths[side]) dock.style.width = layout.widths[side];
   }
   renderViewMenu();
 }
 
-for (const s of document.querySelectorAll(".splitter")) {
-  const saved = layout.widths?.[s.dataset.resize];
-  if (saved) {
-    const t = resizeTarget(s);
-    t.style.width = saved;
-    t.style.flex = "none";
-  }
-  s.addEventListener("mousedown", (ev) => {
+// Splitter: Dock-Breiten ziehen
+const resizeTarget = (sp) => (sp.dataset.inverse ? sp.nextElementSibling : sp.previousElementSibling);
+for (const sp of document.querySelectorAll(".splitter")) {
+  sp.addEventListener("mousedown", (ev) => {
     ev.preventDefault();
-    const target = resizeTarget(s);
+    const target = resizeTarget(sp);
     const startX = ev.clientX;
     const startW = target.getBoundingClientRect().width;
-    const inverse = !!s.dataset.inverse;
-    s.classList.add("dragging");
+    const inverse = !!sp.dataset.inverse;
+    sp.classList.add("dragging");
     const move = (e) => {
-      const w = Math.max(80, inverse ? startW - (e.clientX - startX) : startW + (e.clientX - startX));
+      const w = Math.max(120, inverse ? startW - (e.clientX - startX) : startW + (e.clientX - startX));
       target.style.width = w + "px";
-      target.style.flex = "none";
     };
     const up = () => {
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", up);
-      s.classList.remove("dragging");
-      (layout.widths ??= {})[s.dataset.resize] = resizeTarget(s).style.width;
+      sp.classList.remove("dragging");
+      layout.widths[sp.dataset.resize === "dock-right" ? "right" : "left"] = resizeTarget(sp).style.width;
       saveLayout();
     };
     document.addEventListener("mousemove", move);
@@ -923,13 +942,61 @@ for (const s of document.querySelectorAll(".splitter")) {
   });
 }
 
+// Caption-Drag: Toolfenster packen → Snap-Zonen links/rechts erscheinen
+let dragPanel = null;
+for (const p of panels) {
+  const title = p.querySelector(".panel-title");
+  if (!title || p.dataset.panel === "views") continue;
+  title.addEventListener("dragstart", (ev) => {
+    dragPanel = p.dataset.panel;
+    ev.dataTransfer.setData("text/cdd-panel", dragPanel);
+    ev.dataTransfer.effectAllowed = "move";
+    $("#dock-hint-left").hidden = false;
+    $("#dock-hint-right").hidden = false;
+  });
+  title.addEventListener("dragend", () => {
+    dragPanel = null;
+    $("#dock-hint-left").hidden = true;
+    $("#dock-hint-right").hidden = true;
+    document.querySelectorAll(".dock-hint").forEach((h) => h.classList.remove("hot"));
+  });
+}
+for (const side of ["left", "right"]) {
+  const hint = $(`#dock-hint-${side}`);
+  hint.addEventListener("dragover", (ev) => { ev.preventDefault(); hint.classList.add("hot"); });
+  hint.addEventListener("dragleave", () => hint.classList.remove("hot"));
+  hint.addEventListener("drop", (ev) => {
+    ev.preventDefault();
+    const panel = ev.dataTransfer.getData("text/cdd-panel") || dragPanel;
+    if (!panel) return;
+    layout.dock[panel] = side;
+    layout.hidden = layout.hidden.filter((x) => x !== panel);
+    saveLayout();
+    applyLayout();
+  });
+}
+
+// Fokussiertes Toolfenster: Caption wird blau (das VS-Signal)
+document.addEventListener("mousedown", (ev) => {
+  const panel = ev.target.closest(".panel");
+  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("focused", p === panel));
+}, true);
+
 for (const btn of document.querySelectorAll(".panel-close")) {
   btn.onclick = () => {
     const p = btn.closest(".panel");
-    (layout.hidden ??= []).push(p.dataset.panel);
+    if (!layout.hidden.includes(p.dataset.panel)) layout.hidden.push(p.dataset.panel);
     saveLayout();
-    applyPanelVisibility();
+    applyLayout();
   };
+}
+
+applyLayout();
+
+// Erste Hilfe beim allerersten Besuch automatisch zeigen
+if (!localStorage.getItem("cdd-visited")) {
+  localStorage.setItem("cdd-visited", "1");
+  setTimeout(() => { $("#help-overlay").hidden = false; }, 600);
 }
 
 $("#btn-view").onclick = (ev) => {
@@ -949,7 +1016,6 @@ $("#mi-refresh").onclick = () => { $("#model-menu").hidden = true; refresh(); };
 document.addEventListener("click", (ev) => {
   if (!ev.target.closest(".menu")) { $("#view-menu").hidden = true; $("#model-menu").hidden = true; }
 });
-applyPanelVisibility();
 
 // — Wiring —
 $("#btn-refresh").onclick = refresh;

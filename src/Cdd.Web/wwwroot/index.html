@@ -46,22 +46,22 @@
   </div>
 
   <main id="layout">
-    <aside id="toolbox" class="panel" data-panel="toolbox" data-title="Toolbox">
-      <div class="panel-title">Toolbox <button class="panel-close" title="Ausblenden">✕</button></div>
+    <div id="dock-left" class="dock">
+<aside id="toolbox" class="panel" data-panel="toolbox" data-title="Toolbox">
+      <div class="panel-title" draggable="true">🧰 Toolbox <button class="panel-close" title="Ausblenden">✕</button></div>
+      <div class="toolbox-head">Knoten hinzufügen — anklicken:</div>
       <div id="toolbox-items"></div>
       <p class="toolbox-hint">Klicken oder in den Editor ziehen, um einen Knoten anzulegen.</p>
     </aside>
-    <div class="splitter" data-resize="toolbox"></div>
-
-    <nav id="sidebar" class="panel" data-panel="explorer" data-title="SPOT-Explorer">
-      <div class="panel-title">SPOT-Explorer <button class="panel-close" title="Ausblenden">✕</button></div>
+<nav id="sidebar" class="panel" data-panel="explorer" data-title="SPOT-Explorer">
+      <div class="panel-title" draggable="true">📋 SPOT-Explorer <button class="panel-close" title="Ausblenden">✕</button></div>
       <input id="filter" type="search" placeholder="Filtern (Id, Art, Inhalt) …">
       <div id="node-list"></div>
     </nav>
-    <div class="splitter" data-resize="explorer"></div>
-
-    <section id="panels" class="panel" data-panel="views" data-title="Sichten">
-      <div class="panel-title">Sichten <button class="panel-close" title="Ausblenden">✕</button></div>
+    </div>
+    <div class="splitter" data-resize="dock-left"></div>
+<section id="panels" class="panel" data-panel="views" data-title="Sichten">
+      <div class="panel-title">📐 Sichten</div>
       <div id="cube-bar">
         <span class="cube-label" title="Slice & Dice: Filter wirken auf Graph, UML und Explorer">🧊</span>
         <div id="cube-kinds" class="chip-row"></div>
@@ -146,10 +146,10 @@
         </div>
       </div>
     </section>
-    <div class="splitter" data-resize="props" data-inverse="true"></div>
-
-    <section id="editor" class="panel" data-panel="editor" data-title="Eigenschaften">
-      <div class="panel-title">Eigenschaften <button class="panel-close" title="Ausblenden">✕</button></div>
+    <div class="splitter" data-resize="dock-right" data-inverse="true"></div>
+    <div id="dock-right" class="dock">
+<section id="editor" class="panel" data-panel="editor" data-title="Eigenschaften">
+      <div class="panel-title" draggable="true">🔧 Eigenschaften <button class="panel-close" title="Ausblenden">✕</button></div>
       <div class="editor-head">
         <div class="editor-nav">
           <button id="btn-back" title="Zurück (Navigations-Historie)" disabled>←</button>
@@ -170,7 +170,9 @@
         placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
       <div id="editor-msg"></div>
     </section>
-
+    </div>
+    <div id="dock-hint-left" class="dock-hint" hidden>◧ links andocken</div>
+    <div id="dock-hint-right" class="dock-hint" hidden>rechts andocken ◨</div>
   </main>
 
   <footer id="statusbar">
