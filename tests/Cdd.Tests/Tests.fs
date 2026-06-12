@@ -220,6 +220,23 @@ let ``scanTestMarkers finds traits and comment markers`` () =
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
 
+[<Fact; Trait("spot", "spec-sync-docs-test-2")>]
+let ``decisionsMarkdown documents premises decisions and invariants`` () =
+    let entries =
+        [ { Id = EntityId "premise-x"; Convergence = Aligned
+            Payload = PremiseNode { Statement = "Kein Python"; Rationale = "Ein Stack" } }
+          { Id = EntityId "adr-x"; Convergence = Aligned
+            Payload = DecisionNode { Title = "F#"; Context = "K"; Choice = "C"
+                                     Consequences = "Q"; Supersedes = None } }
+          { Id = EntityId "inv-x"; Convergence = Aligned
+            Payload = InvariantNode { Description = "Specs getestet"; Rule = SpecsNeedTests } } ]
+    let md = Export.decisionsMarkdown entries
+    Assert.Contains("## Prämissen", md)
+    Assert.Contains("Kein Python", md)
+    Assert.Contains("### F# · `adr-x`", md)
+    Assert.Contains("Geltende Invarianten", md)
+    Assert.Contains("Specs getestet", md)
+
 [<Fact; Trait("spot", "spec-sync-docs-test-1")>]
 let ``statusMarkdown reflects aligned and pending specs`` () =
     let entries =
