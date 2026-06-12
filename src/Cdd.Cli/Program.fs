@@ -194,15 +194,27 @@ let private cmdSyncDocs check =
             readme.Substring(0, s + docMarkerStart.Length)
             + "\n" + generated
             + readme.Substring(e)
-        if updated = readme then
-            printfn "README-Status ist aktuell."
+        let decisionsPath = "docs/decisions.md"
+        let decisionsNew = Store.load root |> Export.decisionsMarkdown
+        let decisionsOld =
+            if System.IO.File.Exists decisionsPath then System.IO.File.ReadAllText decisionsPath else ""
+        let readmeAktuell = updated = readme
+        let decisionsAktuell = decisionsNew = decisionsOld
+        if readmeAktuell && decisionsAktuell then
+            printfn "README-Status und docs/decisions.md sind aktuell."
             0
         elif check then
-            eprintfn "README-Status ist veraltet — 'cdd sync-docs' ausführen und committen."
+            if not readmeAktuell then eprintfn "README-Status ist veraltet."
+            if not decisionsAktuell then eprintfn "docs/decisions.md ist veraltet."
+            eprintfn "'cdd sync-docs' ausführen und committen."
             1
         else
-            System.IO.File.WriteAllText(path, updated)
-            printfn "README-Status neu generiert."
+            if not readmeAktuell then
+                System.IO.File.WriteAllText(path, updated)
+                printfn "README-Status neu generiert."
+            if not decisionsAktuell then
+                System.IO.File.WriteAllText(decisionsPath, decisionsNew)
+                printfn "docs/decisions.md neu generiert."
             0
 
 [<EntryPoint>]

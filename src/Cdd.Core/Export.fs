@@ -173,5 +173,52 @@ module Export =
             for _, sp in pending |> List.sortBy (fun (_, sp) -> sp.Title) do
                 line (sprintf "- 🔜 **%s** — %s" sp.Title sp.Intent)
         line ""
+        line "Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)"
+        line ""
         line "*Diese Sektion wird aus dem SPOT-Selbstmodell generiert (`cdd sync-docs`) — Hand-Edits werden überschrieben.*"
+        sb.ToString()
+
+    /// docs/decisions.md — Prämissen, Entscheidungen (ADRs) und geltende
+    /// Invarianten als generiertes, versioniertes Doku-Artefakt.
+    let decisionsMarkdown (entries: SpotEntry list) : string =
+        let sb = StringBuilder()
+        let line (t: string) = sb.AppendLine(t) |> ignore
+        line "# Prämissen & Entscheidungen"
+        line ""
+        line "*Generiert aus dem SPOT-Selbstmodell (`cdd sync-docs`) — Hand-Edits werden überschrieben.*"
+        line ""
+        let premises = entries |> List.choose (fun e -> match e.Payload with PremiseNode p -> Some(e, p) | _ -> None)
+        if not premises.IsEmpty then
+            line "## Prämissen (nicht verhandelbar)"
+            line ""
+            for e, p in premises |> List.sortBy (fun (e, _) -> idValue e.Id) do
+                line (sprintf "### %s" p.Statement)
+                line (sprintf "*%s* · `%s`" p.Rationale (idValue e.Id))
+                line ""
+        let decisions = entries |> List.choose (fun e -> match e.Payload with DecisionNode d -> Some(e, d) | _ -> None)
+        if not decisions.IsEmpty then
+            line "## Entscheidungen (ADRs)"
+            line ""
+            for e, d in decisions |> List.sortBy (fun (e, _) -> idValue e.Id) do
+                line (sprintf "### %s · `%s`" d.Title (idValue e.Id))
+                line (sprintf "- **Kontext:** %s" d.Context)
+                line (sprintf "- **Entscheidung:** %s" d.Choice)
+                line (sprintf "- **Konsequenzen:** %s" d.Consequences)
+                match d.Supersedes with
+                | Some old -> line (sprintf "- **Ersetzt:** `%s`" (idValue old))
+                | None -> ()
+                line ""
+        let invariants = entries |> List.choose (fun e -> match e.Payload with InvariantNode i -> Some(e, i) | _ -> None)
+        if not invariants.IsEmpty then
+            line "## Geltende Invarianten (Governance)"
+            line ""
+            for e, i in invariants |> List.sortBy (fun (e, _) -> idValue e.Id) do
+                let rule =
+                    match i.Rule with
+                    | SpecsNeedTests -> "jede Spec braucht mindestens einen Test"
+                    | CriticalRisksNeedMitigation -> "kritische Risiken brauchen eine Mitigation"
+                    | TermsNeedDefinition -> "jeder Begriff braucht eine Definition"
+                    | IdPrefix(k, pre) -> sprintf "Ids der Art '%s' beginnen mit '%s'" k pre
+                line (sprintf "- 🛡️ **%s** — %s · `%s`" i.Description rule (idValue e.Id))
+            line ""
         sb.ToString()

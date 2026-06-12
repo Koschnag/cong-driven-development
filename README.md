@@ -116,7 +116,7 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 ## Status
 
 <!-- spot:status -->
-**71 Knoten im Selbstmodell** · 4 aktive Invarianten · 15/23 abgeleitete Tests automatisiert
+**72 Knoten im Selbstmodell** · 4 aktive Invarianten · 16/24 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -137,6 +137,8 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
 - ✅ **UML-Editor mit Drag and Drop** — Beziehungen entstehen durch Ziehen zwischen Diagramm-Knoten, Doppelklick öffnet das Formular
 - ✅ **VS2015-Design mit EA-Anatomie** — Das Cockpit folgt Visual Studio 2015 (Chrome) und Enterprise Architect (Fensteranordnung)
+
+Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 
 *Diese Sektion wird aus dem SPOT-Selbstmodell generiert (`cdd sync-docs`) — Hand-Edits werden überschrieben.*
 <!-- /spot:status -->

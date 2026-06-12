@@ -263,7 +263,10 @@ let entries =
             Criteria =
               [ { Given = "ein veralteter README-Status"
                   When = "cdd sync-docs --check in der CI läuft"
-                  Then = "schlägt der Build fehl, bis sync-docs den Status neu generiert hat" } ] } }
+                  Then = "schlägt der Build fehl, bis sync-docs den Status neu generiert hat" }
+                { Given = "Prämissen, Entscheidungen und Invarianten im Modell"
+                  When = "cdd sync-docs läuft"
+                  Then = "wird docs/decisions.md vollständig daraus generiert" } ] } }
 
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
