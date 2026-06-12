@@ -575,7 +575,6 @@ function proposeRelation(srcId, targetId, x, y) {
 // wirken überall. Drill-down: Grid-Kachel oder Fokus; Roll-up: Fokus aus.
 let cy = null;
 let pendingLink = null;
-let designerDirty = true;
 let designerView = localStorage.getItem("cdd-designer-view") ?? "klassen";
 const posStore = JSON.parse(localStorage.getItem("cdd-designer-pos") ?? "{}");
 const savePositions = () => {
@@ -764,10 +763,8 @@ function renderGrid() {
 }
 
 function renderDesigner() {
-  if (!$("#tab-designer").classList.contains("active")) { designerDirty = true; return; }
-  designerDirty = false;
   localStorage.setItem("cdd-designer-view", designerView);
-  for (const b of document.querySelectorAll(".dview"))
+  for (const b of document.querySelectorAll("#doc-tabs .tab"))
     b.classList.toggle("active", b.dataset.view === designerView);
   const isCy = ["klassen", "architektur", "usecase", "topologie"].includes(designerView);
   $("#designer-cy").hidden = !isCy;
@@ -779,23 +776,58 @@ function renderDesigner() {
   else renderGrid();
 }
 
+const errFilter = { Error: true, Warning: true };
 async function renderValidate() {
   const findings = await api("validate");
   lastFindings = findings;
   renderInspector();
   renderStatusbar();
-  const el = $("#tab-validate");
-  document.querySelector('[data-tab="validate"]').textContent =
-    findings.length ? `Validierung (${findings.length})` : "Validierung";
-  el.innerHTML = findings.length ? "" : "<p>✔ Keine Befunde.</p>";
-  for (const f of findings) {
-    const d = document.createElement("div");
-    d.className = `finding ${f.Severity}`;
-    d.innerHTML = `<b></b> ${f.Severity === "Error" ? "❌" : "⚠️"} `;
-    d.querySelector("b").textContent = f.EntityId;
-    d.appendChild(document.createTextNode(f.Message));
-    el.appendChild(d);
+  const errs = findings.filter((f) => f.Severity === "Error").length;
+  const warns = findings.length - errs;
+  document.querySelector('#bottom-tabs [data-tab="errors"]').textContent =
+    findings.length ? `Fehlerliste (${findings.length})` : "Fehlerliste";
+  const el = $("#tab-errors");
+  el.innerHTML = "";
+
+  // Filterleiste wie in VS: ⛔ N Fehler | ⚠ M Warnungen
+  const bar = document.createElement("div");
+  bar.className = "err-filterbar";
+  const mkFilter = (sev, icon, count, label) => {
+    const b = document.createElement("button");
+    b.className = "err-filter" + (errFilter[sev] ? " active" : "");
+    b.textContent = `${icon} ${count} ${label}`;
+    b.onclick = () => { errFilter[sev] = !errFilter[sev]; renderValidate(); };
+    bar.appendChild(b);
+  };
+  mkFilter("Error", "⛔", errs, errs === 1 ? "Fehler" : "Fehler");
+  mkFilter("Warning", "⚠", warns, warns === 1 ? "Warnung" : "Warnungen");
+  el.appendChild(bar);
+
+  const shown = findings.filter((f) => errFilter[f.Severity]);
+  if (!shown.length) {
+    const p = document.createElement("p");
+    p.className = "insp-hint";
+    p.textContent = findings.length
+      ? "Ausgeblendet durch Filter."
+      : "✓ Keine Fehler, Warnungen oder Widersprüche — das Modell ist konsistent.";
+    el.appendChild(p);
+    return;
   }
+  const table = document.createElement("table");
+  table.className = "err-table";
+  table.innerHTML = "<thead><tr><th></th><th>Beschreibung</th><th>Knoten</th><th>Art</th></tr></thead>";
+  const tbody = document.createElement("tbody");
+  for (const f of shown) {
+    const node = entries.find((e) => e.Id === f.EntityId);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${f.Severity === "Error" ? "⛔" : "⚠"}</td><td></td><td></td><td>${node ? kindOfCase(node.Payload.Case) : "—"}</td>`;
+    tr.children[1].textContent = f.Message;
+    tr.children[2].textContent = f.EntityId;
+    tr.onclick = () => select(f.EntityId);
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.appendChild(table);
 }
 
 async function renderDrift() {
@@ -1063,15 +1095,50 @@ $("#btn-theme").onclick = () => {
   applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
   renderDesigner();
 };
-for (const t of document.querySelectorAll(".tab")) {
+for (const t of document.querySelectorAll("#bottom-tabs .tab[data-tab]")) {
   t.onclick = () => {
-    document.querySelectorAll(".tab, .tab-body").forEach((x) => x.classList.remove("active"));
+    document.querySelectorAll("#bottom-tabs .tab, #bottom .tab-body").forEach((x) => x.classList.remove("active"));
     t.classList.add("active");
     $("#tab-" + t.dataset.tab).classList.add("active");
-    if (t.dataset.tab === "designer") {
-      if (designerDirty || !cy) renderDesigner();
-      else cy.resize();
-    }
+  };
+}
+// Dokument-Tabs (Designer-Sichten)
+for (const b of document.querySelectorAll("#doc-tabs .tab[data-view]")) {
+  b.onclick = () => { designerView = b.dataset.view; renderDesigner(); };
+}
+// Bottom-Dock: Höhe ziehen + ein-/ausklappen (VS-Verhalten)
+{
+  const bottom = $("#bottom");
+  const saved = localStorage.getItem("cdd-bottom-h");
+  if (saved) bottom.style.height = saved;
+  $("#hsplitter").addEventListener("mousedown", (ev) => {
+    ev.preventDefault();
+    const startY = ev.clientY;
+    const startH = bottom.getBoundingClientRect().height;
+    const move = (e) => {
+      const h = Math.max(28, startH - (e.clientY - startY));
+      bottom.style.height = h + "px";
+      if (cy) cy.resize();
+    };
+    const up = () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+      localStorage.setItem("cdd-bottom-h", bottom.style.height);
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  });
+  $("#btn-bottom-toggle").onclick = () => {
+    const collapsed = bottom.classList.toggle("collapsed");
+    $("#btn-bottom-toggle").textContent = collapsed ? "▴" : "▾";
+    if (cy) setTimeout(() => cy.resize(), 50);
+  };
+  // Klick auf Statusleisten-Befund springt in die Fehlerliste (VS-Geste)
+  $("#sb-validate").style.cursor = "pointer";
+  $("#sb-validate").onclick = () => {
+    bottom.classList.remove("collapsed");
+    $("#btn-bottom-toggle").textContent = "▾";
+    document.querySelector('#bottom-tabs [data-tab="errors"]').click();
   };
 }
 // — Agent-Tab: Prosa → Modelländerung (direkt via Claude oder per Prompt) —
@@ -1191,9 +1258,6 @@ $("#btn-doku-copy").onclick = async () => {
   await navigator.clipboard.writeText(dokuText);
   setMsg("Kontextpaket kopiert ✔ — direkt an eine KI übergeben.", "ok");
 };
-for (const b of document.querySelectorAll(".dview")) {
-  b.onclick = () => { designerView = b.dataset.view; renderDesigner(); };
-}
 $("#seq-spec").onchange = (ev) => { ev.target.dataset.chosen = ev.target.value; renderSequenz(); };
 $("#filter").oninput = (ev) => {
   filterText = ev.target.value;

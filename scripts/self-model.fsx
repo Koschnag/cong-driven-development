@@ -236,6 +236,18 @@ let entries =
                   When = "sie angeklickt wird"
                   Then = "wird in die Topologie des Knotens gedrillt (Fokus an)" } ] } }
 
+      { Id = EntityId "spec-fehlerliste"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Fehlerliste & Widerspruchs-Erkennung"
+            Intent = "Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio"
+            Criteria =
+              [ { Given = "eine zyklische IsA/PartOf-Begriffshierarchie"
+                  When = "validiert wird"
+                  Then = "erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten" }
+                { Given = "zwei Begriffe mit gleichem Namen"
+                  When = "validiert wird"
+                  Then = "wird Mehrdeutigkeit als Warnung gemeldet" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode

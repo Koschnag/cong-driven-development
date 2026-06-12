@@ -247,6 +247,25 @@ let ``sync scanProjects reads fsproj references`` () =
         if Directory.Exists tmp then Directory.Delete(tmp, true)
 
 [<Fact>]
+let ``validate detects contradictory term hierarchy cycles`` () =
+    let term id rels =
+        { Id = EntityId id; Convergence = Aligned
+          Payload = TermNode { Name = id; Definition = "d"; Synonyms = []; Relations = rels } }
+    let entries = [ term "term-a" [ IsA(EntityId "term-b") ]; term "term-b" [ PartOf(EntityId "term-a") ] ]
+    Assert.Contains(Validate.validate entries |> Validate.errors, fun f -> f.Message.Contains "Widerspruch")
+    // RelatesTo-Zyklen sind KEIN Widerspruch (Assoziation ist frei)
+    let ok = [ term "term-a" [ RelatesTo(EntityId "term-b") ]; term "term-b" [ RelatesTo(EntityId "term-a") ] ]
+    Assert.Empty(Validate.validate ok |> Validate.errors)
+
+[<Fact>]
+let ``validate warns on ambiguous duplicate term names`` () =
+    let term id name =
+        { Id = EntityId id; Convergence = Aligned
+          Payload = TermNode { Name = name; Definition = "d"; Synonyms = []; Relations = [] } }
+    let findings = Validate.validate [ term "term-a" "Konto"; term "term-b" "konto " ]
+    Assert.Equal(2, findings |> Validate.warnings |> List.filter (fun f -> f.Message.Contains "Mehrdeutigkeit") |> List.length)
+
+[<Fact>]
 let ``store rejects path-traversal ids`` () =
     Assert.False(Store.isValidId (EntityId "../evil"))
     Assert.False(Store.isValidId (EntityId "a/b"))

@@ -41,6 +41,39 @@ module Validate =
             visit Set.empty node
         inCycle
 
+    /// Zyklen in der Begriffshierarchie (IsA/PartOf) — ein logischer Widerspruch.
+    let private cyclicTerms (entries: SpotEntry list) : Set<EntityId> =
+        let deps =
+            entries
+            |> List.choose (fun e ->
+                match e.Payload with
+                | TermNode t ->
+                    let targets =
+                        t.Relations
+                        |> List.choose (function
+                            | IsA target | PartOf target -> Some target
+                            | RelatesTo _ -> None)
+                    Some(e.Id, targets)
+                | _ -> None)
+            |> Map.ofList
+
+        let mutable inCycle = Set.empty
+
+        let rec visit (path: Set<EntityId>) (node: EntityId) =
+            if Set.contains node path then
+                inCycle <- Set.union inCycle path
+            else
+                match Map.tryFind node deps with
+                | Some children ->
+                    let path' = Set.add node path
+                    for child in children do
+                        visit path' child
+                | None -> ()
+
+        for KeyValue(node, _) in deps do
+            visit Set.empty node
+        inCycle
+
     /// Prüft den gesamten Graphen und liefert alle Befunde.
     let validate (entries: SpotEntry list) : Finding list =
         let ids = entries |> List.map (fun e -> e.Id) |> Set.ofList
@@ -59,6 +92,17 @@ module Validate =
                 | _ -> None)
             |> Set.ofList
         let cyclic = cyclicComponents entries
+        let termCycles = cyclicTerms entries
+        let ambiguousNames =
+            entries
+            |> List.choose (fun e ->
+                match e.Payload with
+                | TermNode t -> Some (t.Name.Trim().ToLowerInvariant())
+                | _ -> None)
+            |> List.countBy id
+            |> List.filter (fun (_, n) -> n > 1)
+            |> List.map fst
+            |> Set.ofList
 
         [ for e in entries do
             match e.Payload with
@@ -99,6 +143,12 @@ module Validate =
                 if t.Definition.Trim() = "" then
                     yield { Severity = Warning; EntityId = e.Id
                             Message = "Begriff ohne Definition — ubiquitäre Sprache braucht Bedeutung" }
+                if Set.contains e.Id termCycles then
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = "Widerspruch: zyklische Begriffshierarchie (IsA/PartOf)" }
+                if Set.contains (t.Name.Trim().ToLowerInvariant()) ambiguousNames then
+                    yield { Severity = Warning; EntityId = e.Id
+                            Message = sprintf "Mehrdeutigkeit: Begriff '%s' ist mehrfach definiert" t.Name }
                 for rel in t.Relations do
                     let target = relationTarget rel
                     if target = e.Id then
