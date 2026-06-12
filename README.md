@@ -91,6 +91,10 @@ Weitere Wege (alle GitHub-nativ):
 
 ### MCP-Server (KI-Integration)
 
+Im Repo liegt eine `.mcp.json` — wer den Checkout mit Claude Code öffnet, bekommt
+den CDD-Server automatisch angeboten (Zustimmung genügt). Manuell, z. B. für ein
+anderes Arbeitsverzeichnis:
+
 ```bash
 claude mcp add cdd -- dotnet run --project src/Cdd.Mcp -- --root .
 ```
