@@ -53,7 +53,17 @@ public static class SpotTools
                  "Antwortet mit den Validierungs-Befunden nach der Änderung.")]
     public static string Upsert([Description("Vollständiger Knoten als JSON")] string nodeJson)
     {
-        var entry = Json.deserialize<Spot.SpotEntry>(nodeJson);
+        Spot.SpotEntry entry;
+        try
+        {
+            entry = Json.deserialize<Spot.SpotEntry>(nodeJson);
+        }
+        catch (Exception ex)
+        {
+            return $"Fehler: ungültiges Knoten-JSON ({ex.Message}).";
+        }
+        if (!Store.isValidId(entry.Id))
+            return $"Fehler: ungültige Id '{Spot.idValue(entry.Id)}' (erlaubt: a-zA-Z0-9_-).";
         Store.save(Root, entry);
         return $"Gespeichert: {Spot.idValue(entry.Id)}\n{ValidationSummary()}";
     }

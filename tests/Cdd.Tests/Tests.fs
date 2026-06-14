@@ -325,6 +325,16 @@ let ``validate detects contradictory term hierarchy cycles`` () =
     // RelatesTo-Zyklen sind KEIN Widerspruch (Assoziation ist frei)
     let ok = [ term "term-a" [ RelatesTo(EntityId "term-b") ]; term "term-b" [ RelatesTo(EntityId "term-a") ] ]
     Assert.Empty(Validate.validate ok |> Validate.errors)
+    // Vorlauf-Knoten in einen Zyklus (A→B→C→B) markiert NUR B und C als Widerspruch, nicht A
+    let kette =
+        [ term "term-a" [ IsA(EntityId "term-b") ]
+          term "term-b" [ IsA(EntityId "term-c") ]
+          term "term-c" [ IsA(EntityId "term-b") ] ]
+    let widersprüche =
+        Validate.validate kette |> Validate.errors
+        |> List.filter (fun f -> f.Message.Contains "Widerspruch")
+        |> List.map (fun f -> idValue f.EntityId) |> Set.ofList
+    Assert.Equal<Set<string>>(Set.ofList [ "term-b"; "term-c" ], widersprüche)
 
 [<Fact; Trait("spot", "spec-fehlerliste-test-2")>]
 let ``validate warns on ambiguous duplicate term names`` () =

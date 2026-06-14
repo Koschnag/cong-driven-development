@@ -26,19 +26,21 @@ module Validate =
 
         let mutable inCycle = Set.empty
 
-        let rec visit (path: Set<EntityId>) (node: EntityId) =
-            if Set.contains node path then
-                inCycle <- Set.union inCycle path
-            else
+        let rec visit (path: EntityId list) (node: EntityId) =
+            match List.tryFindIndex ((=) node) path with
+            | Some i ->
+                // Nur den Zyklus-Anteil ab der Wiederholung markieren, nicht den Vorlauf (A→B→C→B markiert B,C — nicht A)
+                for n in List.take (i + 1) path do inCycle <- Set.add n inCycle
+            | None ->
                 match Map.tryFind node deps with
                 | Some children ->
-                    let path' = Set.add node path
+                    let path' = node :: path
                     for child in children do
                         visit path' child
                 | None -> ()
 
         for KeyValue(node, _) in deps do
-            visit Set.empty node
+            visit [] node
         inCycle
 
     /// Zyklen in der Begriffshierarchie (IsA/PartOf) — ein logischer Widerspruch.
@@ -59,19 +61,21 @@ module Validate =
 
         let mutable inCycle = Set.empty
 
-        let rec visit (path: Set<EntityId>) (node: EntityId) =
-            if Set.contains node path then
-                inCycle <- Set.union inCycle path
-            else
+        let rec visit (path: EntityId list) (node: EntityId) =
+            match List.tryFindIndex ((=) node) path with
+            | Some i ->
+                // Nur den Zyklus-Anteil ab der Wiederholung markieren, nicht den Vorlauf (A→B→C→B markiert B,C — nicht A)
+                for n in List.take (i + 1) path do inCycle <- Set.add n inCycle
+            | None ->
                 match Map.tryFind node deps with
                 | Some children ->
-                    let path' = Set.add node path
+                    let path' = node :: path
                     for child in children do
                         visit path' child
                 | None -> ()
 
         for KeyValue(node, _) in deps do
-            visit Set.empty node
+            visit [] node
         inCycle
 
     /// Prüft den gesamten Graphen und liefert alle Befunde.
