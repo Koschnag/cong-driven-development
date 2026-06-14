@@ -38,6 +38,10 @@ export function parseChanges(text) {
   const obj = JSON.parse(text.slice(start, end + 1));
   if (!Array.isArray(obj.upsert)) obj.upsert = [];
   if (!Array.isArray(obj.delete)) obj.delete = [];
+  // Nur Einträge mit gültiger Id durchlassen — sonst landet ein PUT auf /api/spot/undefined.
+  const gültigeId = (id) => typeof id === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(id);
+  obj.upsert = obj.upsert.filter((e) => e && gültigeId(e.Id));
+  obj.delete = obj.delete.filter((id) => gültigeId(id));
   return obj;
 }
 
@@ -65,7 +69,14 @@ export async function callClaude({ apiKey, model, prose, contextMd }) {
       ],
     }),
   });
-  const body = await res.json();
+  const raw = await res.text();
+  let body;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    // Kein JSON (z. B. CORS-/Gateway-HTML-Fehlerseite) → verständliche Meldung statt SyntaxError
+    throw new Error(`Antwort war kein JSON (HTTP ${res.status}). Anfang: ${raw.slice(0, 120)}`);
+  }
   if (!res.ok) throw new Error(body?.error?.message ?? `HTTP ${res.status}`);
   const text = body.content
     .filter((b) => b.type === "text")
