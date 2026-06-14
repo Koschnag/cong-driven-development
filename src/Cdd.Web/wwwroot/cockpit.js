@@ -6,8 +6,8 @@ import { buildPrompt, callClaude, parseChanges, getApiKey, setApiKey } from "./a
 import { buildForm } from "./form.js";
 
 const $ = (s) => document.querySelector(s);
-const item = (e) => e.Payload.Fields.Item;
-const kindOf = (e) => e.Payload.Case.replace("Node", "");
+const item = (e) => e.Payload?.Fields?.Item ?? {};
+const kindOf = (e) => (e.Payload?.Case ?? "Node").replace("Node", "");
 const KIND_LABEL = {
   Spec: "Specs", Term: "Ontologie", Risk: "Risiken", Decision: "Entscheidungen",
   Test: "Tests", Component: "Komponenten", Invariant: "Invarianten",
@@ -88,7 +88,7 @@ function renderNav() {
     for (const e of g.sort((a, b) => a.Id.localeCompare(b.Id))) {
       const li = document.createElement("div");
       li.className = "nav-item" + (e.Id === selectedId ? " sel" : "");
-      li.innerHTML = `<span class="dot ${e.Convergence}"></span><span class="nav-id">${e.Id}</span>`;
+      li.innerHTML = `<span class="dot ${e.Convergence}"></span><span class="nav-id">${esc(e.Id)}</span>`;
       li.onclick = () => select(e.Id);
       grp.appendChild(li);
     }
@@ -126,7 +126,10 @@ function renderActions(e) {
   if (!e) return;
   const edit = document.createElement("button");
   edit.textContent = editing ? "✕ Abbrechen" : "✏️ Bearbeiten";
-  edit.onclick = () => { editing = !editing; renderMain(); };
+  edit.onclick = () => {
+    if (editing && phantomId === e.Id) { verwerfePhantom(); selectedId = null; } // unsaved neuer Knoten verworfen
+    editing = !editing; renderMain();
+  };
   a.appendChild(edit);
   const del = document.createElement("button");
   del.textContent = "🗑"; del.className = "danger"; del.title = "Löschen";
@@ -197,8 +200,8 @@ function renderDetail(e) {
   }
   // Beziehungen (klickbar)
   const outs = outRefs(e), ins = inRefs(e.Id);
-  if (outs.length) html += `<div class="fl">Verweist auf</div>` + outs.map((r) => `<a class="rel" data-id="${r.id}">${r.label}: ${r.id}</a>`).join("");
-  if (ins.length) html += `<div class="fl">Verwiesen von</div>` + ins.map((s) => `<a class="rel" data-id="${s.Id}">${s.Id}</a>`).join("");
+  if (outs.length) html += `<div class="fl">Verweist auf</div>` + outs.map((r) => `<a class="rel" data-id="${esc(r.id)}">${esc(r.label)}: ${esc(r.id)}</a>`).join("");
+  if (ins.length) html += `<div class="fl">Verwiesen von</div>` + ins.map((s) => `<a class="rel" data-id="${esc(s.Id)}">${esc(s.Id)}</a>`).join("");
   d.innerHTML = html;
   d.querySelectorAll(".rel").forEach((a) => (a.onclick = () => select(a.dataset.id)));
 }
@@ -214,7 +217,7 @@ function renderEdit(e) {
     try {
       const v = getValue();
       await api("spot/" + encodeURIComponent(v.Id), { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(v) });
-      editing = false; await load(); select(v.Id, false);
+      phantomId = null; editing = false; await load(); select(v.Id, false);
     } catch (err) { alert("Fehler: " + err.message); }
   };
   d.appendChild(save);
@@ -223,17 +226,26 @@ function renderEdit(e) {
 async function delNode(id) {
   if (!confirm(`Knoten '${id}' löschen?`)) return;
   await api("spot/" + encodeURIComponent(id), { method: "DELETE" });
+  // gelöschte Id aus der History entfernen, damit Vor/Zurück keinen toten Knoten anspringt
+  for (let i = history.length - 1; i >= 0; i--) if (history[i] === id) history.splice(i, 1);
+  histIdx = history.length - 1;
   selectedId = null; await load();
 }
 
+let phantomId = null;
+function verwerfePhantom() {
+  if (phantomId) { entries = entries.filter((x) => x.Id !== phantomId); phantomId = null; }
+}
 async function addNode() {
   const kind = $("#nav-add-kind").value;
   const id = prompt("Id des neuen Knotens (a-z, 0-9, -, _):");
   if (!id) return;
-  selectedId = id; editing = true;
-  // temporären Leer-Knoten ins Formular geben
-  const leer = { Id: id, Convergence: "Pending", Payload: { Case: kind, Fields: { Item: {} } } };
-  entries.push(leer); renderMain();
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(id)) { alert("Ungültige Id (erlaubt: a-z, A-Z, 0-9, -, _; muss alphanumerisch beginnen)."); return; }
+  if (byId(id)) { alert("Id existiert bereits."); return; }
+  verwerfePhantom();
+  phantomId = id; selectedId = id; editing = true;
+  entries.push({ Id: id, Convergence: "Pending", Payload: { Case: kind, Fields: { Item: {} } } });
+  renderMain();
 }
 
 // ---------- Unten: Fehlerliste / Dashboard / Agent ----------
@@ -247,7 +259,7 @@ async function renderErrors() {
   if (!findings.length) { pane.innerHTML = `<p class="ok">✓ Keine Fehler, Warnungen oder Widersprüche — das Modell ist konsistent.</p>`; return; }
   pane.innerHTML = `<div class="err-sum">${errs} Fehler · ${warns} Warnungen</div>` +
     `<table class="err-table">` + findings.map((f) =>
-      `<tr data-id="${f.EntityId}"><td>${f.Severity === "Error" ? "⛔" : "⚠️"}</td><td>${esc(f.Message)}</td><td class="err-id">${f.EntityId}</td></tr>`).join("") + `</table>`;
+      `<tr data-id="${esc(f.EntityId)}"><td>${f.Severity === "Error" ? "⛔" : "⚠️"}</td><td>${esc(f.Message)}</td><td class="err-id">${esc(f.EntityId)}</td></tr>`).join("") + `</table>`;
   pane.querySelectorAll("tr[data-id]").forEach((tr) => (tr.onclick = () => select(tr.dataset.id)));
 }
 
@@ -269,17 +281,19 @@ function wireAgent() {
   $("#btn-agent-prompt").onclick = async () => {
     const md = await api("export?format=markdown").catch(() => null);
     const ctx = typeof md === "string" ? md : JSON.stringify(entries);
-    await navigator.clipboard.writeText(buildPrompt(ctx, $("#agent-prose").value));
+    await navigator.clipboard.writeText(buildPrompt($("#agent-prose").value, ctx));
     $("#agent-status").textContent = "Prompt kopiert — in eine KI einfügen, Antwort unten anwenden.";
   };
   $("#btn-agent-run").onclick = async () => {
     const prose = $("#agent-prose").value.trim();
     if (!prose) return;
+    if (DEMO) { $("#agent-status").textContent = "Demo-Modus: bitte 'Prompt kopieren' nutzen und in eine KI einfügen."; return; }
     $("#agent-status").textContent = "Claude denkt nach …";
     try {
       const md = await api("export?format=markdown").catch(() => JSON.stringify(entries));
-      const text = await callClaude(typeof md === "string" ? md : JSON.stringify(entries), prose, $("#agent-model").value);
-      showChanges(parseChanges(text));
+      const ctx = typeof md === "string" ? md : JSON.stringify(entries);
+      const changes = await callClaude({ apiKey: getApiKey(), model: $("#agent-model").value, prose, contextMd: ctx });
+      showChanges(changes);
     } catch (err) { $("#agent-status").textContent = "Fehler: " + err.message; }
   };
   $("#btn-agent-apply").onclick = async () => {
@@ -293,7 +307,7 @@ function wireAgent() {
 function showChanges(ch) {
   pendingChanges = ch;
   $("#agent-summary").textContent = ch.summary ?? "";
-  $("#agent-changes").innerHTML = ch.upsert.map((u) => `<div>+ ${u.Id}</div>`).join("") + ch.delete.map((d) => `<div>− ${d}</div>`).join("");
+  $("#agent-changes").innerHTML = ch.upsert.map((u) => `<div>+ ${esc(u.Id)}</div>`).join("") + ch.delete.map((d) => `<div>− ${esc(d)}</div>`).join("");
   $("#agent-result").hidden = false;
   $("#agent-status").textContent = "Vorschlag — prüfen und anwenden.";
 }
