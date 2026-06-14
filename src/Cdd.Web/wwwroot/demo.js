@@ -90,15 +90,16 @@ function validate(es) {
           const adj = new Map();
           for (const x of es.filter((y) => y.Payload.Case === "TermNode"))
             adj.set(x.Id, (item(x).Relations ?? []).filter((r) => r.Case !== "RelatesTo").map((r) => r.Fields?.Item).filter(Boolean));
-          const seen = new Set();
-          const stack = [e.Id];
+          // Parität zu F# cyclicTerms: e ist nur zyklisch, wenn von e aus e wieder erreichbar
+          // ist (nur Knoten IM Zyklus, nicht ein Vorlauf, der bloß hineinzeigt).
           let cyclic = false;
           const walk = (id, path) => {
-            if (path.has(id)) { if (id === e.Id || path.has(e.Id)) cyclic = true; return; }
-            const p2 = new Set(path); p2.add(id);
-            for (const n of adj.get(id) ?? []) walk(n, p2);
+            for (const n of adj.get(id) ?? []) {
+              if (n === e.Id) { cyclic = true; return; }
+              if (!path.has(n)) { const p2 = new Set(path); p2.add(n); walk(n, p2); }
+            }
           };
-          walk(e.Id, new Set());
+          walk(e.Id, new Set([e.Id]));
           if (cyclic) f("Error", e.Id, "Widerspruch: zyklische Begriffshierarchie (IsA/PartOf)");
         }
         { // Mehrdeutigkeit: doppelte Namen

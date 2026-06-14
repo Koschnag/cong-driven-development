@@ -56,7 +56,7 @@ tests/Cdd.Tests/      — Spec→Test-Generation, Round-Trip-Tests
 
 - **F#** für Domain (typsicher, ADTs, Discriminated Unions für SPOT)
 - **C#** für IO-Adapter (LLM-Clients, Git, FS) wenn nötig
-- **.NET 10**
+- **.NET 9**
 - **Lean 4** später für Beweise (wenn Theoreme entstehen)
 - **MPL-2.0** Lizenz
 
