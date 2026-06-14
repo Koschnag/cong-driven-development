@@ -1,11 +1,11 @@
-// E2E-Smoke: startet das Cockpit gegen das Selbstmodell und prüft die
+// E2E-Smoke: startet das neu gestaltete Cockpit gegen das Selbstmodell und prüft die
 // Kern-Interaktionen im echten Browser. Läuft lokal und in der CI.
 // Abgedeckte Test-Knoten (sync-tests-Marker):
-//   [spot: spec-diagram-designer-test-1]  Cube-Filter wirkt auf alle Sichten
-//   [spot: spec-diagram-designer-test-2]  Grid-Kachel drillt in die Topologie
-//   [spot: spec-form-editor-test-1]       Toolbox → Formular mit Feldern
-//   [spot: spec-cockpit-uml-test-1]       Klassendiagramm rendert Beziehungen
-import { spawn, execSync } from "node:child_process";
+//   [spot: spec-cockpit-uml-test-1]       Hauptfenster zeigt Nachbarschaft als Diagramm
+//   [spot: spec-diagram-designer-test-1]  Phasen-Leiste filtert die Navigation
+//   [spot: spec-diagram-designer-test-2]  Klickbare Beziehung navigiert im Hauptfenster
+//   [spot: spec-form-editor-test-1]       Bearbeiten öffnet Formular mit Feldern
+import { spawn } from "node:child_process";
 import puppeteer from "puppeteer";
 
 const PORT = 5599;
@@ -14,12 +14,12 @@ const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project
 
 const fails = [];
 const ok = (cond, name) => { console.log((cond ? "OK   " : "FAIL ") + name); if (!cond) fails.push(name); };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 try {
-  // Auf Server warten
   for (let i = 0; i < 60; i++) {
     try { await fetch(`http://127.0.0.1:${PORT}/api/spot`); break; }
-    catch { await new Promise((r) => setTimeout(r, 500)); }
+    catch { await sleep(500); }
   }
   const browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
   const page = await browser.newPage();
@@ -27,60 +27,65 @@ try {
   page.on("pageerror", (e) => jsErrors.push(e.message));
   await page.setViewport({ width: 1480, height: 900 });
   await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: "networkidle2", timeout: 60000 });
-  await new Promise((r) => setTimeout(r, 2500));
-  if (await page.evaluate(() => getComputedStyle(document.querySelector("#help-overlay")).display !== "none")) {
-    await page.click("#btn-help-close");
-  }
+  await sleep(1500);
+  await page.evaluate(() => document.querySelector("#help-overlay")?.setAttribute("hidden", ""));
 
-  // Grundgerüst
-  ok(await page.evaluate(() => !!document.querySelector("#dock-left #toolbox")), "Toolbox im linken Dock");
-  ok(await page.evaluate(() => !!document.querySelector("#designer-cy canvas")), "Designer-Zeichenfläche rendert");
-  ok(await page.evaluate(() => document.querySelectorAll("#doc-tabs .tab").length === 6), "6 Dokument-Tabs");
+  // Grundgerüst: Phasen-Leiste + Navigationsbaum
+  ok(await page.evaluate(() => document.querySelectorAll("#phasebar .phase").length === 4), "Phasen-Leiste mit 4 Phasen");
+  ok(await page.evaluate(() => document.querySelectorAll(".nav-item").length > 0), "Navigationsbaum gefüllt");
 
-  // [spot: spec-cockpit-uml-test-1] Klassendiagramm: Begriffe + Kanten vorhanden
-  const klassen = await page.evaluate(() => window.cy ? -1 : null);
-  ok(await page.evaluate(() => !!document.querySelector("#designer-cy canvas")), "Klassendiagramm (Begriffe) rendert");
+  // Klick auf einen Test-Knoten (hat garantiert eine Beziehung zur Spec)
+  const sel = await page.evaluate(() => {
+    const it = [...document.querySelectorAll(".nav-item")].find((x) => x.textContent.includes("-test-"));
+    if (it) { it.click(); return it.querySelector(".nav-id").textContent; }
+    return null;
+  });
+  await sleep(1200);
 
-  // [spot: spec-diagram-designer-test-1] Cube-Slice wirkt: nur 'term' → Grid zeigt nur Begriffe
-  await page.click('#doc-tabs [data-view="grid"]');
-  await new Promise((r) => setTimeout(r, 800));
-  const allCards = await page.evaluate(() => document.querySelectorAll(".gcard").length);
-  await page.evaluate(() => [...document.querySelectorAll("#cube-kinds .chip")].find((c) => c.textContent.trim() === "term").click());
-  await new Promise((r) => setTimeout(r, 800));
-  const termCards = await page.evaluate(() => document.querySelectorAll(".gcard").length);
-  ok(termCards > 0 && termCards < allCards, `Cube-Slice filtert Grid (${termCards}/${allCards})`);
-  await page.evaluate(() => [...document.querySelectorAll("#cube-kinds .chip")].find((c) => c.classList.contains("active"))?.click());
-  await new Promise((r) => setTimeout(r, 500));
+  // [spot: spec-cockpit-uml-test-1] Hauptfenster: Nachbarschafts-Diagramm rendert
+  ok(await page.evaluate(() => !!document.querySelector("#main-diagram canvas")), "Nachbarschafts-Diagramm rendert (Canvas)");
+  ok(await page.evaluate((s) => document.querySelector("#main-title").textContent.includes(s), sel), "Hauptfenster-Titel zeigt gewählten Knoten");
 
-  // [spot: spec-diagram-designer-test-2] Grid-Kachel → Drill-down (Fokus + Topologie)
-  await page.click(".gcard");
-  await new Promise((r) => setTimeout(r, 1200));
-  const drill = await page.evaluate(() => ({
-    fokus: document.querySelector("#focus-toggle").checked,
-    topo: document.querySelector('#doc-tabs [data-view="topologie"]').classList.contains("active"),
-  }));
-  ok(drill.fokus && drill.topo, "Grid-Kachel drillt in Fokus-Topologie");
-  await page.evaluate(() => { document.querySelector("#focus-toggle").checked = false; document.querySelector("#focus-toggle").dispatchEvent(new Event("change")); });
+  // [spot: spec-diagram-designer-test-2] Klickbare Beziehung navigiert im Hauptfenster
+  const relTarget = await page.evaluate(() => {
+    const rel = document.querySelector("#main-detail a.rel");
+    if (rel) { const id = rel.dataset.id; rel.click(); return id; }
+    return null;
+  });
+  await sleep(900);
+  ok(relTarget && await page.evaluate((t) => document.querySelector("#main-title").textContent.includes(t), relTarget),
+     "Klick auf Beziehung navigiert zum Zielknoten");
 
-  // [spot: spec-form-editor-test-1] Toolbox-Klick öffnet Formular mit Feldern
-  await page.evaluate(() => [...document.querySelectorAll(".tool-item")].find((t) => t.textContent.includes("Begriff")).click());
-  await new Promise((r) => setTimeout(r, 500));
-  const form = await page.evaluate(() => ({
-    sichtbar: !document.querySelector("#editor-form").hidden,
-    felder: document.querySelectorAll("#editor-form .f-field").length,
-  }));
-  ok(form.sichtbar && form.felder >= 4, `Formular öffnet mit ${form.felder} Feldern`);
+  // [spot: spec-diagram-designer-test-1] Phasen-Leiste filtert: 'Offen' → nur Pending im Baum
+  await page.evaluate(() => [...document.querySelectorAll("#phasebar .phase")].find((p) => p.textContent.includes("Offen")).click());
+  await sleep(700);
+  const nurPending = await page.evaluate(() => {
+    const dots = [...document.querySelectorAll(".nav-item .dot")];
+    return dots.length > 0 && dots.every((d) => d.classList.contains("Pending"));
+  });
+  ok(nurPending, "Phasen-Filter 'Offen' zeigt nur Pending-Knoten");
+  await page.evaluate(() => [...document.querySelectorAll("#phasebar .phase")].find((p) => p.classList.contains("active"))?.click());
+  await sleep(400);
+
+  // [spot: spec-form-editor-test-1] Bearbeiten öffnet Formular mit Feldern
+  await page.evaluate(() => {
+    [...document.querySelectorAll(".nav-item")].find((x) => x.textContent.includes("term-")).click();
+  });
+  await sleep(700);
+  await page.evaluate(() => [...document.querySelectorAll("#main-actions button")].find((b) => b.textContent.includes("Bearbeiten")).click());
+  await sleep(500);
+  ok(await page.evaluate(() => document.querySelectorAll("#main-detail .f-field").length > 0), "Bearbeiten zeigt Formular mit Feldern");
 
   // Fehlerliste: Verstoß → Zeile → Klick springt → aufräumen
   await fetch(`http://127.0.0.1:${PORT}/api/spot/term-e2e-kaputt`, { method: "PUT", body: JSON.stringify({ Id: "term-e2e-kaputt", Payload: { Case: "TermNode", Fields: { Item: { Name: "E2E", Definition: "", Synonyms: [], Relations: [] } } }, Convergence: "Pending" }) });
   await page.reload({ waitUntil: "networkidle2" });
-  await new Promise((r) => setTimeout(r, 2000));
-  if (await page.evaluate(() => getComputedStyle(document.querySelector("#help-overlay")).display !== "none")) await page.click("#btn-help-close");
-  const rows = await page.evaluate(() => document.querySelectorAll(".err-table tbody tr").length);
+  await sleep(1500);
+  await page.evaluate(() => document.querySelector("#help-overlay")?.setAttribute("hidden", ""));
+  const rows = await page.evaluate(() => document.querySelectorAll(".err-table tr[data-id]").length);
   ok(rows >= 1, `Fehlerliste zeigt ${rows} Befund(e)`);
-  await page.click(".err-table tbody tr");
-  await new Promise((r) => setTimeout(r, 400));
-  ok((await page.evaluate(() => document.querySelector("#editor-title").textContent)) === "term-e2e-kaputt", "Fehler-Klick springt zum Knoten");
+  await page.evaluate(() => [...document.querySelectorAll(".err-table tr[data-id]")].find((r) => r.dataset.id === "term-e2e-kaputt").click());
+  await sleep(500);
+  ok((await page.evaluate(() => document.querySelector("#main-title").textContent)).includes("term-e2e-kaputt"), "Fehler-Klick springt zum Knoten im Hauptfenster");
   await fetch(`http://127.0.0.1:${PORT}/api/spot/term-e2e-kaputt`, { method: "DELETE" });
 
   ok(jsErrors.length === 0, jsErrors.length ? "JS-Fehler: " + jsErrors.join("; ") : "keine JS-Fehler");

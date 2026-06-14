@@ -4,13 +4,13 @@
     "Case": "SpecNode",
     "Fields": {
       "Item": {
-        "Title": "Formular-Editor",
-        "Intent": "Knoten werden \u00FCber Eingabefelder gepflegt \u2014 JSON ist Experten-Option, nicht Voraussetzung",
+        "Title": "Bearbeiten als Formular im Hauptfenster",
+        "Intent": "Der Bearbeiten-Knopf öffnet ein Formular mit typgerechten Feldern direkt im Detailbereich",
         "Criteria": [
           {
-            "Given": "eine Knotenart aus der Toolbox",
-            "When": "ein neuer Knoten angelegt wird",
-            "Then": "\u00F6ffnet sich ein Formular mit passenden Feldern und Dropdowns f\u00FCr Referenzen"
+            "Given": "ein gewählter Knoten",
+            "When": "Bearbeiten geklickt wird",
+            "Then": "erscheint ein Formular mit Feldern passend zur Knotenart"
           }
         ]
       }
