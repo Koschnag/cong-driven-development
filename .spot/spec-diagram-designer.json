@@ -4,18 +4,18 @@
     "Case": "SpecNode",
     "Fields": {
       "Item": {
-        "Title": "Diagramm-Designer",
-        "Intent": "Eine Zeichenfl\u00E4che, viele Projektionen: Klassen, Use Case, Sequenz, Architektur, Topologie, Grid \u2014 alle Cube-gefiltert",
+        "Title": "Navigation über Phasen-Leiste und Beziehungen",
+        "Intent": "Die Phasen-Leiste filtert nach Konvergenz-Lebenszyklus; klickbare Beziehungen navigieren im Hauptfenster",
         "Criteria": [
           {
-            "Given": "ein aktiver Cube-Filter oder Fokus",
-            "When": "zwischen Designer-Sichten gewechselt wird",
-            "Then": "zeigt jede Sicht dieselbe gefilterte Teilmenge in ihrer Projektion"
+            "Given": "Knoten in mehreren Konvergenz-Phasen",
+            "When": "die Phase 'Offen' in der Leiste gewählt wird",
+            "Then": "zeigt der Navigationsbaum nur Pending-Knoten"
           },
           {
-            "Given": "eine Grid-Kachel",
-            "When": "sie angeklickt wird",
-            "Then": "wird in die Topologie des Knotens gedrillt (Fokus an)"
+            "Given": "ein Knoten mit einer Beziehung im Detail",
+            "When": "die Beziehung angeklickt wird",
+            "Then": "navigiert das Hauptfenster zum Zielknoten"
           }
         ]
       }

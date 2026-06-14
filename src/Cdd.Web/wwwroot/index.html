@@ -11,180 +11,107 @@
   <header>
     <h1>CDD <span>Cockpit</span></h1>
     <div class="toolbar menubar">
-      <div class="menu">
-        <button id="btn-model-menu" class="menu-top">Modell</button>
-        <div id="model-menu" class="menu-body" hidden>
-          <button class="menu-item" id="mi-derive">Tests ableiten</button>
-          <button class="menu-item" id="mi-refresh">Neu laden</button>
-        </div>
-      </div>
-      <div class="menu">
-        <button id="btn-view" class="menu-top">Ansicht</button>
-        <div id="view-menu" class="menu-body" hidden></div>
-      </div>
+      <button id="mi-refresh" class="menu-top">⟳ Neu laden</button>
+      <button id="mi-derive" class="menu-top">Tests ableiten</button>
       <button id="btn-help" class="menu-top">Hilfe</button>
       <span class="sb-spacer"></span>
-      <button id="btn-derive" hidden></button>
-      <button id="btn-refresh" hidden></button>
       <button id="btn-theme" title="Light/Dark umschalten">🌓</button>
     </div>
   </header>
+
+  <!-- Phasen-Leiste: Lebenszyklus jeder Entität (Konvergenz-Pipeline). Klick filtert. -->
+  <nav id="phasebar"></nav>
+
+  <main id="cockpit">
+    <!-- Links: Navigation nach Knotenart (Baum), gefiltert durch Phase + Suche -->
+    <aside id="nav">
+      <input id="nav-search" type="search" placeholder="Filtern (Id, Art, Inhalt) …">
+      <div id="nav-tree"></div>
+      <div id="nav-add">
+        <span class="nav-add-label">+ Knoten:</span>
+        <select id="nav-add-kind">
+          <option value="SpecNode">Spec</option>
+          <option value="TermNode">Begriff</option>
+          <option value="ComponentNode">Component</option>
+          <option value="DecisionNode">Entscheidung</option>
+          <option value="PremiseNode">Prämisse</option>
+          <option value="RiskNode">Risk</option>
+          <option value="KnowledgeNode">Knowledge</option>
+          <option value="ToolNode">Tool</option>
+          <option value="InvariantNode">Invariante</option>
+        </select>
+        <button id="nav-add-btn">Anlegen</button>
+      </div>
+    </aside>
+
+    <!-- MAIN: geteilt — links Diagramm (Nachbarschaft), rechts Detail des gewählten Knotens -->
+    <section id="main">
+      <div id="main-head">
+        <div id="main-nav"><button id="back" title="Zurück">←</button><button id="fwd" title="Vor">→</button></div>
+        <div id="main-title">Kein Knoten gewählt</div>
+        <div id="main-actions"></div>
+      </div>
+      <div id="main-split">
+        <div id="main-diagram"></div>
+        <div id="main-vsplit"></div>
+        <div id="main-detail">
+          <p class="hint">Wähle links einen Knoten oder klicke im Diagramm — Details und Nachbarschaft erscheinen hier.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Unten: Fehlerliste (klickbar) + Agent (Prosa → Modell) -->
+  <footer id="dock-bottom">
+    <div id="dock-tabs">
+      <button class="dtab active" data-dock="errors">Fehlerliste</button>
+      <button class="dtab" data-dock="agent">🤖 Agent</button>
+      <button class="dtab" data-dock="dashboard">Dashboard</button>
+      <span class="sb-spacer"></span>
+      <button id="dock-toggle" title="Ein-/ausklappen">▾</button>
+    </div>
+    <div id="dock-body">
+      <div id="dock-errors" class="dock-pane"></div>
+      <div id="dock-agent" class="dock-pane" hidden>
+        <textarea id="agent-prose" rows="3" placeholder="z. B.: Füge den Begriff 'Bounded Context' zur Ontologie hinzu, verwandt mit der ubiquitären Sprache."></textarea>
+        <div class="agent-row">
+          <input id="agent-key" type="password" placeholder="Anthropic API-Key (optional, bleibt im Browser)">
+          <select id="agent-model">
+            <option value="claude-opus-4-8">Opus 4.8</option>
+            <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+            <option value="claude-haiku-4-5">Haiku 4.5</option>
+          </select>
+          <button id="btn-agent-run">▶ Ausführen</button>
+          <button id="btn-agent-prompt">⧉ Prompt kopieren</button>
+        </div>
+        <div id="agent-status"></div>
+        <div id="agent-result" hidden>
+          <p id="agent-summary"></p>
+          <div id="agent-changes"></div>
+          <button id="btn-agent-apply">✔ Anwenden</button>
+          <button id="btn-agent-discard" class="danger">✕ Verwerfen</button>
+        </div>
+      </div>
+      <div id="dock-dashboard" class="dock-pane" hidden></div>
+    </div>
+  </footer>
+
+  <div id="statusbar"><span id="sb-state">Bereit</span><span id="sb-sel"></span><span class="sb-spacer"></span><span id="sb-counts"></span></div>
 
   <div id="help-overlay" hidden>
     <div class="help-box">
       <h3>So funktioniert das Cockpit</h3>
       <ol>
-        <li><b>🧰 Toolbox</b> (links): Knotenart anklicken → Formular rechts ausfüllen → Speichern.</li>
-        <li><b>Mitte = deine Modelle:</b> Klassen · Use Case · Sequenz · Architektur · Topologie · Grid — Knoten ziehen, Doppelklick = bearbeiten, Rechtsklick = Beziehung anlegen.</li>
-        <li><b>🧊 Cube-Leiste:</b> Filter-Chips (Art/Status) + Fokus = Drill-down in die Nachbarschaft — wirkt auf alle Sichten.</li>
-        <li><b>Unten wie in VS:</b> <b>Fehlerliste</b> (Fehler, Warnungen, Widersprüche — Klick springt zum Knoten) · Drift · Dashboard · Doku (generiert, für KI) · 🤖 Agent (Prosa → Modelländerung).</li>
-        <li><b>Fenster:</b> an der Titelleiste packen und links/rechts andocken; Ansicht-Menü blendet ein/aus, „Layout zurücksetzen" repariert alles.</li>
+        <li><b>Phasen-Leiste oben:</b> der Lebenszyklus jeder Entität (Pending → Diverged → Orphaned → Aligned). Klick filtert die Navigation.</li>
+        <li><b>Navigation links:</b> nach Knotenart gruppiert. Klick auf einen Knoten öffnet ihn im Hauptfenster.</li>
+        <li><b>Hauptfenster (geteilt):</b> links die <b>Nachbarschaft als Diagramm</b>, rechts die <b>Details</b> — Kriterien, Beziehungen (klickbar), Konvergenz, Aktionen.</li>
+        <li><b>Unten:</b> <b>Fehlerliste</b> (Klick springt zum Knoten) · <b>Agent</b> (Prosa → Modelländerung) · Dashboard.</li>
       </ol>
       <p class="insp-hint">Farben: <span class="dot Aligned"></span> umgesetzt · <span class="dot Pending"></span> offen · <span class="dot Diverged"></span> abweichend · <span class="dot Orphaned"></span> ohne Modell</p>
       <button id="btn-help-close">Verstanden</button>
     </div>
   </div>
 
-  <main id="layout">
-    <div id="dock-left" class="dock">
-<aside id="toolbox" class="panel" data-panel="toolbox" data-title="Toolbox">
-      <div class="panel-title" draggable="true">🧰 Toolbox <button class="panel-close" title="Ausblenden">✕</button></div>
-      <div class="toolbox-head">Knoten hinzufügen — anklicken:</div>
-      <div id="toolbox-items"></div>
-      <p class="toolbox-hint">Klicken oder in den Editor ziehen, um einen Knoten anzulegen.</p>
-    </aside>
-<nav id="sidebar" class="panel" data-panel="explorer" data-title="SPOT-Explorer">
-      <div class="panel-title" draggable="true">📋 SPOT-Explorer <button class="panel-close" title="Ausblenden">✕</button></div>
-      <input id="filter" type="search" placeholder="Filtern (Id, Art, Inhalt) …">
-      <div id="node-list"></div>
-    </nav>
-    </div>
-    <div class="splitter" data-resize="dock-left"></div>
-<div id="center">
-      <section id="panels" class="panel" data-panel="views" data-title="Modelle">
-        <div id="cube-bar">
-        <span class="cube-label" title="Slice & Dice: Filter wirken auf Graph, UML und Explorer">🧊</span>
-        <div id="cube-kinds" class="chip-row"></div>
-        <span class="cube-sep"></span>
-        <div id="cube-conv" class="chip-row"></div>
-        <span class="cube-sep"></span>
-        <label class="cube-focus" title="Drill-down: nur Nachbarschaft des gewählten Knotens">
-          <input type="checkbox" id="focus-toggle"> Fokus
-        </label>
-        <select id="focus-depth">
-          <option value="1">1 Hop</option>
-          <option value="2" selected>2 Hops</option>
-          <option value="3">3 Hops</option>
-        </select>
-      </div>
-        <div class="tabs" id="doc-tabs">
-          <button class="tab active" data-view="klassen" title="UML-Klassendiagramm der Ontologie">Klassen</button>
-          <button class="tab" data-view="usecase" title="Use-Case-Sicht">Use Case</button>
-          <button class="tab" data-view="sequenz" title="Sequenz aus Spec-Kriterien">Sequenz</button>
-          <button class="tab" data-view="architektur" title="Komponenten + Abhängigkeiten">Architektur</button>
-          <button class="tab" data-view="topologie" title="Gesamttopologie">Topologie</button>
-          <button class="tab" data-view="grid" title="Kacheln — Klick drillt hinein">Grid</button>
-          <select id="seq-spec" hidden></select>
-        </div>
-        <div id="designer-cy"></div>
-        <div id="designer-mermaid" hidden></div>
-        <div id="designer-grid" hidden></div>
-      </section>
-      <div id="hsplitter"></div>
-      <section id="bottom" class="panel">
-        <div class="tabs" id="bottom-tabs">
-          <button class="tab active" data-tab="errors">Fehlerliste</button>
-          <button class="tab" data-tab="drift">Drift</button>
-          <button class="tab" data-tab="dashboard">Dashboard</button>
-          <button class="tab" data-tab="doku">Doku</button>
-          <button class="tab" data-tab="agent">🤖 Agent</button>
-          <span class="sb-spacer"></span>
-          <button id="btn-bottom-toggle" title="Ein-/Ausklappen">▾</button>
-        </div>
-        <div class="tab-scroll">
-          <div id="tab-errors" class="tab-body active"></div>
-          <div id="tab-drift" class="tab-body"></div>
-          <div id="tab-dashboard" class="tab-body"></div>
-          <div id="tab-doku" class="tab-body">
-          <div class="doku-actions">
-            <button id="btn-doku-download">⬇ Markdown herunterladen</button>
-            <button id="btn-doku-copy">⧉ Kopieren</button>
-          </div>
-          <pre id="doku-md"></pre>
-        </div>
-        <div id="tab-agent" class="tab-body">
-          <p class="agent-intro">Beschreibe in Prosa, was sich am Modell ändern soll — eine KI
-            setzt es um. Entweder direkt (API-Key nötig) oder per kopiertem Prompt in einer
-            beliebigen KI (z. B. Claude, auch im Terminal).</p>
-          <textarea id="agent-prose" rows="4"
-            placeholder="z. B.: Füge den Begriff 'Bounded Context' zur Ontologie hinzu, verwandt mit der ubiquitären Sprache. Und markiere das Risiko risk-pflegekosten als mitigiert."></textarea>
-          <div class="agent-row">
-            <input id="agent-key" type="password" placeholder="Anthropic API-Key (optional, bleibt im Browser)">
-            <select id="agent-model">
-              <option value="claude-opus-4-8">Opus 4.8 (Standard)</option>
-              <option value="claude-sonnet-4-6">Sonnet 4.6 (günstiger)</option>
-              <option value="claude-haiku-4-5">Haiku 4.5 (am günstigsten)</option>
-            </select>
-          </div>
-          <div class="agent-row">
-            <button id="btn-agent-run">▶ Mit Claude ausführen</button>
-            <button id="btn-agent-prompt">⧉ Prompt für andere KI kopieren</button>
-          </div>
-          <div id="agent-status"></div>
-          <div id="agent-result" hidden>
-            <h4>Vorgeschlagene Änderungen</h4>
-            <p id="agent-summary"></p>
-            <div id="agent-changes"></div>
-            <div class="agent-row">
-              <button id="btn-agent-apply">✔ Anwenden</button>
-              <button id="btn-agent-discard" class="danger">✕ Verwerfen</button>
-            </div>
-          </div>
-          <details class="agent-paste">
-            <summary>Antwort einer anderen KI einfügen …</summary>
-            <textarea id="agent-paste" rows="4" placeholder='{"summary": "...", "upsert": [...], "delete": [...]}'></textarea>
-            <button id="btn-agent-parse">Prüfen & übernehmen</button>
-          </details>
-        </div>
-      </section>
-    </div>
-    <div class="splitter" data-resize="dock-right" data-inverse="true"></div>
-    <div id="dock-right" class="dock">
-<section id="editor" class="panel" data-panel="editor" data-title="Eigenschaften">
-      <div class="panel-title" draggable="true">🔧 Eigenschaften <button class="panel-close" title="Ausblenden">✕</button></div>
-      <div class="editor-head">
-        <div class="editor-nav">
-          <button id="btn-back" title="Zurück (Navigations-Historie)" disabled>←</button>
-          <button id="btn-fwd" title="Vor" disabled>→</button>
-          <h2 id="editor-title">Kein Knoten gewählt</h2>
-        </div>
-        <div>
-          <button id="btn-mode-inspect" class="mode active" title="Inspektor (lesen & navigieren)">🔍</button>
-          <button id="btn-mode-form" class="mode" title="Formular (bearbeiten)">✏️</button>
-          <button id="btn-mode-json" class="mode" title="JSON (Experten-Modus)">{ }</button>
-          <button id="btn-save" disabled>Speichern</button>
-          <button id="btn-delete" class="danger" disabled>Löschen</button>
-        </div>
-      </div>
-      <div id="inspector"></div>
-      <div id="editor-form" hidden></div>
-      <textarea id="editor-json" spellcheck="false" hidden
-        placeholder="Knoten links wählen oder aus der Toolbox ziehen …"></textarea>
-      <div id="editor-msg"></div>
-    </section>
-    </div>
-    <div id="dock-hint-left" class="dock-hint" hidden>◧ links andocken</div>
-    <div id="dock-hint-right" class="dock-hint" hidden>rechts andocken ◨</div>
-  </main>
-
-  <footer id="statusbar">
-    <span id="sb-state">Bereit</span>
-    <span id="sb-sel"></span>
-    <span class="sb-spacer"></span>
-    <span id="sb-counts"></span>
-    <span id="sb-validate"></span>
-  </footer>
-
-  <script type="module" src="app.js"></script>
+  <script type="module" src="cockpit.js"></script>
 </body>
 </html>

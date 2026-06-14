@@ -4,13 +4,13 @@
     "Case": "SpecNode",
     "Fields": {
       "Item": {
-        "Title": "Multidimensionale Sicht",
-        "Intent": "Ein Modell, mehrere Projektionen \u2014 Graph und UML aus demselben SPOT",
+        "Title": "Hauptfenster zeigt Nachbarschaft als Diagramm",
+        "Intent": "Klick auf einen Knoten öffnet ihn im geteilten Hauptfenster: links die Nachbarschaft als Diagramm, rechts die Details",
         "Criteria": [
           {
-            "Given": "Begriffe mit IsA/PartOf/RelatesTo-Beziehungen",
-            "When": "der UML-Tab ge\u00F6ffnet wird",
-            "Then": "erscheint ein Klassendiagramm mit Generalisierung, Komposition und Assoziation"
+            "Given": "ein Knoten mit Beziehungen",
+            "When": "er im Hauptfenster geöffnet wird",
+            "Then": "rendert links ein Nachbarschafts-Diagramm und rechts seine Details"
           }
         ]
       }

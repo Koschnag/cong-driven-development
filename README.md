@@ -125,18 +125,18 @@ die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Bezi
 ### Kann es (Specs, gemessen Aligned)
 
 - ✅ **Agent-Interface** — Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt
-- ✅ **Diagramm-Designer** — Eine Zeichenfläche, viele Projektionen: Klassen, Use Case, Sequenz, Architektur, Topologie, Grid — alle Cube-gefiltert
+- ✅ **Bearbeiten als Formular im Hauptfenster** — Der Bearbeiten-Knopf öffnet ein Formular mit typgerechten Feldern direkt im Detailbereich
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
-- ✅ **Formular-Editor** — Knoten werden über Eingabefelder gepflegt — JSON ist Experten-Option, nicht Voraussetzung
 - ✅ **Governance by Invariance** — Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal + CI) erzwungen
+- ✅ **Hauptfenster zeigt Nachbarschaft als Diagramm** — Klick auf einen Knoten öffnet ihn im geteilten Hauptfenster: links die Nachbarschaft als Diagramm, rechts die Details
 - ✅ **Interaktiver Graph** — Diagramm-Elemente sind frei positionierbar wie in Enterprise Architect; Layouts bleiben erhalten
 - ✅ **LLM-Kontextexport** — Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut
 - ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Navigation als Würfel** — Der SPOT-Graph ist wie ein OLAP-Cube navigierbar: Slice, Dice, Drill-down, Verlinkungen
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
-- ✅ **Multidimensionale Sicht** — Ein Modell, mehrere Projektionen — Graph und UML aus demselben SPOT
+- ✅ **Navigation über Phasen-Leiste und Beziehungen** — Die Phasen-Leiste filtert nach Konvergenz-Lebenszyklus; klickbare Beziehungen navigieren im Hauptfenster
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
