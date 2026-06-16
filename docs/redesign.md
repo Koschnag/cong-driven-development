@@ -70,15 +70,15 @@ Die **Statusline (Ambient-Health-Band, immer sichtbar)** ersetzt die Phasen-Leis
 ## 7. KI-Integration
 
 - **Kontext surface-geschnitten** (behebt den Full-Dump-Bug): Develop = nur referenzierte Knoten + `outRefs/inRefs`-Nachbarn + Source-Files; Monitor = `validate()`+drift, keine Bodies; Ideate = terms+premises+**RAG**-Snippets. Hard ceiling (Ollama ~6k / Claude ~25k), Overflow → RAG statt Inline. „Alle Chats draufwerfen" = **semantisch via RAG** (`sqlite-vec`, kein Python), nicht literale Konkatenation von 84k Messages.
-- **Routing (reine Funktion, keine LLM-Klassifikation):** Plan/Ideate/Monitor→**Ollama** (lokal, souverän, frei), Develop/Deploy→**Claude Code** (agentischer Loop, Host-Login), **Mistral** nur Override. Dropdown im Copilot-Header.
-- **Approval:** ClaudeCode `--permission-prompt-tool` → Orchestrator fängt ab → `PermissionRequest` über die SSE → **GUI-Modal** (tool + input-diff + Allow/Deny/Allow-for-session) → `/api/engine/approve`. Statische Allowlist = Gate 1, Modal = Gate 2 nur für irreversible Akte (Deploy-Bash, `infra_apply`, `spot_delete`). Timeout→deny.
+- **Engine-Kette (entschieden):** **Claude Code primär** (agentischer Loop, Host-Login) → **Mistral EU als Backup** (wenn Claude nicht erreichbar/Quota) → **lokales Qwen via Ollama als Offline-Fallback** (totaler Internetausfall — souverän, frei). Fällt 1:1 auf das bestehende `IEngine` (`ClaudeCodeEngine` + zwei `OpenAiCompatEngine`-Targets). Für Plan/Ideate/Monitor bleibt Ollama der Default (lokal, frei). Dropdown im Copilot-Header zeigt die aktive Stufe + Degradation ehrlich an.
+- **Approval (entschieden — Autopilot-Default):** Develop fährt **`acceptEdits`: die Engine schreibt direkt**, Kontrolle ist *nachgelagert* über die **Develop-Diff-Linse** (Review/Revert nach dem Schreiben) — kein blockierendes Gate vorher, passt zum Low-Reibung-Axiom. **Modal-Gate bleibt** ausschließlich für *irreversible* Akte: ClaudeCode `--permission-prompt-tool` → Orchestrator fängt ab → `PermissionRequest` über die SSE → **GUI-Modal** → `/api/engine/approve`, nur für Deploy-Bash, `infra_apply`, `spot_delete`. Timeout→deny.
 - **Session/Memory:** Claude `session_id` pro Surface+Thread in `.agent/sessions.json` → `--resume`. Jeder fertige Turn als Zeile (`system='cdd-agent'`) in `cong.db` → die eigene Historie wird RAG-durchsuchbar.
 
-## 8. Der IDE-Entscheid: den Editor NICHT nachbauen → VSCodium
+## 8. Der IDE-Entscheid (entschieden): eigener schlanker Editor im Shell
 
-Tiefes Code-Editieren gehört nicht in `Cdd.Web` nachgebaut. **Die Develop-Säule ist gespalten:**
+**Entscheidung umgekehrt** — kein VSCodium-Embed, sondern ein *schlanker eigener Editor* in der Develop-Fläche. Begründung des Nutzers: konsistentes GUI, kein zweites Schwergewicht, eine Codebasis. Trade-off bewusst akzeptiert: LSP-Tiefe baut man nicht nach.
 - **Cockpit** zeigt die *Agent-Arbeit* (ToolUse/ToolResult/Diff-Karten), Konvergenz, Inspektion — „der KI beim Arbeiten zusehen", nie ein tmux-Pane.
-- **VSCodium** (läufst du eh, souveräner OSS-Build) ist die *Develop-Säule fürs echte Editieren* — verdrahtet ans **selbe** Engine/SPOT/MCP-Backend. Den weltbesten Editor + Terminal + Git rebaust du nicht. *(Begründung: kein Editor-Nachbau, kein Bloat; Cockpit ist chat-primär, VSCodium ist editor-primär — jedes Werkzeug an seiner Stärke, ein Backend.)*
+- **Develop-Editor** = **CodeMirror** im Stage (read + leichtes Edit), Kern ist die **Diff-Linse**: weil Autopilot direkt schreibt (§7), zeigt die Develop-Fläche den *resultierenden Diff* mit `[✓ Übernehmen-im-Modell] [↶ Revert]` post-hoc. Der Editor ist Review-/Inspektions-Werkzeug für die Autopilot-Arbeit, kein Full-IDE-Ersatz. VSCodium bleibt als *optionale* externe Develop-Säule ans selbe Backend andockbar, ist aber nicht der Default.
 
 ## 9. Sicherheit
 
@@ -106,23 +106,24 @@ Ziel: **von jedem Gerät im Browser** bedienbar, integriert in `cong42.de`. Aber
 | Phase | Ziel |
 |---|---|
 | **A — Die neue Shell** | 3-Zonen-Shell ersetzt phasebar+tree+dock; Omnibox+Routing; Copilot rendert den *existierenden* `/api/engine/run`-SSE als Karten; Cytoscape→Linse. **Frontend-only, kein Backend.** Sofort „raus aus dem Terminal". |
-| **B — Develop + Approval** | `Cdd.Agent` extrahieren; `PermissionRequest` + `/api/engine/approve` + Modal. Loop Idee→Spec→Derive→Code→Sync→Aligned als Karten. |
+| **B — Develop + Autopilot** | `Cdd.Agent` extrahieren; **Autopilot-Default** (`acceptEdits`, §7) + CodeMirror-Editor + **Diff-Linse** (post-hoc Review/Revert, §8); `PermissionRequest` + `/api/engine/approve` + Modal **nur** für irreversible Akte. Loop Idee→Spec→Derive→Code→Sync→Aligned als Karten. |
 | **C — DWH** | `Cdd.Dwh` + congdb-MCP (FTS5, read-only, `sensitive=0`) + DWH-Linse. `@person`-Suche + „promote to SPOT". |
 | **D — Infra (Monitor+Deploy)** | `Cdd.Infra` (dc-model als Library) + infra-MCP + Monitor-Board + Plan/Apply-Linse. |
-| **E — RAG + Geräte-Durabilität + Self-Model** | `sqlite-vec`-Index (Embeddings via Ollama-HTTP) + semantische Suche; Canvas-State serverseitig (gleiche URL resumed auf Pixel/iPad); `self-model.fsx` als Digital-Twin-Knoten. |
+| **E — RAG + Geräte-Durabilität + Self-Model** | `sqlite-vec`-Index, **Embeddings lokal via Ollama `nomic-embed-text`** (entschieden — souverän, offline-fähig; Mistral-embed nur optionaler Online-Boost) + semantische Suche; Canvas-State serverseitig (gleiche URL resumed auf Pixel/iPad); `self-model.fsx` als Digital-Twin-Knoten. |
 
 ## 11. Erster Schnitt (Phase A — null neue Endpoints)
 
-`wwwroot/`: **NEU** `shell.js` (Rail+⌘1–5, Omnibox+Routing+Ghost-Text, Stage mit Linsen-Tabs, Copilot-Rail, Statusline), `stream.js` (~150 LOC: `/api/engine/run`-SSE → `EngineEvent`→Karte; der `toGuiJson`-Vertrag ist die 1:1-Quelle), `inspector.js` (Node-Renderer + Convergence-Farben + Relations), `store.js` (~3 KB Signals). `index.html` auf `shell.js` verdrahtet; `cockpit.js`-Cytoscape → Graph-Linse; `engine.html` in den Copilot gefaltet + gelöscht.
+`wwwroot/` (as-built, Commit `ab477ed`): `shell.js` (Controller: Rail+⌘1–5, Omnibox+Routing, Linsen-Tabs, Statusline, Boot), `core.js` (Signals-Store + `/api/engine/run`-SSE-Client + SPOT-Helfer; `toGuiJson`-Vertrag ist die 1:1-Quelle), `copilot.js` (Engine-Stream als Karten), `inspector.js`/`graph.js`/`cube.js`/`docs.js` (die vier Modell-Linsen), `cockpit.css`. `index.html` auf `shell.js` verdrahtet; alte `cockpit.js`/`agent.js`/`demo.js`/`form.js`/`styles.css`/`engine.html` **gelöscht** (−1079 LOC netto).
 **Routen (existieren alle):** `/api/spot`, `/api/validate`, `/api/diff`, `/api/export`, `/api/engine/run`.
-**Ergebnis:** Cong tippt in *eine* Bar, sieht den Agenten in Karten arbeiten, nie ein tmux-Pane — der Kern-Escape, an Tag eins.
+**Ergebnis (live auf VM 120, `100.64.0.2:5179`):** Cong tippt in *eine* Bar, sieht den Agenten in Karten arbeiten, klickt durch 4 Linsen über denselben SPOT — nie ein tmux-Pane. Der Kern-Escape, an Tag eins.
 
-## 12. Offene Entscheidungen (für Cong)
+## 12. Entscheidungen (2026-06-17 festgelegt)
 
-1. **Name** festnageln: **Cong OS** (Empfehlung, cc5→cc8-Linie) vs „Sovereign Personal OS" vs „SPOT Cockpit".
-2. **IDE-Säule:** VSCodium-Anbindung (Empfehlung, §8) — oder doch ein Editor im Cockpit?
-3. **Autopilot-Default:** `acceptEdits` für low-risk SPOT/File-Edits (auto, undoable), explizites Gate nur für `infra_apply`/`delete` + globaler Autopilot-Toggle (default aus). Passt das zu deinem Low-Reibung-Axiom?
-4. **RAG:** `sqlite-vec` (v0.1.x, jung) vor Commit verifizieren (`.NET LoadExtension` auf dem DC-Runtime); Fallback FTS5-only deckt das MVP. Embedding-Modell: `nomic-embed-text` (leicht) zuerst.
+1. **Name:** **Cong OS** ✓ (cc5→cc8-Linie).
+2. **IDE-Säule:** **eigener schlanker Editor** (CodeMirror + Diff-Linse) im Shell ✓ — *nicht* VSCodium (§8 umgekehrt). VSCodium bleibt optional andockbar.
+3. **Autopilot-Default:** **`acceptEdits` — Engine schreibt direkt** ✓, Kontrolle nachgelagert über die Develop-Diff-Linse; Modal-Gate nur für irreversible Akte (`infra_apply`/Deploy-Bash/`spot_delete`).
+4. **Engine-Kette:** Claude Code primär → Mistral EU Backup → lokales Qwen (Ollama) Offline-Fallback ✓.
+5. **RAG-Embeddings:** **lokal, Ollama `nomic-embed-text` + `sqlite-vec`** ✓ (souverän/offline-fähig — vom Offline-Requirement erzwungen); Mistral-embed nur optionaler Online-Boost. `sqlite-vec` (v0.1.x, jung) vor Commit gegen `.NET LoadExtension` auf dem DC-Runtime verifizieren; Fallback FTS5-only deckt das MVP.
 
 ---
 *Quelle: 4-Linsen-Design-Workflow + adversariale Synthese (5 Agenten), gegen den echten Code gelesen. Baut auf der Engine-Schicht (PR #41).*
