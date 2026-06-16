@@ -6,6 +6,13 @@ open Microsoft.AspNetCore.Http
 open Cdd.Core
 open Cdd.Core.Spot
 
+/// Anfrage an die Headless-Engine (GUI → /api/engine/run).
+type private EngineRunRequest =
+    { Prompt  : string
+      Surface : string   // plan | ideate | develop | monitor | deploy
+      Engine  : string   // claude | mistral | ollama
+      Model   : string }
+
 /// Einheitliche JSON-Antworten über Cdd.Core.Json (nicht ASP.NETs Default-Serializer,
 /// der F#-DUs nicht versteht).
 let private json (value: 'T) : IResult =
@@ -82,6 +89,47 @@ let main argv =
             let derived = Derive.deriveTests entries
             if write then derived |> List.iter (Store.save root)
             json {| derived = derived; written = write |}))) |> ignore
+
+    // Headless-Engine auf Terminal-Ebene: streamt EngineEvents als Server-Sent-Events.
+    // CDD liefert die Entropie (SPOT-Export) + verbindet die SPOT-Tools via MCP; die
+    // LLM-Engine (Claude Code / Mistral / Ollama) macht die Arbeit.
+    app.MapPost("/api/engine/run", Func<HttpContext, Task>(fun ctx ->
+        task {
+            use reader = new StreamReader(ctx.Request.Body)
+            let! bodyStr = reader.ReadToEndAsync()
+            let req =
+                try Json.deserialize<EngineRunRequest> bodyStr
+                with _ -> { Prompt = bodyStr; Surface = "develop"; Engine = "claude"; Model = "" }
+            let contextMd =
+                try Export.toMarkdown (Store.load root)
+                with _ -> ""
+            ctx.Response.ContentType <- "text/event-stream"
+            ctx.Response.Headers.["Cache-Control"] <- Microsoft.Extensions.Primitives.StringValues("no-cache")
+            ctx.Response.Headers.["X-Accel-Buffering"] <- Microsoft.Extensions.Primitives.StringValues("no")
+            let emit (ev: Engine.EngineEvent) : Task =
+                task {
+                    do! ctx.Response.WriteAsync(sprintf "data: %s\n\n" (Engine.toGuiJson ev))
+                    do! ctx.Response.Body.FlushAsync()
+                }
+            let kind = Engine.kindOfString req.Engine
+            let opts : Engine.EngineOptions =
+                { Kind = kind
+                  Model = req.Model
+                  Cwd = root
+                  // Unbeaufsichtigt → bewusst enge Allowlist. Lesen/Editieren/Suchen + git/dotnet + SPOT-MCP.
+                  AllowedTools = [ "Read"; "Edit"; "Write"; "Grep"; "Glob"; "Bash(git *)"; "Bash(dotnet *)"; "mcp__spot__*" ]
+                  PermissionMode = (if kind = Engine.ClaudeCode then "acceptEdits" else "")
+                  McpConfigJson = (if kind = Engine.ClaudeCode then Engine.spotMcpConfig root else "")
+                  BaseUrl = (Environment.GetEnvironmentVariable("CDD_ENGINE_BASEURL") |> Option.ofObj |> Option.defaultValue "")
+                  ApiKey = (Environment.GetEnvironmentVariable("MISTRAL_API_KEY") |> Option.ofObj |> Option.defaultValue "") }
+            do! emit (Engine.Started("", sprintf "%A (Fläche: %s)" kind req.Surface))
+            try
+                do! (Engine.create kind).Run({ Prompt = req.Prompt; ContextMd = contextMd; Options = opts }, emit)
+            with ex ->
+                do! emit (Engine.EngineError ex.Message)
+            do! ctx.Response.WriteAsync("event: done\ndata: {}\n\n")
+            do! ctx.Response.Body.FlushAsync()
+        } :> Task)) |> ignore
 
     printfn "CDD Web — SPOT-Root: %s" root
     app.Run()

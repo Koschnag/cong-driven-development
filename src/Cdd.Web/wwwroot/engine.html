@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDD — Engine-Konsole</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Eigenständige Engine-Konsole. Wird später in den Cockpit-Dock integriert. */
+    .eng-wrap { max-width: 980px; margin: 1rem auto; padding: 0 1rem; }
+    .eng-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .5rem 0; }
+    #eng-prompt { width: 100%; min-height: 5rem; font: inherit; }
+    #eng-console {
+      margin-top: .75rem; border: 1px solid #888; border-radius: 6px; padding: .6rem;
+      height: 60vh; overflow: auto; font-family: ui-monospace, monospace; font-size: 13px;
+      background: #1113; white-space: pre-wrap; word-break: break-word;
+    }
+    .ev { padding: 2px 0; border-bottom: 1px solid #8882; }
+    .ev .tag { display: inline-block; min-width: 92px; font-weight: 600; }
+    .ev.tool .tag { color: #c98a00; } .ev.toolresult .tag { color: #2a8; }
+    .ev.text .tag { color: #4ea1ff; } .ev.done .tag { color: #2a8; }
+    .ev.error .tag { color: #e55; } .ev.started .tag { color: #888; } .ev.raw .tag { color: #999; }
+    .ev .body { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div class="eng-wrap">
+    <h1>CDD <span>Engine-Konsole</span></h1>
+    <p class="hint">Die KI läuft headless auf Terminal-Ebene (serverseitig). CDD liefert den SPOT-Kontext;
+       die Engine arbeitet im Repo. Auth über den Host-<code>claude</code>-Login — kein Key im Browser.</p>
+
+    <textarea id="eng-prompt" placeholder="z. B.: Lies den SPOT, schlage drei fehlende Specs vor und lege sie als Knoten an. (develop) — oder: Erkläre mir die offenen Risiken (ideate)"></textarea>
+
+    <div class="eng-row">
+      <label>Fläche
+        <select id="eng-surface">
+          <option value="plan">Plan</option>
+          <option value="ideate">Ideate</option>
+          <option value="develop" selected>Develop</option>
+          <option value="monitor">Monitor</option>
+          <option value="deploy">Deploy</option>
+        </select>
+      </label>
+      <label>Engine
+        <select id="eng-engine">
+          <option value="claude" selected>Claude Code (Terminal)</option>
+          <option value="mistral">Mistral (EU-API)</option>
+          <option value="ollama">Ollama (lokal)</option>
+        </select>
+      </label>
+      <input id="eng-model" placeholder="Model (optional)" size="22">
+      <button id="eng-run">▶ Ausführen</button>
+      <button id="eng-stop" disabled>■ Stop</button>
+      <span id="eng-status" class="hint"></span>
+    </div>
+
+    <div id="eng-console" aria-live="polite"></div>
+  </div>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const con = $("eng-console");
+    let ctrl = null;
+
+    const esc = (s) => (s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    function add(kind, tag, body) {
+      const div = document.createElement("div");
+      div.className = "ev " + kind;
+      div.innerHTML = `<span class="tag">${esc(tag)}</span><span class="body">${esc(body)}</span>`;
+      con.appendChild(div);
+      con.scrollTop = con.scrollHeight;
+      return div;
+    }
+
+    function handle(ev) {
+      switch (ev.t) {
+        case "started":    add("started", "● start", ev.model || ev.session || ""); break;
+        case "text": {
+          // Text-Deltas an die letzte Textzeile anhängen (flüssiges Streaming).
+          let last = con.lastElementChild;
+          if (last && last.classList.contains("text")) last.querySelector(".body").textContent += ev.text;
+          else add("text", "assistant", ev.text);
+          con.scrollTop = con.scrollHeight;
+          break;
+        }
+        case "tool":       add("tool", "🔧 " + (ev.name || "tool"), ev.input || ""); break;
+        case "toolresult": add("toolresult", "↳ result", (ev.text || "").slice(0, 4000)); break;
+        case "done":       add("done", "✓ fertig", (ev.cost ? `($${(+ev.cost).toFixed(4)}) ` : "") + (ev.result || "").slice(0, 2000)); break;
+        case "error":      add("error", "⚠ Fehler", ev.error || ""); break;
+        default:           add("raw", "·", ev.line || JSON.stringify(ev));
+      }
+    }
+
+    async function run() {
+      con.innerHTML = "";
+      $("eng-run").disabled = true; $("eng-stop").disabled = false; $("eng-status").textContent = "läuft …";
+      ctrl = new AbortController();
+      try {
+        const res = await fetch("/api/engine/run", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          signal: ctrl.signal,
+          body: JSON.stringify({
+            Prompt: $("eng-prompt").value,
+            Surface: $("eng-surface").value,
+            Engine: $("eng-engine").value,
+            Model: $("eng-model").value.trim(),
+          }),
+        });
+        if (!res.ok || !res.body) { add("error", "⚠ HTTP", res.status); return; }
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let i;
+          while ((i = buf.indexOf("\n\n")) >= 0) {
+            const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+            const line = chunk.startsWith("data: ") ? chunk.slice(6) : null;
+            if (line) { try { handle(JSON.parse(line)); } catch { /* event: done o. ä. */ } }
+          }
+        }
+      } catch (e) {
+        if (e.name !== "AbortError") add("error", "⚠", e.message);
+      } finally {
+        $("eng-run").disabled = false; $("eng-stop").disabled = true; $("eng-status").textContent = "bereit";
+        ctrl = null;
+      }
+    }
+
+    $("eng-run").onclick = run;
+    $("eng-stop").onclick = () => ctrl && ctrl.abort();
+    $("eng-prompt").addEventListener("keydown", (e) => { if (e.ctrlKey && e.key === "Enter") run(); });
+  </script>
+</body>
+</html>
