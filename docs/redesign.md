@@ -86,6 +86,21 @@ Tiefes Code-Editieren gehört nicht in `Cdd.Web` nachgebaut. **Die Develop-Säul
 - **Blast-Radius:** statische Allowlist + Approval-Modal für alle irreversiblen Akte; `/api/infra/apply` **nie** außerhalb des Mesh-Tiers; SSH-Keys read-probe vs apply getrennt; mesh-only-Bind (tailscale0, VM 120).
 - **Mesh-Degradation ehrlich anzeigen:** Statusline-Token zeigt Reachability; Flächen rendern „offline/last-seen" statt leerer Kacheln.
 
+## 9b. Zugriff & Geräte-Unabhängigkeit (als Teil deiner Cloud)
+
+Ziel: **von jedem Gerät im Browser** bedienbar, integriert in `cong42.de`. Aber die Engine fährt beliebigen Code + Infra → **die gefährliche Fläche darf NICHT public sein.** Lösung = **gestufter Zugriff**, exakt wie der Rest der Cloud (Tier A public+SSO vs Tier B mesh-only):
+
+| Tier | Wie | Geräte | Fläche |
+|---|---|---|---|
+| **Operator (volle Macht)** | VM 120 an `tailscale0` (`100.64.0.2:5179`) | nur deine Mesh-Geräte | **alles** inkl. Engine-Edit/Bash, Develop, Deploy, `infra_apply` |
+| **Consumer (jeder Browser)** | `cockpit.cong42.de` → cc6-Caddy reverse-proxy → VM 120, hinter **Yunohost-SSO + MFA (Pflicht)** | jedes Gerät, überall, ohne VPN (Pixel/iPad/Fremdgerät) | **Read alles** (SPOT/DWH/Monitoring/Historie) + Chat/Ideate (Ollama/Mistral, read-only Tools). **Kein** Write/Bash/Deploy/`infra_apply`. |
+
+**Server-seitig erzwungen:** die gefährlichen Routen (`/api/engine/run` mit Write-Tools, `/api/infra/apply`, `spot_delete`) prüfen den **Tier** (Bind-Interface / vertrauenswürdiger cc6-Header) und sind **nur im Operator-Tier** erreichbar — nie über den Public-Edge. So ist „jedes Gerät" wahr für das Sichere, und die God-Macht bleibt auf deinen Geräten.
+
+⚠️ **Lektion aus R-04** (codespace heute = Pass-only ohne SSO/MFA, im Modell *kritisch*): den Fehler wiederholen wir nicht — `cockpit.cong42.de` bekommt **SSO + MFA ab Tag eins**, sonst gar nicht public.
+
+**Technisch geräte-unabhängig:** responsive 3-Zonen-Shell (Rail → Icon-Leiste, Copilot → Sheet, Stage → Vollbild am Handy); **Canvas-/Session-State serverseitig auf VM 120** → dieselbe URL nimmt auf jedem Gerät den Faden auf (Phase E). **Eine URL, ein Login, jedes Gerät** — als App in deinem Stack (selbe Domain, selbes SSO, selber Edge, selbes Backup). Der Public-Edge wird mit Phase E scharfgeschaltet; das Tier-Gating muss von Anfang an im Code stehen.
+
 ## 10. Phasen-Bauplan
 
 | Phase | Ziel |
