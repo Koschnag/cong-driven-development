@@ -1,7 +1,7 @@
 // Copilot-Rail: der Agent als Nervensystem. Rendert den EngineEvent-SSE-Stream als Karten.
 import { runEngine, escapeHtml } from './core.js';
 
-export function mountCopilot(el, store) {
+export function mountCopilot(el, store, opts = {}) {
   el.innerHTML = `
     <div class="cop-head">
       <span>🤖 Copilot</span>
@@ -37,6 +37,7 @@ export function mountCopilot(el, store) {
   }
 
   function handle(ev) {
+    if (opts.onEvent) try { opts.onEvent(ev); } catch {}
     switch (ev.t) {
       case 'started': addCard('text', '● ' + (ev.model || ''), '', false); break;
       case 'text': {

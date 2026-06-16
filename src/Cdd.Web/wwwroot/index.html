@@ -8,28 +8,25 @@
   <link rel="stylesheet" href="cockpit.css">
 </head>
 <body>
-  <header>
-    <div class="logo">◉ <b>Cong</b> OS</div>
-    <div class="omni">
-      <input id="omni-in" autocomplete="off" spellcheck="false"
-             placeholder="⌘K  ›  / befehl · @person · #tag · id navigieren · sonst fragen…">
-    </div>
-    <button class="iconbtn" id="theme" title="Light/Dark">🌓</button>
-    <button class="iconbtn" id="cop-toggle" title="Copilot">🤖</button>
-  </header>
+  <header id="menubar" class="cmdbar"></header>
 
-  <main>
-    <aside class="rail" id="rail"></aside>
+  <main class="body">
+    <aside id="explorer" class="explorer"></aside>
 
-    <section class="stage">
-      <div class="lenstabs" id="lenstabs"></div>
-      <div class="stagebody" id="stagebody"></div>
+    <section class="well">
+      <div id="doctabs" class="doctabs"></div>
+      <div id="docbody" class="docbody"></div>
     </section>
 
-    <aside class="copilot"></aside>
+    <aside class="right-stack">
+      <div class="rs-head">Properties</div>
+      <div id="properties" class="properties"></div>
+      <div id="copilot" class="copilot"></div>
+    </aside>
   </main>
 
-  <div class="status" id="status"></div>
+  <section id="dock" class="dock"></section>
+  <footer id="status" class="status"></footer>
 
   <script type="module" src="shell.js"></script>
 </body>

@@ -37,6 +37,9 @@ export function renderCube(el, store, actions) {
     const dr = el.querySelector('#cu-drill');
     dr.innerHTML = `<h3 style="color:var(--fg2)">${lbl(rowDim, td.dataset.r)} × ${lbl(colDim, td.dataset.c)} — ${hit.length} Knoten</h3>` +
       hit.map(n => `<div class="node-row" data-id="${escapeHtml(idOf(n))}"><span class="dot ${convOf(n)}"></span><span class="id">${escapeHtml(idOf(n))}</span><span class="sm">${escapeHtml(summary(n))}</span></div>`).join('');
-    dr.querySelectorAll('.node-row').forEach(r => r.onclick = () => actions.select(r.dataset.id));
+    dr.querySelectorAll('.node-row').forEach(r => {
+      r.onclick = () => actions.select(r.dataset.id);
+      r.ondblclick = () => actions.openNode(r.dataset.id);
+    });
   });
 }

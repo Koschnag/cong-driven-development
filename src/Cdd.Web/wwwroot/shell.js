@@ -1,121 +1,160 @@
-// Cong OS — Shell-Controller. Eine Omnibox, drei Zonen, fünf Flächen, vier Modell-Linsen.
-import { createStore, api, idOf, kindOf, convOf, CONV, escapeHtml } from './core.js';
+// Cong OS — Workbench-Controller. Vier Regionen (Command-Bar · Explorer|Well|Properties+Copilot · Dock · Status).
+// Auswahl (Properties) ist von offenen Dokumenten (Tabs) entkoppelt: Klicken wirft nie das Dokument weg.
+import { api, idOf, kindOf, convOf, title, escapeHtml } from './core.js';
+import { makeStore, tabKey, tabNodeId } from './store.js';
+import { mountMenuBar } from './menubar.js';
+import { renderExplorer } from './explorer.js';
+import { renderDocTabs, renderDocBody } from './doctabs.js';
+import { renderProperties } from './properties.js';
+import { renderDock, errorRows, pushOutput as pushOut } from './dock.js';
 import { mountCopilot } from './copilot.js';
-import { renderInspector } from './inspector.js';
-import { renderGraph } from './graph.js';
-import { renderCube } from './cube.js';
-import { renderDocs } from './docs.js';
 
-const SURFACES = [['plan', 'Plan'], ['ideate', 'Ideate'], ['develop', 'Develop'], ['monitor', 'Monitor'], ['deploy', 'Deploy']];
-const LENSES = [['inspector', 'Inspector'], ['graph', 'Graph'], ['cube', 'Cube'], ['docs', 'Doku']];
+const store = makeStore();
+let $menubar, $explorer, $doctabs, $docbody, $properties, $copilot, $dock, $status, menubar, copilot;
 
-const store = createStore({
-  nodes: [], byId: new Map(), selected: null,
-  surface: 'develop', lens: 'inspector', validate: [], diff: null,
-  cubeRows: 'kind', cubeCols: 'conv',
-});
-let copilot, $rail, $tabs, $stage, $status;
+const paintExplorer = () => renderExplorer($explorer, store, actions);
+const paintTabs     = () => renderDocTabs($doctabs, store, actions);
+const paintBody     = () => renderDocBody($docbody, store, actions);
+const paintWell     = () => { paintTabs(); paintBody(); };
+const paintProps    = () => renderProperties($properties, store, actions);
+const paintDock     = () => renderDock($dock, store, actions);
+function markTree() {
+  if (!$explorer) return;
+  const s = store.get();
+  const selId = s.selected ? idOf(s.selected) : null;
+  const actId = tabNodeId(s.active);
+  $explorer.querySelectorAll('.leaf').forEach(l => {
+    l.classList.toggle('sel', l.dataset.id === selId);
+    l.classList.toggle('active', l.dataset.id === actId);
+  });
+}
+
+function openTab(t) {
+  const key = tabKey(t);
+  let tabs = store.get().openTabs.slice();
+  if (!tabs.some(x => tabKey(x) === key)) {
+    tabs.push(t);
+    if (tabs.length > 12) tabs = tabs.filter((x, i) => tabKey(x) === key || i >= tabs.length - 12);
+  }
+  store.set({ openTabs: tabs, active: key });
+  const nid = tabNodeId(key);
+  if (nid) { const n = store.get().byId.get(nid); if (n) store.set({ selected: n }); }
+  paintWell(); paintProps(); paintStatus(); markTree();
+}
 
 const actions = {
-  select: (id) => {
-    const n = store.get().byId.get(id); if (!n) return;
-    const lens = store.get().lens;
-    store.set({ selected: n, lens: lens === 'cube' || lens === 'docs' ? 'inspector' : lens });
-    renderStage();
+  select(id) { const n = store.get().byId.get(id); if (!n) return; store.set({ selected: n }); paintProps(); markTree(); paintStatus(); },
+  openNode(id) { openTab({ kind: 'node', id }); },
+  openSingle(kind) { openTab({ kind }); },
+  openNodeLens(id, lens) { store.get().lensByTab.set('node:' + id, lens); openTab({ kind: 'node', id }); },
+  setActive(key) {
+    store.set({ active: key }); const nid = tabNodeId(key);
+    if (nid) { const n = store.get().byId.get(nid); if (n) store.set({ selected: n }); }
+    paintWell(); paintProps(); paintStatus(); markTree();
   },
-  setLens: (l) => { store.set({ lens: l }); renderStage(); },
-  dispatch: (p) => { document.querySelector('.copilot').classList.add('open'); copilot.dispatch(p); },
-  derive: async () => { try { await fetch('/api/derive-tests?write=true', { method: 'POST' }); } catch {} await reload(); actions.dispatch('Ich habe Tests aus den Specs abgeleitet — schau auf die Konvergenz.'); },
-  rerender: () => renderStage(),
+  setLens(key, lens) { store.get().lensByTab.set(key, lens); paintBody(); },
+  closeTab(key) {
+    const s = store.get(); const tabs = s.openTabs.filter(t => tabKey(t) !== key);
+    let active = s.active; if (active === key) active = tabs.length ? tabKey(tabs[tabs.length - 1]) : null;
+    store.set({ openTabs: tabs, active });
+    const nid = tabNodeId(active); if (nid) { const n = store.get().byId.get(nid); if (n) store.set({ selected: n }); }
+    paintWell(); paintProps(); paintStatus(); markTree();
+  },
+  closeActive() { if (store.get().active) actions.closeTab(store.get().active); },
+  setPivot(p) { store.set({ treePivot: p }); paintExplorer(); },
+  toggleGroup(g) { const c = store.get().collapsed; c.has(g) ? c.delete(g) : c.add(g); paintExplorer(); },
+  setDockTab(t) { store.set({ dockTab: t, dockOpen: true }); paintDock(); },
+  openDock(t) { store.set({ dockTab: t, dockOpen: true }); paintDock(); },
+  toggleDock() { store.set({ dockOpen: !store.get().dockOpen }); paintDock(); },
+  toggleTheme() { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'light' ? '' : 'light'; try { localStorage.setItem('congos-theme', r.dataset.theme || ''); } catch {} },
+  focusExplorer() { const f = $explorer.querySelector('.ex-filter'); if (f) f.focus(); },
+  focusPalette() { menubar && menubar.focus(); },
+  rerender() { paintBody(); },
+  derive: async () => {
+    actions.pushOutput('▶ derive-tests…'); actions.setRunState('running');
+    try { await fetch('/api/derive-tests?write=true', { method: 'POST' }); actions.pushOutput('✓ Tests abgeleitet'); }
+    catch (e) { actions.pushOutput('✗ ' + e.message); }
+    await reload(); actions.setRunState('done');
+    actions.dispatch('Ich habe Tests aus den Specs abgeleitet — prüf die Konvergenz im Board/Drift.');
+  },
+  dispatch(p) { copilot && copilot.dispatch(p); },
+  pushOutput(line) { pushOut(store, line); if (store.get().dockOpen && store.get().dockTab === 'output') paintDock(); },
+  setRunState(rs) { store.set({ runState: rs }); paintStatus(); },
+  reload: () => reload(),
 };
 
+function paintStatus() {
+  const s = store.get(); const er = errorRows(store);
+  const nErr = er.filter(r => r.sev === 'error').length, nWarn = er.filter(r => r.sev === 'warning').length;
+  const run = { idle: 'bereit', running: '● läuft…', done: '✓ fertig', error: '✗ Fehler' }[s.runState] || '';
+  const act = s.active ? (tabNodeId(s.active) || s.active) : '—';
+  $status.innerHTML =
+    `<span class="st tok" data-go="errors"><span class="dot ${nErr ? 'Diverged' : 'Aligned'}"></span>${nErr} Fehler · ${nWarn} Warn</span>` +
+    `<span class="st">⬡ ${s.nodes.length} Knoten</span>` +
+    `<span class="st">${run}</span>` +
+    `<span class="sp">Cong OS · <code>${escapeHtml(act)}</code></span>`;
+  const go = $status.querySelector('[data-go=errors]'); if (go) go.onclick = () => actions.openDock('errors');
+}
+
 async function reload() {
-  const [nodes, validate, diff] = await Promise.all([
-    api.spot(), api.validate().catch(() => []), api.diff().catch(() => null),
-  ]);
+  let nodes = [], validate = [], diff = null;
+  try { nodes = await api.spot(); } catch (e) { actions.pushOutput('✗ /api/spot: ' + e.message); }
+  try { validate = await api.validate(); } catch {}
+  try { diff = await api.diff(); } catch {}
   const byId = new Map(nodes.map(n => [idOf(n), n]));
   let sel = store.get().selected; if (sel) sel = byId.get(idOf(sel)) || null;
   store.set({ nodes, byId, validate, diff, selected: sel });
-  renderRail(); renderStatus(); renderStage();
+  paintExplorer(); paintWell(); paintProps(); paintDock(); paintStatus();
 }
 
-function renderRail() {
-  const s = store.get();
-  $rail.innerHTML = `<h4>Flächen</h4>` +
-    SURFACES.map(([id, l], n) => `<div class="surface ${s.surface === id ? 'active' : ''}" data-s="${id}"><span class="t">${l}</span><span class="k">⌘${n + 1}</span></div>`).join('') +
-    `<h4>Substanz</h4>` +
-    `<div class="metric"><span>SPOT</span><b>${s.nodes.length}</b><span class="muted">Knoten</span></div>` +
-    `<div class="metric"><span>⚠ Diverged</span><b>${s.nodes.filter(n => convOf(n) === 'Diverged').length}</b></div>` +
-    `<div class="metric"><span>DWH</span><b>167 MB</b></div>`;
-  $rail.querySelectorAll('.surface').forEach(d => d.onclick = () => { store.set({ surface: d.dataset.s }); renderRail(); renderTabs(); renderStatus(); });
-}
-
-function renderTabs() {
-  const s = store.get();
-  $tabs.innerHTML =
-    `<span class="title">${SURFACES.find(x => x[0] === s.surface)[1]}${s.selected ? ' · ' + escapeHtml(idOf(s.selected)) : ''}</span>` +
-    LENSES.map(([id, l]) => `<button class="lenstab ${s.lens === id ? 'active' : ''}" data-l="${id}">${l}</button>`).join('') +
-    `<span class="conv">${CONV.map(c => `<span class="dot ${c}"></span>${s.nodes.filter(n => convOf(n) === c).length}`).join(' &nbsp; ')}</span>`;
-  $tabs.querySelectorAll('.lenstab').forEach(b => b.onclick = () => actions.setLens(b.dataset.l));
-}
-
-function renderStage() {
-  renderTabs();
-  const l = store.get().lens;
-  if (l === 'inspector') renderInspector($stage, store, actions);
-  else if (l === 'graph') renderGraph($stage, store, actions);
-  else if (l === 'cube') renderCube($stage, store, actions);
-  else if (l === 'docs') renderDocs($stage, store, actions);
-}
-
-function renderStatus() {
-  const s = store.get();
-  const div = s.nodes.filter(n => convOf(n) === 'Diverged').length;
-  $status.innerHTML =
-    `<span class="tok" data-go="cube"><span class="dot Aligned"></span>${s.nodes.length} nodes</span>` +
-    `<span class="tok" data-go="cube"><span class="dot Diverged"></span>${div} diverged</span>` +
-    `<span class="tok muted">DC-Monitoring → Phase D</span>` +
-    `<span class="tok muted">DWH-Suche → Phase C</span>` +
-    `<span class="sp">Cong OS · ${s.surface} · idle</span>`;
-  $status.querySelectorAll('[data-go=cube]').forEach(t => t.onclick = () => actions.setLens('cube'));
-}
-
-function route(q) {
-  q = q.trim(); if (!q) return;
-  const s = store.get();
-  if (q[0] === '/') {
-    const cmd = q.slice(1).trim().toLowerCase();
-    if (cmd.startsWith('derive')) return actions.derive();
-    if (cmd.startsWith('val') || cmd.startsWith('cube')) return actions.setLens('cube');
-    if (cmd.startsWith('doc')) return actions.setLens('docs');
-    if (cmd.startsWith('graph')) return actions.setLens('graph');
-    return actions.dispatch('/' + cmd);
+function fmtEv(ev) {
+  switch (ev.t) {
+    case 'started': return '● ' + (ev.model || 'engine');
+    case 'tool': return '🔧 ' + (ev.name || 'tool') + (ev.input ? ' ' + String(ev.input).slice(0, 120) : '');
+    case 'toolresult': return '↳ ' + String(ev.text || '').slice(0, 200);
+    case 'done': return '✓ done' + (ev.cost ? ` · $${(+ev.cost).toFixed(4)}` : '');
+    case 'error': return '⚠ ' + (ev.error || '');
+    default: return '';
   }
-  if (q[0] === '@') return actions.dispatch(`(DWH-Volltext kommt in Phase C) Im Datenwarehouse suchen: ${q.slice(1)}`);
-  if (q[0] === '#') { store.set({ lens: 'cube' }); return renderStage(); }
-  if (s.byId.has(q)) return actions.select(q);
-  return actions.dispatch(q);
 }
 
-async function boot() {
-  $rail = document.querySelector('#rail');
-  $tabs = document.querySelector('#lenstabs');
-  $stage = document.querySelector('#stagebody');
+function boot() {
+  $menubar = document.querySelector('#menubar');
+  $explorer = document.querySelector('#explorer');
+  $doctabs = document.querySelector('#doctabs');
+  $docbody = document.querySelector('#docbody');
+  $properties = document.querySelector('#properties');
+  $copilot = document.querySelector('#copilot');
+  $dock = document.querySelector('#dock');
   $status = document.querySelector('#status');
-  copilot = mountCopilot(document.querySelector('.copilot'), store);
 
-  const omni = document.querySelector('#omni-in');
-  omni.addEventListener('keydown', e => { if (e.key === 'Enter') { route(e.target.value); e.target.value = ''; } });
-  window.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); omni.focus(); }
-    if ((e.metaKey || e.ctrlKey) && e.key >= '1' && e.key <= '5') { e.preventDefault(); store.set({ surface: SURFACES[+e.key - 1][0] }); renderRail(); renderTabs(); renderStatus(); }
+  try { const th = localStorage.getItem('congos-theme'); if (th) document.documentElement.dataset.theme = th; } catch {}
+
+  menubar = mountMenuBar($menubar, store, actions);
+  copilot = mountCopilot($copilot, store, {
+    onEvent: (ev) => {
+      const line = fmtEv(ev); if (line) actions.pushOutput(line);
+      if (ev.t === 'started') actions.setRunState('running');
+      else if (ev.t === 'done') actions.setRunState('done');
+      else if (ev.t === 'error') actions.setRunState('error');
+    },
   });
-  document.querySelector('#cop-toggle').onclick = () => document.querySelector('.copilot').classList.toggle('open');
-  document.querySelector('#theme').onclick = () => { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'light' ? '' : 'light'; };
 
-  await reload();
-  const firstSpec = store.get().nodes.find(n => kindOf(n) === 'spec');
-  if (firstSpec) { store.set({ selected: firstSpec }); renderStage(); }
+  window.addEventListener('keydown', (e) => {
+    if (!(e.metaKey || e.ctrlKey)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'k') { e.preventDefault(); menubar.focus(); }
+    else if (k === 'j') { e.preventDefault(); actions.toggleDock(); }
+    else if (k === 'e') { e.preventDefault(); actions.openDock('errors'); }
+    else if (k === '1') { e.preventDefault(); actions.focusExplorer(); }
+    else if (k === ',') { e.preventDefault(); actions.openSingle('settings'); }
+    else if (k === 'w') { e.preventDefault(); actions.closeActive(); }
+  });
+
+  reload().then(() => {
+    const first = store.get().nodes.find(n => kindOf(n) === 'spec') || store.get().nodes[0];
+    if (first) actions.openNode(idOf(first));
+  });
 }
 
 boot();

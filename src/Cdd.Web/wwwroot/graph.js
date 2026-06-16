@@ -11,8 +11,8 @@ async function lib() {
 }
 const COLOR = { Aligned: '#2ea043', Pending: '#d29922', Diverged: '#f85149', Orphaned: '#a371f7' };
 
-export async function renderGraph(el, store, actions) {
-  const s = store.get(), nodes = s.nodes, center = s.selected;
+export async function renderGraph(el, store, actions, centerNode) {
+  const s = store.get(), nodes = s.nodes, center = centerNode || s.selected;
   el.innerHTML = `<div class="graph-wrap">
     <div class="graph-hint">Nachbarschaft${center ? ' von <code>' + escapeHtml(idOf(center)) + '</code>' : ' (Ausschnitt)'} — ziehbar, Klick öffnet den Knoten.</div>
     <div id="cy"></div></div>`;

@@ -27,6 +27,6 @@ export async function renderDocs(el, store, actions) {
   el.innerHTML = `<div class="docs">${md2html(md)}</div>`;
   const ids = new Set(store.get().nodes.map(idOf));
   el.querySelectorAll('.docs code').forEach(c => {
-    if (ids.has(c.textContent)) { c.classList.add('xref'); c.onclick = () => actions.select(c.textContent); }
+    if (ids.has(c.textContent)) { c.classList.add('xref'); c.onclick = () => actions.select(c.textContent); c.ondblclick = () => actions.openNode(c.textContent); }
   });
 }
