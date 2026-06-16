@@ -3,115 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CDD Cockpit — SPOT</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%23316AC5%22/><text x=%228%22 y=%2212%22 font-size=%2210%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22>C</text></svg>">
-  <link rel="stylesheet" href="styles.css">
+  <title>Cong OS</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%230e1116%22/><circle cx=%228%22 cy=%228%22 r=%224%22 fill=%22%234ea1ff%22/></svg>">
+  <link rel="stylesheet" href="cockpit.css">
 </head>
 <body>
   <header>
-    <h1>CDD <span>Cockpit</span></h1>
-    <div class="toolbar menubar">
-      <button id="mi-refresh" class="menu-top">⟳ Neu laden</button>
-      <button id="mi-derive" class="menu-top">Tests ableiten</button>
-      <button id="btn-help" class="menu-top">Hilfe</button>
-      <span class="sb-spacer"></span>
-      <button id="btn-theme" title="Light/Dark umschalten">🌓</button>
+    <div class="logo">◉ <b>Cong</b> OS</div>
+    <div class="omni">
+      <input id="omni-in" autocomplete="off" spellcheck="false"
+             placeholder="⌘K  ›  / befehl · @person · #tag · id navigieren · sonst fragen…">
     </div>
+    <button class="iconbtn" id="theme" title="Light/Dark">🌓</button>
+    <button class="iconbtn" id="cop-toggle" title="Copilot">🤖</button>
   </header>
 
-  <!-- Phasen-Leiste: Lebenszyklus jeder Entität (Konvergenz-Pipeline). Klick filtert. -->
-  <nav id="phasebar"></nav>
+  <main>
+    <aside class="rail" id="rail"></aside>
 
-  <main id="cockpit">
-    <!-- Links: Navigation nach Knotenart (Baum), gefiltert durch Phase + Suche -->
-    <aside id="nav">
-      <input id="nav-search" type="search" placeholder="Filtern (Id, Art, Inhalt) …">
-      <div id="nav-tree"></div>
-      <div id="nav-add">
-        <span class="nav-add-label">+ Knoten:</span>
-        <select id="nav-add-kind">
-          <option value="SpecNode">Spec</option>
-          <option value="TermNode">Begriff</option>
-          <option value="ComponentNode">Component</option>
-          <option value="DecisionNode">Entscheidung</option>
-          <option value="PremiseNode">Prämisse</option>
-          <option value="RiskNode">Risk</option>
-          <option value="KnowledgeNode">Knowledge</option>
-          <option value="ToolNode">Tool</option>
-          <option value="InvariantNode">Invariante</option>
-        </select>
-        <button id="nav-add-btn">Anlegen</button>
-      </div>
-    </aside>
-
-    <!-- MAIN: geteilt — links Diagramm (Nachbarschaft), rechts Detail des gewählten Knotens -->
-    <section id="main">
-      <div id="main-head">
-        <div id="main-nav"><button id="back" title="Zurück">←</button><button id="fwd" title="Vor">→</button></div>
-        <div id="main-title">Kein Knoten gewählt</div>
-        <div id="main-actions"></div>
-      </div>
-      <div id="main-split">
-        <div id="main-diagram"></div>
-        <div id="main-vsplit"></div>
-        <div id="main-detail">
-          <p class="hint">Wähle links einen Knoten oder klicke im Diagramm — Details und Nachbarschaft erscheinen hier.</p>
-        </div>
-      </div>
+    <section class="stage">
+      <div class="lenstabs" id="lenstabs"></div>
+      <div class="stagebody" id="stagebody"></div>
     </section>
+
+    <aside class="copilot"></aside>
   </main>
 
-  <!-- Unten: Fehlerliste (klickbar) + Agent (Prosa → Modell) -->
-  <footer id="dock-bottom">
-    <div id="dock-tabs">
-      <button class="dtab active" data-dock="errors">Fehlerliste</button>
-      <button class="dtab" data-dock="agent">🤖 Agent</button>
-      <button class="dtab" data-dock="dashboard">Dashboard</button>
-      <span class="sb-spacer"></span>
-      <button id="dock-toggle" title="Ein-/ausklappen">▾</button>
-    </div>
-    <div id="dock-body">
-      <div id="dock-errors" class="dock-pane"></div>
-      <div id="dock-agent" class="dock-pane" hidden>
-        <textarea id="agent-prose" rows="3" placeholder="z. B.: Füge den Begriff 'Bounded Context' zur Ontologie hinzu, verwandt mit der ubiquitären Sprache."></textarea>
-        <div class="agent-row">
-          <input id="agent-key" type="password" placeholder="Anthropic API-Key (optional, bleibt im Browser)">
-          <select id="agent-model">
-            <option value="claude-opus-4-8">Opus 4.8</option>
-            <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-            <option value="claude-haiku-4-5">Haiku 4.5</option>
-          </select>
-          <button id="btn-agent-run">▶ Ausführen</button>
-          <button id="btn-agent-prompt">⧉ Prompt kopieren</button>
-        </div>
-        <div id="agent-status"></div>
-        <div id="agent-result" hidden>
-          <p id="agent-summary"></p>
-          <div id="agent-changes"></div>
-          <button id="btn-agent-apply">✔ Anwenden</button>
-          <button id="btn-agent-discard" class="danger">✕ Verwerfen</button>
-        </div>
-      </div>
-      <div id="dock-dashboard" class="dock-pane" hidden></div>
-    </div>
-  </footer>
+  <div class="status" id="status"></div>
 
-  <div id="statusbar"><span id="sb-state">Bereit</span><span id="sb-sel"></span><span class="sb-spacer"></span><span id="sb-counts"></span></div>
-
-  <div id="help-overlay" hidden>
-    <div class="help-box">
-      <h3>So funktioniert das Cockpit</h3>
-      <ol>
-        <li><b>Phasen-Leiste oben:</b> der Lebenszyklus jeder Entität (Pending → Diverged → Orphaned → Aligned). Klick filtert die Navigation.</li>
-        <li><b>Navigation links:</b> nach Knotenart gruppiert. Klick auf einen Knoten öffnet ihn im Hauptfenster.</li>
-        <li><b>Hauptfenster (geteilt):</b> links die <b>Nachbarschaft als Diagramm</b>, rechts die <b>Details</b> — Kriterien, Beziehungen (klickbar), Konvergenz, Aktionen.</li>
-        <li><b>Unten:</b> <b>Fehlerliste</b> (Klick springt zum Knoten) · <b>Agent</b> (Prosa → Modelländerung) · Dashboard.</li>
-      </ol>
-      <p class="insp-hint">Farben: <span class="dot Aligned"></span> umgesetzt · <span class="dot Pending"></span> offen · <span class="dot Diverged"></span> abweichend · <span class="dot Orphaned"></span> ohne Modell</p>
-      <button id="btn-help-close">Verstanden</button>
-    </div>
-  </div>
-
-  <script type="module" src="cockpit.js"></script>
+  <script type="module" src="shell.js"></script>
 </body>
 </html>
