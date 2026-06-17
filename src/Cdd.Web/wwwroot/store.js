@@ -31,5 +31,8 @@ export function makeStore() {
 
     // ── VS-Bottom-Dock (Fehlerliste · Ausgabe · Drift) ──
     dockOpen: false, dockTab: 'errors', output: [],
+
+    // ── EA-Diagramm-Fläche ──
+    diagramView: 'architecture',     // architecture|ontology|traceability|whole|neighbourhood
   });
 }

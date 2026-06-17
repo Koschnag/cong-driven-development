@@ -142,9 +142,9 @@ function nextSteps() {
   const pendingSpec = s.nodes.filter(n => kindOf(n) === 'spec' && convOf(n) === 'Pending');
   if (diverged.length) out.push({ label: `⚠ ${diverged.length}× Diverged auflösen`, run: () => actions.summon('drift') });
   if (pendingSpec.length) out.push({ label: `✓ Tests für ${pendingSpec.length} Spec(s) ableiten`, run: () => actions.derive() });
+  out.push({ label: '◈ Architektur-Diagramm', run: () => actions.summon('diagram') });
   out.push({ label: '◆ Plan ansehen', run: () => actions.summon('plan') });
   out.push({ label: '⬡ Modell öffnen', run: () => actions.summon('model') });
-  out.push({ label: '☁ Infra-Status', run: () => actions.summon('infra') });
   return out.slice(0, 4);
 }
 
@@ -177,7 +177,7 @@ function boot() {
     else if (k === '.') { e.preventDefault(); runNow(); }                          // tu, was JETZT dran ist
     else if (k === 'j') { e.preventDefault(); actions.toggleDock(); }              // VS-Bottom-Dock
     else if (k === 'enter') { e.preventDefault(); thread.focusInput(); }           // zurück zum Tippen
-    else if (k >= '1' && k <= '6') { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen
+    else if (k >= '1' && k <= '7') { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen (7=Diagramm)
     else if (k === '0') { e.preventDefault(); actions.closeStage(); }              // Faden Vollbild
     else if (k === 'p') { e.preventDefault(); omni.focus('pin '); }
     else if (k === ',') { e.preventDefault(); actions.summon('settings'); }

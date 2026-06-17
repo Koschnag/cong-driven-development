@@ -5,6 +5,7 @@ import { idOf, convOf, title, refs, escapeHtml } from './core.js';
 let cyLib; // undefined=ungeladen, null=offline, fn=geladen
 async function lib() {
   if (cyLib !== undefined) return cyLib;
+  if (typeof window !== 'undefined' && window.cytoscape) { cyLib = window.cytoscape; return cyLib; }
   try { cyLib = (await import('https://esm.sh/cytoscape@3.30.2')).default; }
   catch { cyLib = null; }
   return cyLib;

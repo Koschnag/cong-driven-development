@@ -14,6 +14,7 @@ import { renderNodeDetail } from './properties.js';
 import { renderGraph } from './graph.js';
 import { renderCube } from './cube.js';
 import { renderDocs } from './docs.js';
+import { renderDiagram } from './diagram.js';
 import { errorRows } from './dock.js';
 
 export const SURFACES = [
@@ -23,6 +24,7 @@ export const SURFACES = [
   { id: 'infra', icon: '☁', label: 'Infra' },
   { id: 'prod',  icon: '▲', label: 'Prod' },
   { id: 'docs',  icon: '▤', label: 'Doku' },
+  { id: 'diagram', icon: '◈', label: 'Diagramm' },
 ];
 // Aliase, damit Status/NOW auch „drift“/„node“/„settings“ auf die Bühne legen können.
 const SURFACE_BY_ID = Object.fromEntries(SURFACES.map(s => [s.id, s]));
@@ -32,6 +34,8 @@ const DEV_KINDS  = ['spec', 'test', 'component'];
 
 export function renderStage(el, store, actions) {
   const s = store.get();
+  // Diagramm-Fläche füllt den Raum (Rail/Thread kollabieren) — sonst normaler 440px-Dock.
+  document.body.dataset.stage = (s.stageOpen && s.stageSurface === 'diagram') ? 'max' : '';
   el.dataset.open = String(s.stageOpen);
   if (!s.stageOpen) { el.innerHTML = ''; return; }
 
