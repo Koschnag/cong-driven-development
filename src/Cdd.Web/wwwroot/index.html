@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="cockpit.css">
 </head>
 <body data-spine="chat">
+  <!-- VS-2022-Classic-Menüleiste: Identität + Auffindbarkeit (dispatcht nur bestehende Aktionen). -->
+  <nav id="menubar" class="vs-menubar"></nav>
+
   <!-- EINE Tür: die Omnibar. ⌘K fokussiert sie immer, von überall. -->
   <header id="omni" class="omni"></header>
 
@@ -21,6 +24,9 @@
     <!-- Rechte Bühne: die EINE herbeigerufene Fläche (Artefakt). Standardmäßig zu. -->
     <aside id="stage" class="stage" data-open="false"></aside>
   </main>
+
+  <!-- VS-Bottom-Dock: Fehlerliste · Ausgabe · Drift (⌘J). Standard: eingeklappt. -->
+  <section id="dock" class="dock closed"></section>
 
   <!-- Eine Zeile Wahrheit: Konvergenz · Infra · Engine · Was-jetzt. -->
   <footer id="status" class="statusline"></footer>

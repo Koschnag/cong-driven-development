@@ -16,14 +16,16 @@ import { mountThread } from './thread.js';
 import { mountOmni } from './omni.js';
 import { renderRail } from './rail.js';
 import { renderStage, SURFACES } from './stage.js';
-import { errorRows } from './dock.js';
+import { errorRows, renderDock } from './dock.js';
+import { mountMenubar } from './menubar.js';
 
 const store = makeStore();
-let $omni, $rail, $thread, $stage, $status, omni, thread;
+let $omni, $rail, $thread, $stage, $status, $menubar, $dock, omni, thread;
 
 const paintRail   = () => renderRail($rail, store, actions);
 const paintStage  = () => renderStage($stage, store, actions);
 const paintStatus = () => renderStatus();
+const paintDock   = () => renderDock($dock, store, actions);
 
 // ── Aktionen: der gesamte Verb-Wortschatz des Cockpits an einem Ort ──
 const actions = {
@@ -59,8 +61,17 @@ const actions = {
 
   // Engine-Wahl + Modus (develop/plan/admin/deploy/ask) — ein Wort, kein Menü-Dschungel.
   setMode(m) { store.set({ mode: m }); paintRail(); paintStatus(); if (omni) omni.reflectMode(); },
-  setEngine(e) { store.set({ engine: e }); paintStatus(); },
+  setEngine(e) { store.set({ engine: e }); paintStatus(); if (omni) omni.reflectMode && omni.reflectMode(); },
   setRunState(rs) { store.set({ runState: rs }); paintStatus(); },
+
+  // VS-Bottom-Dock (Fehlerliste · Ausgabe · Drift)
+  setDockTab(t) { store.set({ dockOpen: true, dockTab: t }); paintDock(); },
+  openDock(t) { store.set({ dockOpen: true, dockTab: t }); paintDock(); },
+  toggleDock() { store.set({ dockOpen: !store.get().dockOpen }); paintDock(); },
+  pushOutput(line) { const o = store.get().output; o.push(line); if (o.length > 400) o.shift(); if (store.get().dockOpen && store.get().dockTab === 'output') paintDock(); },
+  // Aliase: dock.js navigiert via select/openNode → chat-primär ist das focusNode (Bühne auf Knoten).
+  select: (id) => actions.focusNode(id),
+  openNode: (id) => actions.focusNode(id),
 
   // Eine Engine-Aktion mit fester Semantik (Tests ableiten), als Faden-Turn sichtbar.
   derive: async () => {
@@ -110,7 +121,7 @@ async function reload() {
   const byId = new Map(nodes.map(n => [idOf(n), n]));
   store.set({ nodes, byId, validate, diff });
   deriveNow();
-  paintRail(); paintStage(); paintStatus();
+  paintRail(); paintStage(); paintStatus(); paintDock();
 }
 
 // NOW first-principles ableiten: der dringendste offene Punkt im Modell ist die nächste Aktion.
@@ -147,12 +158,15 @@ function boot() {
   $thread = document.querySelector('#thread');
   $stage = document.querySelector('#stage');
   $status = document.querySelector('#status');
+  $menubar = document.querySelector('#menubar');
+  $dock = document.querySelector('#dock');
 
   try { const th = localStorage.getItem('congos-theme'); if (th) document.documentElement.dataset.theme = th; } catch {}
   store.set({ pins: loadPins() });
 
   thread = mountThread($thread, store, actions);
   omni = mountOmni($omni, store, actions);
+  mountMenubar($menubar, store, actions);
 
   // EIN Tastaturmodell. Überall gleich. ⌘+Taste ruft genau eine Sache.
   window.addEventListener('keydown', (e) => {
@@ -161,6 +175,7 @@ function boot() {
     const k = e.key.toLowerCase();
     if (k === 'k') { e.preventDefault(); omni.focus(); }                          // die eine Tür
     else if (k === '.') { e.preventDefault(); runNow(); }                          // tu, was JETZT dran ist
+    else if (k === 'j') { e.preventDefault(); actions.toggleDock(); }              // VS-Bottom-Dock
     else if (k === 'enter') { e.preventDefault(); thread.focusInput(); }           // zurück zum Tippen
     else if (k >= '1' && k <= '6') { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen
     else if (k === '0') { e.preventDefault(); actions.closeStage(); }              // Faden Vollbild
@@ -168,7 +183,7 @@ function boot() {
     else if (k === ',') { e.preventDefault(); actions.summon('settings'); }
   });
 
-  paintRail(); paintStage(); paintStatus();
+  paintRail(); paintStage(); paintStatus(); paintDock();
   reload().then(() => {
     thread.welcome();
     actions.suggestNext();

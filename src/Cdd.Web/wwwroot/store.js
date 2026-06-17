@@ -28,5 +28,8 @@ export function makeStore() {
 
     // ── von der Cube-Linse genutzt ──
     cubeRows: 'kind', cubeCols: 'conv',
+
+    // ── VS-Bottom-Dock (Fehlerliste · Ausgabe · Drift) ──
+    dockOpen: false, dockTab: 'errors', output: [],
   });
 }

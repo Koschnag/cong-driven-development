@@ -44,7 +44,8 @@ export function renderRail(el, store, actions) {
       }).join('') : '<div class="rail-empty">leer — ⌘P zum Anheften</div>'}
     </div>`;
 
-  el.innerHTML = nowBlock + surfBlock + pinBlock;
+  const titleBar = `<div class="tw-title"><span class="tw-grip">⠿</span><span class="tw-label">Projektmappen-Explorer — SPOT</span></div>`;
+  el.innerHTML = titleBar + nowBlock + surfBlock + pinBlock;
 
   el.querySelector('[data-now]').onclick = () => actions.runNow();
   el.querySelectorAll('[data-surf]').forEach(b => b.onclick = () => actions.toggleStage(b.dataset.surf));
