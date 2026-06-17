@@ -18,6 +18,9 @@ export const api = {
   validate: () => fetch('/api/validate').then(r => r.json()),
   diff:     () => fetch('/api/diff').then(r => r.json()),
   exportMd: () => fetch('/api/export').then(r => r.text()),
+  // Modell-Historie aus git (.spot/-Commits) — Zeitreise.
+  history:     (limit = 60) => fetch('/api/history?limit=' + limit).then(r => r.json()),
+  nodeHistory: (id) => fetch('/api/history/' + encodeURIComponent(id)).then(r => r.json()),
 };
 
 // Engine-Stream (SSE) → onEvent({t,...}) je EngineEvent. Liefert die Abort-Funktion.

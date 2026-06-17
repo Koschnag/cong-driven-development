@@ -9,6 +9,7 @@
     <Compile Include="Spot.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="Store.fs" />
+    <Compile Include="History.fs" />
     <Compile Include="Validate.fs" />
     <Compile Include="Derive.fs" />
     <Compile Include="Diff.fs" />

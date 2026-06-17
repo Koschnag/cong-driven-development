@@ -201,7 +201,7 @@ function boot() {
     else if (k === '.') { e.preventDefault(); runNow(); }                          // tu, was JETZT dran ist
     else if (k === 'j') { e.preventDefault(); actions.toggleDock(); }              // VS-Bottom-Dock
     else if (k === 'enter') { e.preventDefault(); thread.focusInput(); }           // zurück zum Tippen
-    else if (k >= '1' && k <= '6') { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen (rechte Bühne)
+    else if (k >= '1' && +k <= SURFACES.length) { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen (rechte Bühne)
     else if (k === '0') { e.preventDefault(); actions.closeStage(); }              // Faden Vollbild
     else if (k === 'p') { e.preventDefault(); omni.focus('pin '); }
     else if (k === ',') { e.preventDefault(); actions.summon('settings'); }

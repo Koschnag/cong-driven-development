@@ -14,6 +14,8 @@ import { renderNodeDetail } from './properties.js';
 import { renderGraph } from './graph.js';
 import { renderCube } from './cube.js';
 import { renderDocs } from './docs.js';
+import { renderDecisions } from './decisions.js';
+import { renderHistory } from './history.js';
 import { errorRows } from './dock.js';
 
 export const SURFACES = [
@@ -23,6 +25,8 @@ export const SURFACES = [
   { id: 'infra', icon: '☁', label: 'Infra' },
   { id: 'prod',  icon: '▲', label: 'Prod' },
   { id: 'docs',  icon: '▤', label: 'Doku' },
+  { id: 'decisions', icon: '⚖', label: 'Entscheidungen' },
+  { id: 'history',   icon: '🕘', label: 'Historie' },
 ];
 // Aliase, damit Status/NOW auch „drift“/„node“/„settings“ auf die Bühne legen können.
 const SURFACE_BY_ID = Object.fromEntries(SURFACES.map(s => [s.id, s]));
@@ -63,6 +67,8 @@ export function renderStage(el, store, actions) {
     case 'infra': return renderInfra(body, store, actions);
     case 'prod':  return renderProd(body, store, actions);
     case 'docs':  return renderDocs(body, store, actions);
+    case 'decisions': return renderDecisions(body, store, actions);
+    case 'history':   return renderHistory(body, store, actions);
     case 'drift': return renderDrift(body, store, actions);
     case 'node':  return renderNode(body, store, actions, s.stageArg);
     case 'settings': return renderSettings(body, store, actions);

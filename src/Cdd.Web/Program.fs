@@ -97,6 +97,18 @@ let main argv =
                       host "tower"   "Proxmox (VMs · Gaming-VM)" "unknown" ]
                 apps = ([] : obj list) |})) |> ignore
 
+    // Modell-Historie aus git: weil jeder Knoten ein .spot/-JSON-File ist, IST `git log` die Historie.
+    // Read-only, defensiv ([] ohne git). Zeitreise: /{id}/{hash} liefert den Knoten-Stand zum Commit.
+    app.MapGet("/api/history", Func<HttpRequest, IResult>(fun req ->
+        let lim = match System.Int32.TryParse(req.Query.["limit"].ToString()) with | true, n -> n | _ -> 60
+        json (History.model root lim))) |> ignore
+
+    app.MapGet("/api/history/{id}", Func<string, IResult>(fun id ->
+        json (History.node root id 100))) |> ignore
+
+    app.MapGet("/api/history/{id}/{hash}", Func<string, string, IResult>(fun id hash ->
+        Results.Text(History.nodeAt root id hash, "application/json"))) |> ignore
+
     app.MapPost("/api/derive-tests", Func<HttpRequest, IResult>(fun req ->
         let write = req.Query.["write"].ToString() = "true"
         withStore root (fun entries ->
