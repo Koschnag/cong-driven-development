@@ -35,16 +35,18 @@ export function renderNodeDetail(el, store, actions, n, opts = {}) {
       <button data-act="ask">🤖 Erklären</button>
     </div></div>`;
 
+  // Navigation eines Knotens = Bühne auf diesen Knoten legen (chat-primär).
+  // Fallbacks halten die Kompatibilität zur alten Workbench-API.
+  const goNode = (id) => (actions.focusNode || actions.openNode || actions.select)(id);
   el.querySelectorAll('.rel').forEach(x => {
-    x.onclick = () => actions.select(x.dataset.id);
-    x.ondblclick = () => actions.openNode(x.dataset.id);
+    x.onclick = () => goNode(x.dataset.id);
   });
   el.querySelectorAll('.actions button').forEach(b => b.onclick = () => {
     const a = b.dataset.act;
-    if (a === 'open') actions.openNode(idOf(n));
-    else if (a === 'graph') actions.openNodeLens(idOf(n), 'graph');
+    if (a === 'open') goNode(idOf(n));
+    else if (a === 'graph') { store.set({ nodeLens: 'graph' }); actions.rerender && actions.rerender(); }
     else if (a === 'derive') actions.derive();
-    else if (a === 'ask') actions.dispatch(`Erklär mir den SPOT-Knoten "${idOf(n)}" (${title(n)}) und seine Rolle im Modell.`);
+    else if (a === 'ask') (actions.ask || actions.dispatch)(`Erklär mir den SPOT-Knoten "${idOf(n)}" (${title(n)}) und seine Rolle im Modell.`);
   });
 }
 

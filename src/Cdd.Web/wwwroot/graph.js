@@ -32,7 +32,7 @@ export async function renderGraph(el, store, actions, centerNode) {
   if (!Cy) { // Offline-Fallback
     cy.outerHTML = `<div>${sub.map(n =>
       `<div class="node-row" data-id="${escapeHtml(idOf(n))}"><span class="dot ${convOf(n)}"></span><span class="id">${escapeHtml(idOf(n))}</span><span class="sm">${escapeHtml(title(n))}</span></div>`).join('')}</div>`;
-    el.querySelectorAll('.node-row').forEach(r => r.onclick = () => actions.select(r.dataset.id));
+    el.querySelectorAll('.node-row').forEach(r => r.onclick = () => (actions.focusNode || actions.select)(r.dataset.id));
     return;
   }
   const els = [];
@@ -47,5 +47,5 @@ export async function renderGraph(el, store, actions, centerNode) {
     ],
     layout: { name: 'cose', animate: false, padding: 24 },
   });
-  inst.on('tap', 'node', evt => actions.select(evt.target.id()));
+  inst.on('tap', 'node', evt => (actions.focusNode || actions.select)(evt.target.id()));
 }

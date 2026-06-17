@@ -83,6 +83,20 @@ let main argv =
         withStore root (fun entries ->
             Results.Text(Export.toMarkdown entries, "text/markdown")))) |> ignore
 
+    // Infra/Prod-Heartbeat für die Bühne (Komodo/Coolify werden via MCP adoptiert).
+    // Bis das MCP-Backend verdrahtet ist: liefert den deklarierten DC-Plan + ok=false,
+    // damit die GUI nie einen toten/leeren View zeigt (Souveränität: lokaler Wahrheits-Plan).
+    app.MapGet("/api/infra/status", Func<IResult>(fun () ->
+        let host name role state =
+            {| name = name; role = role; state = state |}
+        json {| ok = false
+                source = "static-plan"
+                hosts =
+                    [ host "pi"      "Infra (DNS · Reverse-Proxy · Tailscale)" "unknown"
+                      host "celsius" "Services (Nextcloud · YunoHost · Backups)" "unknown"
+                      host "tower"   "Proxmox (VMs · Gaming-VM)" "unknown" ]
+                apps = ([] : obj list) |})) |> ignore
+
     app.MapPost("/api/derive-tests", Func<HttpRequest, IResult>(fun req ->
         let write = req.Query.["write"].ToString() = "true"
         withStore root (fun entries ->
