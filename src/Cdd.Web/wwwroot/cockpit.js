@@ -16,16 +16,27 @@ import { mountThread } from './thread.js';
 import { mountOmni } from './omni.js';
 import { renderRail } from './rail.js';
 import { renderStage, SURFACES } from './stage.js';
+import { renderDiagram } from './diagram.js';
 import { errorRows, renderDock } from './dock.js';
 import { mountMenubar } from './menubar.js';
 
 const store = makeStore();
-let $omni, $rail, $thread, $stage, $status, $menubar, $dock, omni, thread;
+let $omni, $rail, $thread, $stage, $status, $menubar, $dock, $main, $mainTabs, $maindia, omni, thread;
 
-const paintRail   = () => renderRail($rail, store, actions);
-const paintStage  = () => renderStage($stage, store, actions);
-const paintStatus = () => renderStatus();
-const paintDock   = () => renderDock($dock, store, actions);
+const paintRail    = () => renderRail($rail, store, actions);
+const paintStage   = () => renderStage($stage, store, actions);
+const paintStatus  = () => renderStatus();
+const paintDock    = () => renderDock($dock, store, actions);
+const paintDiagram = () => renderDiagram($maindia, store, actions);
+
+// Die zwei 90%-Funktionen in der Mitte.
+const MAIN_TABS = [['chat', '💬 Chat'], ['diagram', '◈ Diagramm']];
+function paintMainTabs() {
+  const v = store.get().mainView;
+  $mainTabs.innerHTML = MAIN_TABS.map(([id, label]) =>
+    `<button class="main-tab${v === id ? ' active' : ''}" data-main="${id}">${label}</button>`).join('');
+  $mainTabs.querySelectorAll('.main-tab').forEach(b => b.onclick = () => actions.setMain(b.dataset.main));
+}
 
 // ── Aktionen: der gesamte Verb-Wortschatz des Cockpits an einem Ort ──
 const actions = {
@@ -84,6 +95,13 @@ const actions = {
   },
 
   focusOmni: () => omni && omni.focus(),
+  // Hauptfläche umschalten: Chat ⇄ Diagramm (dieselbe Mitte, die zwei Hauptfunktionen).
+  setMain(v) {
+    store.set({ mainView: v });
+    if ($main) $main.dataset.main = v;
+    paintMainTabs();
+    if (v === 'diagram') paintDiagram();
+  },
   reload: () => reload(),
   rerender: () => { paintStage(); },
   // Geführtes Durchklicken: 2–4 anklickbare nächste Schritte aus dem Modellzustand in den Faden.
@@ -122,6 +140,7 @@ async function reload() {
   store.set({ nodes, byId, validate, diff });
   deriveNow();
   paintRail(); paintStage(); paintStatus(); paintDock();
+  if (store.get().mainView === 'diagram') paintDiagram();
 }
 
 // NOW first-principles ableiten: der dringendste offene Punkt im Modell ist die nächste Aktion.
@@ -142,7 +161,7 @@ function nextSteps() {
   const pendingSpec = s.nodes.filter(n => kindOf(n) === 'spec' && convOf(n) === 'Pending');
   if (diverged.length) out.push({ label: `⚠ ${diverged.length}× Diverged auflösen`, run: () => actions.summon('drift') });
   if (pendingSpec.length) out.push({ label: `✓ Tests für ${pendingSpec.length} Spec(s) ableiten`, run: () => actions.derive() });
-  out.push({ label: '◈ Architektur-Diagramm', run: () => actions.summon('diagram') });
+  out.push({ label: '◈ Architektur-Diagramm', run: () => actions.setMain('diagram') });
   out.push({ label: '◆ Plan ansehen', run: () => actions.summon('plan') });
   out.push({ label: '⬡ Modell öffnen', run: () => actions.summon('model') });
   return out.slice(0, 4);
@@ -160,6 +179,9 @@ function boot() {
   $status = document.querySelector('#status');
   $menubar = document.querySelector('#menubar');
   $dock = document.querySelector('#dock');
+  $main = document.querySelector('#main');
+  $mainTabs = document.querySelector('#main-tabs');
+  $maindia = document.querySelector('#maindia');
 
   try { const th = localStorage.getItem('congos-theme'); if (th) document.documentElement.dataset.theme = th; } catch {}
   store.set({ pins: loadPins() });
@@ -167,6 +189,8 @@ function boot() {
   thread = mountThread($thread, store, actions);
   omni = mountOmni($omni, store, actions);
   mountMenubar($menubar, store, actions);
+  $main.dataset.main = store.get().mainView;
+  paintMainTabs();
 
   // EIN Tastaturmodell. Überall gleich. ⌘+Taste ruft genau eine Sache.
   window.addEventListener('keydown', (e) => {
@@ -177,7 +201,7 @@ function boot() {
     else if (k === '.') { e.preventDefault(); runNow(); }                          // tu, was JETZT dran ist
     else if (k === 'j') { e.preventDefault(); actions.toggleDock(); }              // VS-Bottom-Dock
     else if (k === 'enter') { e.preventDefault(); thread.focusInput(); }           // zurück zum Tippen
-    else if (k >= '1' && k <= '7') { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen (7=Diagramm)
+    else if (k >= '1' && k <= '6') { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen (rechte Bühne)
     else if (k === '0') { e.preventDefault(); actions.closeStage(); }              // Faden Vollbild
     else if (k === 'p') { e.preventDefault(); omni.focus('pin '); }
     else if (k === ',') { e.preventDefault(); actions.summon('settings'); }

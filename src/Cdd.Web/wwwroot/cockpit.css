@@ -193,6 +193,19 @@ body[data-stage="max"] #stage { border-left: 0; }
 .dia-canvas { flex: 1; min-height: 0; background: var(--bg); }
 .dia-list { padding: 1rem; }
 
+/* ════════ Hauptfläche: Chat ⇄ Diagramm (dieselbe Mitte, zwei VS-Dokument-Tabs) ════════ */
+.main { display: grid; grid-template-rows: auto 1fr; min-height: 0; min-width: 0; background: var(--bg); }
+.main-tabs { display: flex; align-items: stretch; gap: 1px; background: var(--bg1); border-bottom: 1px solid var(--line); min-height: 34px; }
+.main-tab { display: flex; align-items: center; gap: .45rem; padding: .35rem 1.2rem; font-size: 13px; color: var(--fg2);
+  background: var(--bg2); border: 0; border-top: 2px solid transparent; border-right: 1px solid var(--line); cursor: pointer; }
+.main-tab:hover { background: var(--bg3); color: var(--fg); }
+.main-tab.active { background: var(--bg); color: var(--fg); border-top-color: var(--accent); font-weight: 600; }
+.main-body { position: relative; min-height: 0; min-width: 0; display: grid; grid-template-rows: 1fr; }
+.main-body > #thread, .main-body > #maindia { grid-row: 1; grid-column: 1; min-height: 0; min-width: 0; }
+#main[data-main="chat"] #maindia { display: none; }
+#main[data-main="diagram"] #thread { display: none; }
+.maindia { overflow: hidden; }
+
 /* Composer (niedrigste Reibung: tippen + Enter) */
 .composer { border-top: 1px solid var(--line); background: var(--bg1); padding: .5rem .8rem .6rem; }
 .composer-modes { display: flex; gap: .3rem; margin-bottom: .45rem; max-width: 1180px; margin-left: auto; margin-right: auto; }

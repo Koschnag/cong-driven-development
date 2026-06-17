@@ -18,8 +18,14 @@
     <!-- Linke Schiene: externalisiertes Arbeitsgedächtnis. NOW + Pins. Immer sichtbar, nie im Weg. -->
     <aside id="rail" class="rail"></aside>
 
-    <!-- Spine: der eine Gesprächsfaden, füllt den Bildschirm. -->
-    <section id="thread" class="thread"></section>
+    <!-- Hauptfläche: Chat ⇄ Diagramm — die zwei 90%-Funktionen, im selben Mittel-Bereich. -->
+    <section id="main" class="main" data-main="chat">
+      <div id="main-tabs" class="main-tabs"></div>
+      <div class="main-body">
+        <section id="thread" class="thread"></section>
+        <div id="maindia" class="maindia"></div>
+      </div>
+    </section>
 
     <!-- Rechte Bühne: die EINE herbeigerufene Fläche (Artefakt). Standardmäßig zu. -->
     <aside id="stage" class="stage" data-open="false"></aside>

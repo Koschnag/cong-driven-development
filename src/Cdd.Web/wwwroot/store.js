@@ -8,6 +8,9 @@ export function makeStore() {
     nodes: [], byId: new Map(),
     validate: [], diff: null,
 
+    // ── Hauptfläche: die zwei 90%-Funktionen (Chat ⇄ Diagramm) ──
+    mainView: 'chat',                // chat | diagram
+
     // ── chat-primärer Spine ──
     mode: 'dev',                     // dev|plan|infra|prod|ask — Engine-Frame, EIN Wort (= Flächen-Vokabel)
     engine: 'claude',                // claude|mistral|ollama (souverän wählbar)
