@@ -68,10 +68,36 @@ Repo (public), **Branch `cockpit-engine`**: https://github.com/Koschnag/cong-dri
 PR #41 · `cdd-programm` (Mapper) · `runenruf` (Fallbeispiel). Memory:
 `memory/cong_os_redesign.md`. Dieser Handoff: `docs/SESSION-HANDOFF.md`.
 
-## Autonomer Lauf (während du weg bist)
-Auf **VM 120** (`~/workspace`, claude authentifiziert) läuft ein Treiber, der Runenruf
-**durch den Mapper** entwickelt: pro Pending-Spec `cdd-mapper --go` (Limit gegen Amoklauf),
-bei Konvergenz commit, Log in `cdd-programm/historie/mapper-laeufe/`. Konservativ gestartet
-(erst Konvergenz an EINEM Spec beweisen, dann skalieren). Token-Verbrauch bewusst (du hast
-zugestimmt). Ergebnis bei Rückkehr: konvergierte Runenruf-Specs (der Beweis) + Release-Plan
-+ Gegenentwurf-Post.
+## Autonomer Lauf — ERGEBNIS (2026-06-18, durchgearbeitet)
+
+**Der Beweis steht: Runenruf wurde DURCH das Tool gebaut, nicht von Hand.**
+
+1. **spec-fenster konvergiert durch `cdd-mapper --go`** (runenruf Branch `cdd-mapper/auto`,
+   Commits `108dfb2` + `773e631`): claude -p implementierte ehrlich `GlKontext.cs`
+   (GL-3.3-Core / ES-3.0), `GlBackend.cs`, einen echten Test mit `Trait("spot",…)` +
+   Frame-Loop-Guard — Spec/Tests **nicht** manipuliert, Convergence **nicht** von Hand gesetzt.
+   Gate grün: **`dotnet test` 27/27**, Marker Aligned. Das Orakel verbürgte spec-fenster → **Aligned**.
+   Re-Run ist **idempotent**: „Gate bereits grün — kein claude-Lauf nötig (Token gespart)",
+   und das Modell meldet **„konvergiert — nichts zu tun"** (sauberer Loop-Abbruch).
+
+2. **Tool gehärtet (das machte den Lauf erst ehrlich):**
+   - `cdd` + `cdd-mapper` als `dotnet tool` paketiert (`PackAsTool`) — Voraussetzung, sonst
+     übersprang der Mapper still die Gate-Schritte (`cdd@d6b34a5`, `cdd-mapper@5e0d679`).
+   - Mapper: **Idempotenz** (schon-grüne Spec überspringt claude → Token-Antwort) + **Orakel
+     verbürgt Spec→Aligned** nur nach echtem grünem Gate; der Ausführer darf Convergence nie
+     setzen. **10/10 Mapper-Tests** (2 neue Orakel-Tests). `cdd-mapper@160391f`.
+   - Mapper `--json`-Streaming für die Cockpit-Anzeige.
+
+3. **Cockpit↔Mapper geschlossen** (`cdd@3b3980b`, live VM 120): `POST /api/loop/run` spawnt
+   `cdd-mapper --go --json` und streamt als SSE; Frontend `runLoop` + Aktion **„▶ Loop bis
+   Konvergenz"** (Modell-Menü + Vorschlag-Chip) zeigt jeden Schritt im Faden, refresht Drift.
+   Service-PATH um `~/.dotnet/tools` erweitert. **Aus 4 Repos ist EIN Werkzeug geworden.**
+
+4. **Gegenentwurf-Post** gesichert in `docs/GEGENENTWURF-POST.md` (Entwurf, NICHT gepostet).
+
+**Noch offen (für DEINE Freigabe — outward-facing, bewusst nicht autonom getan):**
+- v0.1-Tag / `dotnet tool`-Publish auf nuget.org · der LinkedIn-Post · Merge `cdd-mapper/auto`→main.
+- Honesty-Docs vor dem Verlinken (in `GEGENENTWURF-POST.md` gelistet): STATUS.md neu generieren
+  + Caption, cdd-programm-README-Widerspruch glätten, Test-Zahlen als `dotnet test`-Verdikt.
+- Mehr Runenruf-Specs modellieren (aktuell konvergiert das Modell vollständig → Loop hat nichts
+  mehr zu tun; neue Pending-Specs = neues Futter für den Loop).
