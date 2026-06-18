@@ -83,6 +83,50 @@ let main argv =
         withStore root (fun entries ->
             Results.Text(Export.toMarkdown entries, "text/markdown")))) |> ignore
 
+    // @-Memory (Wahrheit #2): Volltextsuche über die SANITISIERTE cong-memory.db (FTS5).
+    // sensitive=0 ist nicht verhandelbar: die DB enthält bereits NUR sensitive=0-Daten (klinische
+    // Daten verlassen den Mac nie); falls CDD_MEMORY_DB doch auf eine DB mit sensitive-Spalte zeigt,
+    // wird hart doppelt gefiltert. Read-only. Kein Treffer ohne Conversation (Doppel-Join).
+    app.MapGet("/api/dwh/search", Func<HttpRequest, IResult>(fun req ->
+        let q = req.Query.["q"].ToString()
+        let limit =
+            match System.Int32.TryParse(req.Query.["limit"].ToString()) with
+            | true, n when n > 0 && n <= 50 -> n
+            | _ -> 20
+        let dbPath = Environment.GetEnvironmentVariable("CDD_MEMORY_DB")
+        if System.String.IsNullOrWhiteSpace q then
+            json {| available = true; hits = ([||]: obj[]) |}
+        elif System.String.IsNullOrWhiteSpace dbPath || not (System.IO.File.Exists dbPath) then
+            json {| available = false; note = "Memory-DB nicht gemountet (CDD_MEMORY_DB)"; hits = ([||]: obj[]) |}
+        else
+            try
+                use conn = new Microsoft.Data.Sqlite.SqliteConnection(sprintf "Data Source=%s;Mode=ReadOnly" dbPath)
+                conn.Open()
+                let hasSensitive =
+                    use chk = conn.CreateCommand()
+                    chk.CommandText <- "SELECT COUNT(*) FROM pragma_table_info('messages') WHERE name='sensitive'"
+                    System.Convert.ToInt32(chk.ExecuteScalar()) > 0
+                let sensFilter = if hasSensitive then " AND m.sensitive=0 AND c.sensitive=0" else ""
+                use cmd = conn.CreateCommand()
+                cmd.CommandText <-
+                    "SELECT c.system, c.title, m.role, m.created_at, " +
+                    "snippet(messages_fts, 0, '[', ']', '…', 12), m.conv_id, m.msg_id " +
+                    "FROM messages_fts f " +
+                    "JOIN messages m ON f.rowid = m.msg_id " +
+                    "JOIN conversations c ON m.conv_id = c.conv_id " +
+                    "WHERE messages_fts MATCH @q" + sensFilter + " ORDER BY rank LIMIT @limit"
+                cmd.Parameters.AddWithValue("@q", q) |> ignore
+                cmd.Parameters.AddWithValue("@limit", limit) |> ignore
+                use rd = cmd.ExecuteReader()
+                let hits = ResizeArray<obj>()
+                while rd.Read() do
+                    let g (i: int) = if rd.IsDBNull(i) then "" else rd.GetValue(i).ToString()
+                    hits.Add(box {| system = g 0; title = g 1; role = g 2; created_at = g 3
+                                    snippet = g 4; conv_id = g 5; msg_id = g 6 |})
+                json {| available = true; hits = hits.ToArray() |}
+            with ex ->
+                json {| available = false; note = sprintf "Suche fehlgeschlagen: %s" ex.Message; hits = ([||]: obj[]) |})) |> ignore
+
     // Infra/Prod-Heartbeat für die Bühne (Komodo/Coolify werden via MCP adoptiert).
     // Bis das MCP-Backend verdrahtet ist: liefert den deklarierten DC-Plan + ok=false,
     // damit die GUI nie einen toten/leeren View zeigt (Souveränität: lokaler Wahrheits-Plan).

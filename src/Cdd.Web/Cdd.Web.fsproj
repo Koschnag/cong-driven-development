@@ -12,4 +12,9 @@
     <ProjectReference Include="../Cdd.Core/Cdd.Core.fsproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- @-Memory (Wahrheit #2): liest die sanitisierte cong-memory.db (FTS5). Bundle enthält FTS5. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+  </ItemGroup>
+
 </Project>

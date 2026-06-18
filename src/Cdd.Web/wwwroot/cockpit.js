@@ -105,6 +105,21 @@ const actions = {
     });
   },
 
+  // ── @-Gedächtnis (Wahrheit #2): cong.db-Volltextsuche (nur sensitive=0) → Bühne mit Treffer-Karten ──
+  async dwhSearch(q) {
+    const term = (q || '').trim();
+    if (!term) return;
+    store.set({ dwhQuery: term, dwhLoading: true, dwhHits: [] });
+    actions.summon('memory');
+    try {
+      const res = await api.dwh(term, 24);
+      store.set({ dwhHits: res.hits || [], dwhAvailable: res.available !== false, dwhNote: res.note || '', dwhLoading: false });
+    } catch (e) {
+      store.set({ dwhHits: [], dwhAvailable: false, dwhNote: e.message, dwhLoading: false });
+    }
+    paintStage();
+  },
+
   // ── Toolbox: getypte Modell-Knoten + Relationen anlegen (deterministisch, kein LLM) ──
   repaintDiagram: () => paintDiagram(),
   async upsert(entry) {
@@ -264,6 +279,7 @@ function boot() {
     const dv = qs.get('dia'); if (dv) { store.set({ diagramView: dv }); paintDiagram(); }
     const nd = qs.get('node'); if (nd) actions.focusNode(nd);
     if (qs.get('full') === '1') actions.toggleDiagram();   // Fokus: Faden Vollbild, Diagramm eingeklappt
+    const dwh = qs.get('dwh'); if (dwh) actions.dwhSearch(dwh);   // @-Gedächtnis direkt öffnen
   });
   pollInfra();
 }

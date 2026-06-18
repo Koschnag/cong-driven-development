@@ -24,7 +24,7 @@ export function mountOmni(el, store, actions) {
     <div class="omni-logo">◉ <b>Cong</b> OS</div>
     <div class="omni-box">
       <input id="omni-in" autocomplete="off" spellcheck="false"
-             placeholder="⌘K  ·  Auftrag · Knoten · Befehl · „pin …“">
+             placeholder="⌘K  ·  Auftrag · Knoten · Befehl · „@ Gedächtnis“ · „pin …“">
       <div class="omni-pop" id="omni-pop"></div>
     </div>
     <div class="omni-right">
@@ -54,6 +54,13 @@ export function mountOmni(el, store, actions) {
     if (!q) { close(); return; }
     const lq = q.toLowerCase();
     const out = [];
+
+    // @-Präfix → Gedächtnis (cong.db, nur sensitive=0). Enter sucht, öffnet die Gedächtnis-Bühne.
+    if (q.startsWith('@')) {
+      const term = q.slice(1).trim();
+      out.push({ type: 'dwh', q: term, label: '@ Gedächtnis durchsuchen: ' + (term || '…'), key: 'cong.db' });
+      items = out; ai = 0; paint(); return;
+    }
 
     // Pins-Präfix
     if (lq.startsWith('pin ')) {
@@ -99,6 +106,7 @@ export function mountOmni(el, store, actions) {
     if (it.type === 'cmd') it.cmd.run();
     else if (it.type === 'node') actions.focusNode(it.id);
     else if (it.type === 'pin') actions.togglePin({ ref: it.id, kind: 'node', label: it.id });
+    else if (it.type === 'dwh') actions.dwhSearch(it.q);
     else actions.ask(it.q);
     reset();
   }

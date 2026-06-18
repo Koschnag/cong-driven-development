@@ -44,6 +44,7 @@ export function renderStage(el, store, actions) {
   const label = surf === 'node' ? (s.stageArg || 'Knoten')
               : surf === 'drift' ? 'Drift'
               : surf === 'settings' ? 'Settings'
+              : surf === 'memory' ? '@ Gedächtnis'
               : (meta ? meta.label : surf);
 
   el.innerHTML = `
@@ -71,6 +72,7 @@ export function renderStage(el, store, actions) {
     case 'history':   return renderHistory(body, store, actions);
     case 'drift': return renderDrift(body, store, actions);
     case 'node':  return renderNode(body, store, actions, s.stageArg);
+    case 'memory': return renderMemory(body, store, actions);
     case 'settings': return renderSettings(body, store, actions);
     default: body.innerHTML = `<div class="muted pad">${escapeHtml(surf)}</div>`;
   }
@@ -172,6 +174,30 @@ function renderProd(el, store, actions) {
   el.querySelector('[data-ask]').onclick = () =>
     actions.ask('Zeig die letzten Deployments und den Health-Status aus Coolify (Prod) und nenne, was Aufmerksamkeit braucht.');
   el.querySelector('[data-deploy]').onclick = () => actions.focusOmni();
+}
+
+// ── @-Gedächtnis: cong.db-Volltextsuche (NUR sensitive=0) als Treffer-Karten. „→ an den Faden" = einordnen. ──
+function renderMemory(el, store, actions) {
+  const s = store.get();
+  const q = s.dwhQuery || '';
+  if (s.dwhLoading) { el.innerHTML = `<div class="muted pad">Suche „${escapeHtml(q)}" im Gedächtnis…</div>`; return; }
+  if (s.dwhAvailable === false) {
+    el.innerHTML = `<div class="stage-hint">@-Gedächtnis (cong.db, nur <code>sensitive=0</code>). <b>${escapeHtml(s.dwhNote || 'nicht verfügbar')}</b></div>`;
+    return;
+  }
+  const hits = s.dwhHits || [];
+  el.innerHTML =
+    `<div class="stage-hint">@-Gedächtnis · „${escapeHtml(q)}" · ${hits.length} Treffer <span class="adopt-tag">cong.db · nur sensitive=0</span></div>` +
+    (hits.length ? hits.map((h, i) => `<div class="mem-card">
+        <div class="mem-meta"><span class="mem-sys">${escapeHtml(h.system || '')}</span><span class="mem-when">${escapeHtml((h.created_at || '').slice(0, 16))}</span></div>
+        <div class="mem-title">${escapeHtml(h.title || '(ohne Titel)')}</div>
+        <div class="mem-snip">${escapeHtml(h.snippet || '')}</div>
+        <div class="mem-actions"><button data-i="${i}">→ an den Faden</button></div>
+      </div>`).join('') : '<div class="rail-empty pad">— keine Treffer —</div>');
+  el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+    const h = (store.get().dwhHits || [])[+b.dataset.i];
+    if (h) actions.ask(`Aus meinem Gedächtnis (${h.system}, „${h.title}"): „${h.snippet}". Ordne das ein und sag, ob daraus ein SPOT-Knoten werden sollte.`);
+  });
 }
 
 function renderSettings(el, store, actions) {
