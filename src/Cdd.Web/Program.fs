@@ -157,6 +157,60 @@ let main argv =
             do! ctx.Response.Body.FlushAsync()
         } :> Task)) |> ignore
 
+    // Loop bis Konvergenz: das Cockpit treibt den Mapper (cdd-mapper --go --json) als Subprozess und
+    // streamt dessen JSON-Ereignisse als SSE — der Loop wird wie ein Engine-Turn angezeigt.
+    // Cong-OS = Steuerzentrale (orchestriert), Cdd.Mapper = Ausführer, Cdd.Core = das Gate. Keine Doppelung.
+    app.MapPost("/api/loop/run", Func<HttpContext, Task>(fun ctx ->
+        task {
+            use reader = new StreamReader(ctx.Request.Body)
+            let! bodyStr = reader.ReadToEndAsync()
+            let spec, maxSpecs, maxAttempts =
+                try
+                    let j = System.Text.Json.JsonDocument.Parse(bodyStr).RootElement
+                    let getS (n: string) = match j.TryGetProperty(n) with
+                                           | true, v when v.ValueKind = System.Text.Json.JsonValueKind.String -> v.GetString()
+                                           | _ -> ""
+                    let getI (n: string) d = match j.TryGetProperty(n) with
+                                             | true, v when v.ValueKind = System.Text.Json.JsonValueKind.Number -> v.GetInt32()
+                                             | _ -> d
+                    getS "Spec", getI "MaxSpecs" 1, getI "MaxAttempts" 3
+                with _ -> "", 1, 3
+            ctx.Response.ContentType <- "text/event-stream"
+            ctx.Response.Headers.["Cache-Control"] <- Microsoft.Extensions.Primitives.StringValues("no-cache")
+            ctx.Response.Headers.["X-Accel-Buffering"] <- Microsoft.Extensions.Primitives.StringValues("no")
+            let send (s: string) : Task =
+                task {
+                    do! ctx.Response.WriteAsync(sprintf "data: %s\n\n" s)
+                    do! ctx.Response.Body.FlushAsync()
+                }
+            do! send (Json.serialize {| t = "started"; model = sprintf "cdd-mapper · Loop bis Konvergenz (max %d Spec, %d Versuche)" maxSpecs maxAttempts |})
+            try
+                let psi = System.Diagnostics.ProcessStartInfo("cdd-mapper")
+                psi.WorkingDirectory <- root
+                psi.RedirectStandardOutput <- true
+                psi.RedirectStandardError <- true
+                psi.UseShellExecute <- false
+                let add (s: string) = psi.ArgumentList.Add s
+                let addPair (f: string) (v: string) = add f; add v
+                add "--root"; add root; add "--go"; add "--json"
+                addPair "--max-specs" (string maxSpecs)
+                addPair "--max-attempts" (string maxAttempts)
+                if spec <> "" then addPair "--spec" spec
+                use proc = new System.Diagnostics.Process()
+                proc.StartInfo <- psi
+                proc.Start() |> ignore
+                let mutable go = true
+                while go do
+                    let! line = proc.StandardOutput.ReadLineAsync()
+                    if isNull line then go <- false
+                    elif line.StartsWith("{") then do! send line
+                proc.WaitForExit()
+            with ex ->
+                do! send (Json.serialize {| t = "error"; error = sprintf "Loop-Fehler (cdd-mapper im PATH? `dotnet tool install`?): %s" ex.Message |})
+            do! ctx.Response.WriteAsync("event: done\ndata: {}\n\n")
+            do! ctx.Response.Body.FlushAsync()
+        } :> Task)) |> ignore
+
     printfn "CDD Web — SPOT-Root: %s" root
     app.Run()
     0

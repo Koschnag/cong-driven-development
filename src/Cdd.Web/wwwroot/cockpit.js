@@ -10,7 +10,7 @@
 //   stage  (rechts) = die EINE herbeigerufene Fläche. Standard: zu. Esc schließt.
 //
 // Navigation = ein Modell: ⌘K (eine Tür) tippen → Befehl/Knoten/Frage. Ziffern rufen Flächen.
-import { api, idOf, kindOf, convOf, title, summary, escapeHtml } from './core.js';
+import { api, runLoop, idOf, kindOf, convOf, title, summary, escapeHtml } from './core.js';
 import { makeStore } from './store.js';
 import { mountThread } from './thread.js';
 import { mountOmni } from './omni.js';
@@ -94,6 +94,24 @@ const actions = {
     actions.setNow({ label: 'Konvergenz prüfen', surface: 'drift' });
   },
 
+  // Loop bis Konvergenz: das Cockpit treibt cdd-mapper (das Modell treibt die Engine), jeder Schritt im Faden,
+  // das Gate entscheidet — nicht „Agent sagt fertig". Der sichtbare Gegenentwurf.
+  loop: () => {
+    actions.setRunState('running');
+    actions.say('system', '▶ Loop bis Konvergenz (cdd-mapper) — das Modell treibt die Engine, das Gate entscheidet.');
+    runLoop({ MaxSpecs: 1, MaxAttempts: 3 }, (ev) => {
+      switch (ev.t) {
+        case 'started': actions.say('system', '● ' + (ev.model || '')); break;
+        case 'spec': actions.say('system', '◆ ' + ev.id + ' — ' + (ev.title || '')); break;
+        case 'attempt': actions.say('system', '  Versuch ' + ev.n + '/' + ev.max + ' → claude -p'); break;
+        case 'gate': actions.say('system', ev.ok ? ('  ✓ Gate grün' + (ev.skipped ? ' — claude übersprungen (Token gespart)' : '')) : '  … Gate noch rot'); break;
+        case 'spec_done': actions.say('system', (ev.konvergiert ? '✓ ' : '✗ ') + ev.id + ' nach ' + ev.versuche + ' Versuch(en)'); break;
+        case 'done': actions.say('system', `✓ Loop fertig — ${ev.konvergiert}/${ev.total} konvergiert`); actions.setRunState('done'); actions.reload(); actions.summon('drift'); break;
+        case 'error': actions.say('system', '⚠ ' + (ev.error || '')); actions.setRunState('error'); break;
+      }
+    });
+  },
+
   focusOmni: () => omni && omni.focus(),
   // Hauptfläche umschalten: Chat ⇄ Diagramm (dieselbe Mitte, die zwei Hauptfunktionen).
   setMain(v) {
@@ -161,6 +179,7 @@ function nextSteps() {
   const pendingSpec = s.nodes.filter(n => kindOf(n) === 'spec' && convOf(n) === 'Pending');
   if (diverged.length) out.push({ label: `⚠ ${diverged.length}× Diverged auflösen`, run: () => actions.summon('drift') });
   if (pendingSpec.length) out.push({ label: `✓ Tests für ${pendingSpec.length} Spec(s) ableiten`, run: () => actions.derive() });
+  if (pendingSpec.length) out.push({ label: '▶ Loop bis Konvergenz', run: () => actions.loop() });
   out.push({ label: '◈ Architektur-Diagramm', run: () => actions.setMain('diagram') });
   out.push({ label: '◆ Plan ansehen', run: () => actions.summon('plan') });
   out.push({ label: '⬡ Modell öffnen', run: () => actions.summon('model') });

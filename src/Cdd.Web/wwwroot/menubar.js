@@ -18,6 +18,7 @@ export function mountMenubar(el, store, actions) {
       ['Faden Vollbild (⌘0)', () => actions.closeStage()],
     ]],
     ['Modell', [
+      ['▶ Loop bis Konvergenz', () => actions.loop()],
       ['Drift / Konvergenz', () => actions.summon('drift')],
       ['Modell-Übersicht', () => actions.summon('model')],
       ['Doku', () => actions.summon('docs')],

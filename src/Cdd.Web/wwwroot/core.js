@@ -23,12 +23,13 @@ export const api = {
   nodeHistory: (id) => fetch('/api/history/' + encodeURIComponent(id)).then(r => r.json()),
 };
 
-// Engine-Stream (SSE) → onEvent({t,...}) je EngineEvent. Liefert die Abort-Funktion.
-export function runEngine(body, onEvent) {
+// Engine-Stream (SSE) → onEvent({t,...}) je Ereignis. Liefert die Abort-Funktion.
+// url parametrisiert: /api/engine/run (ein Turn) oder /api/loop/run (Loop bis Konvergenz, cdd-mapper).
+export function runEngine(body, onEvent, url = '/api/engine/run') {
   const ctrl = new AbortController();
   (async () => {
     try {
-      const res = await fetch('/api/engine/run', {
+      const res = await fetch(url, {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body), signal: ctrl.signal,
       });
@@ -47,6 +48,9 @@ export function runEngine(body, onEvent) {
   })();
   return () => ctrl.abort();
 }
+
+// Loop bis Konvergenz: treibt cdd-mapper über /api/loop/run, dieselben SSE-Ereignisse wie die Engine.
+export const runLoop = (body, onEvent) => runEngine(body, onEvent, '/api/loop/run');
 
 /* ── SPOT-Helfer (defensiv gegen Encoding-Varianten) ── */
 export const idOf = (n) => (typeof n?.Id === 'string' ? n.Id : (n?.Id?.Item ?? String(n?.Id ?? '')));
