@@ -104,6 +104,10 @@ export function renderDiagram(el, store, actions) {
 
   const cy = Cy({ container: host, elements: els, style: STYLE, layout, wheelSensitivity: 0.25, minZoom: 0.2, maxZoom: 3 });
   cy.on('tap', 'node', e => actions.focusNode(e.target.id()));
+  // Container war beim Init evtl. noch 0 px hoch (gerade erst sichtbar) → nachträglich einpassen,
+  // sonst rendert Cytoscape ins Leere (der „keine Diagramme"-Effekt).
+  const fit = () => { try { cy.resize(); cy.fit(undefined, 30); } catch {} };
+  requestAnimationFrame(fit); setTimeout(fit, 120); setTimeout(fit, 400);
   const sel = store.get().selected;
   if (sel) { const nd = cy.getElementById(idOf(sel)); if (nd && nd.length) nd.style({ 'border-color': '#007acc', 'border-width': 4 }); }
 }

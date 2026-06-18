@@ -49,4 +49,6 @@ export async function renderGraph(el, store, actions, centerNode) {
     layout: { name: 'cose', animate: false, padding: 24 },
   });
   inst.on('tap', 'node', evt => (actions.focusNode || actions.select)(evt.target.id()));
+  const fit = () => { try { inst.resize(); inst.fit(undefined, 24); } catch {} };
+  requestAnimationFrame(fit); setTimeout(fit, 120); setTimeout(fit, 400);
 }
