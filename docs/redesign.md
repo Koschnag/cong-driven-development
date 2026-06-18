@@ -50,7 +50,8 @@ Die **Statusline (Ambient-Health-Band, immer sichtbar)** ersetzt die Phasen-Leis
 
 ## 5. Multidimensionale Modellansicht + Historie (explizit gewünscht)
 
-- **Graph/UML/Cube bleiben** — als **Graph-Linse** über der Stage (Cytoscape von Dauer-Splitscreen zur On-Demand-Linse degradiert; *das* war die Wurzel der „zu schmal"-Klage). Frei ziehbar, UML-Klassendiagramm der Ontologie, OLAP-Cube-Navigation (slice/dice/drill).
+- **Graph/UML/Cube bleiben** — als **Graph-Linse** über der Stage. Frei ziehbar, UML-Klassendiagramm der Ontologie, OLAP-Cube-Navigation (slice/dice/drill).
+  - **REVIDIERT (2026-06-18, sanktioniert per AskUserQuestion):** Das Diagramm ist jetzt eine **permanente Split-Mitte** (Diagramm links 1fr + Faden rechts), NICHT mehr nur eine On-Demand-Linse. Die ursprüngliche „Dauer-Splitscreen = Wurzel der zu-schmal-Klage"-These wird damit bewusst zurückgenommen. **Bedingung, die den Widerspruch auflöst:** der Faden kann per ⌘0 (Menü „Faden Vollbild") das Diagramm **einklappen** und den Schirm füllen — das §11-„Hyperfokus"-Versprechen bleibt erreichbar, `data-spine=chat` bleibt wahr. Default = Split (Congs Wahl); Fokus = Faden-Vollbild auf Knopfdruck. Damit sagen Spec und Build wieder dasselbe.
 - **Time-Travel ist geschenkt:** der SPOT liegt als ein JSON-File pro Knoten unter git → jede Änderung ist ein Commit → **Zeit-Slider** scrubbt durch die Modell-Historie. Zweite Achse: **Lebens-/Daten-Historie** (cong.db-Timeline, 93k Events). Du gehst auf einer Zeitachse durch Modell *und* Leben.
 - **Doku** ist *generiert* aus dem SPOT (Kontext-Linse = `Export.toMarkdown` wörtlich → der Mensch sieht, was die KI sieht), kein separater Ort.
 

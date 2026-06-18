@@ -12,7 +12,7 @@ export function mountMenubar(el, store, actions) {
       ...SURFACES.map(s => [`${s.icon}  ${s.label}`, () => actions.summon(s.id)]),
       ['—', null],
       ['Fehlerliste / Ausgabe (⌘J)', () => actions.toggleDock()],
-      ['Faden Vollbild (⌘0)', () => actions.closeStage()],
+      ['Faden Vollbild — Diagramm ein/aus (⌘0)', () => actions.toggleDiagram()],
     ]],
     ['Modell', [
       ['▶ Loop bis Konvergenz', () => actions.loop()],

@@ -5,7 +5,7 @@
 //
 // RIGOR (Congs Standard): die Notation ist eine MOTIVIERTE Beschriftung, KEIN Beweis. Jede Sicht
 // trägt ihren Caveat sichtbar. λ-Kalkül ist als eigene Sicht VERWORFEN (dekorativ) — nur Fußnote.
-import { idOf, kindOf, convOf, inner, title, refs, escapeHtml } from './core.js';
+import { idOf, kindOf, convOf, inner, title, refs, escapeHtml, MARK } from './core.js';
 
 // KaTeX, lokal gevendort (window.katex). Offline → lesbarer Monospace-Fallback (kein toter View).
 function K(tex, display = false) {
@@ -34,7 +34,7 @@ function renderTyp(el, store, actions, nodes) {
     const c = convOf(n), ts = testsOf(idOf(n));
     const t = ts.length ? `t_{${escapeHtml(idOf(ts[0])).replace(/[^a-zA-Z0-9]/g, '')}}` : 't';
     const T = `\\llbracket ${tt(idOf(n))} \\rrbracket`;
-    if (c === 'Aligned')  return K(`\\Gamma \\vdash ${t} : ${T}`, false);
+    if (c === 'Aligned')  return K(`\\Gamma \\vdash_{\\mathcal{O}} ${t} : ${T}`, false) + ' <span class="fj-note">𝒪 = dotnet&nbsp;test ∧ Marker (Orakel, kein Typechecker)</span>';
     if (c === 'Pending')  return K(`{?} : ${T}`, false) + ' <span class="fj-note">offenes Loch — Typ deklariert, kein Zeuge</span>';
     if (c === 'Diverged') return K(`${t} : ${T} \\;\\rightsquigarrow\\; \\bot`, false) + ' <span class="fj-note bad">Zeuge bewohnt den Typ nicht</span>';
     return K(`${t} : {?} \\;\\;(\\notin \\Gamma)`, false) + ' <span class="fj-note">Code ohne deklarierten Typ</span>';
@@ -69,9 +69,10 @@ function renderTyp(el, store, actions, nodes) {
     <div class="formal-caveat"><b>Lesart, kein Beweis.</b> Bewohnbarkeit entscheidet ein <i>externes Orakel</i>
       (Testlauf / Agent) — „typecheckt" ist ein aus Evidenz <i>assertiertes</i> Urteil, kein syntaktisch
       entscheidbarer Check. Nur der Lean-bewiesene kritische Kern wäre echtes mechanisiertes Curry-Howard.
-      Konvergenz <i>wird interpretiert als</i> Typurteilsstatus (sie ist im Modell ein extern gesetztes Label).</div>
+      Konvergenz <i>wird interpretiert als</i> Typurteilsstatus (sie ist im Modell ein extern gesetztes Label).
+      Darum trägt das Aligned-Urteil das Orakel-Subskript ${K('\\vdash_{\\mathcal{O}}')}: ${K('\\mathcal{O}')} = <code>dotnet test</code> ∧ Marker — <b>kein syntaktischer Typechecker</b>.</div>
     <div class="formal-legend">
-      ${K('\\textsf{Aligned}:\\;\\Gamma \\vdash t : \\llbracket S \\rrbracket')} ·
+      ${K('\\textsf{Aligned}:\\;\\Gamma \\vdash_{\\mathcal{O}} t : \\llbracket S \\rrbracket')} ·
       ${K('\\textsf{Pending}:\\;{?}:\\llbracket S \\rrbracket')} ·
       ${K('\\textsf{Diverged}:\\;t:\\llbracket S \\rrbracket \\rightsquigarrow \\bot')} ·
       ${K('\\textsf{Orphaned}:\\;t:{?}\\,\\notin\\Gamma')}
@@ -88,7 +89,54 @@ function renderTyp(el, store, actions, nodes) {
   wire(el, actions);
 }
 
+/* ── Kompakte Formal-Notation EINES Knotens — koppelt das Detail-Fenster an die „code behind"-Sicht ── */
+export function nodeFormal(n, store) {
+  const k = kindOf(n), c = convOf(n), i = inner(n), id = idOf(n);
+  const nodes = (store.get().nodes) || [];
+  const out = [];
+  if (k === 'spec') {
+    const crit = i.Criteria || [];
+    out.push(K(crit.length
+      ? `\\llbracket ${tt(id)} \\rrbracket \\;:=\\; ` + crit.map((_, j) => `C_{${j + 1}}`).join(' \\times ')
+      : `\\llbracket ${tt(id)} \\rrbracket \\;:=\\; \\top`, true));
+    const ts = nodes.filter(x => kindOf(x) === 'test' && inner(x).SpecRef === id);
+    const t = ts.length ? 't' : 't', T = `\\llbracket ${tt(id)} \\rrbracket`;
+    const j = c === 'Aligned' ? `\\Gamma \\vdash_{\\mathcal{O}} ${t} : ${T}` : c === 'Pending' ? `{?} : ${T}`
+      : c === 'Diverged' ? `${t} : ${T} \\;\\rightsquigarrow\\; \\bot` : `${t} : {?} \\;\\notin\\Gamma`;
+    out.push(K(j, true) + (ts.length ? ` <span class="fj-note">Zeuge: ${ts.map(x => idOf(x)).join(', ')}</span>` : ' <span class="fj-note">kein Test</span>'));
+  } else if (k === 'test') {
+    out.push(K(`t_{${tt(id)}} \\;:\\; \\llbracket ${tt(i.SpecRef || '?')} \\rrbracket`, true));
+  } else if (k === 'component') {
+    const deps = i.DependsOn || [];
+    const ctx = deps.length ? deps.map(d => `\\llbracket ${tt(d)} \\rrbracket`).join(',\\; ') : '\\cdot';
+    out.push(K(`${ctx} \\;\\vdash\\; \\llbracket ${tt(id)} \\rrbracket`, true));
+  } else if (k === 'invariant') {
+    const rule = i.Rule?.Case ?? i.Rule;
+    let fo = INV_FO[rule];
+    if (rule === 'IdPrefix') { const f = i.Rule?.Fields || {}; fo = `\\forall x\\,(\\mathsf{Kind}(x){=}${tt(f.kind || '?')} \\to \\mathsf{prefix}(\\mathrm{id}(x)){=}${tt(f.prefix || '?')})`; }
+    if (!fo) fo = `\\textsf{${escapeHtml(rule || 'Regel')}}`;
+    const viol = (store.get().validate || []).filter(x => typeof x.Message === 'string' && x.Message.includes(`Invariante verletzt (${i.Description || ''})`));
+    out.push(K('\\Phi \\;\\equiv\\; ' + fo, true));
+    out.push(viol.length ? K('\\mathfrak{M} \\not\\models \\Phi') + ` <span class="fj-note bad">Zeuge: ${viol.map(x => x.EntityId).join(', ')}</span>` : K('\\mathfrak{M} \\models \\Phi') + ' <span class="fj-note good">erfüllt</span>');
+  } else if (k === 'term') {
+    out.push(K(`${tt(id)} \\;\\in\\; \\mathrm{Vocab}`, true));
+    const sub = refs(n).filter(r => r.rel === 'IsA' || r.rel === 'PartOf').map(r => K(`${tt(id)} \\sqsubseteq ${tt(r.target)}`));
+    if (sub.length) out.push(sub.join('&nbsp; '));
+  } else if (k === 'risk') {
+    const bad = i.Impact === 'Critical' && !i.Mitigation;
+    out.push(K(`\\Diamond\\,\\mathsf{Risk}(${tt(id)})` + (bad ? ' \\;\\to\\; \\bot' : ''), true) + (bad ? ' <span class="fj-note bad">kritisch, ohne Mitigation</span>' : ''));
+  } else if (k === 'decision') {
+    out.push(K(`\\vdash\\, ${tt(id)}` + (i.Supersedes ? ` \\;\\rhd\\; ${tt(i.Supersedes)}` : ''), true));
+  } else {
+    out.push(K(`${MARK[k] || '\\bullet'}\\;\\; ${tt(id)}`, true));
+  }
+  return out.join('');
+}
+
 /* ── Prädikatenlogik — die Invarianten sind ihre wahre Heimat ─────────────── */
+// ⚠ SYNC-PFLICHT: Diese Formeln MÜSSEN den InvariantRule-Fällen in src/Cdd.Core/Validate.fs:182-208
+// entsprechen (deine „Code ist Ground Truth, Listings müssen matchen"-Regel). Ändert sich dort die
+// Semantik einer Regel, hier mitziehen. Unbekannte Regeln fallen sichtbar auf ihren Namen zurück (s.u.).
 const INV_FO = {
   SpecsNeedTests: '\\forall s\\,\\big(\\mathsf{Spec}(s) \\rightarrow \\exists t\\,(\\mathsf{Test}(t) \\wedge \\mathsf{Covers}(t,s))\\big)',
   CriticalRisksNeedMitigation: '\\forall r\\,\\big(\\mathsf{Risk}(r) \\wedge \\mathsf{Impact}(r){=}\\mathsf{Critical} \\rightarrow \\exists m\\,\\mathsf{Mitigates}(m,r)\\big)',

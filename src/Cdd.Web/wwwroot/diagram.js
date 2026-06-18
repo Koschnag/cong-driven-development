@@ -18,7 +18,7 @@ const VIEWS = [
 // „Code behind" — dasselbe Modell in formaler Notation. Drei ehrliche Sichten (λ-Kalkül als
 // eigene Sicht verworfen: dekorativ; nur Fußnote in der Typ-Sicht).
 const FORMAL_VIEWS = [
-  ['formal-typ',   'λ Typen',     'Curry-Howard: Spec = Typ · Test = Bewohner · Konvergenz wird als Typurteil gelesen'],
+  ['formal-typ',   '⊢ Typen',     'Curry-Howard: Spec = Typ · Test = Bewohner · Aligned = Orakel ⊢_𝒪 (dotnet test ∧ Marker), kein Typechecker'],
   ['formal-logik', '∀ Logik',     'Die Invarianten als prädikatenlogische Sätze · validate = 𝔐 ⊨ Φ'],
   ['formal-kat',   '∘ Kategorien','Freie Kategorie auf DependsOn · Preorder auf IsA'],
 ];
@@ -67,32 +67,38 @@ function build(store, view) {
 
 // Symbol-Style: äußere Form aus data(shape), innere Marke als SVG-background-image, Rand trägt die
 // Konvergenz (orthogonal zur Art). Convergence braucht NULL extra Bild-Assets (native underlay/border).
-const STYLE = [
+// Label-/Kanten-Farben folgen dem Theme (Cytoscape kennt keine CSS-Vars → zur Render-Zeit gewählt).
+function makeStyle(light) {
+  const lbl = light ? '#1e2530' : '#cdd6e0';
+  const edge = light ? '#9aa6b4' : '#54647a';
+  const edgeLbl = light ? '#5a6573' : '#7c8a9a';
+  return [
   { selector: 'node', style: {
     'shape': 'data(shape)',
-    'background-color': 'data(hue)', 'background-opacity': 0.13,
+    'background-color': 'data(hue)', 'background-opacity': light ? 0.18 : 0.13,
     'background-image': 'data(mark)', 'background-fit': 'none', 'background-clip': 'none',
     'background-width': '58%', 'background-height': '58%',
     'border-color': 'data(hue)', 'border-width': 1.75,
-    'label': 'data(label)', 'color': '#cdd6e0', 'font-size': '9px', 'font-family': 'ui-monospace, monospace',
+    'label': 'data(label)', 'color': lbl, 'font-size': '9px', 'font-family': 'ui-monospace, monospace',
     'text-valign': 'bottom', 'text-margin-y': '6px', 'text-wrap': 'wrap', 'text-max-width': '120px',
     'width': '48px', 'height': '48px' } },
   // — Konvergenz NUR am Rand (in Graustufen UND bei 16px unterscheidbar) —
-  { selector: 'node[conv="Aligned"]',  style: { 'underlay-color': 'data(hue)', 'underlay-opacity': 0.28, 'underlay-padding': 5 } },
-  { selector: 'node[conv="Pending"]',  style: { 'background-opacity': 0.07 } },
+  { selector: 'node[conv="Aligned"]',  style: { 'underlay-color': 'data(hue)', 'underlay-opacity': light ? 0.18 : 0.28, 'underlay-padding': 5 } },
+  { selector: 'node[conv="Pending"]',  style: { 'background-opacity': light ? 0.10 : 0.07 } },
   { selector: 'node[conv="Diverged"]', style: { 'border-color': '#C25B6B', 'border-style': 'double', 'border-width': 4.5 } },
   { selector: 'node[conv="Orphaned"]', style: { 'border-style': 'dashed', 'opacity': 0.6 } },
   // — UML-Semantik der Relationen —
   { selector: 'edge', style: {
-    'curve-style': 'bezier', 'width': 1.3, 'line-color': '#54647a', 'target-arrow-color': '#54647a',
-    'target-arrow-shape': 'vee', 'label': 'data(rel)', 'font-size': '8px', 'color': '#7c8a9a', 'text-rotation': 'autorotate' } },
+    'curve-style': 'bezier', 'width': 1.3, 'line-color': edge, 'target-arrow-color': edge,
+    'target-arrow-shape': 'vee', 'label': 'data(rel)', 'font-size': '8px', 'color': edgeLbl, 'text-rotation': 'autorotate' } },
   { selector: 'edge[rel="IsA"]', style: { 'target-arrow-shape': 'triangle', 'target-arrow-fill': 'hollow', 'line-color': '#8aa0b8', 'target-arrow-color': '#8aa0b8' } },
   { selector: 'edge[rel="PartOf"]', style: { 'source-arrow-shape': 'diamond', 'source-arrow-fill': 'hollow' } },
   { selector: 'edge[rel="RelatesTo"]', style: { 'line-style': 'dotted' } },
   { selector: 'edge[rel="DependsOn"]', style: { 'line-style': 'dashed' } },
   { selector: 'edge[rel="covers"]', style: { 'line-style': 'dotted', 'line-color': '#9B7BE0', 'target-arrow-color': '#9B7BE0' } },
   { selector: 'edge[rel="supersedes"]', style: { 'line-color': '#f85149', 'target-arrow-color': '#f85149', 'width': 2 } },
-];
+  ];
+}
 
 const LEGEND = `<b>Form</b> = Familie · <b>Marke</b> = Art · <b>Rand</b> = Konvergenz` +
   ` <span style="color:#2ea043">●</span>Aligned <span style="color:#d29922">●</span>Pending` +
@@ -112,6 +118,7 @@ export function renderDiagram(el, store, actions) {
       ${FORMAL_VIEWS.map(vbtn).join('')}
       <span class="dia-hint">${escapeHtml(hint ? hint[2] : '')}</span>
       ${isFormal(view) ? '' : `<span class="dia-legend">${LEGEND}</span>`}
+      <button class="dia-collapse" data-collapse title="Faden Vollbild — Diagramm einklappen (⌘0)">⤢</button>
     </div>
     ${arm ? `<div class="dia-arm">Relation <b>${escapeHtml(arm.rel)}</b> — Quelle wählen → Ziel klicken · <button data-disarm>abbrechen (Esc)</button></div>` : ''}
     <div class="dia-stage">
@@ -120,6 +127,7 @@ export function renderDiagram(el, store, actions) {
     </div>`;
 
   el.querySelectorAll('.dia-v').forEach(b => b.onclick = () => { store.set({ diagramView: b.dataset.v, armRel: null }); renderDiagram(el, store, actions); });
+  const coll = el.querySelector('[data-collapse]'); if (coll) coll.onclick = () => actions.toggleDiagram();
   const disarm = el.querySelector('[data-disarm]');
   if (disarm) disarm.onclick = () => { store.set({ armRel: null }); renderDiagram(el, store, actions); };
 
@@ -136,7 +144,8 @@ export function renderDiagram(el, store, actions) {
   if (!Cy) { host.innerHTML = `<div class="dia-list muted">Cytoscape nicht geladen — ${count} Knoten in dieser Ansicht.</div>`; return; }
   if (!count) { host.innerHTML = `<div class="dia-list muted">Keine Knoten in der Ansicht „${escapeHtml(view)}".</div>`; return; }
 
-  const cy = Cy({ container: host, elements: els, style: STYLE, layout, wheelSensitivity: 0.25, minZoom: 0.2, maxZoom: 3 });
+  const light = document.documentElement.dataset.theme === 'light';
+  const cy = Cy({ container: host, elements: els, style: makeStyle(light), layout, wheelSensitivity: 0.25, minZoom: 0.2, maxZoom: 3 });
 
   // Relation „bewaffnet" → zwei-Klick (Quelle, Ziel); sonst Klick öffnet den Knoten.
   if (arm) {

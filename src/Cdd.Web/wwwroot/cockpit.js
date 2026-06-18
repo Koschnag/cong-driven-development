@@ -135,6 +135,16 @@ const actions = {
     else paintDiagram();
   },
 
+  // Faden-Vollbild: klappt das Diagramm ein (Split bleibt Default-Wahl, aber der Faden KANN den
+  // Schirm füllen — §11 „Hyperfokus" wiederhergestellt, data-spine=chat wird wieder wahr).
+  toggleDiagram() {
+    const collapsed = !store.get().diagramCollapsed;
+    store.set({ diagramCollapsed: collapsed });
+    const main = document.querySelector('#main');
+    if (main) main.classList.toggle('dia-collapsed', collapsed);
+    if (!collapsed) paintDiagram();   // Cytoscape neu einpassen (war 0 px breit)
+  },
+
   focusOmni: () => omni && omni.focus(),
   reload: () => reload(),
   rerender: () => { paintStage(); },
@@ -214,8 +224,12 @@ function boot() {
   $menubar = document.querySelector('#menubar');
   $dock = document.querySelector('#dock');
   $maindia = document.querySelector('#maindia');
+  const reopen = document.querySelector('#dia-reopen'); if (reopen) reopen.onclick = () => actions.toggleDiagram();
 
   try { const th = localStorage.getItem('congos-theme'); if (th) document.documentElement.dataset.theme = th; } catch {}
+  const qsTheme = new URLSearchParams(location.search).get('theme');
+  if (qsTheme === 'light') document.documentElement.dataset.theme = 'light';
+  else if (qsTheme === 'dark') document.documentElement.dataset.theme = '';
   store.set({ pins: loadPins() });
 
   thread = mountThread($thread, store, actions);
@@ -235,7 +249,7 @@ function boot() {
     else if (k === 'j') { e.preventDefault(); actions.toggleDock(); }              // VS-Bottom-Dock
     else if (k === 'enter') { e.preventDefault(); thread.focusInput(); }           // zurück zum Tippen
     else if (k >= '1' && +k <= SURFACES.length) { e.preventDefault(); actions.toggleStage(SURFACES[+k - 1].id); } // Flächen (rechte Bühne)
-    else if (k === '0') { e.preventDefault(); actions.closeStage(); }              // Faden Vollbild
+    else if (k === '0') { e.preventDefault(); actions.toggleDiagram(); }            // Faden Vollbild (Diagramm ein/aus)
     else if (k === 'p') { e.preventDefault(); omni.focus('pin '); }
     else if (k === ',') { e.preventDefault(); actions.summon('settings'); }
   });
@@ -248,6 +262,8 @@ function boot() {
     const qs = new URLSearchParams(location.search);
     const st = qs.get('stage'); if (st) actions.summon(st);
     const dv = qs.get('dia'); if (dv) { store.set({ diagramView: dv }); paintDiagram(); }
+    const nd = qs.get('node'); if (nd) actions.focusNode(nd);
+    if (qs.get('full') === '1') actions.toggleDiagram();   // Fokus: Faden Vollbild, Diagramm eingeklappt
   });
   pollInfra();
 }
