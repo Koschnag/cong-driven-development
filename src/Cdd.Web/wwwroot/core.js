@@ -23,6 +23,8 @@ export const api = {
   nodeHistory: (id) => fetch('/api/history/' + encodeURIComponent(id)).then(r => r.json()),
   // @-Gedächtnis (Wahrheit #2): Volltextsuche über die sanitisierte cong-memory.db (nur sensitive=0).
   dwh:         (q, limit = 24) => fetch('/api/dwh/search?q=' + encodeURIComponent(q) + '&limit=' + limit).then(r => r.json()),
+  // RAG: semantische Suche (Ollama nomic-embed + Cosine), gleiche sensitive=0-Garantie.
+  dwhSemantic: (q, limit = 16) => fetch('/api/dwh/semantic?q=' + encodeURIComponent(q) + '&limit=' + limit).then(r => r.json()),
 };
 
 // Engine-Stream (SSE) → onEvent({t,...}) je Ereignis. Liefert die Abort-Funktion.

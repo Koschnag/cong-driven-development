@@ -186,15 +186,20 @@ function renderMemory(el, store, actions) {
     return;
   }
   const hits = s.dwhHits || [];
+  const mode = s.dwhMode || 'keyword';
   el.innerHTML =
     `<div class="stage-hint">@-Gedächtnis · „${escapeHtml(q)}" · ${hits.length} Treffer <span class="adopt-tag">cong.db · nur sensitive=0</span></div>` +
+    `<div class="stage-actions mem-modes">
+       <button data-mode="keyword" class="${mode === 'keyword' ? 'on' : ''}">wörtlich · FTS5</button>
+       <button data-mode="semantic" class="${mode === 'semantic' ? 'on' : ''}">semantisch · Vektor</button></div>` +
     (hits.length ? hits.map((h, i) => `<div class="mem-card">
-        <div class="mem-meta"><span class="mem-sys">${escapeHtml(h.system || '')}</span><span class="mem-when">${escapeHtml((h.created_at || '').slice(0, 16))}</span></div>
+        <div class="mem-meta"><span class="mem-sys">${escapeHtml(h.system || '')}</span>${h.score != null ? `<span class="mem-score">cos ${escapeHtml(String(h.score))}</span>` : ''}<span class="mem-when">${escapeHtml((h.created_at || '').slice(0, 16))}</span></div>
         <div class="mem-title">${escapeHtml(h.title || '(ohne Titel)')}</div>
         <div class="mem-snip">${escapeHtml(h.snippet || '')}</div>
         <div class="mem-actions"><button data-i="${i}">→ an den Faden</button></div>
       </div>`).join('') : '<div class="rail-empty pad">— keine Treffer —</div>');
-  el.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
+  el.querySelectorAll('.mem-modes button').forEach(b => b.onclick = () => actions.dwhSearch(q, b.dataset.mode));
+  el.querySelectorAll('.mem-card [data-i]').forEach(b => b.onclick = () => {
     const h = (store.get().dwhHits || [])[+b.dataset.i];
     if (h) actions.ask(`Aus meinem Gedächtnis (${h.system}, „${h.title}"): „${h.snippet}". Ordne das ein und sag, ob daraus ein SPOT-Knoten werden sollte.`);
   });

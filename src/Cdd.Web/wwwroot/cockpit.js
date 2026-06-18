@@ -106,13 +106,14 @@ const actions = {
   },
 
   // ── @-Gedächtnis (Wahrheit #2): cong.db-Volltextsuche (nur sensitive=0) → Bühne mit Treffer-Karten ──
-  async dwhSearch(q) {
+  async dwhSearch(q, mode) {
     const term = (q || '').trim();
     if (!term) return;
-    store.set({ dwhQuery: term, dwhLoading: true, dwhHits: [] });
+    mode = mode || store.get().dwhMode || 'keyword';
+    store.set({ dwhQuery: term, dwhMode: mode, dwhLoading: true, dwhHits: [] });
     actions.summon('memory');
     try {
-      const res = await api.dwh(term, 24);
+      const res = await (mode === 'semantic' ? api.dwhSemantic(term, 16) : api.dwh(term, 24));
       store.set({ dwhHits: res.hits || [], dwhAvailable: res.available !== false, dwhNote: res.note || '', dwhLoading: false });
     } catch (e) {
       store.set({ dwhHits: [], dwhAvailable: false, dwhNote: e.message, dwhLoading: false });
