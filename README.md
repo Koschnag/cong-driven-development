@@ -104,18 +104,31 @@ Danach kann z. B. Claude Code den SPOT direkt bearbeiten: `spot_list`, `spot_get
 `spot_derive_tests`, `spot_sync_code` — jede Mutation antwortet mit dem
 Validierungs-Stand inklusive Invarianten.
 
-### Cockpit (Web-GUI)
+### Cockpit „Cong OS" (Web-GUI)
 
 ```bash
 dotnet run --project src/Cdd.Web -- --root . --urls http://localhost:5179
 ```
 
-Knoten anlegen/editieren/löschen, **multidimensionale Sichten** auf denselben
-SPOT: Abhängigkeits-Graph, **UML-Klassendiagramm der Ontologie**, Validierung,
-Drift-Report — plus Test-Ableitung per Klick und Light/Dark-Theme
-(Light im Visual-Studio-Look). Knotenarten: Spec, Test, Risk, Infra, Component,
-Prämisse, Entscheidung (ADR), Knowledge-Quelle, Tool und **Begriff** —
-die ubiquitäre Sprache des Projekts als Ontologie mit IsA/PartOf/RelatesTo-Beziehungen.
+Das Cockpit ist **chat-primär**: ein Gesprächsfaden treibt einen Agenten über den
+SPOT, jede Sicht ist eine Projektion desselben Modells. → Volle Beschreibung in
+**[docs/COCKPIT.md](docs/COCKPIT.md)**. Kurz:
+
+- **Split-Mitte** — Architektur-Diagramm + Faden zugleich; `⌘0` gibt dem Faden Vollbild.
+- **Konvergenz-Loop** — der „▶ Loop bis Konvergenz"-Knopf treibt den `cdd-mapper`; das
+  Gate (`markerAligned && testprojekte>0 && alleTestsGruen`) hat Zähne, kein „Agent sagt
+  fertig" (→ [GEGENENTWURF-POST.md](docs/GEGENENTWURF-POST.md)).
+- **Formal-Sicht** — derselbe SPOT als „code behind" in Typentheorie / Prädikatenlogik /
+  Kategorien (KaTeX), jede Linse mit ehrlichem Caveat.
+- **@-Gedächtnis** — `cong.db`-Volltextsuche (FTS5), serverseitig nur `sensitive=0`.
+- **Souveräne Engine-Kette** — Claude Code primär, Mistral-EU + lokales Ollama über einen
+  echten agentischen Tool-Loop gegen die SPOT-Tools.
+- **EA-Toolbox + Symbol-System** — UML/SysML-Glyphen, Konvergenz am Rand; Knoten/Relationen
+  per Klick. Multidimensionale Sichten (Graph, UML-Ontologie, OLAP-Cube), Light/Dark.
+
+Knotenarten: Spec, Test, Risk, Infra, Component, Prämisse, Entscheidung (ADR),
+Knowledge-Quelle, Tool und **Begriff** — die ubiquitäre Sprache als Ontologie mit
+IsA/PartOf/RelatesTo-Beziehungen.
 
 ## Status
 
