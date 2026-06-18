@@ -3,7 +3,7 @@
 //   2) FLÄCHEN — die 6 herbeirufbaren Projektionen (Plan/Dev/Infra/Prod/Modell/Doku). Ziffer = Taste.
 //   3) PINS    — was du im Blick behalten willst. Überlebt Reload. Klick = Bühne, × = lösen.
 // ADHD: das Gedächtnis liegt sichtbar außerhalb des Kopfes. Asperger: feste Struktur, jedes Mal gleich.
-import { idOf, convOf, title, escapeHtml } from './core.js';
+import { idOf, convOf, title, escapeHtml, surfaceIcon } from './core.js';
 import { SURFACES } from './stage.js';
 
 export function renderRail(el, store, actions) {
@@ -25,7 +25,7 @@ export function renderRail(el, store, actions) {
       ${SURFACES.map((su, i) => {
         const on = s.stageOpen && s.stageSurface === su.id;
         return `<button class="surf${on ? ' on' : ''}" data-surf="${su.id}">
-          <span class="surf-ic">${su.icon}</span><span class="surf-lbl">${su.label}</span>
+          <span class="surf-ic">${surfaceIcon(su.id)}</span><span class="surf-lbl">${su.label}</span>
           <kbd>${i + 1}</kbd></button>`;
       }).join('')}
     </div>`;

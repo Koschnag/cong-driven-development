@@ -451,3 +451,8 @@ td.cell { cursor: pointer; color: var(--fg); } td.cell:hover { background: var(-
 .mem-actions { margin-top: .35rem; }
 .mem-actions button { background: var(--bg2); border: 1px solid var(--line2); color: var(--fg2); border-radius: 6px; padding: .15rem .5rem; font-size: 11px; cursor: pointer; }
 .mem-actions button:hover { border-color: var(--accent); color: var(--fg); }
+
+/* Rail-Flächen-Icons als kohärente Glyphen (monoline, folgen der Button-Farbe) */
+.surf-ic { display: inline-flex; align-items: center; justify-content: center; width: 20px; flex: none; }
+.surf-svg { display: block; opacity: .85; }
+.surf.on .surf-svg, .surf:hover .surf-svg { opacity: 1; }

@@ -181,6 +181,24 @@ export function glyphSvg(kind, size = 20) {
     + `text-anchor='middle' dominant-baseline='central'>${MARK[kind]}</text></svg>`;
 }
 
+// Flächen-Icons (Plan/Modell/Dev/Infra/Prod/Doku/Entscheidungen/Historie) im selben monolinen
+// Register wie die Knoten-Glyphen — stroke=currentColor (folgt dem Button), kohärent statt Emoji.
+const SURF_PATH = {
+  plan:      "<circle cx='10' cy='10' r='6'/><circle cx='10' cy='10' r='2'/>",
+  model:     "<path d='M10 3 L16 6.5 V13.5 L10 17 L4 13.5 V6.5 Z'/>",
+  dev:       "<path d='M7 6 L3 10 L7 14 M13 6 L17 10 L13 14'/>",
+  infra:     "<rect x='4' y='4' width='12' height='4.5' rx='1'/><rect x='4' y='11.5' width='12' height='4.5' rx='1'/><circle cx='6.6' cy='6.2' r='.7'/><circle cx='6.6' cy='13.7' r='.7'/>",
+  prod:      "<path d='M10 16 V5 M6 9 L10 5 L14 9'/><path d='M6 16 H14'/>",
+  docs:      "<path d='M5.5 3 H12 L14.5 5.5 V17 H5.5 Z'/><path d='M7.5 9 H12.5 M7.5 12 H12.5'/>",
+  decisions: "<path d='M10 17 V11 M10 11 L5 6 M10 11 L15 6'/><circle cx='5' cy='5' r='1.4'/><circle cx='15' cy='5' r='1.4'/>",
+  history:   "<circle cx='10' cy='10' r='6'/><path d='M10 6.5 V10 L12.5 12'/>",
+};
+export function surfaceIcon(id, size = 18) {
+  const p = SURF_PATH[id] || "<circle cx='10' cy='10' r='5'/>";
+  return `<svg viewBox='0 0 20 20' width='${size}' height='${size}' class='surf-svg' aria-hidden='true'>`
+    + `<g fill='none' stroke='currentColor' stroke-width='1.4' stroke-linejoin='round' stroke-linecap='round'>${p}</g></svg>`;
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
    Toolbox — minimale gültige Knoten + legale Relationen, DETERMINISTISCH (kein LLM).
    Präfixe gegen das Live-Modell verifiziert (nicht erfunden). term- ist die EINZIGE
