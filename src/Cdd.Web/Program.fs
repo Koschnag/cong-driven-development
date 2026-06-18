@@ -127,6 +127,109 @@ let main argv =
             with ex ->
                 json {| available = false; note = sprintf "Suche fehlgeschlagen: %s" ex.Message; hits = ([||]: obj[]) |})) |> ignore
 
+    // ── RAG (Wahrheit #2, semantisch): souverän, lokal. Ollama nomic-embed-text + Brute-Force-Cosine
+    //    in .NET (KEIN sqlite-vec — die native Extension ist jung; Brute-Force über ~37k Vektoren ist
+    //    <100 ms und braucht keine Fremd-Lib). Embeddings als BLOB-Tabelle in der sanitisierten DB. ──
+    let ollamaBase () =
+        let b = Environment.GetEnvironmentVariable("CDD_OLLAMA")
+        if System.String.IsNullOrWhiteSpace b then "http://localhost:11434" else b.TrimEnd('/')
+    let embedHttp = new System.Net.Http.HttpClient(Timeout = TimeSpan.FromSeconds 30.0)
+    let embed (text: string) : float32[] option =
+        try
+            let body = sprintf "{\"model\":\"nomic-embed-text\",\"prompt\":%s}" (System.Text.Json.JsonSerializer.Serialize text)
+            use content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json")
+            let resp = embedHttp.PostAsync(ollamaBase () + "/api/embeddings", content).GetAwaiter().GetResult()
+            let raw = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+            use doc = System.Text.Json.JsonDocument.Parse raw
+            match doc.RootElement.TryGetProperty "embedding" with
+            | true, arr when arr.ValueKind = System.Text.Json.JsonValueKind.Array && arr.GetArrayLength() > 0 ->
+                Some [| for e in arr.EnumerateArray() -> e.GetSingle() |]
+            | _ -> None
+        with _ -> None
+    let packVec (v: float32[]) : byte[] =
+        let b = Array.zeroCreate<byte> (v.Length * 4) in System.Buffer.BlockCopy(v, 0, b, 0, b.Length); b
+    let unpackVec (b: byte[]) : float32[] =
+        let v = Array.zeroCreate<float32> (b.Length / 4) in System.Buffer.BlockCopy(b, 0, v, 0, b.Length); v
+    let cosine (a: float32[]) (b: float32[]) : float =
+        let n = min a.Length b.Length
+        let mutable dot, na, nb = 0.0, 0.0, 0.0
+        for i in 0 .. n - 1 do
+            dot <- dot + float a.[i] * float b.[i]
+            na <- na + float a.[i] * float a.[i]
+            nb <- nb + float b.[i] * float b.[i]
+        if na = 0.0 || nb = 0.0 then 0.0 else dot / (sqrt na * sqrt nb)
+    let memDb () = Environment.GetEnvironmentVariable("CDD_MEMORY_DB")
+
+    // Index-Lauf: embed bis zu `limit` noch nicht indizierte Nachrichten (sensitive=0 garantiert durch die DB).
+    app.MapPost("/api/dwh/index", Func<HttpRequest, IResult>(fun req ->
+        let limit = match System.Int32.TryParse(req.Query.["limit"].ToString()) with | true, n when n > 0 && n <= 5000 -> n | _ -> 500
+        let dbPath = memDb ()
+        if System.String.IsNullOrWhiteSpace dbPath || not (System.IO.File.Exists dbPath) then
+            json {| ok = false; note = "Memory-DB nicht gemountet (CDD_MEMORY_DB)" |}
+        else
+            try
+                use conn = new Microsoft.Data.Sqlite.SqliteConnection(sprintf "Data Source=%s" dbPath)
+                conn.Open()
+                (use c = conn.CreateCommand() in c.CommandText <- "CREATE TABLE IF NOT EXISTS embeddings (msg_id INTEGER PRIMARY KEY, vec BLOB)"; c.ExecuteNonQuery() |> ignore)
+                let todo = ResizeArray<int64 * string>()
+                (use c = conn.CreateCommand()
+                 c.CommandText <- "SELECT m.msg_id, m.content FROM messages m WHERE m.content <> '' AND m.msg_id NOT IN (SELECT msg_id FROM embeddings) LIMIT @lim"
+                 c.Parameters.AddWithValue("@lim", limit) |> ignore
+                 use rd = c.ExecuteReader()
+                 while rd.Read() do todo.Add(rd.GetInt64 0, rd.GetString 1))
+                let mutable indexed = 0
+                for (mid, content) in todo do
+                    match embed (content.Substring(0, min 2000 content.Length)) with
+                    | Some v ->
+                        use ins = conn.CreateCommand()
+                        ins.CommandText <- "INSERT OR REPLACE INTO embeddings (msg_id, vec) VALUES (@id, @vec)"
+                        ins.Parameters.AddWithValue("@id", mid) |> ignore
+                        ins.Parameters.AddWithValue("@vec", packVec v) |> ignore
+                        ins.ExecuteNonQuery() |> ignore
+                        indexed <- indexed + 1
+                    | None -> ()
+                let total = (use c = conn.CreateCommand() in c.CommandText <- "SELECT COUNT(*) FROM embeddings"; System.Convert.ToInt32(c.ExecuteScalar()))
+                json {| ok = true; indexed = indexed; total_embedded = total |}
+            with ex -> json {| ok = false; note = ex.Message |})) |> ignore
+
+    // Semantische Suche: Query embedden, Brute-Force-Cosine über alle Embeddings, Top-K, sensitive=0-Join.
+    app.MapGet("/api/dwh/semantic", Func<HttpRequest, IResult>(fun req ->
+        let q = req.Query.["q"].ToString()
+        let k = match System.Int32.TryParse(req.Query.["limit"].ToString()) with | true, n when n > 0 && n <= 50 -> n | _ -> 12
+        let dbPath = memDb ()
+        if System.String.IsNullOrWhiteSpace q then json {| available = true; hits = ([||]: obj[]) |}
+        elif System.String.IsNullOrWhiteSpace dbPath || not (System.IO.File.Exists dbPath) then
+            json {| available = false; note = "Memory-DB nicht gemountet"; hits = ([||]: obj[]) |}
+        else
+            match embed q with
+            | None -> json {| available = false; note = "Embedding fehlgeschlagen (Ollama / nomic-embed-text erreichbar?)"; hits = ([||]: obj[]) |}
+            | Some qv ->
+                try
+                    use conn = new Microsoft.Data.Sqlite.SqliteConnection(sprintf "Data Source=%s;Mode=ReadOnly" dbPath)
+                    conn.Open()
+                    let hasEmb = (use c = conn.CreateCommand() in c.CommandText <- "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='embeddings'"; System.Convert.ToInt32(c.ExecuteScalar()) > 0)
+                    if not hasEmb then json {| available = false; note = "Noch nicht indiziert (POST /api/dwh/index)"; hits = ([||]: obj[]) |}
+                    else
+                        let scored = ResizeArray<int64 * float>()
+                        (use c = conn.CreateCommand()
+                         c.CommandText <- "SELECT msg_id, vec FROM embeddings"
+                         use rd = c.ExecuteReader()
+                         while rd.Read() do scored.Add(rd.GetInt64 0, cosine qv (unpackVec (rd.GetFieldValue<byte[]> 1))))
+                        let top = scored |> Seq.sortByDescending snd |> Seq.truncate k |> Seq.toList
+                        let hasSensitive = (use c = conn.CreateCommand() in c.CommandText <- "SELECT COUNT(*) FROM pragma_table_info('messages') WHERE name='sensitive'"; System.Convert.ToInt32(c.ExecuteScalar()) > 0)
+                        let sens = if hasSensitive then " AND m.sensitive=0 AND c.sensitive=0" else ""
+                        let hits = ResizeArray<obj>()
+                        for (mid, score) in top do
+                            use c = conn.CreateCommand()
+                            c.CommandText <- "SELECT c.system, c.title, m.role, m.created_at, substr(m.content,1,240) FROM messages m JOIN conversations c ON m.conv_id=c.conv_id WHERE m.msg_id=@id" + sens
+                            c.Parameters.AddWithValue("@id", mid) |> ignore
+                            use rd = c.ExecuteReader()
+                            if rd.Read() then
+                                let g (i: int) = if rd.IsDBNull i then "" else rd.GetValue(i).ToString()
+                                hits.Add(box {| system = g 0; title = g 1; role = g 2; created_at = g 3; snippet = g 4; score = System.Math.Round(score, 3) |})
+                        json {| available = true; hits = hits.ToArray() |}
+                with ex -> json {| available = false; note = ex.Message; hits = ([||]: obj[]) |})) |> ignore
+
     // Infra/Prod-Heartbeat für die Bühne (Komodo/Coolify werden via MCP adoptiert).
     // Bis das MCP-Backend verdrahtet ist: liefert den deklarierten DC-Plan + ok=false,
     // damit die GUI nie einen toten/leeren View zeigt (Souveränität: lokaler Wahrheits-Plan).
