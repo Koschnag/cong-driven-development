@@ -1,6 +1,10 @@
 module Tests
 
+open System
 open System.IO
+open System.Net
+open System.Text
+open System.Threading.Tasks
 open Xunit
 open Cdd.Core
 open Cdd.Core.Spot
@@ -418,3 +422,55 @@ let ``scanRepo findet Projekte auch unter tools und apps`` () =
     Assert.Equal(2, List.length projekte)
     let b = projekte |> List.find (fun p -> p.Name = "B")
     Assert.Equal<string list>([ "A" ], b.References)
+
+// ── OpenAiCompat-Tool-Loop: hermetisch gegen einen Mock-OpenAI-Endpoint (HttpListener) ──
+// Beweist die NEUE Logik: tool_call (spot_list) → in-process ausführen → Ergebnis re-feeden → finale Antwort.
+[<Fact; Trait("spot", "spec-engine-toolloop-test-1")>]
+let ``openai-compat engine drives an agentic tool-loop`` () : Task =
+    task {
+        // temp .spot-Store mit einem Knoten, den spot_list zurückgeben muss
+        let root = Path.Combine(Path.GetTempPath(), "cdd-toolloop-" + Guid.NewGuid().ToString("N"))
+        Directory.CreateDirectory(Path.Combine(root, ".spot")) |> ignore
+        Store.save root { Id = EntityId "term-x"; Convergence = Pending
+                          Payload = TermNode { Name = "X"; Definition = "d"; Synonyms = []; Relations = [] } }
+
+        // freien Port finden
+        let probe = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0)
+        probe.Start()
+        let port = (probe.LocalEndpoint :?> IPEndPoint).Port
+        probe.Stop()
+
+        // Mock-OpenAI: 1. Antwort = tool_call spot_list, 2. Antwort = finaler Text
+        let responses =
+            [ """{"choices":[{"message":{"role":"assistant","content":null,"tool_calls":[{"id":"c1","type":"function","function":{"name":"spot_list","arguments":"{}"}}]}}]}"""
+              """{"choices":[{"message":{"role":"assistant","content":"Fertig: term-x gelistet."}}]}""" ]
+        use listener = new HttpListener()
+        listener.Prefixes.Add(sprintf "http://localhost:%d/" port)
+        listener.Start()
+        let serverTask =
+            task {
+                for r in responses do
+                    let! ctx = listener.GetContextAsync()
+                    let bytes = Encoding.UTF8.GetBytes(r: string)
+                    ctx.Response.ContentType <- "application/json"
+                    ctx.Response.ContentLength64 <- int64 bytes.Length
+                    do! ctx.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length)
+                    ctx.Response.OutputStream.Close()
+            }
+
+        let events = System.Collections.Generic.List<Engine.EngineEvent>()
+        let collect (ev: Engine.EngineEvent) : Task = events.Add(ev); Task.CompletedTask
+        let opts : Engine.EngineOptions =
+            { Kind = Engine.Ollama; Model = "mock"; Cwd = root; AllowedTools = []
+              PermissionMode = ""; McpConfigJson = ""; BaseUrl = sprintf "http://localhost:%d" port; ApiKey = "" }
+        let runner = Engine.create Engine.Ollama
+        do! runner.Run({ Prompt = "Liste die Knoten."; ContextMd = ""; Options = opts }, collect)
+        do! serverTask
+        listener.Stop()
+        try Directory.Delete(root, true) with _ -> ()
+
+        // Der Loop hat: das Tool aufgerufen, in-process ausgeführt (term-x), und final terminiert.
+        Assert.Contains(events, fun e -> match e with Engine.ToolUse("spot_list", _) -> true | _ -> false)
+        Assert.Contains(events, fun e -> match e with Engine.ToolResult r -> r.Contains "term-x" | _ -> false)
+        Assert.Contains(events, fun e -> match e with Engine.Completed(r, _) -> r.Contains "Fertig" | _ -> false)
+    }
