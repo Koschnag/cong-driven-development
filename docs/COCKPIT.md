@@ -75,6 +75,28 @@ Spec oder Tests zu ändern, „nur um das Gate zu täuschen".
 
 → Vertiefung: [GEGENENTWURF-POST.md](GEGENENTWURF-POST.md).
 
+### Beweis auf hartem Terrain (Capstone)
+
+Das Verfahren wurde end-to-end an [`runenruf`](https://github.com/Koschnag/runenruf)
+gezeigt — einer RTS-RPG-Engine in F#/C# (kein To-do-CRUD). Ein Feature wurde **durch
+das Tool** entwickelt, nicht von Hand:
+
+1. **Modell** — eine Pending-Spec `spec-kampfkraft` (Kampfkraft = Leben + Schaden·5) wurde
+   in den Runenruf-SPOT gelegt; das Cockpit lief dabei als IDE *auf* dem Runenruf-Repo
+   (`--root runenruf`).
+2. **Loop** — `cdd-mapper --go` trieb den Ausführer (`claude -p`), der `Voelker.kampfkraft`
+   + `Voelker.istStaerker` + zwei Tests implementierte.
+3. **Gate** — gemessen, nicht behauptet: `dotnet test` **29/29 grün** (unabhängig
+   nachgemessen). Bemerkenswert: der Ausführer *durfte sich nicht selbst fertig erklären* —
+   er weigerte sich ausdrücklich, den Convergence-Status von Hand zu setzen. Erst das
+   Orakel, das die Tests wirklich gemessen hat, promotete die Spec auf `Aligned`.
+4. **Ergebnis** — `spec-kampfkraft` + beide Test-Knoten `Aligned`, `cdd validate` ohne
+   Befund, das konvergierte Feature im Cockpit mit seiner Formal-Notation
+   `⟦spec-kampfkraft⟧ := C₁ × C₂` sichtbar. (runenruf `cdd-mapper/auto` @ `78cd3a6`.)
+
+Konvergenz wird *gemessen*, nicht *erklärt* — auf einem Spiel-Engine-Spec genauso wie auf
+einem Ticket.
+
 ## Formal-Sicht — das Modell als „code behind"
 
 Der SPOT ist *wirklich* ein getypter F#-DU-Graph. Darum lässt er sich ehrlich in
