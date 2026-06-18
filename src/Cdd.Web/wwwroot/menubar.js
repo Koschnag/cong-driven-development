@@ -9,9 +9,6 @@ export function mountMenubar(el, store, actions) {
       ['Tests ableiten', () => actions.derive()],
     ]],
     ['Ansicht', [
-      ['💬  Chat', () => actions.setMain('chat')],
-      ['◈  Diagramm', () => actions.setMain('diagram')],
-      ['—', null],
       ...SURFACES.map(s => [`${s.icon}  ${s.label}`, () => actions.summon(s.id)]),
       ['—', null],
       ['Fehlerliste / Ausgabe (⌘J)', () => actions.toggleDock()],

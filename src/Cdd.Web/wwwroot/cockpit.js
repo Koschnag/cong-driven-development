@@ -21,22 +21,14 @@ import { errorRows, renderDock } from './dock.js';
 import { mountMenubar } from './menubar.js';
 
 const store = makeStore();
-let $omni, $rail, $thread, $stage, $status, $menubar, $dock, $main, $mainTabs, $maindia, omni, thread;
+let $omni, $rail, $thread, $stage, $status, $menubar, $dock, $maindia, omni, thread;
 
 const paintRail    = () => renderRail($rail, store, actions);
 const paintStage   = () => renderStage($stage, store, actions);
 const paintStatus  = () => renderStatus();
 const paintDock    = () => renderDock($dock, store, actions);
+// Split-Mitte: Diagramm (links) UND Chat (rechts) immer sichtbar — kein Umschalten.
 const paintDiagram = () => renderDiagram($maindia, store, actions);
-
-// Die zwei 90%-Funktionen in der Mitte.
-const MAIN_TABS = [['chat', '💬 Chat'], ['diagram', '◈ Diagramm']];
-function paintMainTabs() {
-  const v = store.get().mainView;
-  $mainTabs.innerHTML = MAIN_TABS.map(([id, label]) =>
-    `<button class="main-tab${v === id ? ' active' : ''}" data-main="${id}">${label}</button>`).join('');
-  $mainTabs.querySelectorAll('.main-tab').forEach(b => b.onclick = () => actions.setMain(b.dataset.main));
-}
 
 // ── Aktionen: der gesamte Verb-Wortschatz des Cockpits an einem Ort ──
 const actions = {
@@ -113,13 +105,6 @@ const actions = {
   },
 
   focusOmni: () => omni && omni.focus(),
-  // Hauptfläche umschalten: Chat ⇄ Diagramm (dieselbe Mitte, die zwei Hauptfunktionen).
-  setMain(v) {
-    store.set({ mainView: v });
-    if ($main) $main.dataset.main = v;
-    paintMainTabs();
-    if (v === 'diagram') paintDiagram();
-  },
   reload: () => reload(),
   rerender: () => { paintStage(); },
   // Geführtes Durchklicken: 2–4 anklickbare nächste Schritte aus dem Modellzustand in den Faden.
@@ -158,7 +143,7 @@ async function reload() {
   store.set({ nodes, byId, validate, diff });
   deriveNow();
   paintRail(); paintStage(); paintStatus(); paintDock();
-  if (store.get().mainView === 'diagram') paintDiagram();
+  paintDiagram();   // Diagramm immer sichtbar (Split-Mitte)
 }
 
 // NOW first-principles ableiten: der dringendste offene Punkt im Modell ist die nächste Aktion.
@@ -180,7 +165,6 @@ function nextSteps() {
   if (diverged.length) out.push({ label: `⚠ ${diverged.length}× Diverged auflösen`, run: () => actions.summon('drift') });
   if (pendingSpec.length) out.push({ label: `✓ Tests für ${pendingSpec.length} Spec(s) ableiten`, run: () => actions.derive() });
   if (pendingSpec.length) out.push({ label: '▶ Loop bis Konvergenz', run: () => actions.loop() });
-  out.push({ label: '◈ Architektur-Diagramm', run: () => actions.setMain('diagram') });
   out.push({ label: '◆ Plan ansehen', run: () => actions.summon('plan') });
   out.push({ label: '⬡ Modell öffnen', run: () => actions.summon('model') });
   return out.slice(0, 4);
@@ -198,8 +182,6 @@ function boot() {
   $status = document.querySelector('#status');
   $menubar = document.querySelector('#menubar');
   $dock = document.querySelector('#dock');
-  $main = document.querySelector('#main');
-  $mainTabs = document.querySelector('#main-tabs');
   $maindia = document.querySelector('#maindia');
 
   try { const th = localStorage.getItem('congos-theme'); if (th) document.documentElement.dataset.theme = th; } catch {}
@@ -208,8 +190,6 @@ function boot() {
   thread = mountThread($thread, store, actions);
   omni = mountOmni($omni, store, actions);
   mountMenubar($menubar, store, actions);
-  $main.dataset.main = store.get().mainView;
-  paintMainTabs();
 
   // EIN Tastaturmodell. Überall gleich. ⌘+Taste ruft genau eine Sache.
   window.addEventListener('keydown', (e) => {
@@ -230,10 +210,8 @@ function boot() {
   reload().then(() => {
     thread.welcome();
     actions.suggestNext();
-    // Deep-Link: ?view=diagram öffnet direkt die Diagramm-Mitte, ?stage=<fläche> ruft eine Bühne.
-    const p = new URLSearchParams(location.search);
-    if (p.get('view') === 'diagram') actions.setMain('diagram');
-    const st = p.get('stage'); if (st) actions.summon(st);
+    // Deep-Link: ?stage=<fläche> ruft eine Bühne (Diagramm ist immer sichtbar, kein view-Param mehr nötig).
+    const st = new URLSearchParams(location.search).get('stage'); if (st) actions.summon(st);
   });
   pollInfra();
 }
