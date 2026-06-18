@@ -10,7 +10,8 @@
 //   stage  (rechts) = die EINE herbeigerufene Fläche. Standard: zu. Esc schließt.
 //
 // Navigation = ein Modell: ⌘K (eine Tür) tippen → Befehl/Knoten/Frage. Ziffern rufen Flächen.
-import { api, runLoop, idOf, kindOf, convOf, title, summary, escapeHtml } from './core.js';
+import { api, runLoop, idOf, kindOf, convOf, title, summary, escapeHtml,
+         makeEntry, spliceRelation, PREFIX, slugify, KIND_LABEL } from './core.js';
 import { makeStore } from './store.js';
 import { mountThread } from './thread.js';
 import { mountOmni } from './omni.js';
@@ -104,6 +105,36 @@ const actions = {
     });
   },
 
+  // ── Toolbox: getypte Modell-Knoten + Relationen anlegen (deterministisch, kein LLM) ──
+  repaintDiagram: () => paintDiagram(),
+  async upsert(entry) {
+    try {
+      const r = await fetch('/api/spot/' + encodeURIComponent(idOf(entry)), {
+        method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(entry) });
+      if (!r.ok) { actions.say('system', '✗ PUT ' + idOf(entry) + ': ' + (await r.text())); return false; }
+      return true;
+    } catch (e) { actions.say('system', '✗ ' + e.message); return false; }
+  },
+  async newNode(kind) {
+    const t = window.prompt(`Neuer ${KIND_LABEL[kind] || kind} — Titel/Name:`);
+    if (t == null || !t.trim()) return;
+    const id = PREFIX[kind] + slugify(t);
+    if (store.get().byId.get(id)) { actions.say('system', `✗ Id ${id} existiert schon.`); return; }
+    const entry = makeEntry(kind, t.trim(), id);
+    if (await actions.upsert(entry)) { await reload(); actions.focusNode(id); actions.say('system', `＋ ${id} angelegt (Pending) — über den Faden mit Inhalt füllen.`); }
+  },
+  askNew(kind) {
+    actions.ask(`Lege einen ${KIND_LABEL[kind] || kind}-Knoten im SPOT an (Id-Präfix ${PREFIX[kind]}…): beschreibe Titel/Intent und – bei einer Spec – die Given/When/Then-Kriterien. Erzeuge eine valide SpotEntry und zeig sie mir vor dem Anwenden.`);
+  },
+  async addRelation(srcId, relDef, dstId) {
+    const node = store.get().byId.get(srcId);
+    if (!node) return;
+    if (!relDef.from.includes(kindOf(node))) { actions.say('system', `✗ ${relDef.rel} nicht erlaubt ab ${kindOf(node)}.`); paintDiagram(); return; }
+    const updated = spliceRelation(node, relDef, dstId);
+    if (await actions.upsert(updated)) { await reload(); actions.say('system', `→ ${srcId} ${relDef.rel} ${dstId}`); }
+    else paintDiagram();
+  },
+
   focusOmni: () => omni && omni.focus(),
   reload: () => reload(),
   rerender: () => { paintStage(); },
@@ -193,7 +224,10 @@ function boot() {
 
   // EIN Tastaturmodell. Überall gleich. ⌘+Taste ruft genau eine Sache.
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { if (store.get().stageOpen) { actions.closeStage(); e.preventDefault(); } return; }
+    if (e.key === 'Escape') {
+      if (store.get().armRel) { store.set({ armRel: null }); paintDiagram(); e.preventDefault(); return; }
+      if (store.get().stageOpen) { actions.closeStage(); e.preventDefault(); } return;
+    }
     if (!(e.metaKey || e.ctrlKey)) return;
     const k = e.key.toLowerCase();
     if (k === 'k') { e.preventDefault(); omni.focus(); }                          // die eine Tür
@@ -210,8 +244,10 @@ function boot() {
   reload().then(() => {
     thread.welcome();
     actions.suggestNext();
-    // Deep-Link: ?stage=<fläche> ruft eine Bühne (Diagramm ist immer sichtbar, kein view-Param mehr nötig).
-    const st = new URLSearchParams(location.search).get('stage'); if (st) actions.summon(st);
+    // Deep-Links: ?stage=<fläche> ruft eine Bühne · ?dia=<sicht> wählt die Diagramm-/Formal-Sicht.
+    const qs = new URLSearchParams(location.search);
+    const st = qs.get('stage'); if (st) actions.summon(st);
+    const dv = qs.get('dia'); if (dv) { store.set({ diagramView: dv }); paintDiagram(); }
   });
   pollInfra();
 }

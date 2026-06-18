@@ -25,8 +25,8 @@ export const SURFACES = [
   { id: 'infra', icon: '☁', label: 'Infra' },
   { id: 'prod',  icon: '▲', label: 'Prod' },
   { id: 'docs',  icon: '▤', label: 'Doku' },
-  { id: 'decisions', icon: '⚖', label: 'Entscheidungen' },
-  { id: 'history',   icon: '🕘', label: 'Historie' },
+  { id: 'decisions', icon: '⎇', label: 'Entscheidungen' },
+  { id: 'history',   icon: '⟲', label: 'Historie' },
 ];
 // Aliase, damit Status/NOW auch „drift“/„node“/„settings“ auf die Bühne legen können.
 const SURFACE_BY_ID = Object.fromEntries(SURFACES.map(s => [s.id, s]));

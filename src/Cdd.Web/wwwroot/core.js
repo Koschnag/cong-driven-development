@@ -119,3 +119,133 @@ export function fields(n) {
   return f;
 }
 export const escapeHtml = (s) => String(s ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SPOT-Notation — EIN kohärentes Symbolsystem statt Unicode-Sammelsurium.
+   Register: UML/SysML-Stereotyp-Notation (kein Piktogramm). Drei orthogonale
+   Variablen: (1) äußere FORM = ontologische Familie, (2) innere MARKE = die Art
+   (formale Notation, die Cong fließend liest), (3) KONVERGENZ = nur am Rand.
+   RIGOR: die Marken sind eine MOTIVIERTE Beschriftung, KEIN Beweis. Konditional:
+   WENN eine Test-Kante als Typurteil gelesen wird, DANN ist ⊢ korrekt.
+   ────────────────────────────────────────────────────────────────────────── */
+export const FAMILY = {
+  spec: 'Classifier', term: 'Classifier', component: 'Classifier',     // first-class authored
+  invariant: 'Judgement', risk: 'Judgement', premise: 'Judgement',     // «constraint» (OCL/SysML)
+  knowledge: 'Artifact', tool: 'Artifact', infra: 'Artifact',          // «artifact» (Dinge-in-der-Welt)
+  test: 'Derivation', decision: 'Derivation',                          // Operation, die ein Urteil erzeugt
+};
+// Familie → native Cytoscape-Form (die äußere Silhouette, GPU-gezeichnet, scharf bei jedem Zoom).
+export const SHAPE = {
+  spec: 'round-rectangle', term: 'round-rectangle', component: 'round-rectangle',
+  invariant: 'cut-rectangle', risk: 'cut-rectangle', premise: 'cut-rectangle',
+  knowledge: 'barrel', tool: 'barrel', infra: 'barrel',
+  test: 'hexagon', decision: 'hexagon',
+};
+export const HUE = {
+  spec: '#5B8DEF', term: '#7BA7F0', component: '#9FC0F5',
+  invariant: '#E0A13C', risk: '#C9762F', premise: '#D98A3D',
+  knowledge: '#6E8CA0', tool: '#4FB3A8', infra: '#5AA0B5',
+  test: '#9B7BE0', decision: '#B58CE6',
+};
+// Innere Marke = formale Notation mit korrekter Bedeutung:
+// ⊢ ableiten (Spec/Test) · ∈ Element (Term) · ⊸ Schnittstelle (Component) · ⊨ gilt-in-allen-Modellen
+// (Invariant) · ◇ modal „möglich" (Risk) · ∵ weil/Annahme (Premise) · λ Funktion (Tool) · 𝒦 (Knowledge)
+// · ◰ Deployment-Knoten (Infra) · ⋎ Verzweigung (Decision).
+export const MARK = {
+  spec: '⊢', term: '∈', component: '⊸', invariant: '⊨', risk: '◇',
+  premise: '∵', knowledge: '𝒦', tool: 'λ', infra: '◰', test: '⊨', decision: '⋎',
+};
+// Familien-Silhouette als 20×20-Pfad (4 Formen, über die 11 Arten wiederverwendet).
+const OUTLINE = {
+  Classifier: "<rect x='2.5' y='4.5' width='15' height='11' rx='2.5'/>",
+  Judgement:  "<path d='M2.5 4.5 H14 L17.5 8 V15.5 H2.5 Z'/>",
+  Artifact:   "<path d='M4 4 H12.5 L16 7.5 V16 H4 Z M12.5 4 V7.5 H16'/>",
+  Derivation: "<path d='M6 4.5 H14 L17.5 10 L14 15.5 H6 L2.5 10 Z'/>",
+};
+// Innere Marke als winziges Inline-SVG (data-uri, kein Build-Step). encodeURIComponent statt base64.
+export function markUri(kind) {
+  const g = MARK[kind] || '?', c = HUE[kind] || '#9aa7b4';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'>`
+    + `<text x='20' y='21.5' fill='${c}' font-family='ui-serif,Cambria,Georgia,serif' font-size='23' `
+    + `font-weight='600' text-anchor='middle' dominant-baseline='central'>${g}</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+// Voller Glyph (Silhouette + Marke) für Palette/Schiene/Menü — eine visuelle Sprache überall.
+export function glyphSvg(kind, size = 20) {
+  const c = HUE[kind] || '#9aa7b4', fam = FAMILY[kind] || 'Classifier';
+  return `<svg viewBox='0 0 20 20' width='${size}' height='${size}' class='spot-glyph' aria-hidden='true'>`
+    + `<g fill='none' stroke='${c}' stroke-width='1.3' stroke-linejoin='round'>${OUTLINE[fam]}</g>`
+    + `<text x='10' y='10.6' fill='${c}' font-size='8.5' font-family='ui-serif,Georgia,serif' `
+    + `text-anchor='middle' dominant-baseline='central'>${MARK[kind]}</text></svg>`;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Toolbox — minimale gültige Knoten + legale Relationen, DETERMINISTISCH (kein LLM).
+   Präfixe gegen das Live-Modell verifiziert (nicht erfunden). term- ist die EINZIGE
+   per Invariante erzwungene; der Rest ist Konvention. Convergence:Pending = der
+   wahrhaftige Stub-Zustand (NICHT Aligned — keine Konvergenz faken).
+   ────────────────────────────────────────────────────────────────────────── */
+export const PREFIX = {
+  spec: 'spec-', test: 'test-', risk: 'risk-', infra: 'infra-', component: 'comp-',
+  premise: 'premise-', decision: 'adr-', knowledge: 'kb-', tool: 'tool-', term: 'term-', invariant: 'inv-',
+};
+const CASE = {
+  spec: 'SpecNode', test: 'TestNode', risk: 'RiskNode', infra: 'InfraNode', component: 'ComponentNode',
+  premise: 'PremiseNode', decision: 'DecisionNode', knowledge: 'KnowledgeNode', tool: 'ToolNode',
+  term: 'TermNode', invariant: 'InvariantNode',
+};
+// ASCII-Slug: Store.isValidId erlaubt nur [a-zA-Z0-9_-] → Umlaute/Spaces transliterieren, sonst 400.
+export function slugify(s) {
+  return String(s || '').toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'neu';
+}
+// Minimale valide Payload-Item je Art (Feldform exakt aus Spot.fs).
+const SKELETON = {
+  spec:      t => ({ Title: t, Intent: '', Criteria: [] }),
+  test:      t => ({ SpecRef: '', Name: t, Derived: false }),
+  risk:      t => ({ Statement: t, Likelihood: 'Medium', Impact: 'Medium', Mitigation: null }),
+  infra:     t => ({ Resource: t, Provider: '', Config: {} }),
+  component: t => ({ Name: t, DependsOn: [] }),
+  premise:   t => ({ Statement: t, Rationale: '' }),
+  decision:  t => ({ Title: t, Context: '', Choice: '', Consequences: '', Supersedes: null }),
+  knowledge: t => ({ Title: t, Source: '', MediaType: 'link', Takeaways: [] }),
+  tool:      t => ({ Name: t, Purpose: '', Endpoint: null }),
+  term:      t => ({ Name: t, Definition: '', Synonyms: [], Relations: [] }),
+  invariant: t => ({ Description: t, Rule: 'TermsNeedDefinition' }),
+};
+export function makeEntry(kind, titleText, id) {
+  return { Id: id, Payload: { Case: CASE[kind], Fields: { Item: SKELETON[kind](titleText) } }, Convergence: 'Pending' };
+}
+// Knoten mit ersetztem inneren Item (reine JSON-Chirurgie, immutabel).
+function withItem(node, item) {
+  return { ...node, Payload: { ...node.Payload, Fields: { ...node.Payload.Fields, Item: item } } };
+}
+// Legale kantentragende Felder — KEINE freien Pfeile, nur was die Domäne wirklich speichert.
+export const RELATIONS = [
+  { rel: 'IsA',        from: ['term'],      glyph: '◁',  via: 'termrel' },
+  { rel: 'PartOf',     from: ['term'],      glyph: '◆',  via: 'termrel' },
+  { rel: 'RelatesTo',  from: ['term'],      glyph: '⋯',  via: 'termrel' },
+  { rel: 'DependsOn',  from: ['component'], glyph: '⇠',  via: 'idlist' },
+  { rel: 'covers',     from: ['test'],      glyph: '⊢',  via: 'specref' },
+  { rel: 'Supersedes', from: ['decision'],  glyph: '⊳',  via: 'idset', field: 'Supersedes' },
+];
+// Quelle splicen → voller neuer Knoten (zum Zurück-PUTen).
+export function spliceRelation(node, relDef, targetId) {
+  const item = inner(node);
+  if (relDef.via === 'termrel') {
+    const rels = (item.Relations || []).slice();
+    if (!rels.some(r => r.Case === relDef.rel && (r.Fields?.Item ?? r.Fields) === targetId))
+      rels.push({ Case: relDef.rel, Fields: { Item: targetId } });
+    return withItem(node, { ...item, Relations: rels });
+  }
+  if (relDef.via === 'idlist') {
+    const arr = (item.DependsOn || []).slice();
+    if (!arr.includes(targetId)) arr.push(targetId);
+    return withItem(node, { ...item, DependsOn: arr });
+  }
+  if (relDef.via === 'specref') return withItem(node, { ...item, SpecRef: targetId });
+  if (relDef.via === 'idset') return withItem(node, { ...item, [relDef.field]: targetId });
+  return node;
+}
