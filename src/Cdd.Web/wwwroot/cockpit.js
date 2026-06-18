@@ -230,6 +230,10 @@ function boot() {
   reload().then(() => {
     thread.welcome();
     actions.suggestNext();
+    // Deep-Link: ?view=diagram öffnet direkt die Diagramm-Mitte, ?stage=<fläche> ruft eine Bühne.
+    const p = new URLSearchParams(location.search);
+    if (p.get('view') === 'diagram') actions.setMain('diagram');
+    const st = p.get('stage'); if (st) actions.summon(st);
   });
   pollInfra();
 }
