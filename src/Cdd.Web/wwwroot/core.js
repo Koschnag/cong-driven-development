@@ -198,6 +198,7 @@ const SURF_PATH = {
   docs:      "<path d='M5.5 3 H12 L14.5 5.5 V17 H5.5 Z'/><path d='M7.5 9 H12.5 M7.5 12 H12.5'/>",
   decisions: "<path d='M10 17 V11 M10 11 L5 6 M10 11 L15 6'/><circle cx='5' cy='5' r='1.4'/><circle cx='15' cy='5' r='1.4'/>",
   history:   "<circle cx='10' cy='10' r='6'/><path d='M10 6.5 V10 L12.5 12'/>",
+  schmiede:  "<rect x='7' y='3.5' width='9' height='3.4' rx='1' transform='rotate(30 11.5 5.2)'/><path d='M9.2 7 L4 14 L6 16 L11.4 9.2'/>",
 };
 export function surfaceIcon(id, size = 18) {
   const p = SURF_PATH[id] || "<circle cx='10' cy='10' r='5'/>";

@@ -281,6 +281,7 @@ function boot() {
     const nd = qs.get('node'); if (nd) actions.focusNode(nd);
     if (qs.get('full') === '1') actions.toggleDiagram();   // Fokus: Faden Vollbild, Diagramm eingeklappt
     const dwh = qs.get('dwh'); if (dwh) actions.dwhSearch(dwh);   // @-Gedächtnis direkt öffnen
+    const sm = qs.get('schmiede'); if (sm !== null) { if (sm) store.set({ schmiedeIdea: sm }); actions.summon('schmiede'); }
   });
   pollInfra();
 }

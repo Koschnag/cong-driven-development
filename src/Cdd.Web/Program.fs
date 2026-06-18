@@ -401,17 +401,58 @@ let main argv =
                   Model = model
                   Cwd = root
                   // Unbeaufsichtigt → bewusst enge Allowlist. Lesen/Editieren/Suchen + git/dotnet + SPOT-MCP.
-                  AllowedTools = [ "Read"; "Edit"; "Write"; "Grep"; "Glob"; "Bash(git *)"; "Bash(dotnet *)"; "mcp__spot__*" ]
+                  AllowedTools = [ "Read"; "Edit"; "Write"; "Grep"; "Glob"; "Bash(git *)"; "Bash(dotnet *)"; "mcp__spot__*"; "mcp__cdd__*" ]
                   PermissionMode = (if isClaude then "acceptEdits" else "")
                   McpConfigJson = (if isClaude then Engine.spotMcpConfig root else "")
                   BaseUrl = baseUrl
-                  ApiKey = apiKey }
+                  ApiKey = apiKey
+                  SystemPrompt = "" }
             do! emit (Engine.Started("", sprintf "%s (Fläche: %s)" label req.Surface))
             try
                 let engine = if isClaude then Engine.create Engine.ClaudeCode else Engine.openAiCompat label
                 do! engine.Run({ Prompt = req.Prompt; ContextMd = contextMd; Options = opts }, emit)
             with ex ->
                 do! emit (Engine.EngineError ex.Message)
+            do! ctx.Response.WriteAsync("event: done\ndata: {}\n\n")
+            do! ctx.Response.Body.FlushAsync()
+        } :> Task)) |> ignore
+
+    // ── Die Schmiede: EINE Prosa-Spielidee → Batch Pending-Specs (NUR Modell, KEIN Code). ──
+    // Restriktive Allowlist (nur mcp__spot__*) → STRUKTURELL unmöglich, Code zu schreiben oder ein Gate
+    // zu fälschen. Danach reviewt Cong die Specs (sein einziger Pflicht-Gate), dann „Alle konvergieren"
+    // (= /api/loop/run). Spec-Generierung läuft auf Cloud-Claude (zuverlässigste Zerlegung).
+    app.MapPost("/api/schmiede/generate", Func<HttpContext, Task>(fun ctx ->
+        task {
+            use reader = new StreamReader(ctx.Request.Body)
+            let! bodyStr = reader.ReadToEndAsync()
+            let idea =
+                try
+                    let j = System.Text.Json.JsonDocument.Parse(bodyStr).RootElement
+                    match j.TryGetProperty "Idea" with
+                    | true, v when v.ValueKind = System.Text.Json.JsonValueKind.String -> v.GetString()
+                    | _ -> bodyStr
+                with _ -> bodyStr
+            let contextMd = try Export.toContextSlice idea (Store.load root) with _ -> ""
+            ctx.Response.ContentType <- "text/event-stream"
+            ctx.Response.Headers.["Cache-Control"] <- Microsoft.Extensions.Primitives.StringValues("no-cache")
+            ctx.Response.Headers.["X-Accel-Buffering"] <- Microsoft.Extensions.Primitives.StringValues("no")
+            let emit (ev: Engine.EngineEvent) : Task =
+                task {
+                    do! ctx.Response.WriteAsync(sprintf "data: %s\n\n" (Engine.toGuiJson ev))
+                    do! ctx.Response.Body.FlushAsync()
+                }
+            let opts : Engine.EngineOptions =
+                { Kind = Engine.ClaudeCode; Model = ""; Cwd = root
+                  // Lasttragend: nur SPOT-Modell-Tools (beide Server-Aliase), KEIN Read/Edit/Write/Bash → kann keinen Code schreiben.
+                  AllowedTools = [ "mcp__cdd__*"; "mcp__spot__*" ]
+                  PermissionMode = "acceptEdits"
+                  McpConfigJson = Engine.spotMcpConfig root
+                  BaseUrl = ""; ApiKey = ""
+                  SystemPrompt = Engine.schmiedeIdentity }
+            do! emit (Engine.Started("", "Schmiede — Prosa → Pending-Specs (nur Modell)"))
+            try
+                do! (Engine.create Engine.ClaudeCode).Run({ Prompt = idea; ContextMd = contextMd; Options = opts }, emit)
+            with ex -> do! emit (Engine.EngineError ex.Message)
             do! ctx.Response.WriteAsync("event: done\ndata: {}\n\n")
             do! ctx.Response.Body.FlushAsync()
         } :> Task)) |> ignore

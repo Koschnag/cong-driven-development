@@ -39,7 +39,8 @@ module Engine =
           PermissionMode : string        // Claude: acceptEdits | plan | default | dontAsk | …
           McpConfigJson  : string        // Claude: --mcp-config Payload (verbindet die SPOT-Tools)
           BaseUrl        : string        // Mistral/Ollama: OpenAI-kompatibler Endpoint
-          ApiKey         : string }      // Mistral: Bearer-Token
+          ApiKey         : string        // Mistral: Bearer-Token
+          SystemPrompt   : string }      // "" = congOsIdentity; sonst Spezial-Identität (z. B. Schmiede)
 
     type EngineRequest =
         { Prompt    : string
@@ -67,8 +68,17 @@ module Engine =
     /// Standard-MCP-Config: verbindet die Engine mit CDDs eigenem SPOT-MCP-Server,
     /// sodass die KI während des Laufs den SPOT lesen/mutieren kann (mcp__spot__*).
     let spotMcpConfig (root: string) : string =
+        // CWD-unabhängig: Pfad zu Cdd.Mcp ABSOLUT ab dem Cockpit-Assembly (…/src/Cdd.Web/bin/Release/net9.0/),
+        // sonst startet der MCP-Server je nach WorkingDirectory nicht und zeigt auf den falschen --root.
+        let baseDir = System.AppContext.BaseDirectory
+        let up n = System.IO.Path.GetFullPath(System.IO.Path.Combine(Array.append [| baseDir |] (Array.create n "..")))
+        let mcpDir = System.IO.Path.Combine(up 4, "Cdd.Mcp")                      // …/src/Cdd.Mcp
+        let mcpDll = System.IO.Path.Combine(mcpDir, "bin", "Release", "net9.0", "Cdd.Mcp.dll")
+        let argList =
+            if System.IO.File.Exists mcpDll then [ mcpDll; "--root"; root ]       // gebaut → DLL direkt (schnell)
+            else [ "run"; "--project"; mcpDir; "--"; "--root"; root ]             // Fallback: dotnet run
         let args = JsonArray()
-        for a in [ "run"; "--project"; "src/Cdd.Mcp"; "--"; "--root"; root ] do args.Add(JsonValue.Create(a))
+        for a in argList do args.Add(JsonValue.Create(a))
         let server = JsonObject()
         server.["command"] <- JsonValue.Create("dotnet")
         server.["args"] <- args
@@ -151,6 +161,22 @@ STACK: F# für Logik, C# für IO, .NET für alles. KEIN Python, nie. Engines: du
 
 ARBEITSWEISE (Congs Stil): direkt, knapp, keine Floskeln, keine Zusammenfassungen am Ende. Entscheidungen treffen statt rückfragen; zwischen zwei Lösungen die einfachere. Deutsch für Diskussion/Strategie, Englisch für Code/Commits (Conventional Commits). Der SPOT-Kontext unten ist dein Ground Truth — divergiert er vom Code, benenne das als 'Diverged'-Befund."""
 
+    /// Schmiede-Identität: zerlegt EINE Prosa-Spielidee in Pending-Spec-Knoten — NUR Modell, KEIN Code.
+    /// Die Tool-Allowlist (nur mcp__spot__*) erzwingt das strukturell; dieser Prompt gibt die Form vor.
+    let schmiedeIdentity = """Du bist die SCHMIEDE von Cong OS. Deine EINZIGE Aufgabe: EINE Prosa-Spielidee in 3–6 Pending-Spec-Knoten des SPOT-Modells zerlegen — ausschließlich über mcp__spot__upsert. KEIN Code, KEINE Tests, KEINE Datei-Edits (du hast die Werkzeuge dafür gar nicht). Du SCHREIBST NUR das WAS, der Loop baut später das WIE.
+
+REGELN je Spec-Knoten:
+- Convergence = "Pending" (nie Aligned — du misst nichts, du beschreibst nur).
+- Id: Präfix `spec-`, kebab-case, kollisionsfrei (vorher mcp__spot__list prüfen).
+- Title: kurz. Intent: das WARUM im Spielsinn (warum macht das Spaß / ergibt Sinn).
+- Criteria: 2–4 GIVEN/WHEN/THEN, jedes testbar als REINE F#-Domänenfunktion über Runenruf.Domain (Welt, Sim.tick, EinheitTyp, Lager, Befehl …). KEINE Render-/Audio-/Maus-/Zeit-Kriterien — nur deterministische Zustandsübergänge.
+
+LOGIK vs ASSET (die ehrliche Grenze):
+- Deterministische Regel / Wirtschaft / Kampf / Zustand → ein normaler Spec-Knoten (der Loop kann ihn bauen + testen).
+- Kunst / 3D / Audio / Game-Feel / Balance-Gefühl → ein Knoten mit Title-Präfix "[ASSET] ", als Platzhalter markiert, den DU NIEMALS als erfüllbar ausgibst (kein Test kann „sieht gut aus" prüfen). Diese werden NICHT konvergiert.
+
+Vor dem Abschluss: mcp__spot__validate aufrufen, Konflikte mit bestehenden Invarianten benennen. Lieber wenige scharfe Specs als viele vage. Antworte am Ende mit einer knappen Liste der angelegten Knoten-Ids."""
+
     /// Treibt Claude Code headless auf Terminal-Ebene: spawnt `claude`, schreibt Kontext+Prompt
     /// über stdin (vermeidet ARG_MAX) und streamt stdout-Zeilen als EngineEvent.
     type ClaudeCodeEngine() =
@@ -169,11 +195,13 @@ ARBEITSWEISE (Congs Stil): direkt, knapp, keine Floskeln, keine Zusammenfassunge
                     add "--print"
                     addPair "--output-format" "stream-json"
                     add "--verbose"
-                    addPair "--append-system-prompt" congOsIdentity
+                    addPair "--append-system-prompt" (if o.SystemPrompt <> "" then o.SystemPrompt else congOsIdentity)
                     if o.Model <> "" then addPair "--model" o.Model
                     if o.PermissionMode <> "" then addPair "--permission-mode" o.PermissionMode
                     if not (List.isEmpty o.AllowedTools) then addPair "--allowedTools" (String.concat "," o.AllowedTools)
-                    if o.McpConfigJson <> "" then addPair "--mcp-config" o.McpConfigJson
+                    if o.McpConfigJson <> "" then
+                        addPair "--mcp-config" o.McpConfigJson
+                        add "--strict-mcp-config"   // NUR unser SPOT-Server (ignoriert fehlkonfigurierte Repo/Global-.mcp.json)
                     if o.Cwd <> "" then addPair "--add-dir" o.Cwd
 
                     use proc = new Process()
@@ -300,7 +328,8 @@ ARBEITSWEISE (Congs Stil): direkt, knapp, keine Floskeln, keine Zusammenfassunge
                     let msgs = JsonArray()
                     let sysMsg = JsonObject()
                     sysMsg.["role"] <- JsonValue.Create("system")
-                    sysMsg.["content"] <- JsonValue.Create(sprintf "%s\n\n=== KONTEXT (SPOT, Slice — volle Tiefe via spot_export_context) ===\n%s" congOsIdentity req.ContextMd)
+                    let identity = if o.SystemPrompt <> "" then o.SystemPrompt else congOsIdentity
+                    sysMsg.["content"] <- JsonValue.Create(sprintf "%s\n\n=== KONTEXT (SPOT, Slice — volle Tiefe via spot_export_context) ===\n%s" identity req.ContextMd)
                     msgs.Add(sysMsg)
                     let usrMsg = JsonObject()
                     usrMsg.["role"] <- JsonValue.Create("user")

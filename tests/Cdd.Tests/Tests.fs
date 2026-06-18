@@ -462,7 +462,7 @@ let ``openai-compat engine drives an agentic tool-loop`` () : Task =
         let collect (ev: Engine.EngineEvent) : Task = events.Add(ev); Task.CompletedTask
         let opts : Engine.EngineOptions =
             { Kind = Engine.Ollama; Model = "mock"; Cwd = root; AllowedTools = []
-              PermissionMode = ""; McpConfigJson = ""; BaseUrl = sprintf "http://localhost:%d" port; ApiKey = "" }
+              PermissionMode = ""; McpConfigJson = ""; BaseUrl = sprintf "http://localhost:%d" port; ApiKey = ""; SystemPrompt = "" }
         let runner = Engine.create Engine.Ollama
         do! runner.Run({ Prompt = "Liste die Knoten."; ContextMd = ""; Options = opts }, collect)
         do! serverTask

@@ -16,9 +16,11 @@ import { renderCube } from './cube.js';
 import { renderDocs } from './docs.js';
 import { renderDecisions } from './decisions.js';
 import { renderHistory } from './history.js';
+import { renderSchmiede } from './schmiede.js';
 import { errorRows } from './dock.js';
 
 export const SURFACES = [
+  { id: 'schmiede', icon: '⚒', label: 'Schmiede' },
   { id: 'plan',  icon: '◆', label: 'Plan' },
   { id: 'model', icon: '⬡', label: 'Modell' },
   { id: 'dev',   icon: '◇', label: 'Dev' },
@@ -45,6 +47,7 @@ export function renderStage(el, store, actions) {
               : surf === 'drift' ? 'Drift'
               : surf === 'settings' ? 'Settings'
               : surf === 'memory' ? '@ Gedächtnis'
+              : surf === 'schmiede' ? '⚒ Schmiede'
               : (meta ? meta.label : surf);
 
   el.innerHTML = `
@@ -73,6 +76,7 @@ export function renderStage(el, store, actions) {
     case 'drift': return renderDrift(body, store, actions);
     case 'node':  return renderNode(body, store, actions, s.stageArg);
     case 'memory': return renderMemory(body, store, actions);
+    case 'schmiede': return renderSchmiede(body, store, actions);
     case 'settings': return renderSettings(body, store, actions);
     default: body.innerHTML = `<div class="muted pad">${escapeHtml(surf)}</div>`;
   }
