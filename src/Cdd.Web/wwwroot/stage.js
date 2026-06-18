@@ -232,6 +232,16 @@ function renderSettings(el, store, actions) {
   renderProviders(el.querySelector('.set-providers'), store, actions);
 }
 
+// Vorlagen für gängige OpenAI-kompatible Anbieter — Ein-Klick prefill, dann Key eintragen + Speichern.
+// (Nur Claude ist vorkonfiguriert; alles hier fügt der Nutzer selbst hinzu.)
+const PROVIDER_PRESETS = [
+  { id: 'ollama',     label: 'Ollama (lokal)', base: 'http://localhost:11434/v1', model: 'qwen2.5:3b' },
+  { id: 'mistral',    label: 'Mistral (EU)',   base: 'https://api.mistral.ai/v1', model: 'mistral-large-latest' },
+  { id: 'groq',       label: 'Groq',           base: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
+  { id: 'openrouter', label: 'OpenRouter',     base: 'https://openrouter.ai/api/v1', model: '' },
+  { id: 'together',   label: 'Together',       base: 'https://api.together.xyz/v1', model: '' },
+];
+
 // ── Laufzeit-Provider: Engines + API-Keys über die GUI (jeder OpenAI-kompatible Anbieter). ──
 async function renderProviders(box, store, actions) {
   if (!box) return;
@@ -250,6 +260,8 @@ async function renderProviders(box, store, actions) {
       </div>`).join('') +
     `<div class="prov-form">
        <div class="set-h2">Provider hinzufügen / bearbeiten</div>
+       <div class="prov-presets"><span class="muted">Vorlagen:</span>
+         ${PROVIDER_PRESETS.map((p, i) => `<button class="prov-preset" data-preset="${i}">${escapeHtml(p.label)}</button>`).join('')}</div>
        <input class="prov-in" id="pv-id" placeholder="id — z. B. mistral, groq, openrouter">
        <input class="prov-in" id="pv-label" placeholder="Label — z. B. Mistral (EU)">
        <input class="prov-in" id="pv-base" placeholder="Base-URL — z. B. https://api.mistral.ai/v1">
@@ -260,6 +272,11 @@ async function renderProviders(box, store, actions) {
          Claude (Cloud) primär · dein Backup hier · Ollama lokal als Notfall.</div>
      </div>`;
   const $ = (id) => box.querySelector(id);
+  box.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => {
+    const p = PROVIDER_PRESETS[+b.dataset.preset]; if (!p) return;
+    $('#pv-id').value = p.id; $('#pv-label').value = p.label; $('#pv-base').value = p.base;
+    $('#pv-model').value = p.model; $('#pv-key').focus();
+  });
   box.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => {
     const p = ps.find(x => x.id === b.dataset.edit); if (!p) return;
     $('#pv-id').value = p.id; $('#pv-label').value = p.label; $('#pv-base').value = p.baseUrl || '';

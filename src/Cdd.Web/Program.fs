@@ -332,9 +332,8 @@ let main argv =
         let custom =
             loadProviders ()
             |> List.map (fun p -> {| id = p.Id; label = p.Label; baseUrl = p.BaseUrl; model = p.Model; keySet = (p.ApiKey <> ""); builtin = false |})
-        json {| providers =
-                  [ builtin "claude" "Claude Code" "" ""
-                    builtin "ollama" "Ollama (lokal)" "http://localhost:11434/v1" "qwen2.5:3b" ] @ custom |})) |> ignore
+        // NUR Claude Code ist out-of-the-box eingerichtet; alles andere (Ollama/Mistral/…) fügt der Nutzer hinzu.
+        json {| providers = (builtin "claude" "Claude Code" "" "") :: custom |})) |> ignore
 
     // PUT: Provider anlegen/aktualisieren. Leerer ApiKey lässt einen vorhandenen Key unangetastet.
     app.MapPut("/api/providers/{id}", Func<string, HttpRequest, Task<IResult>>(fun id req ->
@@ -388,8 +387,7 @@ let main argv =
             let engId = (if isNull req.Engine then "" else req.Engine).Trim().ToLowerInvariant()
             let isClaude, baseUrl, apiKey, model, label =
                 match engId with
-                | "" | "claude" -> true, "", "", req.Model, "claude"
-                | "ollama" -> false, "http://localhost:11434/v1", "", (if req.Model <> "" then req.Model else "qwen2.5:3b"), "ollama"
+                | "" | "claude" -> true, "", "", req.Model, "claude"   // einzig vorkonfiguriert
                 | id ->
                     match provs |> List.tryFind (fun p -> p.Id.ToLowerInvariant() = id) with
                     | Some p ->
