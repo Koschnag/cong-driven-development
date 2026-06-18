@@ -101,3 +101,29 @@ PR #41 · `cdd-programm` (Mapper) · `runenruf` (Fallbeispiel). Memory:
   + Caption, cdd-programm-README-Widerspruch glätten, Test-Zahlen als `dotnet test`-Verdikt.
 - Mehr Runenruf-Specs modellieren (aktuell konvergiert das Modell vollständig → Loop hat nichts
   mehr zu tun; neue Pending-Specs = neues Futter für den Loop).
+
+---
+
+## 2026-06-18 — Diagramm-Trias: Formal-Sicht + EA-Toolbox + Symbolsystem (Commit df7c6c4)
+
+Antwort auf „Wo ist meine Toolbox / Symbole zu billig / Mathematik-Alternativansicht".
+Frontend-only, deployed nach `codespace:~/workspace/cdd-cockpit` (läuft 100.64.0.2:5179).
+Design rigoros per Workflow + Mathe-Ehrlichkeits-Kritiker entworfen, dann gebaut + per
+Brave-Headless verifiziert + API-Round-trip getestet (PUT/Relation/DELETE sauber).
+
+- **`wwwroot/formal.js`** — das SPOT als „code behind" in formaler Notation (KaTeX lokal
+  gevendort unter `vendor/katex/`, kein CDN, kein Build-Step). Drei EHRLICHE Linsen, jede mit
+  sichtbarem Caveat: **Typen** (Curry-Howard — These als Notation; Bewohnbarkeit per Orakel,
+  nicht entscheidbar; λ-Kalkül verworfen=dekorativ, nur Fußnote) · **Logik** (Invarianten als
+  FO-Sätze, 𝔐⊨Φ, Verletzung=Zeuge aus validate; endlich⇒entscheidbar⇒kein Gödel/Tarski) ·
+  **Kategorien** (FREIE Kat. auf DependsOn + Preorder auf IsA, per Konstruktion; Funktor-
+  Konvergenz verworfen; nie „SPOT IST eine Kategorie").
+- **`wwwroot/palette.js`** — EA/MagicDraw-Toolbox: 11 Arten in 4 UML-Familien + 5 kantentragende
+  Relationen. One-Click = deterministischer Pending-Stub via `PUT /api/spot/{id}` (kein LLM,
+  Id-Präfixe gegen Live-Modell verifiziert, ASCII-Slug gegen `Store.isValidId`); Shift-Klick =
+  via Engine; Relation „bewaffnen" → Quelle→Ziel; Premise→Decision grau „geplant".
+- **`core.js`** SHAPE/HUE/MARK/glyphSvg + SKELETON/PREFIX/RELATIONS/spliceRelation; **`diagram.js`**
+  neuer Symbol-STYLE (Form=Familie, Marke=Operator, Konvergenz nur am Rand) + Formal-Routing +
+  Palette-Wrapper + Relation-Arming; **`cockpit.js`** upsert/newNode/askNew/addRelation + `?dia=`.
+
+Outward-facing (Tag/Publish/Post/Merge→main) weiterhin offen — bewusst nicht autonom.
