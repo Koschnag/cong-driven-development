@@ -1,9 +1,12 @@
 # Gegenentwurf-Post (Entwurf) — Antwort auf Luckes „My job is to write loops"
 
-**Status:** ENTWURF, nicht gepostet. Veröffentlichung nur auf Congs explizites Go.
-**Link-Urteil des Review-Panels:** *safe to link — MIT FIXES* (siehe unten). Empfehlung:
-**Teaser-with-demo** (Repo verlinken), aber erst nach den Fixes + einer aufgezeichneten
-asciinema (Dry-Run zeigt den Prompt, `--go` zeigt rotes-Gate→grünes-Gate). Ton: kein „du",
+**Status:** PASTE-FERTIG, NICHT gepostet. Der Post-Text unten ist copy-paste-fertig; das
+Veröffentlichen kann (und soll) nur Cong selbst — es gibt keinen automatischen LinkedIn-Zugang.
+Zahlen + Capstone sind auf den verifizierten Stand 2026-06-18 gebracht (cdd-core 35/35, Mapper 4/4,
+runenruf 29/29; `spec-kampfkraft` durch das Tool gebaut). Tool-Loop + RAG existieren jetzt (s. „Ehrliche
+Grenze"). Offene Pre-Post-Fixes (#1/#2/#4/#5 unten) sind Doku-Hygiene in den Repos, kein Blocker für den Text.
+**Link-Urteil des Review-Panels:** *safe to link — MIT FIXES*. Empfehlung: **Teaser-with-demo**
+(Repo verlinken); optional eine asciinema (Dry-Run → `--go`: rotes Gate → grünes Gate). Ton: kein „du",
 geschlechtsneutral.
 
 ---
@@ -30,7 +33,7 @@ Der Runner (C#) findet eine Pending-Spec, baut den Prosa-Prompt, übergibt an `c
 
 ## Auf hartem Terrain
 
-Damit die Allgemeinheit nicht behauptet bleibt: `runenruf`, eine RTS-RPG-Engine from scratch in F#/C# auf Silk.NET, 74 Modell-Knoten, deterministische Simulation. Kein To-do-CRUD. Ein Spiel-Engine-Spec trägt spec-driven durch dasselbe Gate — das Verfahren ist nicht domänengebunden.
+Damit die Allgemeinheit nicht behauptet bleibt: `runenruf`, eine RTS-RPG-Engine from scratch in F#/C# auf Silk.NET, deterministische Simulation. Kein To-do-CRUD. Konkret durchgespielt: eine Pending-Spec (`spec-kampfkraft`) ins Modell gelegt, der Loop trieb den Ausführer zu Implementierung samt Tests, das Gate maß ein echtes `dotnet test` (29/29 grün) — und erst das Orakel promotete die Spec auf Aligned. Bemerkenswert: der Ausführer weigerte sich, den Status von Hand zu setzen. Das Verfahren ist nicht domänengebunden.
 
 ## Punkt für Punkt
 
@@ -44,7 +47,9 @@ Damit die Allgemeinheit nicht behauptet bleibt: `runenruf`, eine RTS-RPG-Engine 
 
 Was läuft, ist per Klick belegbar: getyptes SPOT-Modell, Validierung mit vier erzwungenen Invarianten, das Gate mit Zähnen samt seinen Tests, der bounded Loop, der MCP-Server, das Cockpit. Cdd-Core baut grün, das Gate ist durch eigene Tests gegen die Schummel-Löcher abgesichert.
 
-Was Fahrplan ist, wird als Fahrplan benannt — sonst fängt der Repo-Klick eine Lüge: Lean-Beweise gibt es keine (null .lean-Dateien). Property-based Tests gibt es keine (null FsCheck in allen Repos); alle Tests sind gewöhnliche Beispieltests. Der austauschbare Mistral-/Ollama-Anbieter ist spezifiziert, im Runner noch Pending — der Chat-Pfad existiert, der agentische Tool-Loop nicht. Das Programm-Dashboard zeigt Modell-Marker, keine test-verifizierten Quoten; beides wird nicht vermischt.
+Was inzwischen läuft (und früher Fahrplan war): die souveräne Engine-Kette ist agentisch — Mistral-EU und lokales Ollama *treiben* den SPOT über einen echten Tool-Loop (lesen/schreiben/validieren/ableiten), nicht nur Chat. Das Gedächtnis ist semantisch (lokales `nomic-embed` + Cosine über die eigene DB, nur `sensitive=0`). Jeder Engine-Run bekommt einen Kontext-Slice statt eines Full-Dumps.
+
+Was Fahrplan bleibt, wird als Fahrplan benannt — sonst fängt der Repo-Klick eine Lüge: Lean-Beweise gibt es keine (null .lean-Dateien). Property-based Tests gibt es keine (null FsCheck in allen Repos); alle Tests sind gewöhnliche Beispieltests. Die Multi-Host-Infra-Sicht (Pi/Celsius/Tower) braucht noch einen Agenten; live ist heute der Host, auf dem das Cockpit läuft. Das Programm-Dashboard zeigt Modell-Marker, keine test-verifizierten Quoten; beides wird nicht vermischt.
 
 Souverän, self-host, bring-your-own-repo. F#/C#/.NET, kein Python, MPL-2.0. Kein SaaS. Nichts ruft nach Hause.
 
@@ -59,8 +64,8 @@ Souverän, self-host, bring-your-own-repo. F#/C#/.NET, kein Python, MPL-2.0. Kei
    Nicht als Gegenwart stehen lassen.
 2. **STATUS.md** ist veraltet (runenruf 69→74) und mischt Marker- vs. Test-Konvergenz —
    vor dem Verlinken neu generieren + Caption „Quoten = Marker-Konvergenz, NICHT test-verifiziert" *in die Datei*.
-3. **Test-Zahlen** immer als `dotnet test`-Verdikt, nie als grep: Mapper **8/8**, cdd-core **33/33**,
-   runenruf **26 gesamt / 25 spot-markiert**. Keine runde „58".
+3. **Test-Zahlen** (verifiziert per `dotnet test`, 2026-06-18): cdd-core **35/35**, Mapper **4/4**,
+   runenruf **29/29**. Immer als Testlauf-Verdikt, nie als grep. Keine runden Summen.
 4. **cdd-programm-README**-Widerspruch glätten (Mapper IST gebaut; nur Chat-Steuerung + Anbieter-Naht Pending).
 5. **„clonable starter"**: runenruf hat keine Root-`.sln` — Gate läuft pro Projekt; das dokumentieren,
    sonst stolpert ein Fremder über `dotnet build` im Root.
