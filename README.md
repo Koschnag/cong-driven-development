@@ -133,28 +133,31 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**74 Knoten im Selbstmodell** · 4 aktive Invarianten · 17/25 abgeleitete Tests automatisiert
+**73 Knoten im Selbstmodell** · 4 aktive Invarianten · 16/24 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
 - ✅ **Agent-Interface** — Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt
-- ✅ **Bearbeiten als Formular im Hauptfenster** — Der Bearbeiten-Knopf öffnet ein Formular mit typgerechten Feldern direkt im Detailbereich
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
 - ✅ **Governance by Invariance** — Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal + CI) erzwungen
-- ✅ **Hauptfenster zeigt Nachbarschaft als Diagramm** — Klick auf einen Knoten öffnet ihn im geteilten Hauptfenster: links die Nachbarschaft als Diagramm, rechts die Details
 - ✅ **Interaktiver Graph** — Diagramm-Elemente sind frei positionierbar wie in Enterprise Architect; Layouts bleiben erhalten
 - ✅ **LLM-Kontextexport** — Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut
 - ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Navigation als Würfel** — Der SPOT-Graph ist wie ein OLAP-Cube navigierbar: Slice, Dice, Drill-down, Verlinkungen
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
-- ✅ **Navigation über Phasen-Leiste und Beziehungen** — Die Phasen-Leiste filtert nach Konvergenz-Lebenszyklus; klickbare Beziehungen navigieren im Hauptfenster
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
 - ✅ **UML-Editor mit Drag and Drop** — Beziehungen entstehen durch Ziehen zwischen Diagramm-Knoten, Doppelklick öffnet das Formular
 - ✅ **VS2015-Design mit EA-Anatomie** — Das Cockpit folgt Visual Studio 2015 (Chrome) und Enterprise Architect (Fensteranordnung)
+
+### In Arbeit / geplant (Pending)
+
+- 🔜 **Chat-primaere Cockpit-Shell** — Das Cockpit ist chat-primaer: eine Omnibar als einzige Tuer, eine Menueleiste, die Rail mit Flaechen, der Faden und eine Statuszeile.
+- 🔜 **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
+- 🔜 **Getypte Diagramm-Flaeche mit Toolbox** — Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 
