@@ -159,6 +159,24 @@ let ``export-context renders all sections and content`` () =
     Assert.Contains("## Offene Arbeit (nicht Aligned)", md)
     Assert.Contains("`spec-a`", md)
 
+[<Fact; Trait("spot", "spec-context-slice-test-1")>]
+let ``context slice keeps core+index always but full detail only for referenced nodes`` () =
+    let entries =
+        { Id = EntityId "term-a"; Convergence = Aligned
+          Payload = TermNode { Name = "Begriff"; Definition = "Def"; Synonyms = []; Relations = [] } }
+        :: [ for i in 1..6 -> sampleSpec (sprintf "spec-%d" i) [ crit i; crit (i + 10) ] ]
+    let slice = Export.toContextSlice "Arbeite an spec-3 weiter." entries
+    // axiomatischer Kern + Index sind IMMER da
+    Assert.Contains("## Ubiquitäre Sprache (verbindlich)", slice)
+    Assert.Contains("## Index (alle Knoten", slice)
+    Assert.Contains("`spec-3`", slice)
+    Assert.Contains("`spec-1`", slice)                   // alle im Index
+    // volle Kriterien NUR für den im Auftrag genannten Knoten
+    Assert.Contains("GIVEN g3 WHEN w3 THEN t3", slice)   // spec-3: voll
+    Assert.DoesNotContain("GIVEN g1 WHEN w1 THEN t1", slice) // spec-1: nur Index-Zeile
+    // Surface-Cut: bei Skala (6 Specs, 1 genannt) ist der Slice klar kleiner als der Full-Dump
+    Assert.True(slice.Length < (Export.toMarkdown entries).Length)
+
 [<Fact; Trait("spot", "spec-governance-test-1")>]
 let ``invariant SpecsNeedTests flags untested specs`` () =
     let inv = { Id = EntityId "inv-1"; Convergence = Aligned

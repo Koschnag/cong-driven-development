@@ -126,8 +126,10 @@ let main argv =
             let req =
                 try Json.deserialize<EngineRunRequest> bodyStr
                 with _ -> { Prompt = bodyStr; Surface = "develop"; Engine = "claude"; Model = "" }
+            // Surface-Cut statt Full-Dump: nur der axiomatische Kern + Index + die im Auftrag
+            // genannten Knoten gehen in JEDEN Run (Token-Ökonomie, behebt den Kontext-Dump-Bug).
             let contextMd =
-                try Export.toMarkdown (Store.load root)
+                try Export.toContextSlice req.Prompt (Store.load root)
                 with _ -> ""
             ctx.Response.ContentType <- "text/event-stream"
             ctx.Response.Headers.["Cache-Control"] <- Microsoft.Extensions.Primitives.StringValues("no-cache")
