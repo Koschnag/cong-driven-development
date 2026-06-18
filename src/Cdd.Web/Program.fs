@@ -443,8 +443,9 @@ let main argv =
                 }
             let opts : Engine.EngineOptions =
                 { Kind = Engine.ClaudeCode; Model = ""; Cwd = root
-                  // Lasttragend: nur SPOT-Modell-Tools (beide Server-Aliase), KEIN Read/Edit/Write/Bash → kann keinen Code schreiben.
-                  AllowedTools = [ "mcp__cdd__*"; "mcp__spot__*" ]
+                  // Read/Grep/Glob = nur LESEN (Projekt-Domäne lernen) + SPOT-Modell schreiben.
+                  // KEIN Edit/Write/Bash/dotnet → kann STRUKTURELL keinen Code schreiben oder ein Gate fälschen.
+                  AllowedTools = [ "Read"; "Grep"; "Glob"; "mcp__cdd__*"; "mcp__spot__*" ]
                   PermissionMode = "acceptEdits"
                   McpConfigJson = Engine.spotMcpConfig root
                   BaseUrl = ""; ApiKey = ""
