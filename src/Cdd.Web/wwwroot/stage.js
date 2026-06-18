@@ -136,25 +136,38 @@ function renderNode(el, store, actions, id) {
   else renderNodeDetail(lb, store, actions, n, { compact: false });
 }
 
-// ── Infra: Pi=Infra · Celsius=Services · Tower=Proxmox. Live vom Backend (Komodo via MCP). ──
+// ── Infra: ECHTE Live-Metriken von VM 120 (uptime/load/mem/disk + Docker). Pi/Celsius/Tower: Periphery geplant. ──
 function renderInfra(el, store, actions) {
-  const inf = store.get().infra;
-  const hosts = (inf && inf.hosts) || [
-    { name: 'pi',      role: 'Infra (DNS · Reverse-Proxy · Tailscale)', state: 'unknown' },
+  const inf = store.get().infra || {};
+  const h = inf.host;
+  const hosts = inf.hosts || [
+    { name: 'pi', role: 'Infra (DNS · Reverse-Proxy · Tailscale)', state: 'unknown' },
     { name: 'celsius', role: 'Services (Nextcloud · YunoHost · Backups)', state: 'unknown' },
-    { name: 'tower',   role: 'Proxmox (VMs · Gaming-VM)', state: 'unknown' },
+    { name: 'tower', role: 'Proxmox (VMs · Gaming-VM)', state: 'unknown' },
   ];
+  const apps = inf.apps || [];
   const dot = (st) => st === 'up' || st === 'online' ? 'Aligned' : st === 'down' ? 'Diverged' : 'Pending';
+  const metrics = h ? `<div class="infra-metrics">
+      <span><b>${escapeHtml(h.name)}</b></span><span>⏱ ${escapeHtml(h.uptime || '')}</span>
+      <span>load ${escapeHtml(h.load || '')}</span><span>mem ${h.memUsedMb}/${h.memTotalMb} MB</span>
+      <span>disk ${escapeHtml(h.diskUsedPct || '')}</span></div>` : '';
   el.innerHTML =
-    `<div class="stage-hint">Homelab <span class="adopt-tag">Adopt: Komodo-MCP</span> — ${inf ? 'live' : 'Backend offline → statischer DC-Plan (kein toter View). Der 🤖-Knopf läuft jetzt schon über den Faden.'}</div>` +
+    `<div class="stage-hint">Homelab — ${inf.ok ? `<b>live</b> · ${escapeHtml(inf.source || '')}` : 'Backend offline → Plan'} <span class="adopt-tag">VM 120 live · Pi/Celsius/Tower via Komodo-Periphery (geplant)</span></div>` +
+    metrics +
     `<div class="stage-actions"><button data-ask>🤖 „Status aller Hosts holen“</button></div>` +
-    hosts.map(h => `<div class="host-row">
-        <span class="dot ${dot(h.state)}"></span>
-        <div class="host-meta"><div class="host-name">${escapeHtml(h.name)}</div><div class="host-role">${escapeHtml(h.role)}</div></div>
-        <span class="host-state">${escapeHtml(h.state)}</span>
-      </div>`).join('');
+    hosts.map(x => `<div class="host-row">
+        <span class="dot ${dot(x.state)}"></span>
+        <div class="host-meta"><div class="host-name">${escapeHtml(x.name)}</div><div class="host-role">${escapeHtml(x.role)}</div></div>
+        <span class="host-state">${escapeHtml(x.state)}</span>
+      </div>`).join('') +
+    (apps.length ? `<div class="stage-hint" style="margin-top:.5rem">Container · ${apps.length} (live)</div>` +
+      apps.map(a => `<div class="host-row">
+        <span class="dot ${a.healthy ? 'Aligned' : 'Pending'}"></span>
+        <div class="host-meta"><div class="host-name">${escapeHtml(a.name)}</div><div class="host-role">${escapeHtml(a.url || '')}</div></div>
+        <span class="host-state">${escapeHtml(a.status || '')}</span>
+      </div>`).join('') : '');
   el.querySelector('[data-ask]').onclick = () =>
-    actions.ask('Hol den Status von Pi, Celsius und Tower aus dem Homelab (Komodo) und fasse Auffälligkeiten zusammen.');
+    actions.ask('Hol den Status von Pi, Celsius und Tower aus dem Homelab und fasse Auffälligkeiten zusammen.');
 }
 
 // ── Prod: Deployments (Coolify via MCP). Defensiv: ohne Backend ein klarer Auftrag-Knopf. ──

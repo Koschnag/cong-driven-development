@@ -233,16 +233,56 @@ let main argv =
     // Infra/Prod-Heartbeat für die Bühne (Komodo/Coolify werden via MCP adoptiert).
     // Bis das MCP-Backend verdrahtet ist: liefert den deklarierten DC-Plan + ok=false,
     // damit die GUI nie einen toten/leeren View zeigt (Souveränität: lokaler Wahrheits-Plan).
+    // Infra-Status: ECHTE Live-Metriken des Hosts, auf dem das Cockpit läuft (VM 120) — /proc + docker ps.
+    // Truth #4 ist damit live (nicht Stub) für den primären Host; die übrigen DC-Hosts (Pi/Celsius/Tower)
+    // brauchen einen Agenten (Komodo-Periphery / SSH) und bleiben ehrlich „unknown" bis dahin.
+    let readFile p = try System.IO.File.ReadAllText p with _ -> ""
+    let runCmd (file: string) (args: string) : string =
+        try
+            let psi = System.Diagnostics.ProcessStartInfo(file, args)
+            psi.RedirectStandardOutput <- true
+            psi.RedirectStandardError <- true
+            psi.UseShellExecute <- false
+            use p = System.Diagnostics.Process.Start psi
+            let outp = p.StandardOutput.ReadToEnd()
+            p.WaitForExit 4000 |> ignore
+            outp.Trim()
+        with _ -> ""
     app.MapGet("/api/infra/status", Func<IResult>(fun () ->
-        let host name role state =
-            {| name = name; role = role; state = state |}
-        json {| ok = false
-                source = "static-plan"
-                hosts =
-                    [ host "pi"      "Infra (DNS · Reverse-Proxy · Tailscale)" "unknown"
-                      host "celsius" "Services (Nextcloud · YunoHost · Backups)" "unknown"
-                      host "tower"   "Proxmox (VMs · Gaming-VM)" "unknown" ]
-                apps = ([] : obj list) |})) |> ignore
+        try
+            let load = let parts = (readFile "/proc/loadavg").Split(' ') in if parts.Length >= 3 then sprintf "%s %s %s" parts.[0] parts.[1] parts.[2] else ""
+            let meminfo = readFile "/proc/meminfo"
+            let kv (k: string) =
+                meminfo.Split('\n')
+                |> Array.tryFind (fun l -> l.StartsWith k)
+                |> Option.bind (fun l -> match l.Split([| ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries) with a when a.Length >= 2 -> (match System.Int32.TryParse a.[1] with true, v -> Some v | _ -> None) | _ -> None)
+                |> Option.defaultValue 0
+            let memTotalMb = kv "MemTotal:" / 1024
+            let memAvailMb = kv "MemAvailable:" / 1024
+            let hostn = (readFile "/proc/sys/kernel/hostname").Trim()
+            let uptime = runCmd "uptime" "-p"
+            let df = (runCmd "df" "-h --output=pcent /").Split('\n') |> Array.tryLast |> Option.map (fun s -> s.Trim()) |> Option.defaultValue ""
+            let dockerRaw = runCmd "docker" "ps --format {{.Names}}|{{.Status}}|{{.Image}}"
+            let apps =
+                dockerRaw.Split('\n')
+                |> Array.filter (fun l -> l.Contains "|")
+                |> Array.map (fun l ->
+                    let p = l.Split('|')
+                    {| name = p.[0]; status = (if p.Length > 1 then p.[1] else ""); url = (if p.Length > 2 then p.[2] else ""); healthy = (p.Length > 1 && p.[1].StartsWith "Up") |})
+                |> Array.toList
+            let host name role state = {| name = name; role = role; state = state |}
+            json {| ok = true
+                    source = sprintf "live · %s" (if hostn = "" then "host" else hostn)
+                    host = {| name = (if hostn = "" then "VM 120" else hostn); uptime = uptime; load = load
+                              memUsedMb = (memTotalMb - memAvailMb); memTotalMb = memTotalMb; diskUsedPct = df |}
+                    hosts =
+                        [ host (if hostn = "" then "vm120" else hostn) "Cong OS · Ollama · Services (live)" "up"
+                          host "pi"      "Infra (DNS · Reverse-Proxy · Tailscale)" "unknown"
+                          host "celsius" "Services (Nextcloud · YunoHost · Backups)" "unknown"
+                          host "tower"   "Proxmox (VMs · Gaming-VM)" "unknown" ]
+                    apps = apps |}
+        with ex ->
+            json {| ok = false; source = "error"; note = ex.Message; hosts = ([] : obj list); apps = ([] : obj list) |})) |> ignore
 
     // Modell-Historie aus git: weil jeder Knoten ein .spot/-JSON-File ist, IST `git log` die Historie.
     // Read-only, defensiv ([] ohne git). Zeitreise: /{id}/{hash} liefert den Knoten-Stand zum Commit.

@@ -460,3 +460,7 @@ td.cell { cursor: pointer; color: var(--fg); } td.cell:hover { background: var(-
 /* RAG: Mode-Toggle + Cosine-Score in den Treffer-Karten */
 .mem-modes button.on { background: var(--accent2); color: #fff; border-color: var(--accent); }
 .mem-score { font-family: var(--mono, ui-monospace, monospace); font-size: 10px; color: var(--accent); margin: 0 .5rem; }
+
+/* Infra: Live-Metriken-Zeile */
+.infra-metrics { display: flex; flex-wrap: wrap; gap: .8rem; font-size: 11.5px; color: var(--fg2); background: var(--bg2); border: 1px solid var(--line); border-radius: 7px; padding: .4rem .6rem; margin: .3rem 0 .5rem; font-family: var(--mono, ui-monospace, monospace); }
+.infra-metrics b { color: var(--accent); }
