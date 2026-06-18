@@ -29,6 +29,27 @@ let private withStore (root: string) (f: SpotEntry list -> IResult) : IResult =
     with ex ->
         Results.Text(Json.serialize {| error = ex.Message |}, "application/json", statusCode = 500)
 
+/// Laufzeit-Provider (OpenAI-kompatibel): Keys werden über die GUI eingetragen, beliebige Anbieter.
+/// Persistenz: providers.json (gitignored, Pfad via CDD_PROVIDERS oder ~/.config/cdd/). claude+ollama
+/// sind eingebaut (kein Key); alles andere (Mistral, Groq, OpenRouter, lokales vLLM …) ist hier konfigurierbar.
+type private Provider =
+    { Id : string; Label : string; BaseUrl : string; Model : string; ApiKey : string }
+
+let private providersPath () =
+    match Environment.GetEnvironmentVariable "CDD_PROVIDERS" with
+    | p when not (String.IsNullOrWhiteSpace p) -> p
+    | _ -> Path.Combine(Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".config", "cdd", "providers.json")
+let private loadProviders () : Provider list =
+    try
+        let p = providersPath ()
+        if File.Exists p then Json.deserialize<Provider list> (File.ReadAllText p) else []
+    with _ -> []
+let private saveProviders (ps: Provider list) =
+    let p = providersPath ()
+    let dir = Path.GetDirectoryName p
+    if not (Directory.Exists dir) then Directory.CreateDirectory dir |> ignore
+    File.WriteAllText(p, Json.serialize ps)
+
 [<EntryPoint>]
 let main argv =
     // "--root <pfad>" gehört uns; alle übrigen Argumente (z. B. --urls) gehen an ASP.NET.
@@ -303,9 +324,44 @@ let main argv =
             if write then derived |> List.iter (Store.save root)
             json {| derived = derived; written = write |}))) |> ignore
 
+    // ── Laufzeit-Provider: Engines + Keys über die GUI verwalten (beliebige OpenAI-kompat Anbieter) ──
+    // GET liefert den Key NIE im Klartext (nur keySet), claude+ollama sind eingebaut.
+    app.MapGet("/api/providers", Func<IResult>(fun () ->
+        let builtin id label baseUrl model =
+            {| id = id; label = label; baseUrl = baseUrl; model = model; keySet = true; builtin = true |}
+        let custom =
+            loadProviders ()
+            |> List.map (fun p -> {| id = p.Id; label = p.Label; baseUrl = p.BaseUrl; model = p.Model; keySet = (p.ApiKey <> ""); builtin = false |})
+        json {| providers =
+                  [ builtin "claude" "Claude Code" "" ""
+                    builtin "ollama" "Ollama (lokal)" "http://localhost:11434/v1" "qwen2.5:3b" ] @ custom |})) |> ignore
+
+    // PUT: Provider anlegen/aktualisieren. Leerer ApiKey lässt einen vorhandenen Key unangetastet.
+    app.MapPut("/api/providers/{id}", Func<string, HttpRequest, Task<IResult>>(fun id req ->
+        task {
+            use reader = new StreamReader(req.Body)
+            let! body = reader.ReadToEndAsync()
+            try
+                if id = "claude" || id = "ollama" then return badRequest "Eingebauter Provider ist nicht editierbar."
+                else
+                    let p = Json.deserialize<Provider> body
+                    let existing = loadProviders ()
+                    let keptKey =
+                        if p.ApiKey <> "" then p.ApiKey
+                        else existing |> List.tryFind (fun x -> x.Id = id) |> Option.map (fun x -> x.ApiKey) |> Option.defaultValue ""
+                    let np = { p with Id = id; ApiKey = keptKey }
+                    saveProviders ((existing |> List.filter (fun x -> x.Id <> id)) @ [ np ])
+                    return json {| ok = true; id = id; keySet = (keptKey <> "") |}
+            with ex -> return badRequest (sprintf "Provider-JSON ungültig: %s" ex.Message)
+        })) |> ignore
+
+    app.MapDelete("/api/providers/{id}", Func<string, IResult>(fun id ->
+        saveProviders (loadProviders () |> List.filter (fun x -> x.Id <> id))
+        Results.NoContent())) |> ignore
+
     // Headless-Engine auf Terminal-Ebene: streamt EngineEvents als Server-Sent-Events.
     // CDD liefert die Entropie (SPOT-Export) + verbindet die SPOT-Tools via MCP; die
-    // LLM-Engine (Claude Code / Mistral / Ollama) macht die Arbeit.
+    // LLM-Engine (Claude Code / Mistral / Ollama / beliebiger Provider) macht die Arbeit.
     app.MapPost("/api/engine/run", Func<HttpContext, Task>(fun ctx ->
         task {
             use reader = new StreamReader(ctx.Request.Body)
@@ -326,20 +382,36 @@ let main argv =
                     do! ctx.Response.WriteAsync(sprintf "data: %s\n\n" (Engine.toGuiJson ev))
                     do! ctx.Response.Body.FlushAsync()
                 }
-            let kind = Engine.kindOfString req.Engine
+            // Provider-Auflösung zur LAUFZEIT: claude/ollama eingebaut, alles andere aus providers.json
+            // (Keys über die GUI). Pro-Provider-Env-Fallback CDD_KEY_<ID>; Mistral zusätzlich MISTRAL_API_KEY.
+            let provs = loadProviders ()
+            let engId = (if isNull req.Engine then "" else req.Engine).Trim().ToLowerInvariant()
+            let isClaude, baseUrl, apiKey, model, label =
+                match engId with
+                | "" | "claude" -> true, "", "", req.Model, "claude"
+                | "ollama" -> false, "http://localhost:11434/v1", "", (if req.Model <> "" then req.Model else "qwen2.5:3b"), "ollama"
+                | id ->
+                    match provs |> List.tryFind (fun p -> p.Id.ToLowerInvariant() = id) with
+                    | Some p ->
+                        let envKey = Environment.GetEnvironmentVariable(sprintf "CDD_KEY_%s" (id.ToUpperInvariant())) |> Option.ofObj |> Option.defaultValue ""
+                        false, p.BaseUrl, (if p.ApiKey <> "" then p.ApiKey else envKey), (if req.Model <> "" then req.Model else p.Model), p.Label
+                    | None when id = "mistral" ->
+                        false, "https://api.mistral.ai/v1", (Environment.GetEnvironmentVariable "MISTRAL_API_KEY" |> Option.ofObj |> Option.defaultValue ""), (if req.Model <> "" then req.Model else "mistral-large-latest"), "Mistral (EU)"
+                    | None -> true, "", "", req.Model, "claude"
             let opts : Engine.EngineOptions =
-                { Kind = kind
-                  Model = req.Model
+                { Kind = (if isClaude then Engine.ClaudeCode else Engine.Mistral)
+                  Model = model
                   Cwd = root
                   // Unbeaufsichtigt → bewusst enge Allowlist. Lesen/Editieren/Suchen + git/dotnet + SPOT-MCP.
                   AllowedTools = [ "Read"; "Edit"; "Write"; "Grep"; "Glob"; "Bash(git *)"; "Bash(dotnet *)"; "mcp__spot__*" ]
-                  PermissionMode = (if kind = Engine.ClaudeCode then "acceptEdits" else "")
-                  McpConfigJson = (if kind = Engine.ClaudeCode then Engine.spotMcpConfig root else "")
-                  BaseUrl = (Environment.GetEnvironmentVariable("CDD_ENGINE_BASEURL") |> Option.ofObj |> Option.defaultValue "")
-                  ApiKey = (Environment.GetEnvironmentVariable("MISTRAL_API_KEY") |> Option.ofObj |> Option.defaultValue "") }
-            do! emit (Engine.Started("", sprintf "%A (Fläche: %s)" kind req.Surface))
+                  PermissionMode = (if isClaude then "acceptEdits" else "")
+                  McpConfigJson = (if isClaude then Engine.spotMcpConfig root else "")
+                  BaseUrl = baseUrl
+                  ApiKey = apiKey }
+            do! emit (Engine.Started("", sprintf "%s (Fläche: %s)" label req.Surface))
             try
-                do! (Engine.create kind).Run({ Prompt = req.Prompt; ContextMd = contextMd; Options = opts }, emit)
+                let engine = if isClaude then Engine.create Engine.ClaudeCode else Engine.openAiCompat label
+                do! engine.Run({ Prompt = req.Prompt; ContextMd = contextMd; Options = opts }, emit)
             with ex ->
                 do! emit (Engine.EngineError ex.Message)
             do! ctx.Response.WriteAsync("event: done\ndata: {}\n\n")

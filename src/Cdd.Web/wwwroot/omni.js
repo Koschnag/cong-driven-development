@@ -6,7 +6,7 @@
 //
 // Ein Modell, kein Menü-Baum: alles ist hier, Enter führt aus. Asperger-freundlich:
 // vollständige, vorhersagbare Liste; ADHD-freundlich: Tippen→Tun in einem Schritt.
-import { idOf, kindOf, convOf, title, escapeHtml } from './core.js';
+import { api, idOf, kindOf, convOf, title, escapeHtml } from './core.js';
 import { SURFACES } from './stage.js';
 
 // Befehle = Verben mit fester Semantik. Jedes hat ein Wort + Tastenhinweis.
@@ -43,7 +43,16 @@ export function mountOmni(el, store, actions) {
   let items = [], ai = -1;
 
   engineSel.value = store.get().engine;
-  engineSel.onchange = () => actions.setEngine(engineSel.value);
+  engineSel.onchange = () => { if (engineSel.value === '__manage') { actions.summon('settings'); engineSel.value = store.get().engine; } else actions.setEngine(engineSel.value); };
+  // Engines dynamisch aus den Laufzeit-Providern (claude/ollama eingebaut + custom mit Key).
+  const loadEngines = () => api.providers().then(({ providers }) => {
+    engineSel.innerHTML = (providers || []).map(p =>
+      `<option value="${escapeHtml(p.id)}">${escapeHtml(p.label)}${(p.builtin || p.keySet) ? '' : ' · kein Key'}</option>`).join('')
+      + `<option value="__manage">⚙ Provider verwalten…</option>`;
+    engineSel.value = store.get().engine || 'claude';
+  }).catch(() => {});
+  loadEngines();
+  actions._reloadEngines = loadEngines;
   const reflectMode = () => { modeEl.textContent = store.get().mode; };
   reflectMode();
 

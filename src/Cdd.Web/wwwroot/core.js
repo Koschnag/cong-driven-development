@@ -25,6 +25,10 @@ export const api = {
   dwh:         (q, limit = 24) => fetch('/api/dwh/search?q=' + encodeURIComponent(q) + '&limit=' + limit).then(r => r.json()),
   // RAG: semantische Suche (Ollama nomic-embed + Cosine), gleiche sensitive=0-Garantie.
   dwhSemantic: (q, limit = 16) => fetch('/api/dwh/semantic?q=' + encodeURIComponent(q) + '&limit=' + limit).then(r => r.json()),
+  // Laufzeit-Provider (Engines + API-Keys über die GUI; Key wird NIE im Klartext geliefert).
+  providers:      () => fetch('/api/providers').then(r => r.json()),
+  saveProvider:   (id, p) => fetch('/api/providers/' + encodeURIComponent(id), { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(p) }).then(r => r.json()),
+  deleteProvider: (id) => fetch('/api/providers/' + encodeURIComponent(id), { method: 'DELETE' }),
 };
 
 // Engine-Stream (SSE) → onEvent({t,...}) je Ereignis. Liefert die Abort-Funktion.

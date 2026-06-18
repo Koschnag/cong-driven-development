@@ -370,7 +370,11 @@ ARBEITSWEISE (Congs Stil): direkt, knapp, keine Floskeln, keine Zusammenfassunge
         match kind with
         | ClaudeCode -> ClaudeCodeEngine() :> IEngine
         | Mistral    -> OpenAiCompatEngine("mistral", "https://api.mistral.ai/v1", "mistral-large-latest") :> IEngine
-        | Ollama     -> OpenAiCompatEngine("ollama", "http://localhost:11434/v1", "qwen2.5:7b") :> IEngine
+        | Ollama     -> OpenAiCompatEngine("ollama", "http://localhost:11434/v1", "qwen2.5:3b") :> IEngine
+
+    /// Generischer OpenAI-kompatibler Provider (beliebiges Label) — BaseUrl/Model/ApiKey kommen
+    /// vollständig aus den EngineOptions (Laufzeit-Provider). Derselbe agentische Tool-Loop.
+    let openAiCompat (label: string) : IEngine = OpenAiCompatEngine(label, "", "") :> IEngine
 
     let kindOfString (s: string) =
         match (if isNull s then "" else s).ToLowerInvariant() with

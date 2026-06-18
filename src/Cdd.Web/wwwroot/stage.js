@@ -9,7 +9,7 @@
 //   6 Doku    (—) — die lebende Doku = exakt der Kontext, den die Engine sieht
 //
 // Jede Fläche ist nur eine Sicht; der Faden bleibt die Wahrheit. Esc schließt die Bühne.
-import { idOf, kindOf, convOf, title, summary, escapeHtml } from './core.js';
+import { api, idOf, kindOf, convOf, title, summary, escapeHtml } from './core.js';
 import { renderNodeDetail } from './properties.js';
 import { renderGraph } from './graph.js';
 import { renderCube } from './cube.js';
@@ -226,9 +226,56 @@ function renderSettings(el, store, actions) {
       <div class="set-row"><span>Modus</span><b>${escapeHtml(s.mode)}</b></div>
       <div class="set-row"><span>Knoten</span><b>${s.nodes.length}</b></div>
       <div class="set-row"><span>Theme</span><button data-theme>🌓 wechseln</button></div>
-      <div class="set-note">Souverän: Engine frei wählbar (Claude · Mistral-EU · Ollama-lokal). Backends adoptiert via MCP. Daten bleiben im eigenen DC.</div>
+      <div class="set-providers muted">Provider laden…</div>
     </div>`;
   el.querySelector('[data-theme]').onclick = () => actions.toggleTheme();
+  renderProviders(el.querySelector('.set-providers'), store, actions);
+}
+
+// ── Laufzeit-Provider: Engines + API-Keys über die GUI (jeder OpenAI-kompatible Anbieter). ──
+async function renderProviders(box, store, actions) {
+  if (!box) return;
+  let ps;
+  try { ps = (await api.providers()).providers || []; }
+  catch { box.innerHTML = '<div class="muted">Provider nicht ladbar.</div>'; return; }
+  box.classList.remove('muted');
+  const dot = (p) => p.builtin ? 'builtin' : (p.keySet ? 'ok' : 'nokey');
+  box.innerHTML =
+    `<div class="set-h">Engines &amp; Provider <span class="muted">— Keys zur Laufzeit, jeder OpenAI-kompatible Anbieter</span></div>` +
+    ps.map(p => `<div class="prov-row">
+        <span class="prov-dot ${dot(p)}" title="${p.builtin ? 'eingebaut' : (p.keySet ? 'Key gesetzt' : 'kein Key')}"></span>
+        <div class="prov-meta"><b>${escapeHtml(p.label)}</b> <code>${escapeHtml(p.id)}</code>
+          <div class="prov-sub">${escapeHtml(p.baseUrl || (p.builtin ? 'eingebaut, kein Key nötig' : ''))}${p.model ? ' · ' + escapeHtml(p.model) : ''}</div></div>
+        ${p.builtin ? '' : `<button class="prov-btn" data-edit="${escapeHtml(p.id)}">bearb.</button><button class="prov-btn del" data-del="${escapeHtml(p.id)}">×</button>`}
+      </div>`).join('') +
+    `<div class="prov-form">
+       <div class="set-h2">Provider hinzufügen / bearbeiten</div>
+       <input class="prov-in" id="pv-id" placeholder="id — z. B. mistral, groq, openrouter">
+       <input class="prov-in" id="pv-label" placeholder="Label — z. B. Mistral (EU)">
+       <input class="prov-in" id="pv-base" placeholder="Base-URL — z. B. https://api.mistral.ai/v1">
+       <input class="prov-in" id="pv-model" placeholder="Modell — z. B. mistral-large-latest">
+       <input class="prov-in" id="pv-key" type="password" placeholder="API-Key — leer lässt vorhandenen unverändert" autocomplete="off">
+       <button class="prov-save" id="pv-save">Speichern</button>
+       <div class="set-note">Keys liegen nur lokal (gitignored) und werden nie im Klartext ausgeliefert.
+         Claude (Cloud) primär · dein Backup hier · Ollama lokal als Notfall.</div>
+     </div>`;
+  const $ = (id) => box.querySelector(id);
+  box.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => {
+    const p = ps.find(x => x.id === b.dataset.edit); if (!p) return;
+    $('#pv-id').value = p.id; $('#pv-label').value = p.label; $('#pv-base').value = p.baseUrl || '';
+    $('#pv-model').value = p.model || ''; $('#pv-key').value = ''; $('#pv-key').focus();
+  });
+  box.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    await api.deleteProvider(b.dataset.del); actions._reloadEngines && actions._reloadEngines(); renderProviders(box, store, actions);
+  });
+  $('#pv-save').onclick = async () => {
+    const id = $('#pv-id').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!id || id === 'claude' || id === 'ollama') { actions.say && actions.say('system', '✗ Id leer oder reserviert (claude/ollama).'); return; }
+    const p = { Id: id, Label: ($('#pv-label').value.trim() || id), BaseUrl: $('#pv-base').value.trim(), Model: $('#pv-model').value.trim(), ApiKey: $('#pv-key').value };
+    const r = await api.saveProvider(id, p);
+    if (r && r.ok) { actions.say && actions.say('system', `✓ Provider ${id} gespeichert${r.keySet ? ' (Key ✓)' : ''}.`); actions._reloadEngines && actions._reloadEngines(); renderProviders(box, store, actions); }
+    else actions.say && actions.say('system', '✗ ' + ((r && r.error) || 'Speichern fehlgeschlagen'));
+  };
 }
 
 // ── gemeinsame Knoten-Zeilen ──
