@@ -474,3 +474,34 @@ let ``openai-compat engine drives an agentic tool-loop`` () : Task =
         Assert.Contains(events, fun e -> match e with Engine.ToolResult r -> r.Contains "term-x" | _ -> false)
         Assert.Contains(events, fun e -> match e with Engine.Completed(r, _) -> r.Contains "Fertig" | _ -> false)
     }
+
+// ===== Reflexiv: CDD prüft eine Invariante über sein EIGENES Selbst-Modell =====
+// Selbstanwendung — das System auf den Prozess selbst gerichtet. Schließt die Klasse
+// "Aligned ohne echten Test" (Defekt 4: Sync.fs setzt Test-Knoten Aligned bei Marker-
+// Präsenz, nicht bei Grün): ein als Aligned markierter Test-Knoten MUSS einen echten
+// [<Trait("spot", id)>]-Marker im Testcode haben. Zusammen mit grüner Suite (CI) folgt:
+// Aligned-Test-Knoten ⇒ der zugehörige Test existiert und ist grün. Diese Invariante läuft
+// selbst als Test in derselben Suite + CI — das System gatet sich gegen seinen eigenen Drift.
+let rec private findeWurzel (dir: string) : string option =
+    if isNull dir then None
+    elif Directory.Exists(Path.Combine(dir, ".spot")) then Some dir
+    else findeWurzel (Path.GetDirectoryName dir)
+
+[<Fact; Trait("spot", "spec-gate-selbst-hart-test-1")>]
+let ``Reflexiv — jeder Aligned Test-Knoten im Selbst-Modell hat einen echten Test-Marker`` () =
+    match findeWurzel (Directory.GetCurrentDirectory()) with
+    | None -> ()  // ohne erreichbares .spot/ (isolierter Checkout) nichts zu prüfen
+    | Some wurzel ->
+        let modell = Store.load wurzel
+        let abgedeckt = Sync.scanTestMarkers (Path.Combine(wurzel, "tests"))
+        let verwaiste =
+            modell
+            |> List.choose (fun e ->
+                match e.Payload with
+                | TestNode _ when e.Convergence = Aligned
+                                  && not (Set.contains (idValue e.Id) abgedeckt) ->
+                    Some(idValue e.Id)
+                | _ -> None)
+        Assert.True(
+            List.isEmpty verwaiste,
+            sprintf "Aligned Test-Knoten ohne echten Marker (= Aligned ohne Test): %A" verwaiste)
