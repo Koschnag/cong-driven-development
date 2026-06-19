@@ -40,11 +40,11 @@ Die externe Verifikation als Quelle der Garantie ist bei Subbarao Kambhampati u.
 
 ### 1.4 Die Leitfrage
 
-Shuvendu K. Lahiri benennt den intellektuellen Kern als akademische Grand Challenge: „Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents" (arXiv:2603.17150, 2026). Der Mensch steht am Spec-Gate; Review ist Verifikation gegen eine Referenz, nicht Lektüre eines Diffs; „trifft die Spec die Welt" ist der unmechanisierbare Rest. Wir beanspruchen nicht, diese Idee erdacht zu haben — sie ist publiziert und benannt. Wir beanspruchen, konditional, der erste zu sein, der sie als durchgängig getypte, lauffähige Kette mit architektonisch getrenntem Generator und Orakel und einem property- bzw. beweis-verifizierten Gate **implementiert** hat.
+Shuvendu K. Lahiri benennt den intellektuellen Kern als akademische Grand Challenge: „Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents" (arXiv:2603.17150, 2026). Der Mensch steht am Spec-Gate; Review ist Verifikation gegen eine Referenz, nicht Lektüre eines Diffs; „trifft die Spec die Welt" ist der Rest, der außerhalb des Prüfvorgangs liegt. Wir beanspruchen nicht, diese Idee erdacht zu haben — sie ist publiziert und benannt. Wir beanspruchen auch keine Priorität: uns ist keine publizierte Implementierung mit genau dieser Kombination bekannt — durchgängig getypte, lauffähige Kette mit architektonisch getrenntem Generator und Orakel und einem property- bzw. beweis-verifizierten Gate. Das ist eine Literatur-Aussage, kein Beweis.
 
 Daraus folgt die Leitfrage dieses Papiers:
 
-> Wo liegt die unmechanisierbare Grenze in der agentischen Softwareentwicklung — und lässt sie sich **typisieren**, das heißt als externalisierte, maschinenlesbare Referenz an genau die Stelle legen, an der der Mensch sie setzen muss und nur der Mensch sie setzen kann?
+> Wo liegt die Grenze, an der Verifikation auf eine gesetzte Invariante angewiesen ist — und lässt sie sich **typisieren**, das heißt als externalisierte, maschinenlesbare Referenz an genau die Stelle legen, an der jemand die Invariante setzen muss und wir den Menschen wählen?
 
 Diese Arbeit steht **mit** Carsten Luckes Skepsis gegenüber Voll-Automation, nicht gegen sie — eine Schraube weiter. Wir teilen die Skepsis und liefern ihre konstruktive, falsifizierbare Konsequenz.
 
@@ -181,7 +181,7 @@ Wir benennen die Grenzen ungeschönt, weil ein Claim-Do-Gap die einzige unverzei
 
 Wir grenzen den Beitrag exakt ab.
 
-**Lahiri, „Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents" (arXiv:2603.17150, 2026).** Der intellektuelle Kern — der Mensch am Spec-Gate, Verifikation statt Diff-Lektüre, „Trifft die Spec die Welt?" als unmechanisierbarer Rest — ist hier als benannte akademische Grand Challenge publiziert. Cong ist also nicht der Denker der Idee. Wir beanspruchen *keine* Priorität — „erster" wäre eine unbeweisbare Negativ-Existenzaussage über das ganze Feld. Wir beanspruchen konditional: Uns ist keine publizierte Implementierung mit genau dieser Kombination bekannt — getypte externalisierte Spec + architektonisch getrennter Generator/Orakel (Werkzeug-Allowlist ohne Generator-Schreibrecht) + property-/beweis-verifiziertes Gate. Neuheit ist eine Literatur-Aussage, kein Beweis; sie steht und fällt mit der nächsten Nachbarschaft (VeriAct).
+**Lahiri, „Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents" (arXiv:2603.17150, 2026).** Der intellektuelle Kern — der Mensch am Spec-Gate, Verifikation statt Diff-Lektüre, „Trifft die Spec die Welt?" als der Rest, der außerhalb des Prüfvorgangs liegt — ist hier als benannte akademische Grand Challenge publiziert. Cong ist also nicht der Denker der Idee. Wir beanspruchen *keine* Priorität — „erster" wäre eine unbeweisbare Negativ-Existenzaussage über das ganze Feld. Wir beanspruchen konditional: Uns ist keine publizierte Implementierung mit genau dieser Kombination bekannt — getypte externalisierte Spec + architektonisch getrennter Generator/Orakel (Werkzeug-Allowlist ohne Generator-Schreibrecht) + property-/beweis-verifiziertes Gate. Neuheit ist eine Literatur-Aussage, kein Beweis; sie steht und fällt mit der nächsten Nachbarschaft (VeriAct).
 
 **Storey, „From Technical Debt to Cognitive and Intent Debt" (arXiv:2603.22106, 2026).** Definiert Intent Debt als „the absence of externalized rationale that developers and AI agents need to work safely with code". Die getypte Spec unter `.spot/` *ist* dieses externalisierte Rationale: git-versioniert, typisiert, gegen den Code konvergenz-gemessen. Der Beitrag ist eine konkrete Form, Intent Debt zu zahlen statt nur zu benennen.
 
@@ -194,6 +194,8 @@ Wir grenzen den Beitrag exakt ab.
 **METR, „Measuring AI Ability to Complete Long Software Tasks" (arXiv:2503.14499, 2025).** Liefert die gemessene Grenze der heutigen Reichweite (50%-task-completion time horizon, Anfang 2025 ~50–110 Minuten, Verdopplung ~7 Monate) und motiviert damit die Notwendigkeit eines anhaltenden Orakels.
 
 **Kiro / GitHub Spec Kit.** Die schärfste Abgrenzung. Dort erzeugt dasselbe System Spec *und* Code *und* Test — die Referenz ist nicht unabhängig vom Prüfling. In CDD ist sie es — aber zweiachsig, und wir sind genau: Generator ⊥ Prüf-Orakel ist *mechanisch* erzwungen (Werkzeug-Allowlist ohne Schreibrecht, fälschungssicher — diese Achse ist real). Generator ⊥ Spec-Autor gilt *nur*, wenn die Spec aus separater Quelle stammt; erzeugt dieselbe Modell-Instanz Spec *und* Code, korrelieren die Fehler (common-mode — genau der VeriAct-Fall), und der Mensch am Modell-Gate ist der Dekorrelator. Der ledger-Fund „Falsifiable, after 4 tests" wurde entsprechend gefangen, weil ein *Mensch* die stärkere Property und das geänderte Requirement als Gegen-Orakel einbrachte, nicht der Loop aus sich selbst. Review ist damit Konvergenz gegen die externalisierte Spec, nicht das Lesen des Diffs — und das Prüf-Orakel prüft nicht sich selbst.
+
+**Das breitere Feld.** Spezifikationsgetriebene Entwicklung ist 2026 die dominante Antwort auf „Vibe-Coding" — neben Kiro und Spec Kit etwa Cursor, OpenSpec, BMAD, Google Antigravity und die kommerzielle Plattform Tessl (Spec als primäres Artefakt + Tests als Leitplanken; ihr Problem-Framing — Agenten, die „fertig" melden, ohne es zu sein — deckt sich mit unserer Diagnose). Parallel ist „LLM + formale Verifikation" ein eigenes Subfeld, *vericoding*: aus formaler Spec verifizierten Code synthetisieren und mit Lean/Dafny/Verus prüfen — etwa CLEVER (Benchmark für Lean-verifizierte Codegenerierung, arXiv:2505.13938) oder VeriGuard (verifizierte Codegenerierung mit getrenntem Generator/Prüfer, arXiv:2510.05156). Unser Beitrag ist damit weder „Spec als Wahrheit" (Commodity) noch „Code gegen formale Spec verifizieren" (vericoding), sondern deren Integration zu einer laufenden, getypten Methode — eine Architektur- und Integrationsaussage, kein Ideen-Primat.
 
 Die Rahmung gegenüber dem Loop-Engineering-Diskurs (Cherny, „my job is to write loops", The New Stack 2026) ist konstruktiv: mit Lucke, eine Schraube weiter. Das Problem ist nicht der Loop, sondern das Terminierungs-Orakel. Wir teilen die Skepsis gegen Voll-Automation; der Beitrag ist die falsifizierbare Konsequenz daraus.
 
@@ -257,4 +259,10 @@ lean proofs/Werterhaltung.lean     # CI-Job: lean-proof, grün auf GitHub-Hardwa
 7. Henry Gordon Rice: „Classes of Recursively Enumerable Sets and Their Decision Problems". Transactions of the American Mathematical Society, Band 74, Nr. 2, Seiten 358–366, 1953.
 
 8. Boris Cherny (Anthropic, Claude Code): zitiert in „Loop Engineering". The New Stack, 2026. — „my job is to write loops".
+
+9. Amitayush Thakur u. a.: „CLEVER: A Curated Benchmark for Formally Verified Code Generation". arXiv:2505.13938, 2025.
+
+10. Lesly Miculicich u. a.: „VeriGuard: Enhancing LLM Agent Safety via Verified Code Generation". arXiv:2510.05156, 2025.
+
+11. Tessl: „Spec-Driven Development with Tessl" (Framework + Spec-Registry). Agent-Enablement-Plattform, https://tessl.io, 2026.
 

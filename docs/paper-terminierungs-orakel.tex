@@ -725,6 +725,28 @@ spezifikationsgetriebene Arbeitsweise; sie verankern die Spec jedoch nicht in
 einem typisierten Graphen mit architektonisch getrenntem Generator/Orakel und
 property- bzw.\ beweisverifiziertem Gate.
 
+\subsection{Das breitere Feld}
+\label{sec:related-feld}
+
+Spezifikationsgetriebene Entwicklung ist 2026 kein Randphänomen, sondern die
+dominante Antwort auf \glqq Vibe-Coding\grqq: neben Kiro und Spec-Kit etwa Cursor,
+OpenSpec, BMAD, Google Antigravity sowie die kommerzielle Plattform
+Tessl~\cite{tessl2026}, die die Spec als primäres Artefakt führt und mit Tests als
+Leitplanken paart --- ihr Problem-Framing (Agenten, die \glqq fertig\grqq{} melden,
+ohne es zu sein) deckt sich mit unserer Diagnose. Parallel hat sich ein eigenes
+Subfeld, \emph{vericoding}, etabliert: aus formalen Spezifikationen verifizierten
+Code synthetisieren und mit Lean, Dafny oder Verus prüfen --- etwa
+CLEVER~\cite{clever2025}, ein Benchmark für end-to-end in Lean verifizierte
+Codegenerierung, oder VeriGuard~\cite{veriguard2025}, das Agenten-Sicherheit über
+verifizierte Codegenerierung mit getrenntem Generator und Prüfer absichert. Unser
+Beitrag liegt damit weder im Gedanken \glqq Spec als Wahrheit\grqq{} (heute
+Commodity) noch in \glqq Code gegen formale Spec verifizieren\grqq{} (vericoding),
+sondern in deren \emph{Integration} zu einer laufenden, getypten
+Entwicklungsmethode: dem Konvergenz-Zustandsgraphen (\texttt{SPOT}), der
+architektonischen Generator/Orakel-Trennung per Allowlist und der reflexiven
+Selbstanwendung. Das ist eine Architektur- und Integrationsaussage, kein
+Ideen-Primat.
+
 \subsection{Neuheit, konditional}
 \label{sec:related-neuheit}
 
@@ -884,6 +906,21 @@ Nguyen, Cong Chanh Vinzenz:
 \newblock cong-driven-development: A Spec-Convergent Method and IDE for Agentic
 Software Development.
 \newblock Software-Repository, \texttt{github.com/Koschnag/cong-driven-development}\,@\,\texttt{2a274e1}, 2026.
+
+\bibitem{tessl2026}
+Tessl:
+\newblock Spec-Driven Development with Tessl (Framework und Spec-Registry).
+\newblock Agent-Enablement-Plattform, \url{https://tessl.io}, 2026.
+
+\bibitem{clever2025}
+Thakur, Amitayush u.\,a.:
+\newblock CLEVER: A Curated Benchmark for Formally Verified Code Generation.
+\newblock arXiv:2505.13938, 2025.
+
+\bibitem{veriguard2025}
+Miculicich, Lesly u.\,a.:
+\newblock VeriGuard: Enhancing LLM Agent Safety via Verified Code Generation.
+\newblock arXiv:2510.05156, 2025.
 
 \end{thebibliography}
 
