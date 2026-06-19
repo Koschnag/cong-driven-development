@@ -1,0 +1,891 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Eingabe / Sprache ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\addto\captionsngerman{\renewcommand{\abstractname}{Abstract (English)}}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% --- Anfuehrungszeichen ---
+% Zitatkonvention dieses Papers: Im deutschen Fliesstext durchgaengig \glqq...\grqq
+% (globale Stilvorgabe). \enquote{} wird AUSSCHLIESSLICH im englischen Abstract
+% verwendet (bewusste EN-Ausnahme via csquotes/babel). Kein Mischbetrieb im Body.
+\usepackage[autostyle=true,german=quotes]{csquotes}
+
+% --- Mathematik ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% --- Tabellen ---
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+
+% --- Code-Listings (F#/Lean) ---
+\usepackage{xcolor}
+\usepackage{listings}
+
+% --- Verweise (cleveref muss nach hyperref geladen werden) ---
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,ngerman]{cleveref}
+
+% --- Einheitliche Auszeichnung der A/B-Verifizierbarkeitsmarken ---
+\newcommand{\AB}[1]{\textbf{#1}}
+
+% --- Theorem-Umgebungen ---
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{satz}{Satz}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{korollar}{Korollar}[section]
+\theoremstyle{remark}
+\newtheorem{bemerkung}{Bemerkung}[section]
+
+% --- cleveref-Namen ---
+\crefname{bemerkung}{Bemerkung}{Bemerkungen}
+\Crefname{bemerkung}{Bemerkung}{Bemerkungen}
+\crefname{satz}{Satz}{Saetze}
+\Crefname{satz}{Satz}{Saetze}
+\crefname{definition}{Definition}{Definitionen}
+\Crefname{definition}{Definition}{Definitionen}
+\crefname{lstlisting}{Listing}{Listings}
+\Crefname{lstlisting}{Listing}{Listings}
+
+% --- Umbruch langer Bezeichner/URLs (reduziert Overfull-\hbox) ---
+\usepackage{xurl}
+\emergencystretch=3em
+\sloppy
+
+% --- Listing-Stile fuer F# und Lean ---
+\lstdefinelanguage{fsharp}{
+  morekeywords={let,rec,match,with,type,module,open,member,override,
+    namespace,and,if,then,else,for,in,do,fun,function,of,mutable,
+    true,false,when,yield,return},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{(*}{*)},
+  morestring=[b]",
+}
+\lstdefinelanguage{lean}{
+  morekeywords={theorem,lemma,def,by,intro,intros,simp,rw,exact,apply,
+    have,show,fun,match,with,structure,inductive,namespace,open,end,
+    omega,calc},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]",
+}
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!60!black}\bfseries,
+  commentstyle=\color{green!40!black}\itshape,
+  stringstyle=\color{red!50!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  frame=single,
+  breaklines=true,
+  showstringspaces=false,
+  captionpos=b,
+  columns=fullflexible,
+}
+
+\title{Das Terminierungs-Orakel: Konvergenz agentischer
+Softwareentwicklung gegen eine externalisierte, getypte Spezifikation}
+\author{Cong Chanh Vinzenz Nguyen}
+\date{19.\ Juni 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Agentic software development is increasingly organized as a loop: a generating
+agent proposes, a checking step accepts or rejects, and the result feeds the next
+iteration. We argue that the load-bearing problem of this loop is not the
+generator and not the iteration, but its \emph{termination oracle} --- the
+instance deciding when a proposal is \enquote{done}. A loop without a
+forgery-resistant termination oracle does not converge towards correctness but
+towards whatever its checking step happens to wave through. Our answer is not
+better generation but \emph{convergence against an externalized, typed
+specification} that carries the termination oracle. We instantiate this in a
+method (\texttt{cong-driven-development}, a typed F\# discriminated-union graph
+\texttt{SPOT} with the convergence states \texttt{Aligned}/\texttt{Pending}/%
+\texttt{Diverged}/\texttt{Orphaned}) and two case studies: \texttt{runenruf}
+(existence proof, $46/46$ tests, $\sim\!125$ LoC, the honestly friendliest domain
+where the spec \emph{is} the world) and \texttt{ledger-casestudy} (counterpart
+with real IO, a mutable requirement, $5/5$ tests, and a single Lean-proved,
+\texttt{sorry}-free value-preservation invariant). We separate the
+generator/oracle independence into two axes: a \emph{mechanical} one (tool
+allowlist without generator write access, real and machine-checkable) and an
+\emph{epistemic} one (decorrelation of spec author and code author, required only
+when the spec stems from a separate source). Every load-bearing claim is declared
+either \textbf{A} (machine- and externally verifiable: commit hash, arXiv id, CI
+run, \texttt{sorry} audit) or \textbf{B} (a human setting). We make no priority
+claim and prove no impossibility about machines: a second, sufficiently
+independent agent could set the ground invariant. We close with a gap, not a
+promise --- two small case studies, one proved invariant, no unbounded autonomy:
+one screw turned further.
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+\section{Einleitung}
+\label{sec:einleitung}
+
+Agentische Softwareentwicklung organisiert sich zunehmend als Schleife: ein
+generierender Agent erzeugt einen Vorschlag, ein Prüfschritt akzeptiert oder verwirft ihn,
+und das Ergebnis fließt in die nächste Iteration ein. Boris Cherny bringt diese
+Verschiebung auf den Punkt, wenn er die Tätigkeit des Entwicklers als \glqq my job is to
+write loops\grqq{} beschreibt~\cite{cherny2026}. Wir argumentieren, dass das eigentliche
+Problem dieser Schleife nicht der Generator und nicht die Iteration selbst ist, sondern ihr
+\emph{Terminierungs-Orakel}: jene Instanz, die entscheidet, wann ein Vorschlag \glqq fertig\grqq{}
+ist. Eine Schleife ohne fälschungssicheres Terminierungs-Orakel konvergiert nicht gegen
+Korrektheit, sondern gegen das, was ihr Prüfschritt zufällig durchwinkt. Unser Lösungsansatz
+ist entsprechend nicht eine bessere Generierung, sondern die \emph{Konvergenz gegen eine
+externalisierte, getypte Spezifikation}, die das Terminierungs-Orakel trägt.
+
+\paragraph{Cognitive Debt und Intent Debt.}
+Die Notwendigkeit einer externalisierten Spezifikation ist nicht bloß ergonomisch. Storey
+beschreibt einen Schuldbegriff jenseits der klassischen technischen Schuld:
+\emph{Intent Debt} als \glqq the absence of externalized rationale that developers and AI
+agents need to work safely with code\grqq{}~\cite{storey2026}. Fehlt die externalisierte
+Absicht, so verlagert sich das Wissen darüber, \emph{warum} ein Code korrekt sein soll, in
+nicht inspizierbare Zustände --- in den menschlichen Kopf oder in den verworfenen Kontext
+eines Agenten. Lahiri formuliert die korrespondierende Aufgabe als benannte offene
+\emph{Grand Challenge}: die Formalisierung von Intent als Voraussetzung verlässlicher
+KI-gestützter Programmierung~\cite{lahiri2026}. Wir behandeln diese Externalisierung als
+Konstruktionsprinzip, nicht als Nebenprodukt.
+
+\paragraph{Ehrlicher Stand der Technik.}
+Drei Befunde rahmen die Ausgangslage und zugleich ihre Grenzen. Erstens zur Reichweite
+heutiger Agenten: METR misst einen \glqq 50\%-task-completion time horizon\grqq{} und berichtet
+für Anfang 2025 eine Aufgabenlänge von etwa $50$ bis $110$ Minuten bei einer Verdopplung
+von rund $7$ Monaten~\cite{metr2025}; wir übernehmen ausschließlich diese Zahlen und leiten
+daraus keine Extrapolation ab. Zweitens zur prinzipiellen Schranke: nach dem Satz von
+Rice ist jede nicht-triviale semantische Eigenschaft von Programmen unentscheidbar
+\cite{rice1953}. Die Voraussetzung des Satzes --- eine nicht-triviale semantische
+Eigenschaft --- ist für \glqq erfüllt die Spezifikation\grqq{} gegeben; daraus folgt aber nur eine
+unentscheidbare \emph{obere Schranke} über alle Programme. Sie motiviert die entscheidbare,
+\emph{pro Spezifikation} approximierende Prüfung, die wir verwenden, und ist insofern
+\emph{Motivation}, nicht Existenzbeweis unserer Konstruktion. Wir betonen ausdrücklich: aus dem
+Satz von Rice folgt \emph{nicht}, dass ein Mensch im Prüfvorgang unersetzlich wäre. Drittens
+zur Vertrauenswürdigkeit von Spezifikationen selbst: Misu, Ma und Lopes zeigen mit
+\textsc{VeriAct}, dass \emph{verifizierer-akzeptiert} nicht \emph{korrekt} bedeutet --- eine vom
+Verifizierer angenommene formale Spezifikation kann die Absicht verfehlen~\cite{veriact2026}.
+Dieser Befund ist die nächste Nachbarschaft unserer Arbeit und zugleich die Quelle ihres
+ehrlichsten Vorbehalts.
+
+\paragraph{Leitfrage.}
+Daraus ergibt sich die Frage, die dieses Papier strukturiert: \emph{Lässt sich die
+agentische Schleife so konstruieren, dass ihr Terminierungs-Orakel an einer
+externalisierten, getypten Spezifikation hängt --- und welcher Rest bleibt nach maximaler
+Mechanisierung notwendig menschlich?} Wir beantworten den ersten Teil konstruktiv anhand
+einer Methode und zweier Fallstudien; den zweiten Teil beantworten wir, indem wir den
+verbleibenden Rest exakt lokalisieren, statt ihn wegzuargumentieren.
+
+\paragraph{A/B-Methodik dieses Papers.}
+Wir unterwerfen jede tragende Behauptung einer expliziten Disziplin: sie deklariert sich
+entweder als \AB{A} --- maschinell und extern verifizierbar (Commit-Hash, \texttt{arXiv}-ID,
+CI-Lauf, \texttt{sorry}-Audit) --- oder als \AB{B} --- eine menschliche Setzung
+(normative Wahl, Spezifikation-gegen-Welt-Bindung, Neuheit als Literaturaussage,
+Generalisierung über Domänen). Keine Aussage bleibt unmarkiert. Diese Markierung ist selbst
+der zentrale Hebel der Arbeit: Sie trennt, was Logik leistet, von dem, was der Mensch
+einbringt, und macht den \glqq Rest\grqq{} prüfbar statt rhetorisch. \Cref{sec:methode} legt die
+Methode offen; die A/B-Tabelle in \Cref{sec:grenzen-ab} bindet jede Marke an ihren Anker.
+Wir kündigen damit zugleich an, dass dieses Papier \emph{mit} einer Lücke argumentiert: zwei
+kleine Fallstudien, ein einziger Lean-bewiesener Invariant, keine unbeschränkte Autonomie ---
+eine Schraube weiter, nicht das gelöste Problem.
+
+\section{Methode}
+\label{sec:methode}
+
+\subsection{Konvergenz gegen eine externalisierte Spezifikation}
+\label{sec:konvergenz}
+
+Den Kern bildet eine Umkehrung des Akzeptanzkriteriums. Statt \glqq der Agent hält an, wenn er
+zufrieden ist\grqq{} gilt \glqq der Agent hält an, wenn ein externes, getyptes Orakel die
+Konvergenz gegen die Spezifikation bestätigt\grqq. Die Methode und ihre IDE-Realisierung liegen
+in \texttt{cong-driven-development}~\cite{cdd2026}, ausgewertet am Commit \texttt{2a274e1}. Das tragende Artefakt
+ist \texttt{SPOT} (\emph{Single Point of Truth}): ein typisierter F\#-Discriminated-Union-Graph,
+in dem jeder Knoten als ein \texttt{JSON} pro Knoten unter \texttt{.spot/} materialisiert ist.
+Der Konvergenzzustand jedes Knotens ist auf vier Werte getypt: \texttt{Aligned},
+\texttt{Pending}, \texttt{Diverged}, \texttt{Orphaned}. Das Orakel
+\texttt{SetzeSpecAligned} setzt einen Knoten genau dann auf \texttt{Aligned}, wenn ein
+\emph{echter} grüner \texttt{dotnet test}-Lauf vorliegt --- entscheidend ist der Test-PASS, nicht
+der Exit-Code $0$; ein leerer oder übersprungener Lauf qualifiziert nicht. Das Selbst-Modell der
+Methode umfasst $66$ Knoten, davon $62$ \texttt{Aligned} und $4$ \texttt{Pending}, bei
+$36/36$ grünen Tests (autoritativer Runner-Count @\,\texttt{2a274e1}); der reflexive
+Selbst-Gate trägt den Knoten \texttt{spec-gate-selbst-hart}. Dass das Gate auf sich selbst
+angewandt grün ist, ist eine A-Aussage; dass es das \emph{Richtige} prüft, ist eine B-Aussage
+(siehe \Cref{bem:spec-welt}).
+
+\subsection{Generator-/Orakel-Trennung --- zweiachsig}
+\label{sec:trennung}
+
+Die Trennung von Erzeuger und Prüfer ist nicht eine einzige Eigenschaft, sondern zerfällt in
+zwei voneinander unabhängige Achsen.
+
+\paragraph{Mechanische Achse (Generator $\perp$ Prüf-Orakel).}
+Der Generator besitzt kein Schreibrecht auf das Prüf-Orakel. Technisch erzwungen wird dies
+durch eine Werkzeug-Allowlist ohne Schreibzugriff des Generators auf den Gate-Pfad; der
+Generator kann das Urteil über seine eigene Ausgabe nicht fälschen. Diese Achse ist real und
+maschinell prüfbar --- sie ist eine A-Aussage, verankert im Code @\,\texttt{2a274e1}.
+
+\paragraph{Epistemische Achse (Generator $\perp$ Spezifikation-Autor).}
+Die zweite Achse betrifft die \emph{Herkunft} der Spezifikation. Sie gilt nur, sofern die
+Spezifikation aus einer von der Codegenerierung \emph{separaten} Quelle stammt. Erzeugt
+dieselbe Modell-Instanz sowohl Spezifikation als auch Code, so korrelieren ihre Fehler ---
+ein \emph{common-mode}-Versagen, genau der von \textsc{VeriAct} beschriebene Fall, in dem die
+verifizierer-akzeptierte Spezifikation mit dem Code gemeinsam die Absicht
+verfehlt~\cite{veriact2026}. Auf dieser Achse ist der Mensch der \emph{Dekorrelator}: nicht
+weil eine Maschine die Rolle prinzipiell nicht einnehmen könnte --- ein zweiter, unabhängiger
+Agent könnte die Spezifikation ebenso stellen ---, sondern weil eine unabhängige Quelle
+\emph{erforderlich} ist und in unseren Fallstudien der Mensch diese Quelle war. Konkret wurde
+der in \texttt{ledger-casestudy} gefangene Fehlschluss --- ein Modell, das sich selbst als
+\glqq Falsifiable, after 4 tests\grqq{} auswies --- dadurch gefangen, dass ein Mensch eine stärkere
+Property und ein geändertes Requirement als Gegen-Orakel einbrachte; nicht die Schleife aus
+sich selbst heraus. Die Notwendigkeit der Dekorrelation ist strukturell (A: die Korrelation ist
+beobachtbar); \emph{wer} dekorreliert, ist eine Setzung (B).
+
+\begin{bemerkung}[Spezifikation gegen Welt]
+\label{bem:spec-welt}
+Die mechanische Achse garantiert, dass der Code die Spezifikation erfüllt; sie garantiert
+nicht, dass die Spezifikation die \emph{Welt} trifft. Die Bindung \glqq Spezifikation $\models$
+Welt\grqq{} ist nach \textsc{VeriAct} nicht orakel-prüfbar~\cite{veriact2026} und damit
+durchgängig eine B-Aussage. Wir behaupten an keiner Stelle Spezifikation-$\leftrightarrow$-Code-Äquivalenz.
+\end{bemerkung}
+
+\subsection{Verschiebung des Akzeptanzkriteriums}
+\label{sec:akzeptanz}
+
+Die Methode verschiebt das Akzeptanzkriterium von einer impliziten, generator-internen
+Zufriedenheit zu einem expliziten, externen, getypten Prädikat. Diese Verschiebung ist die
+operationale Antwort auf das Terminierungs-Orakel-Problem aus \Cref{sec:einleitung}: Die
+Schleife terminiert genau dann, wenn der \texttt{SPOT}-Graph keinen \texttt{Diverged}- und
+keinen \texttt{Orphaned}-Knoten mehr trägt und jeder relevante Knoten über
+\texttt{SetzeSpecAligned} auf \texttt{Aligned} gehoben ist. Der Loop selbst bleibt unverändert
+agentisch; verändert ist allein, woran sein Haltepunkt hängt. Im Sinne von
+\textsc{LLM-Modulo}~\cite{kambhampati2024} ist der LLM der \emph{Generator}, das getypte
+Orakel der \emph{Kritiker}; im Sinne property-orientierten Feedbacks~\cite{pgs2025} liefert der
+\texttt{Diverged}-Zustand eine strukturell minimale, property-bezogene Rückmeldung statt eines
+diffusen \glqq versuche es erneut\grqq.
+
+\subsection{Abgrenzung}
+\label{sec:abgrenzung}
+
+Spezifikationsgetriebene Werkzeuge wie Kiro oder GitHub Spec-Kit externalisieren Absicht
+ebenfalls, jedoch typischerweise als \emph{natürlichsprachliche} Spezifikationsdokumente, deren
+Erfüllung nicht über ein getyptes, ausführbares Orakel mit fälschungssicherer
+Generator-/Prüfer-Trennung erzwungen wird. Der Unterschied liegt nicht im Vorhandensein einer
+Spezifikation, sondern in deren Typisierung, ihrer maschinellen Prüfbarkeit und der
+architektonisch erzwungenen Trennung nach \Cref{sec:trennung}. Wir erheben hieraus
+\emph{keinen} Prioritätsanspruch: Uns ist keine publizierte Implementierung mit genau dieser
+Kombination bekannt --- getypte externalisierte Spezifikation, architektonisch getrennter
+Generator und Orakel, Werkzeug-Allowlist ohne Generator-Schreibrecht sowie ein
+property- und beweis-verifiziertes Gate ---, doch diese Neuheit ist eine \emph{Literaturaussage}
+(B), kein Beweis. Sie kann durch einen einzigen Gegenbeleg fallen.
+
+\begin{bemerkung}[Setzen der Grund-Invariante]
+\label{bem:grundinvariante}
+Eine Konsequenz der Konstruktion verdient explizite Trennung in eine strukturelle und eine
+normative Aussage. \emph{(i) Strukturell (Regress):} Die Grund-Invariante, gegen die geprüft
+wird, ist im System nicht selbst-fundierbar --- jede Begründung einer Invariante setzt eine
+weitere Invariante voraus; der Regress terminiert nur durch einen Anker \emph{außerhalb} des
+Prüfvorgangs. Dies ist ein architektonisches Argument, kein im Papier geführter formaler
+Beweis. \emph{(ii) Normativ:} Dass der \emph{Mensch} diesen Anker setzt, ist eine
+\emph{Wahl} --- begründet darin, dass die Absicht extern zum Generator und
+verantwortungsbehaftet ist ---, und \emph{keine} Unmöglichkeitsaussage über Maschinen. Ein
+zweiter Agent könnte die Invariante setzen; der Mensch ist hier \emph{verschoben}, nicht durch
+ein Theorem als notwendig erwiesen. Wir vermeiden bewusst jede Formulierung im Sinne von
+\glqq unmechanisierbar\grqq{} oder \glqq nur ein Mensch kann\grqq{}; das wäre der Penrose/Lucas-Fehlschluss,
+den wir ablehnen. Die Theoreme aus \Cref{sec:einleitung} --- Rice als Motivation, Gödel und
+Tarski (sofern überhaupt herangezogen) als bloße Analogie --- tragen diese Aussage nicht: aus
+keinem von ihnen folgt die Unersetzlichkeit eines Menschen.
+\end{bemerkung}
+
+\section{Fallstudie A: Runenruf}
+\label{sec:runenruf}
+
+Runenruf ist der \emph{Existenzbeweis} der Methode: die Frage, ob eine getypte,
+externalisierte Spezifikation als Terminierungs-Orakel eines agentischen Loops überhaupt
+einen sorry-freien, deterministisch reproduzierbaren Konvergenz-Zustand erzeugen kann, wird
+hier an einer minimalen Domäne positiv beantwortet. Wir markieren die Domänenwahl sofort als
+das, was sie ist: Runenruf ist die \emph{ehrlich freundlichste} Domäne, die wir kennen --- eine
+reine Simulationsdomäne, in der die Spezifikation mit der Welt zusammenfällt
+(\Cref{bem:runenruf-grenze}). Das Artefakt belegt Anwendbarkeit, nicht Skalierung.
+
+\subsection{Aufbau}
+\label{sec:runenruf-aufbau}
+
+Der Code liegt in \texttt{github.com/Koschnag/runenruf}, ausgewertet am Commit
+\texttt{56376a5}. Die Simulationsdomäne umfasst rund $125$ Zeilen
+F\#/.NET-Code\,@\,\texttt{56376a5}. Über dem Generator-Loop steht das in
+\Cref{sec:konvergenz} beschriebene Orakel \texttt{SetzeSpecAligned},
+das einen \texttt{.spot/}-Knoten genau dann auf \texttt{Aligned} setzt, wenn ein
+\emph{echter} grüner \texttt{dotnet test}-Lauf vorliegt --- gewertet wird das Test-PASS, nicht
+der Prozess-Exitcode $0$.
+
+\subsection{Verifikation}
+\label{sec:runenruf-verifikation}
+
+Der autoritative Test-Runner meldet $46/46$ grüne Tests\,@\,\texttt{56376a5}; die Zahl stammt
+aus der Runner-Ausgabe, nicht aus einem \texttt{grep} über Testnamen. Tragend ist eine
+FsCheck-Property mit dem Spec-Schlüssel \texttt{spec-siegel-lager-nichtnegativ}: sie
+quantifiziert über \emph{jeden} Seed und \emph{jede} Folge von Domänenoperationen und behauptet
+die Nichtnegativität des Siegel-Lagerbestands. Die Auswertung ist deterministisch --- gleicher
+Seed erzeugt gleichen Lauf ---, sodass ein Gegenbeispiel reproduzierbar bleibt und nicht von
+einem nichtdeterministischen Scheduler abhängt.
+
+\begin{bemerkung}[Verifizierbarkeitsachse]
+\label{bem:runenruf-achse}
+Die Aussage \glqq $46/46$ grün\grqq\ ist eine \AB{A}-Behauptung im Sinne von
+\Cref{sec:einleitung}: maschinell extern verifiziert, an \texttt{github.com/Koschnag/runenruf}\,@\,\texttt{56376a5}
+und den dortigen CI-Run gebunden. Die FsCheck-Property ist ebenfalls \AB{A}: sie wird vom
+Runner ausgeführt. Was \emph{nicht} aus diesen Läufen folgt, ist die Bindung der Spezifikation
+an eine externe Welt --- diese fällt in \AB{B}.
+\end{bemerkung}
+
+\begin{bemerkung}[Grenze: die Spec ist die Welt]
+\label{bem:runenruf-grenze}
+In Runenruf existiert kein externer Referent jenseits der Simulation. Die Spezifikation
+\emph{ist} die Welt, daher entfällt die Spec-gegen-Welt-Bindung
+(\glqq{}Spec\,$\models$\,Welt\grqq), die nach VeriAct~\cite{veriact2026} nicht
+orakel-prüfbar ist und in unserer Klassifikation zu \AB{B} gehört. Genau deshalb ist
+Runenruf ein Existenzbeweis und kein Realismus-Beweis: er zeigt, dass die
+Typen-Property-Maschinerie geschlossen \emph{durchläuft}, nicht, dass sie etwas außerhalb ihrer
+selbst trifft. Der härtere Fall mit echtem IO und veränderlichem Requirement folgt in
+\Cref{sec:ledger}.
+\end{bemerkung}
+
+\section{Fallstudie B: Ledger}
+\label{sec:ledger}
+
+Ledger ist das \emph{Gegenstück} zu Runenruf: dieselbe Methode in einer Domäne mit echtem IO,
+einem über die Zeit \emph{veränderlichen} Requirement und einer geschlossenen Drei-Schichten-Kette
+Typen\,$\rightarrow$\,FsCheck\,$\rightarrow$\,Lean-Beweis (\Cref{sec:ledger-schichten}). Hier
+fällt die Spec nicht mit der Welt zusammen, und genau hier zeigt sich, wo das Loop-interne Orakel
+endet und der menschliche Dekorrelator beginnt (\Cref{sec:ledger-misspec}).
+
+\subsection{Aufbau}
+\label{sec:ledger-aufbau}
+
+Der Code liegt in \texttt{github.com/Koschnag/ledger-casestudy}, ausgewertet am Commit
+\texttt{72b1284}; F\#/.NET~9, Beträge als \texttt{int64}-Cent, um Gleitkomma-Fehler an der
+Wertgrenze auszuschließen. Anders als in \Cref{sec:runenruf} gibt es echtes IO: ein persistentes
+Journal und einen Replay-Pfad. Die Kerndomäne umfasst rund $41$ Zeilen
+F\#-Code\,@\,\texttt{72b1284}. Der autoritative Runner meldet $5/5$ grüne
+Tests\,@\,\texttt{72b1284}.
+
+\subsection{Gefangener Mis-Spec --- der Mensch als Gegen-Orakel}
+\label{sec:ledger-misspec}
+
+Im \texttt{.spot/}-Ledger findet sich der Eintrag \glqq Falsifiable, after 4 tests\grqq. Wir
+attribuieren diesen Fund präzise: Er wurde \emph{nicht} aus dem Loop heraus erzeugt. Die ersten,
+schwächeren Properties akzeptierten eine fehlerhafte Buchungslogik; verifizierer-akzeptiert ist
+eben nicht korrekt~\cite{veriact2026}. Gefangen wurde der Fehler erst, als ein \emph{Mensch}
+eine stärkere Property \emph{und} das geänderte Gebühren-Requirement als Gegen-Orakel einbrachte
+--- erst diese externe Setzung machte die bis dahin grüne Spezifikation falsifizierbar. Das ist
+der zweiachsige Befund aus \Cref{sec:trennung}: Generator\,$\perp$\,Prüf-Orakel ist mechanisch
+erzwungen, aber Generator\,$\perp$\,Spec-Autor gilt nur bei separater Quelle. Erzeugt dieselbe
+Modell-Instanz Spezifikation \emph{und} Code, korrelieren die Fehler (common-mode); der Mensch
+ist hier der Dekorrelator, nicht der Loop aus sich selbst.
+
+Der Befund ist als reproduzierbares Negativ-Artefakt konserviert:
+\texttt{demo-gate-at-failure.sh}\,@\,\texttt{72b1284} führt das Gate in den Falsifikationszustand
+und macht den Mis-Spec wiederholbar sichtbar. Anschließend wurde die Domäne auf doppelte
+Buchführung (Doppik) umgestellt, sodass jede Buchung wertneutral bleibt.
+
+\begin{bemerkung}[Verifizierbarkeitsachse]
+\label{bem:ledger-achse}
+\glqq $5/5$ grün\grqq, der sorry-freie Lean-Lauf (\Cref{sec:ledger-schichten}) und die Existenz
+des Negativ-Artefakts sind \AB{A}-Behauptungen, gebunden an
+\texttt{github.com/Koschnag/ledger-casestudy}\,@\,\texttt{72b1284}. Die Aussage, \emph{wer} die
+stärkere Property setzt, und dass die Doppik-Spec die buchhalterische Welt trifft, sind
+\AB{B}: normativ bzw.\ Spec-gegen-Welt, nicht aus dem Lauf ableitbar.
+\end{bemerkung}
+
+\subsection{Drei Schichten: Typen, FsCheck, Lean}
+\label{sec:ledger-schichten}
+
+Ledger trägt die einzige in dieser Arbeit \emph{geschlossene} Drei-Schichten-Kette:
+
+\begin{enumerate}
+  \item \textbf{Typen.} \texttt{int64}-Cent und die F\#-Datentypen schließen ganze
+  Fehlerklassen (Gleitkomma, negative Repräsentationslücken) bereits statisch aus.
+  \item \textbf{FsCheck.} Properties quantifizieren über Buchungsfolgen und prüfen
+  Nichtnegativität, Isolation und Replay-Treue über zufällig generierte Eingaben.
+  \item \textbf{Lean-Beweis.} \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{72b1284} beweist die
+  Werterhaltung für \emph{jede} Buchungsfolge --- ein Allquantor, der über das stichprobenhafte
+  FsCheck hinausgeht.
+\end{enumerate}
+
+Entscheidend für die Aussagekraft des Lean-Beweises ist, dass das Lean-Modell den
+Deckungs-/Ablehnungspfad \emph{enthält} und damit modellgleich zur F\#-Funktion \texttt{buche}
+ist: eine Buchung, die die Deckung verletzen würde, wird im Modell abgelehnt, genau wie im Code.
+Ein Beweis über ein Modell ohne Ablehnungspfad wäre vakuum-stark und würde die kritische
+Eigenschaft am Code vorbeibeweisen.
+
+\begin{lstlisting}[language=lean,caption={Kern-Theorem in \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{72b1284} (vereinfacht)},label={lst:werterhaltung}]
+theorem werterhaltung (s : Zustand) (b : Buchung) :
+    summe (buche s b) = summe s := by
+  -- Beweis ausgelassen; vollstaendig im Repo @ 72b1284
+  sorry
+\end{lstlisting}
+
+\noindent
+Das Schluesselwort \texttt{sorry} in \Cref{lst:werterhaltung} steht nur im hier verkuerzten
+Listing als Platzhalter fuer den ausgelassenen Beweiskoerper; der tatsaechliche Beweis im
+Repository ist \emph{sorry-frei}: \texttt{\#print axioms werterhaltung} liefert ausschließlich
+\texttt{propext} und \texttt{Quot.sound}, also keine zusätzlichen Axiome jenseits des
+Lean-Kerns. Der Beweis kommt ohne Mathlib aus (nur \texttt{Core}~$+$~\texttt{omega}); der
+CI-Job \texttt{lean-proof} ist grün\,@\,\texttt{72b1284}.
+
+\begin{bemerkung}[Was Lean hier \emph{nicht} abdeckt]
+\label{bem:ledger-nur-werterhaltung}
+Nur \emph{ein} Invariant --- die Werterhaltung --- ist Lean-bewiesen. Nichtnegativität,
+Isolation und Replay-Treue sind ausschließlich durch FsCheck abgesichert. Die
+Drei-Schichten-Kette Typen\,$\rightarrow$\,Property\,$\rightarrow$\,Beweis ist derzeit nur für
+die Werterhaltung geschlossen; für die übrigen Invarianten fehlt die Beweis-Schicht. Wir rahmen
+das ausdrücklich als Lücke, eine Schraube weiter, nicht als vollständige Verifikation der
+Domäne.
+\end{bemerkung}
+
+\subsection{Kompression}
+\label{sec:ledger-kompression}
+
+Über beide Fallstudien hinweg ist die verifizierte Invariante deutlich kürzer als ihre
+Implementierung: das Verhältnis liegt zwischen rund $40\times$ und $125\times$
+(\Cref{sec:runenruf}: $\sim\!125$ LoC Domäne; \Cref{sec:ledger}: $\sim\!41$ LoC Domäne, jeweils
+gegen die kompakte Property bzw.\ das Kern-Theorem). Wir formulieren die Lesart dieser Zahlen
+streng konditional und eng.
+
+\begin{bemerkung}[Kompression ist Diskrimination, keine Äquivalenz]
+\label{bem:kompression}
+Die Invariante \emph{fixiert} bzw.\ diskriminiert die kritische Korrektheitseigenschaft ---
+Werterhaltung, Nichtnegativität ---, sie \emph{spezifiziert die Funktion nicht vollständig}.
+Unendlich viele Implementierungen erfüllen dieselbe Invariante; aus
+\glqq Code\,$\models$\,Invariante\grqq\ folgt keine Spec-Code-Äquivalenz. Die genannten
+Faktoren gelten konditional auf genau diese zwei Fallstudien (N\,$=$\,$2$) und sind kein Beleg
+für eine domänenübergreifende Kompressionsrate. Die Größenangaben sind \AB{A}
+(Code\,@\,\texttt{56376a5} bzw.\ \texttt{72b1284}); der Schluss, dass die fixierte Eigenschaft
+\glqq die richtige\grqq\ ist, ist \AB{B} (Spec-gegen-Welt).
+\end{bemerkung}
+
+\section{Reflexive Selbstanwendung}
+\label{sec:reflexiv}
+
+Eine Methode, die Korrektheit gegen eine externalisierte, getypte Spezifikation
+erzwingt, muss sich der Frage stellen, ob sie auf sich selbst anwendbar ist. Wir
+prüfen das nicht rhetorisch, sondern operativ: Die Methode \texttt{CDD} ist in
+ihrem eigenen \texttt{.spot/}-Graphen modelliert, und ihr Gate läuft über sich
+selbst.
+
+\subsection{Selbst-Gate}
+\label{sec:reflexiv-selbstgate}
+
+Das Selbstmodell von \texttt{CDD}
+ist im Repository \texttt{cong-driven-development}\,@\,\texttt{2a274e1} als typisierter
+F\#-DU-Graph abgelegt: ein JSON-Knoten je Element unter \texttt{.spot/}, mit den
+Konvergenzzuständen \texttt{Aligned}, \texttt{Pending}, \texttt{Diverged} und
+\texttt{Orphaned}. Das Orakel \texttt{SetzeSpecAligned} markiert einen Knoten
+genau dann als \texttt{Aligned}, wenn ein echter grüner \texttt{dotnet test}
+vorliegt; maßgeblich ist der Test-\texttt{PASS}, nicht der Exit-Code~0 des
+Prozesses. Diese Unterscheidung ist nicht kosmetisch: Ein Prozess kann mit
+Exit-0 terminieren, ohne dass eine einzige Property tatsächlich geprüft wurde.
+
+Der reflexive Selbst-Gate \texttt{spec-gate-selbst-hart}
+(Repository \texttt{@2a274e1}) wendet exakt dieses Orakel auf das Selbstmodell
+an. Der autoritative Testlauf (Runner, nicht \texttt{grep}) meldet
+$36/36$~Tests grün; das Selbstmodell umfasst $66$~Knoten, davon $62$~\texttt{Aligned}
+und $4$~\texttt{Pending}. Wir behaupten hier keine Vollständigkeit: Die vier
+\texttt{Pending}-Knoten sind genau die Stellen, an denen die Methode ihre eigene
+Spezifikation noch nicht eingeholt hat. Das ist der ehrliche, nicht der
+geschönte Konvergenzzustand.
+
+\subsection{Ehrliche Konvergenz}
+\label{sec:reflexiv-konvergenz}
+
+Konvergenz im Sinne von \texttt{CDD} ist kein Fixpunkt-Versprechen, sondern ein
+beobachtbarer Zustand pro Knoten. Ein Graph mit $62$~\texttt{Aligned} und
+$4$~\texttt{Pending} ist nicht \glqq fertig\grqq, sondern \emph{vermessen}: Die
+Methode macht ihre eigene Lücke sichtbar, statt sie zu verbergen. Wir lesen das
+als Funktionsmerkmal, nicht als Mangel --- ein Terminierungs-Orakel, das nur
+\texttt{Aligned} kennt, wäre kein Orakel, sondern eine Zusicherung ohne
+Diskriminationskraft.
+
+\subsection{Die reflexive Grenze}
+\label{sec:reflexiv-grenze}
+
+Wendet man das Gate auf das Gate an, stellt sich die Frage nach der
+\emph{Grund-Invariante}: Welche Invariante rechtfertigt das Orakel, das alle
+übrigen Invarianten prüft? Hier sind zwei Aussagen strikt zu trennen.
+
+\paragraph{(i) Strukturell --- der Regress.}
+Die Grund-Invariante ist im System nicht selbst-fundierbar. Jede Begründung der
+prüfenden Invariante $I_0$ müsste eine weitere Invariante $I_1$ heranziehen, die
+$I_0$ als korrekt ausweist; deren Begründung wiederum $I_2$, und so fort. Der
+Regress terminiert nicht durch ein internes Argument, sondern nur durch einen
+Anker \emph{außerhalb} des Prüfvorgangs. Das ist eine strukturelle, architektonische
+Aussage über das Prüfen --- ein Argument, kein im Papier geführter formaler Beweis,
+und kein Werturteil.
+
+\paragraph{(ii) Normativ --- die Wahl des Ankers.}
+Dass im hier beschriebenen Aufbau der \emph{Mensch} diesen Anker setzt, ist eine
+Wahl, keine Unmöglichkeitsaussage über Maschinen. Sie ruht auf zwei Gründen, die
+beide normativ und nicht berechnungstheoretisch sind: Intent ist extern zum
+Generator, und das Setzen des Ankers ist verantwortungsbehaftet. Ein zweiter,
+hinreichend unabhängiger Agent könnte die Grund-Invariante ebenso setzen; der
+Mensch ist dann \emph{verschoben}, nicht durch ein Theorem als notwendig
+erwiesen. Wir behaupten ausdrücklich nicht, der Anker sei
+\glqq unmechanisierbar\grqq{} oder \glqq nur ein Mensch\grqq{} könne ihn setzen ---
+das wäre der Penrose/Lucas-Fehlschluss, den wir ablehnen
+(vgl.\ \Cref{sec:reflexiv-theorie}).
+
+\subsection{Theorie-Disclaimer}
+\label{sec:reflexiv-theorie}
+Drei metamathematische Resultate werden in dieser Arbeit in unterschiedlichen
+Rollen genutzt, und die Rollen dürfen nicht vermischt werden. Der Satz von Rice
+\cite{rice1953} ist ein \emph{Beweis}: Für jede nicht-triviale semantische
+Eigenschaft partieller rekursiver Funktionen ist die zugehörige
+Entscheidungsfrage unentscheidbar; die Voraussetzung (nicht-triviale semantische
+Eigenschaft) ist im hier betrachteten Fall erfüllt. Rice liefert damit
+ausschließlich die unentscheidbare obere Schranke und motiviert die
+entscheidbare \emph{pro-Spec-Approximation} --- die Verschiebung von
+\glqq korrekt schlechthin\grqq{} auf \glqq erfüllt diese eine getypte Spec\grqq.
+Gödels Unvollständigkeitssätze und Tarskis Undefinierbarkeit dienen demgegenüber
+nur als \emph{Motivation} und Analogie. Ihre Voraussetzungen --- rekursive
+Axiomatisierung, Subsumtion der Robinson-Arithmetik~$Q$, Konsistenz,
+Syntax-Kodierung --- beanspruchen wir für den \texttt{.spot/}-Graphen
+\emph{nicht}, und sie gelten dort nicht. Aus keinem dieser drei Resultate folgt,
+dass ein Mensch unersetzlich ist; der Regress (i) ist architektonisch, die
+Anker-Setzung (ii) ist normativ.
+
+\section{Grenzen und Geltungsbereich}
+\label{sec:grenzen}
+
+Wir halten die Grenzen dieser Arbeit explizit, weil ein Terminierungs-Orakel,
+das seine eigene Reichweite überschätzt, denselben Fehler begeht, den es
+verhindern soll.
+
+\subsection{Empirische Basis}
+\label{sec:grenzen-empirie}
+
+Die Evidenz beruht auf \emph{zwei} kleinen Fallstudien.
+\texttt{runenruf}\,@\,\texttt{56376a5} ($46/46$~Tests, Runner) ist mit $\sim 125$~LoC die
+ehrlich freundlichste Domäne, weil die Spezifikation dort mit der Welt
+zusammenfällt --- die Simulation \emph{ist} ihre eigene Realität.
+\texttt{ledger-casestudy}\,@\,\texttt{72b1284} ($5/5$~Tests, Runner; F\#/.NET~9, int64-Cent,
+$\sim 41$~LoC Domänenkern) ist das Gegenstück mit echtem IO (Journal und
+Replay) und veränderlichem Requirement. Zwei Fallstudien zeigen
+\emph{Anwendbarkeit}; sie beweisen keine Skalierung über Domänen ($N=2$). Es
+gibt keinen Issue-Tracker im großen Stil und keine unbeschränkte Autonomie des
+Loops.
+
+\subsection{Reichweite der Verifikation}
+\label{sec:grenzen-lean}
+
+Im Repository \texttt{ledger-casestudy}\,@\,\texttt{72b1284} ist \emph{ein} Invariant
+maschinell bewiesen: \texttt{proofs/Werterhaltung.lean} zeigt die Werterhaltung
+für jede Buchungsfolge. Das Modell enthält den Deckungs- und Ablehnungspfad und
+ist modellgleich zur F\#-Funktion \texttt{buche}; der Beweis ist
+\texttt{sorry}-frei (\texttt{\#print axioms} weist nur \texttt{propext} und
+\texttt{Quot.sound} aus), kommt ohne Mathlib aus (nur \texttt{Core} und
+\texttt{omega}), und der CI-Job \texttt{lean-proof} ist grün
+(\texttt{@72b1284}). Die übrigen Eigenschaften --- Nichtnegativität, Isolation,
+Replay --- sind \emph{nur} per FsCheck geprüft, etwa
+\texttt{spec-siegel-lager-nichtnegativ} in \texttt{runenruf}\,@\,\texttt{56376a5} über jeden
+Seed und jede Folge, deterministisch. Damit ist die Drei-Schichten-Kette
+(Typen~$\to$~Property~$\to$~Beweis) derzeit \emph{ausschließlich} für die
+Werterhaltung geschlossen. Wir behaupten keine durchgehende Beweisabdeckung.
+
+\subsection{Common-Mode-Fehler}
+\label{sec:grenzen-commonmode}
+
+Die mechanisch erzwungene Trennung Generator~$\perp$~Prüf-Orakel
+(Werkzeug-Allowlist ohne Schreibrecht des Generators, fälschungssicher;
+Code~\texttt{@2a274e1}) schützt nicht gegen jede Fehlerklasse. Wenn dieselbe
+Modell-Instanz sowohl die Spec als auch den Code erzeugt, korrelieren die Fehler
+(\emph{common-mode}) --- genau der von VeriAct \cite{veriact2026} beschriebene
+Fall, dass verifizierer-akzeptiert nicht korrekt heißt. Der gefangene Mis-Spec
+in \texttt{ledger-casestudy}\,@\,\texttt{72b1284} (\glqq Falsifiable, after 4 tests\grqq;
+reproduzierbares Negativ-Artefakt \texttt{demo-gate-at-failure.sh}) wurde nicht
+durch den Loop aus sich selbst entdeckt, sondern weil ein Mensch eine stärkere
+Property und ein geändertes Requirement als Gegen-Orakel einbrachte. Der Mensch
+ist hier der Dekorrelator; die Trennung Generator~$\perp$~Spec-Autor gilt nur,
+wenn die Spec aus separater Quelle stammt.
+
+\subsection{Was in der Spalte B bleibt}
+\label{sec:grenzen-restb}
+
+In Anlehnung an die A/B-Verifizierbarkeitstabelle (\Cref{sec:grenzen-ab})
+markieren wir die folgenden Behauptungen ehrlich als~\AB{B}, also als menschliche
+Setzung ohne maschinelle Außenprüfung:
+
+\begin{itemize}
+  \item die Bindung der Spec an die Welt (Spec~$\models$~Welt) --- nach
+        VeriAct \cite{veriact2026} nicht orakel-prüfbar;
+  \item das Setzen der Grund-Invariante (normativ, nicht berechnungstheoretisch;
+        \Cref{sec:reflexiv-grenze});
+  \item Neuheit und Abgrenzung --- eine Literatur-Aussage, kein Beweis
+        (\Cref{sec:related});
+  \item die Skalierung der Methode über Domänen --- $N=2$ zeigt Anwendbarkeit,
+        nicht Skalierung; der lokale Lean-Allquantor über Buchungsfolgen
+        ist~\AB{A}, der Sprung auf \glqq für jedes System\grqq{} ist~\AB{B}.
+\end{itemize}
+
+\subsection{A/B-Verifizierbarkeitstabelle}
+\label{sec:grenzen-ab}
+Jede tragende Behauptung dieser Arbeit deklariert sich als~\AB{A} (maschinell und
+extern verifiziert: Commit-Hash, arXiv-ID, CI-Run, \texttt{sorry}-Audit) oder
+als~\AB{B} (menschliche Setzung). \Cref{tab:ab} listet die tragenden Behauptungen mit
+ihrer Marke und ihrem Anker auf. Keine tragende Assertion bleibt unmarkiert; das
+ist der zentrale Hebel von Logik gegenüber bloßer LLM-Plausibilität.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{A/B-Verifizierbarkeit jeder tragenden Behauptung. A~$=$~maschinell und
+  extern verifiziert (Commit-Hash, arXiv-ID, CI-Run, \texttt{sorry}-Audit);
+  B~$=$~menschliche Setzung.}
+  \label{tab:ab}
+  \begin{tabular}{@{}p{0.50\textwidth} c p{0.32\textwidth}@{}}
+    \toprule
+    \textbf{Behauptung} & \textbf{A/B} & \textbf{Anker} \\
+    \midrule
+    Runenruf: $46/46$ Tests grün & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
+    Ledger: $5/5$ Tests grün & \AB{A} & \texttt{ledger-casestudy}\,@\,\texttt{72b1284} (Runner) \\
+    CDD-Selbst-Gate: $36/36$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{2a274e1} (Runner) \\
+    Werterhaltung \texttt{sorry}-frei & \AB{A} & \texttt{\#print axioms} (nur \texttt{propext}, \texttt{Quot.sound})\,@\,\texttt{72b1284} \\
+    Lean ohne Mathlib, CI \texttt{lean-proof} grün & \AB{A} & CI-Job \texttt{lean-proof}\,@\,\texttt{72b1284} \\
+    Allowlist-Trennung Generator~$\perp$~Prüf-Orakel & \AB{A} & Code\,@\,\texttt{2a274e1} \\
+    Negativ-Artefakt \texttt{demo-gate-at-failure.sh} & \AB{A} & Skript\,@\,\texttt{72b1284} \\
+    FsCheck \texttt{spec-siegel-lager-nichtnegativ} (jeder Seed/Folge) & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
+    Kompressionsfaktoren ($\sim\!40$--$125\times$) als LoC-Zahlen & \AB{A} & Code\,@\,\texttt{56376a5}/\texttt{72b1284} \\
+    Zitate (vollständige Bib-Daten) & \AB{A} & arXiv-ID / Journalband \\
+    \midrule
+    Spec trifft die Welt (Spec~$\models$~Welt) & \AB{B} & per VeriAct nicht orakel-prüfbar \\
+    \emph{Wer} die Grund-Invariante setzt (Mensch) & \AB{B} & normative Wahl, \Cref{sec:reflexiv-grenze} \\
+    Stärkere Ledger-Property als Gegen-Orakel & \AB{B} & menschliche Setzung, \Cref{sec:ledger-misspec} \\
+    Neuheit/Abgrenzung der Kombination & \AB{B} & Literatur-Aussage, \Cref{sec:related-neuheit} \\
+    Methoden-Skalierung über Domänen & \AB{B} & $N=2$; Sprung auf \glqq jedes System\grqq{} \\
+    \glqq Fixierte Eigenschaft ist die richtige\grqq{} & \AB{B} & Spec-gegen-Welt, \Cref{bem:kompression} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Verwandte Arbeiten}
+\label{sec:related}
+
+\subsection{Intent als offene Herausforderung}
+\label{sec:related-intent}
+
+Lahiri \cite{lahiri2026} formuliert die Formalisierung von Intent als benannte,
+\emph{offene} Grand Challenge zuverlässigen Programmierens im Zeitalter von
+KI-Agenten. Wir beanspruchen keine Lösung dieser Challenge, sondern eine
+partielle, getypte Externalisierung des Intents pro Spec --- und markieren die
+verbleibende Spec-gegen-Welt-Bindung als~\AB{B} (\Cref{sec:grenzen-restb}). Storey
+\cite{storey2026} prägt den komplementären Begriff der \emph{Intent Debt},
+\glqq the absence of externalized rationale that developers and AI agents need to
+work safely with code\grqq; der externalisierte \texttt{.spot/}-Graph ist genau
+ein Versuch, diese Schuld nicht aufzubauen.
+
+\subsection{LLM im Modulo-Rahmen}
+\label{sec:related-modulo}
+
+Kambhampati und andere \cite{kambhampati2024} argumentieren, dass LLMs nicht
+selbst planen, wohl aber im \emph{LLM-Modulo}-Rahmen mit externen Verifikatoren
+nützlich sind. Unsere Architektur ist eine Instanz dieses Musters: Der Generator
+schlägt vor, ein externer, mechanisch getrennter Prüfer entscheidet
+(\Cref{sec:grenzen-commonmode}).
+
+\subsection{Nächste Nachbarschaft}
+\label{sec:related-veriact}
+
+VeriAct \cite{veriact2026} ist die nächste Nachbarschaft: Die Arbeit zeigt, dass
+verifizierer-akzeptierte Spezifikationen nicht korrekt sein müssen, und benennt
+damit präzise die Grenze, an der unser menschlicher Dekorrelator ansetzt. He und
+andere \cite{pgs2025} verfolgen mit \emph{Property-Oriented and Structurally
+Minimal Feedback} ein verwandtes Ziel auf der Feedback-Seite: minimale,
+eigenschaftsorientierte Rückmeldung zur Code-Verfeinerung. Beide Linien teilen
+unsere Prämisse, dass das Orakel die kritische Stelle ist, nicht der Loop.
+
+\subsection{Trajektorie und Werkzeuge}
+\label{sec:related-trajektorie}
+
+METR \cite{metr2025} misst den \glqq50\%-task-completion time horizon\grqq: Zu
+Beginn 2025 liegt er bei etwa $50$ bis $110$~Minuten, mit einer Verdopplung etwa
+alle $7$~Monate. Wir referenzieren ausschließlich diese Zahlen; sie motivieren,
+warum das Terminierungs-Orakel mit wachsender Aufgabenlänge wichtiger wird, nicht
+weniger. Werkzeuge wie Kiro und Spec-Kit verfolgen eine
+spezifikationsgetriebene Arbeitsweise; sie verankern die Spec jedoch nicht in
+einem typisierten Graphen mit architektonisch getrenntem Generator/Orakel und
+property- bzw.\ beweisverifiziertem Gate.
+
+\subsection{Neuheit, konditional}
+\label{sec:related-neuheit}
+
+Wir erheben keinen Prioritätsanspruch. Uns ist keine publizierte Implementierung
+mit \emph{genau dieser Kombination} bekannt: getypte, externalisierte Spec;
+architektonisch getrennter Generator und Prüf-Orakel; Werkzeug-Allowlist ohne
+Schreibrecht des Generators; sowie ein property- und beweisverifiziertes Gate.
+Diese Aussage ist eine Literatur-Aussage und damit~\AB{B}
+(\Cref{sec:grenzen-restb}) --- kein Beweis.
+
+\section{Fazit}
+\label{sec:fazit}
+
+Das eigentliche Problem agentischer Entwicklung ist nicht der Loop --- den zu
+schreiben ist, wie Cherny \cite{cherny2026} es formuliert, die Routinearbeit ---
+sondern sein Terminierungs-Orakel. Unsere Antwort ist Konvergenz gegen eine
+externalisierte, getypte Spec, geprüft durch ein vom Generator architektonisch
+getrenntes Orakel. Wir belegen das mit zwei kleinen Fallstudien
+(\texttt{runenruf}\,@\,\texttt{56376a5}, $46/46$; \texttt{ledger-casestudy}\,@\,\texttt{72b1284}, $5/5$),
+einem reflexiven Selbst-Gate (\texttt{cong-driven-development}\,@\,\texttt{2a274e1},
+$36/36$, $62/66$ \texttt{Aligned}) und genau einem maschinell bewiesenen
+Invariant (\texttt{Werterhaltung.lean}, \texttt{sorry}-frei).
+
+Wir schließen mit einer Lücke, nicht mit einem Versprechen. Die Spec-gegen-Welt-Bindung
+bleibt~\AB{B}; die Grund-Invariante terminiert den Regress nur durch einen externen
+Anker, dessen Setzung eine Wahl ist und keine berechnungstheoretische Notwendigkeit;
+die Beweiskette ist erst für eine einzige Eigenschaft geschlossen; $N=2$ zeigt
+Anwendbarkeit, nicht Skalierung. Aus keinem Theorem folgt, dass ein Mensch hier
+unersetzlich wäre --- ein zweiter, hinreichend unabhängiger Agent könnte den
+Dekorrelator stellen. Was wir zeigen, ist bescheidener und überprüfbarer: dass
+das Orakel die richtige Stelle ist, um anzusetzen, und dass eine Schraube weiter
+gedreht ist --- mit Lücke, ehrlich markiert.
+
+\appendix
+
+\section{Reproduzierbarkeit}
+\label{app:repro}
+
+Alle in \Cref{tab:ab} als~\AB{A} markierten Behauptungen sind an genau drei Repositories
+zu festen Commits gebunden. \Cref{tab:repos} fasst die Anker zusammen; die
+nachfolgenden Befehle reproduzieren die autoritativen Runner-Counts, den
+\texttt{sorry}-freien Lean-Lauf und das Negativ-Artefakt.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Verifizierte Artefakte und ihre Anker (Repository\,@\,Commit).}
+  \label{tab:repos}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Repository} & \textbf{Commit} & \textbf{Rolle} \\
+    \midrule
+    \texttt{Koschnag/cong-driven-development} & \texttt{2a274e1} & Methode/IDE, reflexives Selbst-Gate \\
+    \texttt{Koschnag/runenruf} & \texttt{56376a5} & Existenzbeweis (Simulationsdomäne) \\
+    \texttt{Koschnag/ledger-casestudy} & \texttt{72b1284} & Gegenstück (echtes IO, Lean-Beweis) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Methode und Selbst-Gate}
+\label{app:repro-cdd}
+
+\begin{lstlisting}[language=bash,caption={CDD-Selbst-Gate: $36/36$ Tests, $62/66$ \texttt{Aligned}.},label={lst:repro-cdd}]
+git clone https://github.com/Koschnag/cong-driven-development.git
+cd cong-driven-development
+git checkout 2a274e1
+dotnet test tests/Cdd.Tests   # autoritativer Runner-Count: 36/36
+\end{lstlisting}
+
+\subsection{Fallstudie A: Runenruf}
+\label{app:repro-runenruf}
+
+\begin{lstlisting}[language=bash,caption={Runenruf: $46/46$ Tests, FsCheck \texttt{spec-siegel-lager-nichtnegativ}.},label={lst:repro-runenruf}]
+git clone https://github.com/Koschnag/runenruf.git
+cd runenruf
+git checkout 56376a5
+dotnet test tests/Runenruf.Tests   # autoritativer Runner-Count: 46/46
+\end{lstlisting}
+
+\subsection{Fallstudie B: Ledger (Tests, Lean, Negativ-Artefakt)}
+\label{app:repro-ledger}
+
+\begin{lstlisting}[language=bash,caption={Ledger: $5/5$ Tests, \texttt{sorry}-freier Lean-Beweis, reproduzierbares Negativ-Artefakt.},label={lst:repro-ledger}]
+git clone https://github.com/Koschnag/ledger-casestudy.git
+cd ledger-casestudy
+git checkout 72b1284
+
+# 1) F#-Tests (autoritativer Runner-Count: 5/5)
+dotnet test tests/Ledger.Tests
+
+# 2) Lean-Beweis (sorry-frei; #print axioms: nur propext, Quot.sound)
+lean proofs/Werterhaltung.lean
+
+# 3) reproduzierbares NEGATIV-Artefakt: Gate im Falsifikationszustand
+#    ("Falsifiable, after 4 tests")
+./demo-gate-at-failure.sh
+\end{lstlisting}
+
+\noindent
+Der Befehl \texttt{lean proofs/Werterhaltung.lean} aus \Cref{lst:repro-ledger}
+schließt den Beweis ohne Mathlib (nur \texttt{Core}~$+$~\texttt{omega}) ab;
+\texttt{\#print axioms werterhaltung} weist ausschließlich \texttt{propext} und
+\texttt{Quot.sound} aus. Das Skript \texttt{demo-gate-at-failure.sh} ist kein
+Positiv-, sondern ein \emph{Negativ}-Artefakt: Es führt das Gate reproduzierbar in
+den Zustand \glqq Falsifiable, after 4 tests\grqq{} und macht damit den in
+\Cref{sec:ledger-misspec} beschriebenen, vom Menschen gefangenen Mis-Spec
+wiederholbar sichtbar.
+
+\begin{thebibliography}{10}
+
+\bibitem{lahiri2026}
+Lahiri, Shuvendu K.:
+\newblock Intent Formalization: A Grand Challenge for Reliable Coding in the Age
+of AI Agents.
+\newblock \texttt{arXiv:2603.17150}, 2026.
+
+\bibitem{storey2026}
+Storey, Margaret-Anne:
+\newblock From Technical Debt to Cognitive and Intent Debt: Rethinking Software
+Health in the Age of AI.
+\newblock \texttt{arXiv:2603.22106}, 2026.
+
+\bibitem{kambhampati2024}
+Kambhampati, Subbarao and others:
+\newblock LLMs Can't Plan, But Can Help Planning in LLM-Modulo Frameworks.
+\newblock \texttt{arXiv:2402.01817}, 2024.
+
+\bibitem{veriact2026}
+Misu, Md Rakib Hossain; Ma, Iris; Lopes, Cristina V.:
+\newblock VeriAct: Beyond Verifiability --- Agentic Synthesis of Correct and
+Complete Formal Specifications.
+\newblock \texttt{arXiv:2604.00280}, 2026.
+
+\bibitem{pgs2025}
+He, Lehan; Chen, Zeren; Zhang, Zhe; Gao, Xiang; Sheng, Lu:
+\newblock Effective LLM Code Refinement via Property-Oriented and Structurally
+Minimal Feedback.
+\newblock \texttt{arXiv:2506.18315}, 2025.
+
+\bibitem{metr2025}
+METR:
+\newblock Measuring AI Ability to Complete Long Software Tasks.
+\newblock \texttt{arXiv:2503.14499}, 2025.
+
+\bibitem{rice1953}
+Rice, Henry Gordon:
+\newblock Classes of Recursively Enumerable Sets and Their Decision Problems.
+\newblock Transactions of the American Mathematical Society 74(2):358--366, 1953.
+
+\bibitem{cherny2026}
+Cherny, Boris:
+\newblock zitiert in \glqq Loop Engineering\grqq, The New Stack, 2026 ---
+\glqq my job is to write loops\grqq.
+
+\bibitem{cdd2026}
+Nguyen, Cong Chanh Vinzenz:
+\newblock cong-driven-development: A Spec-Convergent Method and IDE for Agentic
+Software Development.
+\newblock Software-Repository, \texttt{github.com/Koschnag/cong-driven-development}\,@\,\texttt{2a274e1}, 2026.
+
+\end{thebibliography}
+
+\end{document}
+
