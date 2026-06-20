@@ -1,0 +1,25 @@
+{
+  "Id": "spec-sync-docs",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Doku-Konvergenz",
+        "Intent": "Der README-Status wird aus dem Selbstmodell generiert \u2014 Doku-Drift ist ein CI-Fehler",
+        "Criteria": [
+          {
+            "Given": "ein veralteter README-Status",
+            "When": "cdd sync-docs --check in der CI l\u00E4uft",
+            "Then": "schl\u00E4gt der Build fehl, bis sync-docs den Status neu generiert hat"
+          },
+          {
+            "Given": "Pr\u00E4missen, Entscheidungen und Invarianten im Modell",
+            "When": "cdd sync-docs l\u00E4uft",
+            "Then": "wird docs/decisions.md vollst\u00E4ndig daraus generiert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,25 @@
+{
+  "Id": "spec-derive-tests",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Spec\u2192Test-Ableitung",
+        "Intent": "Tests sind Derivat der Spezifikation, nicht handgeschrieben",
+        "Criteria": [
+          {
+            "Given": "eine Spec mit n Akzeptanzkriterien",
+            "When": "cdd derive-tests --write l\u00E4uft",
+            "Then": "existiert genau ein Test-Knoten pro Kriterium"
+          },
+          {
+            "Given": "bereits abgeleitete Tests",
+            "When": "derive-tests erneut l\u00E4uft",
+            "Then": "entstehen keine Duplikate (Idempotenz)"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,46 @@
+name: Pages
+
+# Öffentliche Test-Website: Cockpit im Demo-Modus (localStorage statt Backend)
+# → https://koschnag.github.io/cong-driven-development/
+on:
+  push:
+    branches: [main]
+    paths: ['src/Cdd.Web/wwwroot/**', '.spot/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Selbstmodell als Demo-Seed bündeln
+        run: jq -s . .spot/*.json > src/Cdd.Web/wwwroot/spot-seed.json
+
+      - name: Cache-Busting (Assets versionieren)
+        run: |
+          V="${GITHUB_SHA::8}"
+          cd src/Cdd.Web/wwwroot
+          sed -i "s|href=\"styles.css\"|href=\"styles.css?v=$V\"|; s|src=\"cockpit.js\"|src=\"cockpit.js?v=$V\"|" index.html
+          sed -i "s|\"./demo.js\"|\"./demo.js?v=$V\"|; s|\"./agent.js\"|\"./agent.js?v=$V\"|; s|\"./form.js\"|\"./form.js?v=$V\"|" cockpit.js
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: src/Cdd.Web/wwwroot
+      - id: deployment
+        uses: actions/deploy-pages@v4

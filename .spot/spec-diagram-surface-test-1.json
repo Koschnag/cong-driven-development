@@ -1,0 +1,14 @@
+{
+  "Id": "spec-diagram-surface-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-diagram-surface",
+        "Name": "Getypte Diagramm-Flaeche mit Toolbox \u2014 when die Diagramm-Flaeche rendert then erscheinen die Diagramm-Sichten, ein Cytoscape-Canvas und die Toolbox mit den Knotenarten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

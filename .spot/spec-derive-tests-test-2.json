@@ -1,0 +1,14 @@
+{
+  "Id": "spec-derive-tests-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-derive-tests",
+        "Name": "Spec\u2192Test-Ableitung \u2014 when derive-tests erneut l\u00E4uft then entstehen keine Duplikate (Idempotenz)",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,24 @@
+{
+  "Id": "term-cockpit",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Cockpit",
+        "Definition": "Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift",
+        "Synonyms": [
+          "IDE"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

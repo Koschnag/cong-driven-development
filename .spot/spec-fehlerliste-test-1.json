@@ -1,0 +1,14 @@
+{
+  "Id": "spec-fehlerliste-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-fehlerliste",
+        "Name": "Fehlerliste \u0026 Widerspruchs-Erkennung \u2014 when validiert wird then erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

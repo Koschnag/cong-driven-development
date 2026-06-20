@@ -1,0 +1,14 @@
+{
+  "Id": "tool-github-actions",
+  "Payload": {
+    "Case": "ToolNode",
+    "Fields": {
+      "Item": {
+        "Name": "GitHub Actions",
+        "Purpose": "CI/CD, Releases, Pages, Container \u2014 der Automatisierungs-Arm",
+        "Endpoint": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

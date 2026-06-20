@@ -1,0 +1,13 @@
+{
+  "Id": "premise-cloud-first",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Cloud-first: nichts muss lokal laufen.",
+        "Rationale": "Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) tr\u00E4gt alles"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

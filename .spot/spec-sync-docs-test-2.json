@@ -1,0 +1,14 @@
+{
+  "Id": "spec-sync-docs-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-sync-docs",
+        "Name": "Doku-Konvergenz \u2014 when cdd sync-docs l\u00E4uft then wird docs/decisions.md vollst\u00E4ndig daraus generiert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,21 @@
+name: 🚀 Feature Request
+description: Idee oder Verbesserungsvorschlag
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem löst das Feature?
+      description: Intent zuerst — das „Was", nicht das „Wie" (CDD-Prinzip 😉).
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Vorschlag
+      description: Wie könnte es aussehen (CLI-Befehl, SPOT-Knotentyp, …)?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen
+      description: Was hast du erwogen und verworfen?

@@ -1,0 +1,14 @@
+{
+  "Id": "spec-governance-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-governance",
+        "Name": "Governance by Invariance \u2014 when cdd validate l\u00E4uft then werden Verst\u00F6\u00DFe als Fehler am verletzenden Knoten gemeldet",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

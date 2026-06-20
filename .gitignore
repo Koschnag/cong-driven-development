@@ -1,0 +1,40 @@
+# .NET build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / local config
+*.env
+secrets.*
+appsettings.Local.json
+providers.json            # runtime provider manager — holds API keys
+
+# Databases — personal data / embeddings / DWH, never commit
+# (cong-memory.db is sanitized but still personal; the SPOT store is .spot/*.json, not *.db)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Coverage / test outputs
+coverage/
+TestResults/
+*.trx
+*.coverage
+
+# F# scripts cache
+.fsx-cache/
+
+# Logs
+*.log
