@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Das Terminierungs-Orakel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<style>
+  :root{ --acc:#4c9aff; --green:#3fb950; --amber:#d29922; --red:#f85149; }
+  .reveal{ font-size:30px; }
+  .reveal h1,.reveal h2,.reveal h3{ text-transform:none; letter-spacing:-.01em; font-weight:700; }
+  .reveal h1{ font-size:1.7em } .reveal h2{ font-size:1.25em; color:#e6edf3 }
+  .reveal .acc{ color:var(--acc) } .reveal .green{ color:var(--green) } .reveal .red{ color:var(--red) } .reveal .amber{ color:var(--amber) }
+  .reveal .muted{ color:#9aa7b4 } .reveal small{ color:#9aa7b4; font-size:.6em }
+  .reveal pre{ width:100%; box-shadow:none; font-size:.5em; border:1px solid #2a3340; border-radius:8px }
+  .reveal pre code{ padding:14px; max-height:none }
+  .reveal .lead{ color:#9aa7b4; font-size:.82em }
+  .reveal .big{ font-size:1.5em; line-height:1.3 }
+  .reveal table{ font-size:.7em } .reveal th{ color:#9aa7b4 }
+  .reveal .tag{ display:inline-block; border:1px solid var(--acc); color:var(--acc); border-radius:999px; padding:2px 14px; font-size:.5em; vertical-align:middle }
+  .reveal .ab{ display:flex; gap:20px } .reveal .ab>div{ flex:1; border:1px solid #2a3340; border-radius:10px; padding:16px; text-align:left }
+  .reveal .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; text-align:left }
+  .reveal .card{ border:1px solid #2a3340; border-radius:10px; padding:14px 18px }
+  .reveal footer{ position:fixed; bottom:10px; right:16px; font-size:13px; color:#59636e }
+  .reveal section{ text-align:left }
+  .reveal .center{ text-align:center }
+  .reveal ul{ margin-left:.4em } .reveal li{ margin:.28em 0 }
+  kbd{ background:#1c2430; border:1px solid #2a3340; border-radius:5px; padding:1px 7px; font-family:monospace; font-size:.7em }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<section class="center" data-background-color="#0e1116">
+  <span class="tag">Konvergenz-gegen-Spec · Forschungsprototyp</span>
+  <h1>Das Terminierungs-Orakel</h1>
+  <p class="lead">Konvergenz agentischer Softwareentwicklung gegen eine externalisierte, getypte Spezifikation</p>
+  <p class="muted" style="margin-top:1em">Cong Chanh Vinzenz Nguyen · .NET-Architekt</p>
+  <p><small>2026 · alle Belege public + CI-grün + reproduzierbar</small></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>„My job is to write loops."</h2>
+  <p class="lead">Boris Cherny (Anthropic, Claude Code) — „Loop Engineering"</p>
+  <p class="big" style="margin-top:.6em">Ein Generator erzeugt, ein Schritt prüft, das Ergebnis fließt zurück — bis zu einem Abbruchkriterium.</p>
+  <p class="fragment muted">Die Architektur ist korrekt. Die offene Frage ist eine andere.</p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2 class="muted">Das Problem ist nicht der Loop.</h2>
+  <h1 class="acc" style="margin:.3em 0">Es ist sein Terminierungs-Orakel.</h1>
+  <p class="fragment lead">Woran erkennt der Loop, dass er <em>fertig</em> ist?</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Terminiert auf „Agent sagt fertig" oder Exit-0 …</h2>
+  <p class="lead">… ist die Abbruchbedingung an keine externe, prüfbare Referenz gebunden. Was bleibt:</p>
+  <ul>
+    <li class="fragment"><span class="red">Brute Force</span> — Token-Verbrauch ohne verbürgten Endzustand</li>
+    <li class="fragment"><span class="red">Blackbox</span> — Korrektheit erst nachträglich per Diff-Lektüre</li>
+    <li class="fragment"><span class="red">Intent Debt</span> (Storey 2026) — „the absence of externalized rationale that developers and AI agents need to work safely with code"</li>
+  </ul>
+  <p class="fragment muted">Das „Warum" hat dann u. U. zu keinem Zeitpunkt in einem Kopf existiert.</p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2>Die Leitfrage</h2>
+  <p class="big">Wo liegt die Grenze, an der Verifikation auf eine <span class="acc">gesetzte Invariante</span> angewiesen ist —</p>
+  <p class="big fragment">und lässt sie sich <span class="acc">typisieren</span>?</p>
+  <p class="fragment muted" style="margin-top:1em"><small>Intent-Formalisierung ist eine benannte Grand Challenge (Lahiri 2026). Wir beanspruchen keine Idee — wir liefern eine lauffähige Instanz.</small></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Die Methode: <span class="acc">Konvergenz gegen Spec</span></h2>
+  <div class="grid2" style="margin-top:.4em">
+    <div class="card">
+      <h3 class="acc">Getypte Referenz</h3>
+      <p class="lead">SPOT — ein F#-DU-Graph, ein git-versioniertes JSON pro Knoten. Konvergenz: <code>Aligned / Pending / Diverged / Orphaned</code>.</p>
+    </div>
+    <div class="card">
+      <h3 class="acc">Generator ⊥ Orakel</h3>
+      <p class="lead">Generator: kein Schreibrecht auf den Code-Pfad (Allowlist). Orakel <code>SetzeSpecAligned</code>: nur bei echtem grünem <code>dotnet test</code> — Test-PASS, nicht Exit-0.</p>
+    </div>
+  </div>
+  <p class="fragment center" style="margin-top:.6em"><span class="green">Review = Konvergenz gegen die Spec, nicht der gelesene Diff.</span></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Zwei Fallstudien <small>— public, CI-grün, reproduzierbar</small></h2>
+  <div class="grid2" style="margin-top:.5em">
+    <div class="card">
+      <h3>🎮 runenruf — Existenzbeweis</h3>
+      <p class="lead"><span class="green">46/46</span> Tests. FsCheck-Property über <em>jeden</em> Seed/jede Folge. Deterministisch.</p>
+      <p class="muted"><small>Ehrlich: die freundlichste Domäne — die Spec <em>ist</em> die Welt. Beweist die Mechanik, nicht den harten Rest.</small></p>
+    </div>
+    <div class="card">
+      <h3>📒 ledger — das Gegenstück</h3>
+      <p class="lead">Doppisches Hauptbuch. Echtes IO (Journal + Replay). Veränderliches Requirement. <span class="green">5/5</span>.</p>
+      <p class="muted"><small>Hier ist „trifft das Modell die Welt" <em>nicht</em> leer.</small></p>
+    </div>
+  </div>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der gefangene Mis-Spec</h2>
+  <p class="lead">Requirement ändert sich: Gebühren. Naiver Entwurf zieht sie beim Sender ab, schreibt sie <em>nirgends</em> gut — <span class="red">Wert verschwindet</span>.</p>
+  <pre><code class="hljs" data-trim>
+Invariante  spec-werterhaltung : Σ aller Konten = konstant
+
+  $ dotnet test
+  ✗ Falsifiable, after 4 tests       ← ohne dass ein Diff gelesen wurde
+  </code></pre>
+  <p class="fragment">Fix = Doppik (die Gebühr ist Gegenbuchung). <span class="green">Geld verschwindet nicht.</span></p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2>Das stärkste Bild: das Gate <span class="red">beim Scheitern</span></h2>
+  <pre style="margin-top:.4em"><code class="hljs" data-trim>
+$ ./demo-gate-at-failure.sh
+  1) korrektes Modell            5/5  grün
+  2) naives Modell injiziert     (Gebühr verschwindet)
+  3) Orakel:  Falsifiable        rot   ← verwirft das falsche Modell
+  4) revert                      5/5  grün
+  </code></pre>
+  <p class="fragment lead">Ein grüner Lauf ist ein Cursor-Klon mit Vokabular. Ein erzwungenes <span class="red">rotes</span> Resultat ist der Beweis.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Drei Schichten an <em>einem</em> Invarianten</h2>
+  <ul>
+    <li><strong>Typen</strong> — <code>int64</code>-Cent: eine Fehlerklasse kann syntaktisch nicht entstehen</li>
+    <li><strong>FsCheck-Property</strong> — über Zufallsfolgen <em>geprüft</em> (fand den Mis-Spec)</li>
+    <li><strong class="green">Lean-4-Beweis</strong> — für <em>jede</em> Folge <em>bewiesen</em></li>
+  </ul>
+  <pre style="margin-top:.3em"><code class="hljs language-lean" data-trim>
+theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
+    total (buchen hb bs) = total hb
+-- sorry-frei · ohne Mathlib · #print axioms → propext, Quot.sound
+  </code></pre>
+  <p class="fragment muted"><small>Ehrlich: <em>ein</em> Invariant ist Lean-bewiesen; die übrigen sind FsCheck-only. Die Kette ist nur für die Werterhaltung geschlossen.</small></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Logik-gegen-LLM-Hebel: <span class="acc">A/B</span></h2>
+  <p class="lead">Jede tragende Behauptung deklariert sich:</p>
+  <div class="ab" style="margin-top:.4em">
+    <div>
+      <h3 class="green">A — maschinell belegt</h3>
+      <p class="lead">Commit-Hash · arXiv-ID · CI-Run · sorry-Audit. <strong>Re-runbar.</strong> Immun gegen LLM-Halluzination.</p>
+    </div>
+    <div>
+      <h3 class="amber">B — menschliche Setzung</h3>
+      <p class="lead">„Trifft die Spec die Welt", <em>wer</em> die Invariante setzt, Neuheit, Skalierung. <strong>Ehrlich markiert.</strong></p>
+    </div>
+  </div>
+  <p class="fragment center" style="margin-top:.5em"><small>Keine unmarkierte Assertion. Die Last-tragenden Aussagen ruhen auf Artefakten, nicht auf meinem Wort.</small></p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2>Reflexiv: das System gatet <span class="acc">sich selbst</span></h2>
+  <p class="lead">Ein Test prüft eine Invariante über das eigene <code>.spot/</code>-Modell: kein Knoten gilt als <code>Aligned</code> ohne echten Test.</p>
+  <p class="fragment big">Das System härtet seinen eigenen Drift —</p>
+  <p class="fragment lead">und macht sichtbar, dass der äußerste Bezugspunkt eine menschliche Setzung bleibt.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Ehrliche Grenzen</h2>
+  <ul>
+    <li><strong>N = 2</strong> Fallstudien — Anwendbarkeit, nicht Skalierung</li>
+    <li><strong>Ein</strong> Lean-bewiesener Invariant; weitere Roadmap</li>
+    <li>Verifizierer-akzeptiert <span class="red">≠</span> korrekt (VeriAct) — das Orakel allein genügt nicht</li>
+    <li>Der Mensch bleibt am Modell-Gate — <span class="acc">operational und normativ</span></li>
+  </ul>
+  <p class="fragment muted" style="margin-top:.4em"><small>Das Setzen der Grund-Invariante ist im System nicht selbst-fundierbar (Regress, <em>kein</em> Unmöglichkeitsbeweis). Wir <em>wählen</em> den Menschen, weil Intent extern und verantwortungsbehaftet ist — nicht, weil eine Maschine es nicht könnte. (Penrose/Lucas abgelehnt.)</small></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Verortung — ein volles Feld</h2>
+  <div class="grid2">
+    <div class="card"><h3>Spec-Driven Development</h3><p class="lead">Kiro · Spec Kit · Tessl · Cursor · OpenSpec · BMAD · Antigravity — „Spec als Wahrheit" ist Commodity.</p></div>
+    <div class="card"><h3>Vericoding</h3><p class="lead">CLEVER · VeriGuard · DafnyPro — „Code gegen formale Spec verifizieren" mit Lean/Dafny/Verus.</p></div>
+  </div>
+  <p class="fragment center" style="margin-top:.5em"><span class="acc">Unser Beitrag = die Integration</span> zu einer laufenden, getypten Methode mit getrenntem Generator/Orakel. Eine Architektur-Aussage, kein Ideen-Primat.</p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h1>Eine Schraube weiter</h1>
+  <p class="big">Das Problem ist nicht der Loop, sondern sein Orakel.</p>
+  <p class="lead fragment">Tausche „Agent sagt fertig" gegen „Konvergenz gegen eine getypte Spec" — und der Loop wird diszipliniert. Der Rest wird nicht eliminiert, sondern <span class="acc">typisiert</span>: an die Stelle gelegt, an der ein Mensch ihn setzt — sichtbar, versioniert, gegen Drift gegatet.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Selbst prüfen</h2>
+  <pre><code class="hljs language-bash" data-trim>
+git clone https://github.com/Koschnag/cong-driven-development   # 36/36
+git clone https://github.com/Koschnag/runenruf                  # 46/46
+git clone https://github.com/Koschnag/ledger-casestudy          # 5/5
+  lean proofs/Werterhaltung.lean      # sorry-frei
+  ./demo-gate-at-failure.sh           # das Gate beim Scheitern
+  </code></pre>
+  <p class="center" style="margin-top:.6em">Portal: <span class="acc">koschnag.github.io/cong-driven-development</span></p>
+  <p class="center muted"><small>Alles public · CI-grün · clean-clone-reproduziert</small></p>
+</section>
+
+</div></div>
+<footer>Das Terminierungs-Orakel</footer>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    hash:true, slideNumber:'c/t', transition:'fade', controls:true, progress:true,
+    plugins:[ RevealHighlight, RevealNotes ]
+  });
+</script>
+</body>
+</html>
