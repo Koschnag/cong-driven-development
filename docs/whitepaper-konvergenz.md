@@ -58,7 +58,7 @@ Wir ersetzen das Terminierungs-Orakel. Der Loop terminiert nicht, wenn der Gener
 
 SPOT (Single Point of Truth) ist ein typisierter F#-Discriminated-Union-Graph. Jeder Knoten liegt als ein git-versioniertes JSON unter `.spot/` — die Referenz ist damit externalisiert, versioniert und Teil der Historie, nicht ein flüchtiger Prompt-Kontext. Genau das ist das von Storey geforderte „externalized rationale": die getypte Spec **ist** das externalisierte Rationale, das Intent Debt tilgt, statt sie auf den Reviewer zu verschieben.
 
-Jeder Knoten trägt einen Konvergenzzustand aus vier Werten: `Aligned`, `Pending`, `Diverged`, `Orphaned`. Das aktuelle Selbst-Modell des Werkzeugs (Koschnag/cong-driven-development, v0.4.0) hat **66 Knoten, 62 Aligned, 4 Pending**, bei **36/36 grünen Unit-Tests**. Die vier Pending-Knoten sind ehrlich offen — zwei davon sind LLM-Ergebnis-Kriterien, die **nicht** mechanisch prüfbar sind und daher bewusst nicht auf `Aligned` gesetzt wurden. Im Zuge ehrlicher Konvergenz wurden 5 abgelöste Knoten gelöscht und 3 end-to-end verifizierte UI-Specs promotet. Die reflexive Selbstanwendung dieses Modells führen wir in Abschnitt 5 aus.
+Jeder Knoten trägt einen Konvergenzzustand aus vier Werten: `Aligned`, `Pending`, `Diverged`, `Orphaned`. Das aktuelle Selbst-Modell des Werkzeugs (Koschnag/cong-driven-development, main) hat **66 Knoten, 62 Aligned, 4 Pending**, bei **36/36 grünen Unit-Tests**. Die vier Pending-Knoten sind ehrlich offen — zwei davon sind LLM-Ergebnis-Kriterien, die **nicht** mechanisch prüfbar sind und daher bewusst nicht auf `Aligned` gesetzt wurden. Im Zuge ehrlicher Konvergenz wurden 5 abgelöste Knoten gelöscht und 3 end-to-end verifizierte UI-Specs promotet. Die reflexive Selbstanwendung dieses Modells führen wir in Abschnitt 5 aus.
 
 ### 2.3 Generator/Orakel-Trennung
 
@@ -211,7 +211,7 @@ Der Rest bleibt, und wir verkleinern ihn nicht: das *Setzen* der Invariante. Es 
 
 Alle drei Repositories sind öffentlich auf GitHub und CI-grün. Die folgenden Befehle klonen, bauen und prüfen die jeweilige Kette von Grund auf. Voraussetzungen: .NET SDK 9 für alle drei; zusätzlich `elan` (stellt die in `lean-toolchain` gepinnte Lean-4-Version bereit) für den Werterhaltungs-Beweis in `ledger-casestudy`.
 
-**Koschnag/cong-driven-development** (v0.4.0) — die Methode/IDE, Selbst-Modell 66 Knoten / 62 Aligned / 4 Pending, 36/36 Unit-Tests:
+**Koschnag/cong-driven-development** (Branch main) — die Methode/IDE, Selbst-Modell 66 Knoten / 62 Aligned / 4 Pending, 36/36 Unit-Tests:
 
 ```bash
 git clone https://github.com/Koschnag/cong-driven-development
