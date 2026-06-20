@@ -1,14 +1,12 @@
 \documentclass[11pt,a4paper]{article}
 
 % --- Eingabe / Sprache ---
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+\usepackage{fontspec}                 % XeTeX/tectonic: natives UTF-8, korrektes ß/ä/ö/ü
 \usepackage[ngerman]{babel}
 \addto\captionsngerman{\renewcommand{\abstractname}{Abstract (English)}}
-\usepackage{lmodern}
 \usepackage{microtype}
 
-% --- Anfuehrungszeichen ---
+% --- Anführungszeichen ---
 % Zitatkonvention dieses Papers: Im deutschen Fliesstext durchgaengig \glqq...\grqq
 % (globale Stilvorgabe). \enquote{} wird AUSSCHLIESSLICH im englischen Abstract
 % verwendet (bewusste EN-Ausnahme via csquotes/babel). Kein Mischbetrieb im Body.
@@ -59,7 +57,7 @@
 \emergencystretch=3em
 \sloppy
 
-% --- Listing-Stile fuer F# und Lean ---
+% --- Listing-Stile für F# und Lean ---
 \lstdefinelanguage{fsharp}{
   morekeywords={let,rec,match,with,type,module,open,member,override,
     namespace,and,if,then,else,for,in,do,fun,function,of,mutable,
@@ -429,17 +427,19 @@ ist: eine Buchung, die die Deckung verletzen würde, wird im Modell abgelehnt, g
 Ein Beweis über ein Modell ohne Ablehnungspfad wäre vakuum-stark und würde die kritische
 Eigenschaft am Code vorbeibeweisen.
 
-\begin{lstlisting}[language=lean,caption={Kern-Theorem in \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{72b1284} (vereinfacht)},label={lst:werterhaltung}]
-theorem werterhaltung (s : Zustand) (b : Buchung) :
-    summe (buche s b) = summe s := by
-  -- Beweis ausgelassen; vollstaendig im Repo @ 72b1284
-  sorry
+\begin{lstlisting}[language=lean,caption={Kern-Theorem in \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{72b1284} (verbatim; Definitionen und das Lemma \texttt{werterhaltung\_einzel} im Repo)},label={lst:werterhaltung}]
+theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
+    total (buchen hb bs) = total hb := by
+  unfold buchen
+  induction bs generalizing hb with
+  | nil => rfl
+  | cons b bs ih =>
+      simp only [List.foldl_cons]
+      rw [ih (buche hb b), werterhaltung_einzel]
 \end{lstlisting}
 
 \noindent
-Das Schluesselwort \texttt{sorry} in \Cref{lst:werterhaltung} steht nur im hier verkuerzten
-Listing als Platzhalter fuer den ausgelassenen Beweiskoerper; der tatsaechliche Beweis im
-Repository ist \emph{sorry-frei}: \texttt{\#print axioms werterhaltung} liefert ausschließlich
+Der Beweis (\Cref{lst:werterhaltung}) ist \emph{sorry-frei}: \texttt{\#print axioms werterhaltung} liefert ausschließlich
 \texttt{propext} und \texttt{Quot.sound}, also keine zusätzlichen Axiome jenseits des
 Lean-Kerns. Der Beweis kommt ohne Mathlib aus (nur \texttt{Core}~$+$~\texttt{omega}); der
 CI-Job \texttt{lean-proof} ist grün\,@\,\texttt{72b1284}.
