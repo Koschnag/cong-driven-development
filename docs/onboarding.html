@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboarding — Das Terminierungs-Orakel</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<style>
+  :root{ --acc:#4c9aff; --green:#3fb950; --amber:#d29922; --red:#f85149; --line:#2a3340; --panel:#161b22; }
+  .reveal{ font-size:28px; }
+  .reveal h1,.reveal h2,.reveal h3{ text-transform:none; letter-spacing:-.01em; font-weight:700; }
+  .reveal h1{ font-size:1.7em } .reveal h2{ font-size:1.18em; color:#e6edf3 } .reveal h3{ font-size:.92em }
+  .reveal .acc{ color:var(--acc) } .reveal .green{ color:var(--green) } .reveal .red{ color:var(--red) } .reveal .amber{ color:var(--amber) }
+  .reveal .muted{ color:#9aa7b4 } .reveal small{ color:#9aa7b4; font-size:.62em }
+  .reveal pre{ width:100%; box-shadow:none; font-size:.46em; border:1px solid var(--line); border-radius:8px }
+  .reveal pre code{ padding:14px; max-height:none }
+  .reveal .lead{ color:#9aa7b4; font-size:.82em }
+  .reveal .big{ font-size:1.45em; line-height:1.3 }
+  .reveal table{ font-size:.62em } .reveal th{ color:#9aa7b4 } .reveal td,.reveal th{ padding:5px 9px }
+  .reveal .tag{ display:inline-block; border:1px solid var(--acc); color:var(--acc); border-radius:999px; padding:2px 14px; font-size:.5em; vertical-align:middle }
+  .reveal .ab{ display:flex; gap:18px } .reveal .ab>div{ flex:1; border:1px solid var(--line); border-radius:10px; padding:14px; text-align:left }
+  .reveal .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:left }
+  .reveal .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; text-align:left }
+  .reveal .card{ border:1px solid var(--line); border-radius:10px; padding:12px 16px; background:#0f141b }
+  .reveal .card h3{ margin:.1em 0 .3em }
+  .reveal footer{ position:fixed; bottom:8px; right:14px; font-size:12px; color:#59636e }
+  .reveal .partno{ position:fixed; bottom:8px; left:14px; font-size:12px; color:#3f4a57; letter-spacing:.05em }
+  .reveal section{ text-align:left }
+  .reveal .center{ text-align:center }
+  .reveal ul{ margin-left:.3em } .reveal li{ margin:.24em 0 }
+  kbd{ background:#1c2430; border:1px solid var(--line); border-radius:5px; padding:1px 7px; font-family:monospace; font-size:.7em }
+  /* Mermaid */
+  .reveal .mermaid{ display:flex; justify-content:center; align-items:center; margin:.2em 0; line-height:normal; }
+  .reveal .mermaid svg{ max-height:60vh !important; height:auto !important; max-width:100% !important; }
+  .reveal .cap{ text-align:center; color:#9aa7b4; font-size:.6em; margin-top:.2em }
+  .reveal .pill{ font-family:monospace; font-size:.85em; background:#1c2430; border:1px solid var(--line); border-radius:5px; padding:1px 6px }
+  .reveal .legend{ font-size:.55em; color:#9aa7b4 }
+  .reveal .Abadge{ display:inline-block; font-weight:700; color:var(--green); border:1px solid var(--green); border-radius:5px; padding:0 6px; font-size:.7em }
+  .reveal .Bbadge{ display:inline-block; font-weight:700; color:var(--amber); border:1px solid var(--amber); border-radius:5px; padding:0 6px; font-size:.7em }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- ============ TITEL ============ -->
+<section class="center" data-background-color="#0e1116">
+  <span class="tag">Onboarding · geführte Tour · zum Durchklicken</span>
+  <h1>Das Terminierungs-Orakel</h1>
+  <p class="lead">Was gebaut wurde — Schritt für Schritt, mit Diagrammen.</p>
+  <p class="muted" style="margin-top:1em">Konvergenz agentischer Softwareentwicklung gegen eine externalisierte, getypte Spezifikation</p>
+  <p><small>Cong Chanh Vinzenz Nguyen · alle Zahlen aus dem auditierten Paper · alle Repos CI-grün</small></p>
+  <p class="center" style="margin-top:1.2em"><small>weiter mit <kbd>→</kbd> / <kbd>Leertaste</kbd> · Übersicht <kbd>Esc</kbd> · Notizen <kbd>S</kbd></small></p>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section data-background-color="#0e1116">
+  <h2>Die Tour — sechs Teile</h2>
+  <div class="mermaid">
+flowchart LR
+  P1["① Problem<br/>der Loop &amp; sein Orakel"]:::a --> P2["② Idee<br/>Konvergenz gegen Spec"]:::a
+  P2 --> P3["③ Methode<br/>Cong OS / CDD"]:::a
+  P3 --> P4["④ Zwei Fallstudien<br/>Runenruf · Ledger"]:::a
+  P4 --> P5["⑤ Formaler Kern<br/>Typen · FsCheck · Lean"]:::a
+  P5 --> P6["⑥ Ehrlichkeit<br/>A/B · Grenzen · Stand"]:::a
+  classDef a fill:#161b22,stroke:#4c9aff,color:#e6edf3;
+  </div>
+  <p class="cap">Jeder Teil baut auf dem vorherigen auf. Ziel: du verstehst <em>was</em> existiert und <em>warum</em>.</p>
+</section>
+
+<!-- ============ ARTEFAKT-KARTE ============ -->
+<section data-background-color="#0e1116">
+  <h2>Was am Ende existiert</h2>
+  <div class="mermaid">
+flowchart TD
+  M["cong-driven-development<br/>Methode + IDE (Cong OS)<br/>SPOT-Modell · reflexives Selbst-Gate"]:::core
+  M --> A["runenruf<br/>Fallstudie A · 46/46"]:::repo
+  M --> B["ledger-casestudy<br/>Fallstudie B · 5/5 + Lean-Beweis"]:::repo
+  M --> D["Dokumente<br/>Paper (19 S.) · Whitepaper · Position"]:::doc
+  M --> S["GitHub Pages<br/>Review-Portal · Talk · dieses Onboarding"]:::doc
+  classDef core fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef repo fill:#161b22,stroke:#3fb950,color:#e6edf3;
+  classDef doc fill:#161b22,stroke:#d29922,color:#e6edf3;
+  </div>
+  <p class="cap">Drei Repositories + drei Texte + ein Portal. Alles public, alles an feste Commits gebunden.</p>
+</section>
+
+<!-- ============ TEIL 1: PROBLEM ============ -->
+<section class="center" data-background-color="#0b0e13">
+  <span class="tag">Teil 1</span>
+  <h1 class="acc">Das Problem</h1>
+  <p class="big">Es ist nicht der Loop. Es ist sein Terminierungs-Orakel.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der agentische Loop</h2>
+  <p class="lead">Boris Cherny (Anthropic): „my job is to write loops." Die Architektur ist korrekt.</p>
+  <div class="mermaid">
+flowchart LR
+  G["Generator<br/>(LLM)"]:::g -->|"Vorschlag"| C{"Prüfschritt"}:::c
+  C -->|"verworfen"| G
+  C -->|"akzeptiert"| T{"fertig?"}:::t
+  T -->|"nein"| G
+  T -->|"ja"| DONE(["Terminierung"]):::d
+  classDef g fill:#161b22,stroke:#4c9aff,color:#e6edf3;
+  classDef c fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef t fill:#1c2430,stroke:#d29922,color:#e6edf3;
+  classDef d fill:#13241a,stroke:#3fb950,color:#e6edf3;
+  </div>
+  <p class="cap">Generator erzeugt, ein Schritt prüft, das Ergebnis fließt zurück — bis zu einem Abbruchkriterium. <span class="acc">Woran hängt „fertig?"</span></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Defekt: ein schwaches Abbruchkriterium</h2>
+  <div class="mermaid">
+flowchart TD
+  T{"Abbruch-Kriterium"}:::t
+  T -->|"„Agent sagt fertig“"| W["schwaches Orakel<br/>an keine prüfbare Referenz gebunden"]:::w
+  T -->|"Exit-Code 0"| W
+  W --> F1["Brute Force<br/>Token ohne verbürgten Endzustand"]:::f
+  W --> F2["Blackbox<br/>Korrektheit erst nachträglich per Diff"]:::f
+  W --> F3["Intent Debt (Storey 2026)<br/>kein externalisiertes „Warum“"]:::f
+  classDef t fill:#1c2430,stroke:#d29922,color:#e6edf3;
+  classDef w fill:#2a1416,stroke:#f85149,color:#e6edf3;
+  classDef f fill:#161b22,stroke:#f85149,color:#e6edf3;
+  </div>
+  <p class="cap"><strong>Orakel</strong> = der Schritt, der entscheidet, ob „fertig". Ein Loop ohne <em>fälschungssicheres</em> Orakel konvergiert nicht gegen Korrektheit — sondern gegen das, was sein Prüfschritt zufällig durchwinkt.</p>
+</section>
+
+<section class="center" data-background-color="#0e1116">
+  <h2>Die Leitfrage</h2>
+  <p class="big">Wo liegt die Grenze, an der Verifikation auf eine <span class="acc">gesetzte Invariante</span> angewiesen ist —</p>
+  <p class="big fragment">und lässt sie sich <span class="acc">typisieren</span>?</p>
+  <p class="fragment muted" style="margin-top:1em"><small>Intent-Formalisierung ist eine benannte offene Grand Challenge (Lahiri 2026, arXiv:2603.17150). Kein Ideen-Primat — eine lauffähige Instanz.</small></p>
+</section>
+
+<!-- ============ TEIL 2: IDEE ============ -->
+<section class="center" data-background-color="#0b0e13">
+  <span class="tag">Teil 2</span>
+  <h1 class="acc">Die Idee</h1>
+  <p class="big">Konvergenz gegen eine externalisierte, getypte Spezifikation.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Die Umkehrung des Akzeptanzkriteriums</h2>
+  <div class="mermaid">
+flowchart LR
+  subgraph N["naiv"]
+    direction LR
+    g1["Generator"] --> c1{"Agent<br/>zufrieden?"} --> d1(["fertig"])
+  end
+  subgraph S["Konvergenz gegen Spec"]
+    direction LR
+    g2["Generator"] --> o2{"getyptes Orakel:<br/>Spec aligned?"}
+    o2 -->|"Diverged"| g2
+    o2 -->|"Aligned<br/>(echter Test)"| d2(["fertig"])
+  end
+  N ~~~ S
+  style N fill:#1a1113,stroke:#f85149
+  style S fill:#0f1b14,stroke:#3fb950
+  </div>
+  <p class="cap">Der Loop bleibt agentisch. Verändert ist allein, <em>woran sein Haltepunkt hängt</em>: an einem externen, getypten Prädikat statt an generator-interner Zufriedenheit.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>SPOT — die getypte Referenz</h2>
+  <div class="grid2">
+    <div>
+      <p class="lead"><strong>SPOT</strong> (Single Point of Truth): ein getypter F#-DU-Graph. <strong>Ein JSON pro Knoten</strong> unter <span class="pill">.spot/</span> — git-diffbar, serverlos.</p>
+      <p class="lead">Jeder Knoten trägt einen <span class="acc">Konvergenz-Status</span> und Relationen. Alles andere (Plan, Dev, Infra, Doku) ist eine Projektion dieses einen Modells.</p>
+      <p class="legend">Knotenarten: Spec · Test · Term · Decision · Component · Invariant · Premise · Risk · Knowledge · Tool<br/>Relationen: RelatesTo · DependsOn · SpecRef · Supersedes</p>
+    </div>
+    <div>
+<pre><code class="hljs language-fsharp" data-trim>
+// Cdd.Core/Spot.fs — verbatim
+type Convergence =
+    | Diverged   // Code weicht vom Modell ab
+    | Aligned    // Modell und Code synchron
+    | Pending    // Modell da, Code noch nicht
+    | Orphaned   // Code da, kein Modell
+</code></pre>
+    </div>
+  </div>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Die vier Konvergenz-Zustände</h2>
+  <div class="mermaid">
+stateDiagram-v2
+  [*] --> Pending: Modell da, Code noch nicht
+  Pending --> Aligned: echter grüner Test deckt Knoten
+  Aligned --> Diverged: Code weicht vom Modell ab
+  Diverged --> Aligned: erneut gegen Spec konvergiert
+  [*] --> Orphaned: Code ohne Modell
+  Orphaned --> Pending: Modell nachgezogen
+  </div>
+  <p class="cap">Konvergenz ist kein Fixpunkt-Versprechen, sondern ein <em>beobachtbarer Zustand pro Knoten</em>. Der Loop terminiert, wenn kein Knoten mehr <span class="red">Diverged</span> oder <span class="amber">Orphaned</span> ist.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Das Orakel: <span class="acc">echter Test</span>, nicht Exit-0</h2>
+  <div class="mermaid">
+sequenceDiagram
+  autonumber
+  participant Gen as Generator (LLM)
+  participant Code as Code-Pfad
+  participant Or as Orakel (Gate)
+  participant Test as dotnet test
+  participant Spot as .spot/ Knoten
+  Gen->>Code: Vorschlag (kein Schreibrecht aufs Gate)
+  Or->>Test: führt echten Lauf aus
+  Test-->>Or: Ergebnis
+  alt Test-PASS und Marker deckt Knoten
+    Or->>Spot: Zustand := Aligned
+  else Exit-0 ohne PASS / leer / übersprungen
+    Or->>Spot: bleibt Pending / Diverged
+  end
+  </div>
+  <p class="cap">Maßgeblich ist das <strong>Test-PASS</strong>, nicht der Prozess-Exitcode 0. Ein Prozess kann mit Exit-0 enden, ohne dass <em>eine</em> Property geprüft wurde.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Generator ⊥ Orakel — zweiachsig</h2>
+  <div class="mermaid">
+flowchart TD
+  SEP["Trennung<br/>Generator ⊥ Orakel"]:::s
+  SEP --> MECH["Mechanische Achse<br/>Werkzeug-Allowlist · kein Schreibrecht aufs Gate<br/>fälschungssicher, maschinell prüfbar"]:::a
+  SEP --> EP["Epistemische Achse<br/>Spec-Autor ≠ Code-Autor<br/>nur nötig bei separater Quelle"]:::b
+  EP -->|"gleiche Modell-Instanz<br/>schreibt Spec + Code"| CM["common-mode-Fehler<br/>(VeriAct: verifizierer-akzeptiert ≠ korrekt)"]:::r
+  CM -->|"Dekorrelator"| H["unabhängige Quelle bringt<br/>stärkere Property ein"]:::g
+  classDef s fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef a fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef b fill:#1f1a0e,stroke:#d29922,color:#e6edf3;
+  classDef r fill:#2a1416,stroke:#f85149,color:#e6edf3;
+  classDef g fill:#161b22,stroke:#3fb950,color:#e6edf3;
+  </div>
+  <p class="cap"><span class="legend">(<span class="Abadge">A</span> = maschinell verifiziert · <span class="Bbadge">B</span> = menschliche Setzung — volle Tabelle in Teil 5)</span><br/><span class="Abadge">A</span> Die Allowlist-Trennung ist real und prüfbar. <span class="Bbadge">B</span> <em>Wer</em> dekorreliert, ist eine Setzung — ein zweiter unabhängiger Agent könnte es ebenso.</p>
+</section>
+
+<!-- ============ TEIL 3: METHODE ============ -->
+<section class="center" data-background-color="#0b0e13">
+  <span class="tag">Teil 3</span>
+  <h1 class="acc">Die Methode</h1>
+  <p class="big">Cong OS / CDD — und ihre reflexive Selbstanwendung.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Cong OS: Chat-primäres Cockpit über dem Modell</h2>
+  <div class="mermaid">
+flowchart TD
+  CHAT["Chat-Zone (primär)<br/>Intent in natürlicher Sprache"]:::chat
+  CHAT -->|"materialisiert"| SPOT["SPOT-Modell<br/>getypter F#-DU-Graph<br/>1 JSON/Knoten @ .spot/"]:::spot
+  GATE["Orakel-Gate<br/>echter Test → Aligned"]:::gate --> SPOT
+  SPOT --> LENS["4-Linsen-Explorer<br/>(Modell aus 4 Blickwinkeln)"]:::view
+  SPOT --> PROJ["Projektionen<br/>Plan · Dev · Infra · Prod · Doku"]:::view
+  classDef chat fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef spot fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef gate fill:#1f1a0e,stroke:#d29922,color:#e6edf3;
+  classDef view fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  </div>
+  <p class="cap">Die IDE ist kein Editor-mit-Chat, sondern ein Cockpit: du sprichst mit dem Modell, das Modell ist die Wahrheit, der Code ist seine Projektion.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Reflexiv: dieselbe Mechanik auf die <span class="acc">Methode selbst</span></h2>
+  <div class="mermaid">
+flowchart LR
+  CDD["CDD-Methode"]:::c -->|"modelliert sich in"| OWN[".spot/ Selbstmodell<br/>66 Knoten"]:::o
+  OWN --> GATE["spec-gate-selbst-hart<br/>wendet dieselbe Test-Mechanik<br/>auf die eigenen .spot/-Knoten an"]:::g
+  GATE --> R["36/36 Tests grün<br/>62 Aligned · 4 Pending"]:::r
+  R -->|"4 Pending = sichtbare Lücke"| HON["ehrliche Konvergenz<br/>(vermessen, nicht „fertig“)"]:::h
+  classDef c fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef o fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef g fill:#1f1a0e,stroke:#d29922,color:#e6edf3;
+  classDef r fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef h fill:#161b22,stroke:#4c9aff,color:#e6edf3;
+  </div>
+  <p class="cap">Ein Orakel, das nur <span class="green">Aligned</span> kennt, wäre keines. Die vier <span class="amber">Pending</span>-Knoten sind genau die Stellen, an denen die Methode ihre eigene Spec noch nicht eingeholt hat.</p>
+</section>
+
+<!-- ============ TEIL 4: FALLSTUDIEN ============ -->
+<section class="center" data-background-color="#0b0e13">
+  <span class="tag">Teil 4</span>
+  <h1 class="acc">Zwei Fallstudien</h1>
+  <p class="big">Ein Existenznachweis — und sein hartes Gegenstück.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Warum zwei?</h2>
+  <div class="mermaid">
+flowchart LR
+  subgraph A["🎮 Runenruf — Existenznachweis"]
+    direction TB
+    a1["Simulationsdomäne · ~125 LoC"]
+    a2["Spec = Welt (freundlichste Domäne)"]
+    a3["46/46 · FsCheck über jeden Seed"]
+  end
+  subgraph B["📒 Ledger — Gegenstück"]
+    direction TB
+    b1["echtes IO: Journal + Replay · ~41 LoC Kern"]
+    b2["Spec ≠ Welt · veränderliches Requirement"]
+    b3["5/5 · + Lean-Beweis"]
+  end
+  A ~~~ B
+  style A fill:#0f1b14,stroke:#3fb950
+  style B fill:#13243a,stroke:#4c9aff
+  </div>
+  <p class="cap">Runenruf zeigt, dass die Maschinerie <em>geschlossen durchläuft</em>. Ledger zeigt, was passiert, wenn die Spec die Welt <em>nicht</em> automatisch trifft.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>🎮 Fallstudie A: Runenruf</h2>
+  <ul>
+    <li><span class="green">46/46</span> Tests (autoritativer Runner, kein grep) <span class="pill">@ 56376a5</span></li>
+    <li>Tragende FsCheck-Property (<em>property-based testing</em>) <span class="pill">spec-siegel-lager-nichtnegativ</span>: quantifiziert über <em>jeden</em> Seed und <em>jede</em> Operationsfolge — Nichtnegativität des Lagerbestands</li>
+    <li><strong>Deterministisch</strong>: gleicher Seed → gleicher Lauf → Gegenbeispiel reproduzierbar</li>
+  </ul>
+  <p class="card" style="margin-top:.5em"><strong class="amber">Ehrlich:</strong> die freundlichste Domäne, die wir kennen — die Spezifikation <em>ist</em> die Welt. Das belegt Anwendbarkeit und Mechanik, <em>nicht</em> den harten Realismus-Fall. <span class="Abadge">A</span> 46/46 · <span class="Bbadge">B</span> „trifft die Welt" entfällt hier.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>📒 Fallstudie B: Ledger</h2>
+  <div class="grid2">
+    <div>
+      <p class="lead">Doppisches Hauptbuch. <strong>Echtes IO</strong>: persistentes Journal + Replay-Pfad. <strong>Veränderliches</strong> Requirement (Gebühren).</p>
+      <ul>
+        <li>F#/.NET 9, Beträge als <span class="pill">int64</span>-Cent</li>
+        <li>~41 LoC Domänenkern</li>
+        <li><span class="green">5/5</span> Tests <span class="pill">@ 72b1284</span></li>
+      </ul>
+    </div>
+    <div>
+      <p class="lead">Hier ist „trifft das Modell die Welt" <em>nicht</em> leer — und genau hier zeigt sich, wo das Loop-interne Orakel endet.</p>
+      <p class="cap" style="text-align:left"><strong>Mis-Spec</strong> = eine grüne, aber <em>falsche</em> Spezifikation. → nächste Folie: wie er gefangen wurde.</p>
+    </div>
+  </div>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der gefangene Mis-Spec — ein <span class="acc">unabhängiges</span> Gegen-Orakel</h2>
+  <div class="mermaid">
+stateDiagram-v2
+  [*] --> Gruen1
+  Gruen1: Korrektes Modell · 5/5 grün
+  Gruen1 --> Falsifiable: naives Modell injiziert (Gebühr verschwindet)
+  Falsifiable: rot — nach 4 Tests
+  Falsifiable --> Gruen2: revert + Umstellung auf Doppik
+  Gruen2: Wert bleibt neutral · 5/5 grün
+  Gruen2 --> [*]
+  note right of Falsifiable
+    Nicht der Loop fand den Fehler, sondern eine vom
+    Generator UNABHÄNGIGE Quelle (hier: der Mensch):
+    stärkere Property + geändertes Requirement als
+    Dekorrelator. Ein zweiter unabhängiger Agent
+    könnte dieselbe Rolle einnehmen — eine Setzung,
+    kein Unmöglichkeitsbeweis.
+  end note
+  </div>
+  <p class="cap">Erste, schwächere Properties akzeptierten eine fehlerhafte Buchungslogik — verifizierer-akzeptiert ≠ korrekt (VeriAct). Erst die externe Setzung machte die grüne Spec falsifizierbar.</p>
+</section>
+
+<section class="center" data-background-color="#0e1116">
+  <h2>Das stärkste Bild: das Gate <span class="red">beim Scheitern</span></h2>
+  <pre style="margin-top:.3em"><code class="hljs language-bash" data-trim>
+$ ./demo-gate-at-failure.sh            # @ 72b1284 — ein NEGATIV-Artefakt
+  1) korrektes Modell            5/5  grün
+  2) naives Modell injiziert     (Gebühr verschwindet)
+  3) Orakel:  Falsifiable        rot   ← verwirft das falsche Modell
+  4) revert                      5/5  grün
+  </code></pre>
+  <p class="fragment lead">Ein grüner Lauf ist ein Cursor-Klon mit Vokabular. Ein <em>reproduzierbar erzwungenes</em> <span class="red">rotes</span> Resultat ist der <em>reproduzierbare Existenznachweis</em>, dass das Gate diskriminiert.</p>
+</section>
+
+<!-- ============ TEIL 5: FORMALER KERN ============ -->
+<section class="center" data-background-color="#0b0e13">
+  <span class="tag">Teil 5</span>
+  <h1 class="acc">Der formale Kern</h1>
+  <p class="big">Drei Schichten an <em>einem</em> Invarianten.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Typen → FsCheck → Lean</h2>
+  <div class="mermaid">
+flowchart TD
+  L1["① Typen — int64-Cent<br/>schließt ganze Fehlerklassen STATISCH aus<br/>(Gleitkomma, negative Lücken)"]:::l1
+  L2["② FsCheck-Property<br/>über Zufallsfolgen GEPRÜFT<br/>(Stichprobe — fand den Mis-Spec)"]:::l2
+  L3["③ Lean-4-Beweis<br/>für JEDE Folge BEWIESEN<br/>(Allquantor ∀ — über die Stichprobe hinaus)"]:::l3
+  L1 --> L2 --> L3
+  L3 -.->|"derzeit nur Werterhaltung"| N["übrige Invarianten:<br/>Nichtnegativität · Isolation · Replay<br/>nur FsCheck"]:::n
+  classDef l1 fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef l2 fill:#1f1a0e,stroke:#d29922,color:#e6edf3;
+  classDef l3 fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef n fill:#161b22,stroke:#f85149,color:#9aa7b4;
+  </div>
+  <p class="cap">Jede Schicht ist stärker als die darunter. Die Kette ist <em>nur</em> für die Werterhaltung vollständig geschlossen — ehrlich als Lücke gerahmt.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Lean-Beweis: Werterhaltung <small>(Lean 4 — Theorembeweiser)</small></h2>
+<pre><code class="hljs language-lean" data-trim>
+-- proofs/Werterhaltung.lean @ 72b1284 (verbatim)
+theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
+    total (buchen hb bs) = total hb := by
+  unfold buchen
+  induction bs generalizing hb with
+  | nil => rfl
+  | cons b bs ih =>
+      simp only [List.foldl_cons]
+      rw [ih (buche hb b), werterhaltung_einzel]
+</code></pre>
+  <ul>
+    <li><span class="green">sorry-frei</span> — <span class="pill">#print axioms werterhaltung</span> → nur <span class="pill">propext</span>, <span class="pill">Quot.sound</span> (keine Zusatz-Axiome)</li>
+    <li>ohne Mathlib (nur <span class="pill">Core + omega</span>) · CI-Job <span class="pill">lean-proof</span> grün</li>
+    <li>Das Lean-Modell bildet den Deckungs-/Ablehnungspfad der F#-Funktion <span class="pill">buche</span> nach (manuell aligned, nicht maschinell extrahiert) → kein vakuum-starker Beweis</li>
+  </ul>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Logik-gegen-LLM-Hebel: <span class="acc">A/B</span></h2>
+  <p class="lead">Jede tragende Behauptung deklariert sich — Auszug; vollständige Tabelle im Paper (§6.5).</p>
+  <table>
+    <tr><th>Behauptung</th><th>A/B</th><th>Anker</th></tr>
+    <tr><td>Runenruf 46/46 · Ledger 5/5 · CDD 36/36 (62/66 Aligned, 4 Pending)</td><td><span class="Abadge">A</span></td><td>Runner, je eigener Commit (s. Repro)</td></tr>
+    <tr><td>Werterhaltung sorry-frei · Lean ohne Mathlib, CI grün</td><td><span class="Abadge">A</span></td><td>#print axioms @ 72b1284</td></tr>
+    <tr><td>Allowlist-Trennung Generator ⊥ Prüf-Orakel</td><td><span class="Abadge">A</span></td><td>Code @ main</td></tr>
+    <tr><td>Negativ-Artefakt demo-gate-at-failure.sh</td><td><span class="Abadge">A</span></td><td>Skript @ 72b1284</td></tr>
+    <tr><td>Spec trifft die Welt (Spec ⊨ Welt)</td><td><span class="Bbadge">B</span></td><td>per VeriAct nicht orakel-prüfbar</td></tr>
+    <tr><td><em>Wer</em> die Grund-Invariante setzt (Mensch)</td><td><span class="Bbadge">B</span></td><td>normative Wahl</td></tr>
+    <tr><td>Neuheit/Abgrenzung der Kombination · Skalierung über Domänen</td><td><span class="Bbadge">B</span></td><td>Literatur-Aussage · N=2</td></tr>
+  </table>
+  <p class="cap"><span class="Abadge">A</span> = maschinell &amp; extern verifiziert (Commit · arXiv-ID · CI · sorry-Audit) — re-runbar, immun gegen Halluzination. &nbsp; <span class="Bbadge">B</span> = menschliche Setzung — ehrlich markiert.</p>
+</section>
+
+<!-- ============ TEIL 6: EHRLICHKEIT ============ -->
+<section class="center" data-background-color="#0b0e13">
+  <span class="tag">Teil 6</span>
+  <h1 class="acc">Ehrlichkeit &amp; Stand</h1>
+  <p class="big">Mit einer Lücke argumentieren, nicht mit einem Versprechen.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Ehrliche Grenzen</h2>
+  <ul>
+    <li><strong>N = 2</strong> Fallstudien — Anwendbarkeit, nicht Skalierung; beide klein</li>
+    <li><strong>Ein</strong> Lean-bewiesener Invariant; die übrigen nur FsCheck (Roadmap)</li>
+    <li>Verifizierer-akzeptiert <span class="red">≠</span> korrekt (VeriAct) — das Orakel allein genügt nicht</li>
+    <li><strong>Preprint</strong>, nicht peer-reviewed</li>
+  </ul>
+  <p class="card" style="margin-top:.4em"><strong class="acc">Anti-Lucas (wichtig):</strong> Das Setzen der Grund-Invariante ist im System nicht selbst-fundierbar — ein <em>Regress</em> (architektonisches Argument, <em>kein</em> Unmöglichkeitsbeweis). Dass der <em>Mensch</em> den Anker setzt, ist eine <strong>Wahl</strong> (Intent ist extern + verantwortungsbehaftet), <em>nicht</em> „unmechanisierbar". Ein zweiter, unabhängiger Agent könnte ihn setzen. <span class="muted">Penrose/Lucas wird abgelehnt.</span></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Verortung — ein volles Feld</h2>
+  <div class="mermaid">
+flowchart TD
+  SDD["Spec-Driven Development<br/>Kiro · Spec-Kit · Tessl · Cursor · OpenSpec · BMAD · Antigravity<br/>„Spec als Wahrheit“ = Commodity"]:::sdd
+  VC["Vericoding<br/>CLEVER · VeriGuard · Dafny/Verus<br/>„Code gegen formale Spec verifizieren“"]:::vc
+  US["Unser Beitrag: die INTEGRATION<br/>laufende, getypte Methode · SPOT-Konvergenz-Zustandsgraph<br/>+ reflexive Selbstanwendung<br/>(Generator/Orakel-Trennung teilt sie mit VeriGuard)"]:::us
+  SDD --> US
+  VC --> US
+  classDef sdd fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef vc fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef us fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  </div>
+  <p class="cap">Eine Architektur- und Integrationsaussage, kein Ideen-Primat. „Uns ist keine publizierte Implementierung mit genau dieser Kombination bekannt" ist eine <span class="Bbadge">B</span>-Literaturaussage.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Was reproduzierbar ist — die <span class="green">A-Marken</span></h2>
+<pre><code class="hljs language-bash" data-trim>
+# Methode + Selbst-Gate — erwartet 36/36
+git clone https://github.com/Koschnag/cong-driven-development
+dotnet test tests/Cdd.Tests
+
+# Fallstudie A — erwartet 46/46
+git clone https://github.com/Koschnag/runenruf && git checkout 56376a5
+dotnet test tests/Runenruf.Tests
+
+# Fallstudie B — erwartet 5/5 + sorry-freier Beweis + Negativ-Artefakt
+git clone https://github.com/Koschnag/ledger-casestudy && git checkout 72b1284
+dotnet test tests/Ledger.Tests
+lean proofs/Werterhaltung.lean      # axioms: propext, Quot.sound
+./demo-gate-at-failure.sh           # grün → Falsifiable (rot) → grün
+</code></pre>
+  <p class="center" style="margin-top:.3em"><small>Ein frischer Klon liefert genau diese Zahlen. Portal: <span class="acc">koschnag.github.io/cong-driven-development</span></small></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Was diese Session geliefert hat</h2>
+  <div class="mermaid">
+flowchart LR
+  W1["System gebaut<br/>3 Repos · SPOT · Orakel"]:::w --> W2["3-Schichten-Kette<br/>geschlossen (Werterhaltung)<br/>sorry-freier Lean-Beweis"]:::w
+  W2 --> W3["Logik-Audit (5 Linsen)<br/>echte Defekte gefunden + behoben"]:::w
+  W3 --> W4["Paper + Whitepaper<br/>A/B-Tabelle · Formatierung gefixt"]:::w
+  W4 --> W5["Portal · Talk · dieses Onboarding"]:::w
+  W5 --> G0(["Gate 0: DEIN Review + Posten"]):::g
+  classDef w fill:#161b22,stroke:#4c9aff,color:#e6edf3;
+  classDef g fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  </div>
+  <p class="cap"><span class="Bbadge">B</span> <em>Selbsteinschätzung:</em> Der Logik-Audit fand u. a. den Lucas-Trap (→ Anti-Lucas-Karte), ein vakuum-starkes Lean-Modell (→ Ablehnungspfad im Beweis) und eine Neuheits-Überdehnung (→ Neuheit ist B) — alle in den jetzt versionierten Artefakten behoben. Die A-Marken bleiben CI-grün und an Commits verankert.</p>
+</section>
+
+<section class="center" data-background-color="#0b0e13">
+  <h1 class="acc">Das war die Tour.</h1>
+  <p class="big">Das Problem ist nicht der Loop, sondern sein Orakel.</p>
+  <p class="lead">Tausche „Agent sagt fertig" gegen „Konvergenz gegen eine getypte Spec" — der Loop wird diszipliniert. Der Rest wird nicht eliminiert, sondern <span class="acc">typisiert</span>: an die Stelle gelegt, an der ein Mensch ihn setzt — sichtbar, versioniert, gegen Drift gegatet.</p>
+  <p class="muted" style="margin-top:1em"><small>Offen bleibt nur Gate 0: dein Review und das Posten. Beides bleibt deins.</small></p>
+</section>
+
+</div></div>
+<footer>Onboarding · Das Terminierungs-Orakel</footer>
+<div class="partno reveal"></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad:false,
+    theme:'dark',
+    securityLevel:'loose',
+    themeVariables:{
+      primaryColor:'#161b22', primaryTextColor:'#e6edf3', primaryBorderColor:'#2a3340',
+      lineColor:'#4c9aff', secondaryColor:'#1c2430', tertiaryColor:'#0e1116',
+      fontSize:'17px', fontFamily:'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+      noteBkgColor:'#1f1a0e', noteTextColor:'#e6edf3', noteBorderColor:'#d29922'
+    },
+    flowchart:{ useMaxWidth:true, htmlLabels:true, curve:'basis' },
+    sequence:{ useMaxWidth:true },
+    state:{ useMaxWidth:true }
+  });
+  Reveal.initialize({
+    hash:true, slideNumber:'c/t', transition:'fade', controls:true, progress:true,
+    plugins:[ RevealHighlight, RevealNotes ]
+  }).then(() => {
+    const render = () => {
+      try { mermaid.run({ querySelector: '.reveal section.present .mermaid:not([data-processed])' }); }
+      catch(e){ console.warn('mermaid', e); }
+    };
+    render();
+    Reveal.on('slidechanged', render);
+  });
+</script>
+</body>
+</html>
