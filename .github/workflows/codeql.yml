@@ -1,0 +1,25 @@
+name: CodeQL
+
+# F# wird von CodeQL nicht unterstützt — gescannt werden die GitHub-Actions-
+# Workflows selbst (Supply-Chain/Injection-Risiken in der Pipeline).
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: '14 4 * * 1'  # wöchentlich Montag früh
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: actions
+      - uses: github/codeql-action/analyze@v3

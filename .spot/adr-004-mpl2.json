@@ -1,0 +1,16 @@
+{
+  "Id": "adr-004-mpl2",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "Lizenz MPL-2.0",
+        "Context": "Offenheit gew\u00FCnscht, aber Datei-Copyleft statt viralem Projekt-Copyleft",
+        "Choice": "MPL-2.0",
+        "Consequences": "Kommerzielle Nutzung m\u00F6glich, \u00C4nderungen an CDD-Dateien bleiben offen",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

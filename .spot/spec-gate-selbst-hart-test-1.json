@@ -1,0 +1,14 @@
+{
+  "Id": "spec-gate-selbst-hart-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-gate-selbst-hart",
+        "Name": "Gate-Selbsth\u00E4rtung \u2014 when die reflexive Invariante \u00FCber das eigene Modell gepr\u00FCft wird then hat jeder als Aligned markierte Test-Knoten einen echten Trait-spot-Marker im Testcode, also kein Aligned ohne Test",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

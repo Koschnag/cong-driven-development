@@ -1,0 +1,14 @@
+{
+  "Id": "spec-cockpit-shell-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-cockpit-shell",
+        "Name": "Chat-primaere Cockpit-Shell \u2014 when die Shell rendert then sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,25 @@
+{
+  "Id": "spec-fehlerliste",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Fehlerliste \u0026 Widerspruchs-Erkennung",
+        "Intent": "Inkonsistenzen, Widerspr\u00FCche und Regelverst\u00F6\u00DFe sind eine klickbare Liste wie in Visual Studio",
+        "Criteria": [
+          {
+            "Given": "eine zyklische IsA/PartOf-Begriffshierarchie",
+            "When": "validiert wird",
+            "Then": "erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten"
+          },
+          {
+            "Given": "zwei Begriffe mit gleichem Namen",
+            "When": "validiert wird",
+            "Then": "wird Mehrdeutigkeit als Warnung gemeldet"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

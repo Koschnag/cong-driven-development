@@ -1,0 +1,14 @@
+{
+  "Id": "spec-derive-tests-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-derive-tests",
+        "Name": "Spec\u2192Test-Ableitung \u2014 when cdd derive-tests --write l\u00E4uft then existiert genau ein Test-Knoten pro Kriterium",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

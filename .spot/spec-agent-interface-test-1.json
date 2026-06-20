@@ -1,0 +1,14 @@
+{
+  "Id": "spec-agent-interface-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-agent-interface",
+        "Name": "Agent-Interface \u2014 when der Agent ausgef\u00FChrt wird (Claude direkt oder via kopiertem Prompt) then entsteht ein pr\u00FCfbarer \u00C4nderungsvorschlag (upsert/delete), der erst nach Best\u00E4tigung angewendet wird",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

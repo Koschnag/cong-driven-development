@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cong OS</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%230e1116%22/><circle cx=%228%22 cy=%228%22 r=%224%22 fill=%22%234ea1ff%22/></svg>">
+  <link rel="stylesheet" href="cockpit.css">
+  <!-- KaTeX lokal gevendort (souverän, kein Laufzeit-CDN) → die Formal-Sicht „code behind" -->
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+</head>
+<body data-spine="chat">
+  <!-- VS-2022-Classic-Menüleiste: Identität + Auffindbarkeit (dispatcht nur bestehende Aktionen). -->
+  <nav id="menubar" class="vs-menubar"></nav>
+
+  <!-- EINE Tür: die Omnibar. ⌘K fokussiert sie immer, von überall. -->
+  <header id="omni" class="omni"></header>
+
+  <main class="cockpit">
+    <!-- Linke Schiene: externalisiertes Arbeitsgedächtnis. NOW + Pins. Immer sichtbar, nie im Weg. -->
+    <aside id="rail" class="rail"></aside>
+
+    <!-- Hauptfläche: Diagramm (groß, links) UND Chat (Spalte, rechts) — beide immer sichtbar. -->
+    <section id="main" class="main">
+      <div id="maindia" class="maindia"></div>
+      <section id="thread" class="thread"></section>
+      <!-- Faden-Vollbild: klappt das Diagramm ein, der Faden füllt den Schirm (§11, ⌘0). Re-Öffner. -->
+      <button id="dia-reopen" class="dia-reopen" title="Diagramm zeigen (⌘0)">◧ Diagramm</button>
+    </section>
+
+    <!-- Rechte Bühne: die EINE herbeigerufene Fläche (Artefakt). Standardmäßig zu. -->
+    <aside id="stage" class="stage" data-open="false"></aside>
+  </main>
+
+  <!-- VS-Bottom-Dock: Fehlerliste · Ausgabe · Drift (⌘J). Standard: eingeklappt. -->
+  <section id="dock" class="dock closed"></section>
+
+  <!-- Eine Zeile Wahrheit: Konvergenz · Infra · Engine · Was-jetzt. -->
+  <footer id="status" class="statusline"></footer>
+
+  <!-- Cytoscape + KaTeX lokal gevendort (souverän, kein Laufzeit-CDN) → window.cytoscape / window.katex -->
+  <script src="vendor/cytoscape.umd.js"></script>
+  <script src="vendor/katex/katex.min.js"></script>
+  <script type="module" src="cockpit.js"></script>
+</body>
+</html>

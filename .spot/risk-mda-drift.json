@@ -1,0 +1,15 @@
+{
+  "Id": "risk-mda-drift",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Modell und Code driften auseinander (der MDA-Friedhof)",
+        "Likelihood": "Medium",
+        "Impact": "Critical",
+        "Mitigation": "Konvergenz-Status je Knoten \u002B Round-Trip (Code\u2192Modell) auf der Roadmap"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,24 @@
+{
+  "Id": "term-ubiquitaere-sprache",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Ubiquit\u00E4re Sprache",
+        "Definition": "Gemeinsames Vokabular von Fachseite, Technik und AI-Agents \u2014 definiert in der Ontologie",
+        "Synonyms": [
+          "Ubiquitous Language"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-ontologie"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

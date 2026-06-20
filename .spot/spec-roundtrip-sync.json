@@ -1,0 +1,20 @@
+{
+  "Id": "spec-roundtrip-sync",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Round-Trip: Code \u2192 Modell",
+        "Intent": "Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet",
+        "Criteria": [
+          {
+            "Given": "src/*.fsproj und Component-Knoten",
+            "When": "cdd sync-code l\u00E4uft",
+            "Then": "wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

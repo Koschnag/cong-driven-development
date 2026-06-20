@@ -1,0 +1,20 @@
+{
+  "Id": "spec-sync-tests",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Test-Konvergenz messen",
+        "Intent": "Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet",
+        "Criteria": [
+          {
+            "Given": "ein Test-Knoten und ein Test mit Trait(\u0022spot\u0022, id) oder [spot: id]-Marker",
+            "When": "cdd sync-tests l\u00E4uft",
+            "Then": "wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,15 @@
+{
+  "Id": "comp-mcp",
+  "Payload": {
+    "Case": "ComponentNode",
+    "Fields": {
+      "Item": {
+        "Name": "Cdd.Mcp",
+        "DependsOn": [
+          "comp-core"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

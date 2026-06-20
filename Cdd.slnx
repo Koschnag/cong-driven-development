@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cdd.Cli/Cdd.Cli.fsproj" />
+    <Project Path="src/Cdd.Core/Cdd.Core.fsproj" />
+    <Project Path="src/Cdd.Mcp/Cdd.Mcp.csproj" />
+    <Project Path="src/Cdd.Web/Cdd.Web.fsproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cdd.Tests/Cdd.Tests.fsproj" />
+  </Folder>
+</Solution>

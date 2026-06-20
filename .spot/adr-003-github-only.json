@@ -1,0 +1,16 @@
+{
+  "Id": "adr-003-github-only",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "GitHub-native Infrastruktur",
+        "Context": "Eigene Domains/Server erzeugen Pflegekosten und private Abh\u00E4ngigkeiten",
+        "Choice": "Pages f\u00FCr die Demo, Actions f\u00FCr CI/CD, GHCR f\u00FCr Container, Releases f\u00FCr Binaries",
+        "Consequences": "Demo-Modus braucht localStorage statt Backend; volle Version via Codespaces/Container",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

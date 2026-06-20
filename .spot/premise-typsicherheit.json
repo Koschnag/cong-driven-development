@@ -1,0 +1,13 @@
+{
+  "Id": "premise-typsicherheit",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Typsicherheit vor Flexibilit\u00E4t.",
+        "Rationale": "Illegale SPOT-Zust\u00E4nde sollen nicht repr\u00E4sentierbar sein \u2014 das Typsystem ist das Schema"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

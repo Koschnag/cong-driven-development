@@ -1,0 +1,14 @@
+{
+  "Id": "spec-export-context-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-export-context",
+        "Name": "LLM-Kontextexport \u2014 when cdd export-context l\u00E4uft then entsteht ein einzelnes Markdown-Bundle mit Ontologie, Pr\u00E4missen, Entscheidungen, Specs und offenen Risiken",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

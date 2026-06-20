@@ -1,0 +1,13 @@
+{
+  "Id": "premise-kein-python",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Kein Python \u2014 nie.",
+        "Rationale": "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchg\u00E4ngig"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

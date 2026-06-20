@@ -1,0 +1,14 @@
+{
+  "Id": "spec-derive-code-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-derive-code",
+        "Name": "Modell \u2192 Code (derive-code) \u2014 when cdd derive-code l\u00E4uft then entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden \u00FCbersprungen",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

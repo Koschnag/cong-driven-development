@@ -1,0 +1,20 @@
+{
+  "Id": "spec-mcp-server",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "MCP-Server",
+        "Intent": "Jeder MCP-Client (Claude Code, Claude Desktop, \u2026) kann den SPOT direkt lesen, validieren und mutieren",
+        "Criteria": [
+          {
+            "Given": "ein verbundener MCP-Client",
+            "When": "spot_upsert oder spot_delete aufgerufen wird",
+            "Then": "wird die \u00C4nderung gespeichert und die Validierung (inkl. Invarianten) zur\u00FCckgemeldet"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

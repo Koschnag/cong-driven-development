@@ -1,0 +1,20 @@
+{
+  "Id": "spec-derive-code",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Modell \u2192 Code (derive-code)",
+        "Intent": "Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker",
+        "Criteria": [
+          {
+            "Given": "ein Test-Knoten ohne Marker im Test-Code",
+            "When": "cdd derive-code l\u00E4uft",
+            "Then": "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden \u00FCbersprungen"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

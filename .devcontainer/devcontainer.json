@@ -1,0 +1,14 @@
+{
+  "name": "CDD — Cloud-Dev (Codespaces)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:9.0",
+  "postCreateCommand": "dotnet build",
+  "forwardPorts": [5179],
+  "portsAttributes": {
+    "5179": { "label": "CDD Cockpit", "onAutoForward": "openPreview" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ionide.ionide-fsharp", "ms-dotnettools.csdevkit"]
+    }
+  }
+}

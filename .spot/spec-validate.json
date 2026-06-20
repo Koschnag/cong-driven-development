@@ -1,0 +1,25 @@
+{
+  "Id": "spec-validate",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Modell-Validierung",
+        "Intent": "Der SPOT-Graph ist jederzeit strukturell konsistent",
+        "Criteria": [
+          {
+            "Given": "ein Knoten mit Referenz auf eine nicht existierende Id",
+            "When": "cdd validate l\u00E4uft",
+            "Then": "wird ein Fehler mit Knoten-Id und Ziel gemeldet"
+          },
+          {
+            "Given": "Komponenten mit zyklischen Abh\u00E4ngigkeiten",
+            "When": "cdd validate l\u00E4uft",
+            "Then": "werden alle Zyklus-Teilnehmer als Fehler markiert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

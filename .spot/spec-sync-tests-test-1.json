@@ -1,0 +1,14 @@
+{
+  "Id": "spec-sync-tests-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-sync-tests",
+        "Name": "Test-Konvergenz messen \u2014 when cdd sync-tests l\u00E4uft then wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

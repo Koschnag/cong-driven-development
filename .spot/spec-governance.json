@@ -1,0 +1,20 @@
+{
+  "Id": "spec-governance",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Governance by Invariance",
+        "Intent": "Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal \u002B CI) erzwungen",
+        "Criteria": [
+          {
+            "Given": "eine Invariante im SPOT",
+            "When": "cdd validate l\u00E4uft",
+            "Then": "werden Verst\u00F6\u00DFe als Fehler am verletzenden Knoten gemeldet"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

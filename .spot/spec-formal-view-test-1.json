@@ -1,0 +1,14 @@
+{
+  "Id": "spec-formal-view-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-formal-view",
+        "Name": "Formale code-behind-Sicht \u2014 when auf eine Formal-Sicht gewechselt wird then rendert sie das Modell in formaler Notation mit KaTeX",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

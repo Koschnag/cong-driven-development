@@ -1,0 +1,14 @@
+{
+  "Id": "spec-sync-docs-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-sync-docs",
+        "Name": "Doku-Konvergenz \u2014 when cdd sync-docs --check in der CI l\u00E4uft then schl\u00E4gt der Build fehl, bis sync-docs den Status neu generiert hat",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

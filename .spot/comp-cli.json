@@ -1,0 +1,15 @@
+{
+  "Id": "comp-cli",
+  "Payload": {
+    "Case": "ComponentNode",
+    "Fields": {
+      "Item": {
+        "Name": "Cdd.Cli",
+        "DependsOn": [
+          "comp-core"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,16 @@
+{
+  "Id": "adr-002-json-store",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "Ein JSON-File pro Knoten",
+        "Context": "Der SPOT muss git-diffbar, mergebar und ohne Server nutzbar sein",
+        "Choice": "Persistenz als .spot/\u003Cid\u003E.json via FSharp.SystemTextJson",
+        "Consequences": "Kein Query-Layer; bei Wachstum sp\u00E4ter SQLite/Index m\u00F6glich, Format bleibt Austauschformat",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

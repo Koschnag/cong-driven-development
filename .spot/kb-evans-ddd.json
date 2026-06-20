@@ -1,0 +1,18 @@
+{
+  "Id": "kb-evans-ddd",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Eric Evans \u2014 Domain-Driven Design",
+        "Source": "ISBN 978-0321125217",
+        "MediaType": "book",
+        "Takeaways": [
+          "Ubiquitous Language ist die Br\u00FCcke zwischen Fachseite und Code",
+          "Bounded Contexts begrenzen Modellg\u00FCltigkeit"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

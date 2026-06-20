@@ -1,0 +1,20 @@
+{
+  "Id": "spec-gate-selbst-hart",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Gate-Selbsthärtung",
+        "Intent": "Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung",
+        "Criteria": [
+          {
+            "Given": "das Selbst-Modell unter .spot/ und der Testcode unter tests/",
+            "When": "die reflexive Invariante über das eigene Modell geprüft wird",
+            "Then": "hat jeder als Aligned markierte Test-Knoten einen echten Trait-spot-Marker im Testcode, also kein Aligned ohne Test"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}
