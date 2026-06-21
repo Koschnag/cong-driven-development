@@ -3,7 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Das Terminierungs-Orakel — Review-Portal</title>
+<title>Das Terminierungs-Orakel — cong-driven-development (CDD)</title>
+<meta name="description" content="Ein AI-natives F#/.NET-Framework, in dem Review zur Konvergenz gegen eine externalisierte, getypte Spezifikation wird — Generator und Prüf-Orakel architektonisch getrennt. Open Source, CI-grün, reproduzierbar.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Das Terminierungs-Orakel — CDD">
+<meta property="og:description" content="Review wird Konvergenz gegen eine getypte Spec — Generator ⊥ Prüf-Orakel. Open Source, CI-grün, zwei öffentliche Belege, ein sorry-freier Lean-Beweis.">
+<meta property="og:url" content="https://koschnag.github.io/cong-driven-development/">
+<meta property="og:site_name" content="cong-driven-development">
+<meta property="og:image" content="https://koschnag.github.io/cong-driven-development/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://koschnag.github.io/cong-driven-development/og.png">
 <style>
   :root{
     --bg:#0e1116; --panel:#161b22; --panel2:#1c2430; --ink:#e6edf3; --muted:#9aa7b4;
@@ -13,23 +24,26 @@
     :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --ink:#1f2328; --muted:#59636e; --line:#d0d7de; --accent:#0969da; }
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
   a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   .wrap{max-width:980px;margin:0 auto;padding:0 20px}
-  header{padding:56px 0 28px;border-bottom:1px solid var(--line)}
-  .badge{display:inline-block;font-size:13px;font-weight:600;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 12px;margin-bottom:16px}
-  h1{font-size:30px;line-height:1.25;margin:0 0 8px}
-  .sub{color:var(--muted);font-size:17px;margin:0}
-  .meta{color:var(--muted);font-size:14px;margin-top:14px}
-  section{padding:34px 0;border-bottom:1px solid var(--line)}
-  h2{font-size:21px;margin:0 0 4px} .lead{color:var(--muted);margin:0 0 20px}
+  header{padding:64px 0 30px;border-bottom:1px solid var(--line);background:radial-gradient(1200px 300px at 20% -10%, rgba(76,154,255,.10), transparent)}
+  .badge{display:inline-block;font-size:13px;font-weight:600;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 12px;margin-bottom:18px}
+  h1{font-size:38px;line-height:1.15;margin:0 0 12px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:19px;margin:0;max-width:680px}
+  .formula{display:inline-block;margin:20px 0 6px;font-family:var(--mono);font-size:15px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 14px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+  .meta{color:var(--muted);font-size:14px;margin-top:20px}
+  section{padding:38px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;margin:0 0 4px} .lead{color:var(--muted);margin:0 0 20px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px}
   .card h3{margin:0;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px;flex:1}
   .card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
-  .btn{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:14px;font-weight:600;color:var(--ink)}
+  .btn{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--ink)}
   .btn:hover{border-color:var(--accent);text-decoration:none}
   .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.lg{padding:11px 18px;font-size:15px}
   pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;font-family:var(--mono);font-size:13.5px;line-height:1.7}
   pre .c{color:var(--muted)} pre .ok{color:var(--green)}
   table{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:6px}
@@ -38,84 +52,65 @@
   ul.checks{list-style:none;padding:0;margin:0} ul.checks li{padding:9px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start}
   ul.checks li::before{content:"☐";color:var(--muted)}
   .open li{margin:6px 0;color:var(--muted)}
-  iframe{width:100%;height:600px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:14px}
+  details{margin-top:14px} summary{cursor:pointer;color:var(--muted)}
   footer{padding:34px 0 60px;color:var(--muted);font-size:14px;font-style:italic}
   .pill{font-family:var(--mono);font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
 <header><div class="wrap">
-  <span class="badge">● review-fertig · Preprint &amp; Forschungsprototyp</span>
+  <span class="badge">● Open Source · Forschungsprototyp · F#/.NET · CI-grün</span>
   <h1>Das Terminierungs-Orakel</h1>
-  <p class="sub">Konvergenz agentischer Softwareentwicklung gegen eine externalisierte, getypte Spezifikation.</p>
-  <p class="meta">Cong Chanh Vinzenz Nguyen · Ein Ort, durch den du dich durchklickst. Alle Zahlen sind clean-clone-reproduziert, alle Repos CI-grün. <em>Nicht</em> peer-reviewed — dein Urteil und das Posten bleiben deins.</p>
+  <p class="sub">Ein AI-natives Entwicklungs-Framework, in dem Review zur <strong>Konvergenz gegen eine externalisierte, getypte Spezifikation</strong> wird — nicht der Diff, den ein Mensch liest und glaubt.</p>
+  <div class="formula">Generator&nbsp; &#8869; &nbsp;Pr&uuml;f-Orakel</div>
+  <div class="cta">
+    <a class="btn primary lg" href="blog.html">📝 Die Idee in 5 Min</a>
+    <a class="btn lg" href="onboarding.html">🎓 Geführte Tour</a>
+    <a class="btn lg" href="https://github.com/Koschnag/cong-driven-development" target="_blank">⌨ GitHub</a>
+  </div>
+  <p class="meta">Cong Chanh Vinzenz Nguyen · MPL-2.0 · alle Zahlen clean-clone-reproduziert, alle Repos CI-grün. <em>Preprint, nicht peer-reviewed.</em></p>
 </div></header>
 
 <section><div class="wrap">
-  <h2>0 · Durchklicken</h2>
-  <p class="lead">Zum Verstehen, Teilen und Vortragen.</p>
-  <div class="grid">
-    <div class="card">
-      <h3>📝 Blog — „Eine Schraube weiter"</h3>
-      <p>Der lesbare, teilbare Beitrag: die ganze These als Fließtext mit zwei Diagrammen — mobil-optimiert, mit Link-Vorschau. <strong>Das Stück zum Posten.</strong></p>
-      <div class="actions">
-        <a class="btn primary" href="blog.html">Blog lesen</a>
-      </div>
-    </div>
-    <div class="card">
-      <h3>🎓 Onboarding — geführte Tour</h3>
-      <p>Was gebaut wurde, Schritt für Schritt: 6 Teile, 32 Folien, 15 Diagramme. Problem → Idee → Methode → Fallstudien → formaler Kern → Ehrlichkeit. <strong>Hier anfangen.</strong></p>
-      <div class="actions">
-        <a class="btn primary" href="onboarding.html" target="_blank">Tour starten</a>
-      </div>
-    </div>
-    <div class="card">
-      <h3>🖥️ Talk</h3>
-      <p>Der zugespitzte Vortrag: „eine Schraube weiter" — 16 Folien, dieselbe These als Präsentation.</p>
-      <div class="actions">
-        <a class="btn" href="talk.html" target="_blank">Talk öffnen</a>
-      </div>
-    </div>
-  </div>
+  <h2>Worum es geht</h2>
+  <p class="lead">Die Skeptiker haben recht — Voll-Automation ist Hype. Trotzdem lässt sich eine Schraube weiterdrehen.</p>
+  <p style="max-width:760px">Die Grenze der KI-Software-Automation ist das <strong>Setzen der Invariante</strong>: im System nicht selbst-fundierbar (ein Regress, der nur an einem Anker außerhalb des Prüfvorgangs terminiert), und <em>dass</em> der Mensch ihn setzt, ist eine Wahl — kein Penrose-Lucas. Alles danach kann die Maschine prüfen, wenn die Architektur stimmt: Der KI-Generator kann per Werkzeug-Allowlist <strong>keinen Code schreiben</strong>; das Orakel setzt einen Spec-Knoten nur auf <code>Aligned</code>, wenn ein <em>echter</em> Test grün ist — Test-PASS, nicht bloßer Exit-0. Genau das unterscheidet es von Kiro oder GitHub Spec Kit, wo dasselbe System Spec, Code und Test erzeugt.</p>
+  <div class="actions" style="margin-top:8px"><a class="btn" href="blog.html">→ Ganzer Beitrag mit Diagrammen</a></div>
 </div></section>
 
 <section><div class="wrap">
-  <h2>1 · Lesen</h2>
-  <p class="lead">Die drei Texte, je ein Klick. Reihenfolge: Paper → Whitepaper → kurze Position.</p>
+  <h2>Ausprobieren &amp; betreiben</h2>
+  <p class="lead">Drei Wege — vom Binary bis zum Homelab-Betrieb wie ein Cloud-Programm.</p>
   <div class="grid">
     <div class="card">
-      <h3>📄 Paper</h3>
-      <p>19 S., das zitierfähige Stück. arXiv-Stil, A/B-Verifizierbarkeitstabelle, Lean-Listing, 12 verifizierte Zitate.</p>
-      <div class="actions">
-        <a class="btn primary" href="paper-terminierungs-orakel.pdf" target="_blank">PDF öffnen</a>
-        <a class="btn" href="paper-terminierungs-orakel.tex" target="_blank">TeX-Quelle</a>
-      </div>
+      <h3>⬇️ Self-contained Binary</h3>
+      <p>CLI + Cockpit für Linux/Windows/macOS — kein .NET-Runtime nötig. Auspacken, <code>cdd init</code>, los.</p>
+      <div class="actions"><a class="btn primary" href="https://github.com/Koschnag/cong-driven-development/releases/latest" target="_blank">Release laden</a></div>
     </div>
     <div class="card">
-      <h3>📄 Whitepaper</h3>
-      <p>Die Antwort auf den Loop-Engineering-Diskurs mit Tiefe — deutsch, englisches Abstract. Problem → Methode → zwei Fallstudien → Grenzen.</p>
-      <div class="actions">
-        <a class="btn primary" href="whitepaper-konvergenz.pdf" target="_blank">PDF öffnen</a>
-        <a class="btn" href="whitepaper-konvergenz.md" target="_blank">Markdown</a>
-      </div>
+      <h3>🐳 Container</h3>
+      <p>Öffentliches Image, SPOT-Root als Volume. Läuft auf jedem Container-Host (x86).</p>
+      <div class="actions"><a class="btn" href="https://github.com/Koschnag/cong-driven-development/pkgs/container/cdd" target="_blank">ghcr.io/koschnag/cdd</a></div>
     </div>
     <div class="card">
-      <h3>💬 GEGENENTWURF</h3>
-      <p>Die kurze, postbare Position: „eine Schraube weiter".</p>
-      <div class="actions">
-        <a class="btn" href="https://github.com/Koschnag/cong-driven-development/blob/main/GEGENENTWURF.md" target="_blank">Lesen</a>
-      </div>
+      <h3>🏠 Homelab wie Cloud</h3>
+      <p><code>docker compose up</code> mit Reverse-Proxy + Basic-Auth davor — erreichbar wie ein Cloud-Programm.</p>
+      <div class="actions"><a class="btn" href="https://github.com/Koschnag/cong-driven-development/blob/main/docs/homelab.md" target="_blank">Homelab-Anleitung</a></div>
     </div>
   </div>
-  <details style="margin-top:18px">
-    <summary style="cursor:pointer;color:var(--muted)">Paper hier einbetten (Vorschau)</summary>
-    <iframe src="paper-terminierungs-orakel.pdf" title="Paper"></iframe>
-  </details>
+<pre><span class="c"># Container — Cockpit „Cong OS" auf :8080, SPOT persistent im Volume</span>
+docker run -d --name cdd -p 8080:8080 -v /srv/cdd/data:/data ghcr.io/koschnag/cdd:latest
+
+<span class="c"># Oder lokal mit der CLI ein neues Programm modellieren</span>
+cdd init                     <span class="c"># SPOT-Store (.spot/) anlegen</span>
+cdd derive-tests --write     <span class="c"># Spec-Kriterien → Test-Knoten</span>
+cdd derive-code --out tests/Derived.fs   <span class="c"># → F#-Test-Skelette</span>
+cdd sync-tests --write       <span class="ok"># Aligned NUR bei echtem grünem Test — das Gate mit Zähnen</span></pre>
 </div></section>
 
 <section><div class="wrap">
-  <h2>2 · Software prüfen</h2>
-  <p class="lead">Die <strong>A-Marken</strong> (maschinell verifiziert). Copy-paste — ein frischer Klon liefert genau diese Zahlen.</p>
+  <h2>Die Belege</h2>
+  <p class="lead">Zwei öffentliche Fallstudien — CI-grün, in Minuten reproduzierbar. Copy-paste: ein frischer Klon liefert genau diese Zahlen.</p>
 <pre><span class="c"># Methode/IDE — erwartet: 36/36</span>
 git clone https://github.com/Koschnag/cong-driven-development &amp;&amp; cd cong-driven-development
 dotnet test tests/Cdd.Tests
@@ -138,42 +133,48 @@ lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [prope
 </div></section>
 
 <section><div class="wrap">
-  <h2>3 · Der formale Kern</h2>
-  <p class="lead">Das Stärkste — und ehrlich begrenzt.</p>
+  <h2>Lesen &amp; verstehen</h2>
+  <p class="lead">Vom 5-Minuten-Beitrag bis zum zitierfähigen Paper.</p>
   <div class="grid">
-    <div class="card"><h3>🔒 Lean-Beweis: Werterhaltung</h3><p>Für <em>jede</em> Buchungsfolge bewiesen, sorry-frei, ohne Mathlib, Modell <em>mit</em> Ablehnungspfad (modellgleich zum F#-Code). CI-Job <code>lean-proof</code> grün.</p><div class="actions"><a class="btn primary" href="https://github.com/Koschnag/ledger-casestudy/blob/main/proofs/Werterhaltung.lean" target="_blank">Beweis lesen</a></div></div>
-    <div class="card"><h3>🎯 Gate beim Scheitern</h3><p>Das Orakel verwirft ein falsches Modell reproduzierbar — ohne dass ein Diff gelesen wird.</p><div class="actions"><a class="btn" href="https://github.com/Koschnag/ledger-casestudy/blob/main/demo-gate-at-failure.sh" target="_blank">demo-gate-at-failure.sh</a></div></div>
-    <div class="card"><h3>📊 A/B-Verifizierbarkeitstabelle</h3><p>Jede tragende Behauptung als <strong>A</strong> (maschinell belegt) oder <strong>B</strong> (menschliche Setzung). Der Logik-gegen-LLM-Hebel — Paper §6.5.</p><div class="actions"><a class="btn" href="paper-terminierungs-orakel.pdf" target="_blank">im Paper</a></div></div>
+    <div class="card"><h3>📝 Blog — „Eine Schraube weiter"</h3><p>Die ganze These als Fließtext mit zwei Diagrammen. <strong>Hier anfangen.</strong></p><div class="actions"><a class="btn primary" href="blog.html">Lesen</a></div></div>
+    <div class="card"><h3>🎓 Onboarding-Tour</h3><p>Schritt für Schritt: 6 Teile, 32 Folien, 15 Diagramme.</p><div class="actions"><a class="btn" href="onboarding.html">Tour starten</a></div></div>
+    <div class="card"><h3>🖥️ Talk</h3><p>Der zugespitzte Vortrag — 16 Folien.</p><div class="actions"><a class="btn" href="talk.html">Öffnen</a></div></div>
+    <div class="card"><h3>📄 Paper</h3><p>19 S., arXiv-Stil, A/B-Verifizierbarkeitstabelle, Lean-Listing, 12 verifizierte Zitate.</p><div class="actions"><a class="btn" href="paper-terminierungs-orakel.pdf" target="_blank">PDF</a><a class="btn" href="paper-terminierungs-orakel.tex" target="_blank">TeX</a></div></div>
+    <div class="card"><h3>📄 Whitepaper</h3><p>Die Antwort auf den Loop-Engineering-Diskurs mit Tiefe — deutsch, englisches Abstract.</p><div class="actions"><a class="btn" href="whitepaper-konvergenz.pdf" target="_blank">PDF</a><a class="btn" href="whitepaper-konvergenz.md" target="_blank">MD</a></div></div>
+    <div class="card"><h3>💬 GEGENENTWURF</h3><p>Die kurze, postbare Position: „eine Schraube weiter".</p><div class="actions"><a class="btn" href="https://github.com/Koschnag/cong-driven-development/blob/main/GEGENENTWURF.md" target="_blank">Lesen</a></div></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
-  <h2>4 · Ehrlich offen — deine Entscheidung</h2>
-  <p class="lead">Klasse B. Im Paper markiert; blockiert keinen Preprint, aber maschinell nicht entscheidbar.</p>
+  <h2>Ehrlich offen</h2>
+  <p class="lead">Was die Arbeit <em>nicht</em> behauptet — im Paper als Klasse B markiert.</p>
   <ul class="open">
     <li><strong>N = 2</strong> Fallstudien — Anwendbarkeit, nicht Skalierung; beide klein.</li>
-    <li><strong>Ein</strong> Lean-bewiesener Invariant; weitere Roadmap.</li>
+    <li><strong>Ein</strong> Lean-bewiesener Invariant (Werterhaltung); weitere auf der Roadmap.</li>
+    <li>Das Cockpit hat <strong>keine eingebaute Authentifizierung</strong> — im Homelab hinter Reverse-Proxy/SSO betreiben.</li>
+    <li>Den intellektuellen Kern hat nicht ich erfunden (Lahiri: „Grand Challenge"; Storey: „Intent Debt"). <strong>Keine Prioritäts-Behauptung.</strong></li>
     <li><strong>Preprint, nicht peer-reviewed.</strong></li>
-    <li><code>rest_in_B</code>: „trifft die Spec die <em>Welt</em>", <em>wer</em> die Invariante setzt (normativ), Neuheit (Literatur), Generalisierung.</li>
-    <li><strong>Zwei Entscheidungen:</strong> (a) Preprint jetzt — oder eine Schraube mehr (2. Lean-Invariant / härtere Fallstudie)? (b) arXiv ja/nein?</li>
   </ul>
 </div></section>
 
 <section><div class="wrap">
-  <h2>5 · Dein Review-Pfad</h2>
+  <h2>Für Reviewer</h2>
+  <p class="lead">Wenn du das fachlich prüfen willst — der Pfad, Stelle für Stelle.</p>
   <ul class="checks">
-    <li>A-Marken nachfahren — die vier Blöcke aus §2. Stimmen die Zahlen?</li>
+    <li>A-Marken nachfahren — die Reproduktions-Blöcke oben. Stimmen die Zahlen?</li>
     <li>Paper lesen — Abstract, A/B-Tabelle (§6.5), Grenzen (§6), Fazit (§8).</li>
-    <li>B-Marken verantworten — trägst <em>du</em> jede menschliche Setzung?</li>
-    <li>Entscheiden — Preprint jetzt vs. eine Schraube mehr; arXiv ja/nein.</li>
-    <li>Posten — Antwort (Sie-Form) + Repos/PDFs verlinken. Dein Akt.</li>
+    <li>B-Marken verantworten — trägt jede menschliche Setzung?</li>
+    <li>Den formalen Kern prüfen — <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/proofs/Werterhaltung.lean" target="_blank">Werterhaltung.lean</a> (sorry-frei) + <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/demo-gate-at-failure.sh" target="_blank">demo-gate-at-failure.sh</a>.</li>
   </ul>
+  <details>
+    <summary>Paper einbetten (Vorschau)</summary>
+    <iframe src="paper-terminierungs-orakel.pdf" title="Paper" style="width:100%;height:600px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:14px"></iframe>
+  </details>
 </div></section>
 
 <footer><div class="wrap">
-  Warum dein Review die irreduzible Stelle ist: Diese Arbeit wurde KI-assistiert erzeugt. Dass sie
-  korrekt ist, dich trifft und die Claims tragen, kann das System nicht aus sich selbst zertifizieren —
-  derselbe Regress, den das Paper beschreibt. Du bist die Setzung. Die A-Marken sind re-runbar; die B-Marken brauchen dich.
+  Diese Arbeit wurde KI-assistiert erzeugt. Dass sie korrekt ist und die Claims tragen, kann das System nicht aus sich selbst zertifizieren —
+  derselbe Regress, den das Paper beschreibt. Die maschinellen A-Marken sind re-runbar; die Setzung bleibt menschlich.
 </div></footer>
 </body>
 </html>

@@ -38,3 +38,6 @@ TestResults/
 
 # Logs
 *.log
+
+# Homelab-Secrets
+.env
