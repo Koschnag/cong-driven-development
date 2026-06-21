@@ -114,8 +114,8 @@ method (\texttt{cong-driven-development}, a typed F\# discriminated-union graph
 \texttt{Diverged}/\texttt{Orphaned}) and two case studies: \texttt{runenruf}
 (existence proof, $46/46$ tests, $\sim\!125$ LoC, the honestly friendliest domain
 where the spec \emph{is} the world) and \texttt{ledger-casestudy} (counterpart
-with real IO, a mutable requirement, $5/5$ tests, and a single Lean-proved,
-\texttt{sorry}-free value-preservation invariant). We separate the
+with real IO, a mutable requirement, $6/6$ tests, and two Lean-proved,
+\texttt{sorry}-free invariants --- value preservation and non-negativity). We separate the
 generator/oracle independence into two axes: a \emph{mechanical} one (tool
 allowlist without generator write access, real and machine-checkable) and an
 \emph{epistemic} one (decorrelation of spec author and code author, required only
@@ -195,7 +195,7 @@ der zentrale Hebel der Arbeit: Sie trennt, was Logik leistet, von dem, was der M
 einbringt, und macht den \glqq Rest\grqq{} prüfbar statt rhetorisch. \Cref{sec:methode} legt die
 Methode offen; die A/B-Tabelle in \Cref{sec:grenzen-ab} bindet jede Marke an ihren Anker.
 Wir kündigen damit zugleich an, dass dieses Papier \emph{mit} einer Lücke argumentiert: zwei
-kleine Fallstudien, ein einziger Lean-bewiesener Invariant, keine unbeschränkte Autonomie ---
+kleine Fallstudien, zwei Lean-bewiesene Invarianten, keine unbeschränkte Autonomie ---
 eine Schraube weiter, nicht das gelöste Problem.
 
 \section{Methode}
@@ -218,7 +218,7 @@ keinen Testlauf. Dass diese Marker zu bestandenen Tests gehören, erzwingt die g
 (rot blockt den Merge) zusammen mit dem reflexiven Selbst-Test --- daraus folgt \texttt{Aligned}
 $\Rightarrow$ Test-PASS, nicht bloßer Exit-Code $0$. Das Selbst-Modell der
 Methode umfasst $66$ Knoten, davon $62$ \texttt{Aligned} und $4$ \texttt{Pending}, bei
-$36/36$ grünen Tests (autoritativer Runner-Count @\,\texttt{main}); der reflexive
+$37/37$ grünen Tests (autoritativer Runner-Count @\,\texttt{main}); der reflexive
 Selbst-Gate trägt den Knoten \texttt{spec-gate-selbst-hart}. Dass das Gate auf sich selbst
 angewandt grün ist, ist eine A-Aussage; dass es das \emph{Richtige} prüft, ist eine B-Aussage
 (siehe \Cref{bem:spec-welt}).
@@ -374,11 +374,11 @@ endet und der menschliche Dekorrelator beginnt (\Cref{sec:ledger-misspec}).
 \label{sec:ledger-aufbau}
 
 Der Code liegt in \texttt{github.com/Koschnag/ledger-casestudy}, ausgewertet am Commit
-\texttt{72b1284}; F\#/.NET~9, Beträge als \texttt{int64}-Cent, um Gleitkomma-Fehler an der
+\texttt{0f39ab0}; F\#/.NET~9, Beträge als \texttt{int64}-Cent, um Gleitkomma-Fehler an der
 Wertgrenze auszuschließen. Anders als in \Cref{sec:runenruf} gibt es echtes IO: ein persistentes
 Journal und einen Replay-Pfad. Die Kerndomäne umfasst rund $41$ Zeilen
-F\#-Code\,@\,\texttt{72b1284}. Der autoritative Runner meldet $5/5$ grüne
-Tests\,@\,\texttt{72b1284}.
+F\#-Code\,@\,\texttt{0f39ab0}. Der autoritative Runner meldet $6/6$ grüne
+Tests\,@\,\texttt{0f39ab0}.
 
 \subsection{Gefangener Mis-Spec --- der Mensch als Gegen-Orakel}
 \label{sec:ledger-misspec}
@@ -395,15 +395,15 @@ Modell-Instanz Spezifikation \emph{und} Code, korrelieren die Fehler (common-mod
 ist hier der Dekorrelator, nicht der Loop aus sich selbst.
 
 Der Befund ist als reproduzierbares Negativ-Artefakt konserviert:
-\texttt{demo-gate-at-failure.sh}\,@\,\texttt{72b1284} führt das Gate in den Falsifikationszustand
+\texttt{demo-gate-at-failure.sh}\,@\,\texttt{0f39ab0} führt das Gate in den Falsifikationszustand
 und macht den Mis-Spec wiederholbar sichtbar. Anschließend wurde die Domäne auf doppelte
 Buchführung (Doppik) umgestellt, sodass jede Buchung wertneutral bleibt.
 
 \begin{bemerkung}[Verifizierbarkeitsachse]
 \label{bem:ledger-achse}
-\glqq $5/5$ grün\grqq, der sorry-freie Lean-Lauf (\Cref{sec:ledger-schichten}) und die Existenz
+\glqq $6/6$ grün\grqq, der sorry-freie Lean-Lauf (\Cref{sec:ledger-schichten}) und die Existenz
 des Negativ-Artefakts sind \AB{A}-Behauptungen, gebunden an
-\texttt{github.com/Koschnag/ledger-casestudy}\,@\,\texttt{72b1284}. Die Aussage, \emph{wer} die
+\texttt{github.com/Koschnag/ledger-casestudy}\,@\,\texttt{0f39ab0}. Die Aussage, \emph{wer} die
 stärkere Property setzt, und dass die Doppik-Spec die buchhalterische Welt trifft, sind
 \AB{B}: normativ bzw.\ Spec-gegen-Welt, nicht aus dem Lauf ableitbar.
 \end{bemerkung}
@@ -418,7 +418,7 @@ Ledger trägt die einzige in dieser Arbeit \emph{geschlossene} Drei-Schichten-Ke
   Fehlerklassen (Gleitkomma, negative Repräsentationslücken) bereits statisch aus.
   \item \textbf{FsCheck.} Properties quantifizieren über Buchungsfolgen und prüfen
   Nichtnegativität, Isolation und Replay-Treue über zufällig generierte Eingaben.
-  \item \textbf{Lean-Beweis.} \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{72b1284} beweist die
+  \item \textbf{Lean-Beweis.} \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{0f39ab0} beweist die
   Werterhaltung für \emph{jede} Buchungsfolge --- ein Allquantor, der über das stichprobenhafte
   FsCheck hinausgeht.
 \end{enumerate}
@@ -429,7 +429,7 @@ ist: eine Buchung, die die Deckung verletzen würde, wird im Modell abgelehnt, g
 Ein Beweis über ein Modell ohne Ablehnungspfad wäre vakuum-stark und würde die kritische
 Eigenschaft am Code vorbeibeweisen.
 
-\begin{lstlisting}[language=lean,caption={Kern-Theorem in \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{72b1284} (verbatim; Definitionen und das Lemma \texttt{werterhaltung\_einzel} im Repo)},label={lst:werterhaltung}]
+\begin{lstlisting}[language=lean,caption={Kern-Theorem in \texttt{proofs/Werterhaltung.lean}\,@\,\texttt{0f39ab0} (verbatim; Definitionen und das Lemma \texttt{werterhaltung\_einzel} im Repo)},label={lst:werterhaltung}]
 theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
     total (buchen hb bs) = total hb := by
   unfold buchen
@@ -444,14 +444,14 @@ theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
 Der Beweis (\Cref{lst:werterhaltung}) ist \emph{sorry-frei}: \texttt{\#print axioms werterhaltung} liefert ausschließlich
 \texttt{propext} und \texttt{Quot.sound}, also keine zusätzlichen Axiome jenseits des
 Lean-Kerns. Der Beweis kommt ohne Mathlib aus (nur \texttt{Core}~$+$~\texttt{omega}); der
-CI-Job \texttt{lean-proof} ist grün\,@\,\texttt{72b1284}.
+CI-Job \texttt{lean-proof} ist grün\,@\,\texttt{0f39ab0}.
 
 \begin{bemerkung}[Was Lean hier \emph{nicht} abdeckt]
 \label{bem:ledger-nur-werterhaltung}
-Nur \emph{ein} Invariant --- die Werterhaltung --- ist Lean-bewiesen. Nichtnegativität,
+Zwei Invarianten --- Werterhaltung und Nichtnegativität --- sind Lean-bewiesen.
 Isolation und Replay-Treue sind ausschließlich durch FsCheck abgesichert. Die
-Drei-Schichten-Kette Typen\,$\rightarrow$\,Property\,$\rightarrow$\,Beweis ist derzeit nur für
-die Werterhaltung geschlossen; für die übrigen Invarianten fehlt die Beweis-Schicht. Wir rahmen
+Drei-Schichten-Kette Typen\,$\rightarrow$\,Property\,$\rightarrow$\,Beweis ist derzeit für
+Werterhaltung und Nichtnegativität geschlossen; für die übrigen Invarianten fehlt die Beweis-Schicht. Wir rahmen
 das ausdrücklich als Lücke, eine Schraube weiter, nicht als vollständige Verifikation der
 Domäne.
 \end{bemerkung}
@@ -473,7 +473,7 @@ Unendlich viele Implementierungen erfüllen dieselbe Invariante; aus
 \glqq Code\,$\models$\,Invariante\grqq\ folgt keine Spec-Code-Äquivalenz. Die genannten
 Faktoren gelten konditional auf genau diese zwei Fallstudien (N\,$=$\,$2$) und sind kein Beleg
 für eine domänenübergreifende Kompressionsrate. Die Größenangaben sind \AB{A}
-(Code\,@\,\texttt{56376a5} bzw.\ \texttt{72b1284}); der Schluss, dass die fixierte Eigenschaft
+(Code\,@\,\texttt{56376a5} bzw.\ \texttt{0f39ab0}); der Schluss, dass die fixierte Eigenschaft
 \glqq die richtige\grqq\ ist, ist \AB{B} (Spec-gegen-Welt).
 \end{bemerkung}
 
@@ -503,7 +503,7 @@ Ein Prozess kann mit Exit-0 terminieren, ohne dass eine einzige Property tatsäc
 Der reflexive Selbst-Gate \texttt{spec-gate-selbst-hart}
 (Repository \texttt{@main}) wendet exakt dieses Orakel auf das Selbstmodell
 an. Der autoritative Testlauf (Runner, nicht \texttt{grep}) meldet
-$36/36$~Tests grün; das Selbstmodell umfasst $66$~Knoten, davon $62$~\texttt{Aligned}
+$37/37$~Tests grün; das Selbstmodell umfasst $66$~Knoten, davon $62$~\texttt{Aligned}
 und $4$~\texttt{Pending}. Wir behaupten hier keine Vollständigkeit: Die vier
 \texttt{Pending}-Knoten sind genau die Stellen, an denen die Methode ihre eigene
 Spezifikation noch nicht eingeholt hat. Das ist der ehrliche, nicht der
@@ -581,7 +581,7 @@ Die Evidenz beruht auf \emph{zwei} kleinen Fallstudien.
 \texttt{runenruf}\,@\,\texttt{56376a5} ($46/46$~Tests, Runner) ist mit $\sim 125$~LoC die
 ehrlich freundlichste Domäne, weil die Spezifikation dort mit der Welt
 zusammenfällt --- die Simulation \emph{ist} ihre eigene Realität.
-\texttt{ledger-casestudy}\,@\,\texttt{72b1284} ($5/5$~Tests, Runner; F\#/.NET~9, int64-Cent,
+\texttt{ledger-casestudy}\,@\,\texttt{0f39ab0} ($6/6$~Tests, Runner; F\#/.NET~9, int64-Cent,
 $\sim 41$~LoC Domänenkern) ist das Gegenstück mit echtem IO (Journal und
 Replay) und veränderlichem Requirement. Zwei Fallstudien zeigen
 \emph{Anwendbarkeit}; sie beweisen keine Skalierung über Domänen ($N=2$). Es
@@ -591,19 +591,19 @@ Loops.
 \subsection{Reichweite der Verifikation}
 \label{sec:grenzen-lean}
 
-Im Repository \texttt{ledger-casestudy}\,@\,\texttt{72b1284} ist \emph{ein} Invariant
-maschinell bewiesen: \texttt{proofs/Werterhaltung.lean} zeigt die Werterhaltung
+Im Repository \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0} sind \emph{zwei} Invarianten
+maschinell bewiesen: \texttt{proofs/Werterhaltung.lean} zeigt Werterhaltung und Nichtnegativität
 für jede Buchungsfolge. Das Modell enthält den Deckungs- und Ablehnungspfad und
 ist modellgleich zur F\#-Funktion \texttt{buche}; der Beweis ist
 \texttt{sorry}-frei (\texttt{\#print axioms} weist nur \texttt{propext} und
 \texttt{Quot.sound} aus), kommt ohne Mathlib aus (nur \texttt{Core} und
 \texttt{omega}), und der CI-Job \texttt{lean-proof} ist grün
-(\texttt{@72b1284}). Die übrigen Eigenschaften --- Nichtnegativität, Isolation,
-Replay --- sind \emph{nur} per FsCheck geprüft, etwa
+(\texttt{@0f39ab0}). Die übrigen Eigenschaften --- Isolation und
+Replay-Treue --- sind \emph{nur} per FsCheck geprüft, etwa
 \texttt{spec-siegel-lager-nichtnegativ} in \texttt{runenruf}\,@\,\texttt{56376a5} über jeden
 Seed und jede Folge, deterministisch. Damit ist die Drei-Schichten-Kette
-(Typen~$\to$~Property~$\to$~Beweis) derzeit \emph{ausschließlich} für die
-Werterhaltung geschlossen. Wir behaupten keine durchgehende Beweisabdeckung.
+(Typen~$\to$~Property~$\to$~Beweis) derzeit für
+Werterhaltung und Nichtnegativität geschlossen. Wir behaupten keine durchgehende Beweisabdeckung.
 
 \subsection{Common-Mode-Fehler}
 \label{sec:grenzen-commonmode}
@@ -614,7 +614,7 @@ Code~\texttt{@main}) schützt nicht gegen jede Fehlerklasse. Wenn dieselbe
 Modell-Instanz sowohl die Spec als auch den Code erzeugt, korrelieren die Fehler
 (\emph{common-mode}) --- genau der von VeriAct \cite{veriact2026} beschriebene
 Fall, dass verifizierer-akzeptiert nicht korrekt heißt. Der gefangene Mis-Spec
-in \texttt{ledger-casestudy}\,@\,\texttt{72b1284} (\glqq Falsifiable, after 4 tests\grqq;
+in \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0} (\glqq Falsifiable, after 4 tests\grqq;
 reproduzierbares Negativ-Artefakt \texttt{demo-gate-at-failure.sh}) wurde nicht
 durch den Loop aus sich selbst entdeckt, sondern weil ein Mensch eine stärkere
 Property und ein geändertes Requirement als Gegen-Orakel einbrachte. Der Mensch
@@ -660,14 +660,14 @@ ist der zentrale Hebel von Logik gegenüber bloßer LLM-Plausibilität.
     \textbf{Behauptung} & \textbf{A/B} & \textbf{Anker} \\
     \midrule
     Runenruf: $46/46$ Tests grün & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
-    Ledger: $5/5$ Tests grün & \AB{A} & \texttt{ledger-casestudy}\,@\,\texttt{72b1284} (Runner) \\
-    CDD-Selbst-Gate: $36/36$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{main} (Runner) \\
-    Werterhaltung \texttt{sorry}-frei & \AB{A} & \texttt{\#print axioms} (nur \texttt{propext}, \texttt{Quot.sound})\,@\,\texttt{72b1284} \\
-    Lean ohne Mathlib, CI \texttt{lean-proof} grün & \AB{A} & CI-Job \texttt{lean-proof}\,@\,\texttt{72b1284} \\
+    Ledger: $6/6$ Tests grün & \AB{A} & \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0} (Runner) \\
+    CDD-Selbst-Gate: $37/37$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{main} (Runner) \\
+    Werterhaltung + Nichtnegativität \texttt{sorry}-frei & \AB{A} & \texttt{\#print axioms} (nur \texttt{propext}, \texttt{Quot.sound})\,@\,\texttt{0f39ab0} \\
+    Lean ohne Mathlib, CI \texttt{lean-proof} grün & \AB{A} & CI-Job \texttt{lean-proof}\,@\,\texttt{0f39ab0} \\
     Allowlist-Trennung Generator~$\perp$~Prüf-Orakel & \AB{A} & Code\,@\,\texttt{main} \\
-    Negativ-Artefakt \texttt{demo-gate-at-failure.sh} & \AB{A} & Skript\,@\,\texttt{72b1284} \\
+    Negativ-Artefakt \texttt{demo-gate-at-failure.sh} & \AB{A} & Skript\,@\,\texttt{0f39ab0} \\
     FsCheck \texttt{spec-siegel-lager-nichtnegativ} (jeder Seed/Folge) & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
-    Kompressionsfaktoren ($\sim\!40$--$125\times$) als LoC-Zahlen & \AB{A} & Code\,@\,\texttt{56376a5}/\texttt{72b1284} \\
+    Kompressionsfaktoren ($\sim\!40$--$125\times$) als LoC-Zahlen & \AB{A} & Code\,@\,\texttt{56376a5}/\texttt{0f39ab0} \\
     Zitate (vollständige Bib-Daten) & \AB{A} & arXiv-ID / Journalband \\
     \midrule
     Spec trifft die Welt (Spec~$\models$~Welt) & \AB{B} & per VeriAct nicht orakel-prüfbar \\
@@ -768,10 +768,10 @@ schreiben ist, wie Cherny \cite{cherny2026} es formuliert, die Routinearbeit ---
 sondern sein Terminierungs-Orakel. Unsere Antwort ist Konvergenz gegen eine
 externalisierte, getypte Spec, geprüft durch ein vom Generator architektonisch
 getrenntes Orakel. Wir belegen das mit zwei kleinen Fallstudien
-(\texttt{runenruf}\,@\,\texttt{56376a5}, $46/46$; \texttt{ledger-casestudy}\,@\,\texttt{72b1284}, $5/5$),
+(\texttt{runenruf}\,@\,\texttt{56376a5}, $46/46$; \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0}, $6/6$),
 einem reflexiven Selbst-Gate (\texttt{cong-driven-development}\,@\,\texttt{main},
-$36/36$, $62/66$ \texttt{Aligned}) und genau einem maschinell bewiesenen
-Invariant (\texttt{Werterhaltung.lean}, \texttt{sorry}-frei).
+$37/37$, $62/66$ \texttt{Aligned}) und genau zwei maschinell bewiesenen
+Invarianten (\texttt{Werterhaltung.lean}: \texttt{werterhaltung} + \texttt{nichtnegativ}, \texttt{sorry}-frei).
 
 Wir schließen mit einer Lücke, nicht mit einem Versprechen. Die Spec-gegen-Welt-Bindung
 bleibt~\AB{B}; die Grund-Invariante terminiert den Regress nur durch einen externen
@@ -804,7 +804,7 @@ nachfolgenden Befehle reproduzieren die autoritativen Runner-Counts, den
     \midrule
     \texttt{Koschnag/cong-driven-development} & \texttt{main} & Methode/IDE, reflexives Selbst-Gate \\
     \texttt{Koschnag/runenruf} & \texttt{56376a5} & Existenzbeweis (Simulationsdomäne) \\
-    \texttt{Koschnag/ledger-casestudy} & \texttt{72b1284} & Gegenstück (echtes IO, Lean-Beweis) \\
+    \texttt{Koschnag/ledger-casestudy} & \texttt{0f39ab0} & Gegenstück (echtes IO, Lean-Beweis) \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -812,11 +812,11 @@ nachfolgenden Befehle reproduzieren die autoritativen Runner-Counts, den
 \subsection{Methode und Selbst-Gate}
 \label{app:repro-cdd}
 
-\begin{lstlisting}[language=bash,caption={CDD-Selbst-Gate: $36/36$ Tests, $62/66$ \texttt{Aligned}.},label={lst:repro-cdd}]
+\begin{lstlisting}[language=bash,caption={CDD-Selbst-Gate: $37/37$ Tests, $62/66$ \texttt{Aligned}.},label={lst:repro-cdd}]
 git clone https://github.com/Koschnag/cong-driven-development.git
 cd cong-driven-development
 git checkout main
-dotnet test tests/Cdd.Tests   # autoritativer Runner-Count: 36/36
+dotnet test tests/Cdd.Tests   # autoritativer Runner-Count: 37/37
 \end{lstlisting}
 
 \subsection{Fallstudie A: Runenruf}
@@ -832,12 +832,12 @@ dotnet test tests/Runenruf.Tests   # autoritativer Runner-Count: 46/46
 \subsection{Fallstudie B: Ledger (Tests, Lean, Negativ-Artefakt)}
 \label{app:repro-ledger}
 
-\begin{lstlisting}[language=bash,caption={Ledger: $5/5$ Tests, \texttt{sorry}-freier Lean-Beweis, reproduzierbares Negativ-Artefakt.},label={lst:repro-ledger}]
+\begin{lstlisting}[language=bash,caption={Ledger: $6/6$ Tests, \texttt{sorry}-freier Lean-Beweis, reproduzierbares Negativ-Artefakt.},label={lst:repro-ledger}]
 git clone https://github.com/Koschnag/ledger-casestudy.git
 cd ledger-casestudy
-git checkout 72b1284
+git checkout 0f39ab0
 
-# 1) F#-Tests (autoritativer Runner-Count: 5/5)
+# 1) F#-Tests (autoritativer Runner-Count: 6/6)
 dotnet test tests/Ledger.Tests
 
 # 2) Lean-Beweis (sorry-frei; #print axioms: nur propext, Quot.sound)

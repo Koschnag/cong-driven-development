@@ -97,7 +97,7 @@
     </div>
     <div class="card">
       <h3>📒 ledger — das Gegenstück</h3>
-      <p class="lead">Doppisches Hauptbuch. Echtes IO (Journal + Replay). Veränderliches Requirement. <span class="green">5/5</span>.</p>
+      <p class="lead">Doppisches Hauptbuch. Echtes IO (Journal + Replay). Veränderliches Requirement. <span class="green">6/6</span>.</p>
       <p class="muted"><small>Hier ist „trifft das Modell die Welt" <em>nicht</em> leer.</small></p>
     </div>
   </div>
@@ -119,16 +119,16 @@ Invariante  spec-werterhaltung : Σ aller Konten = konstant
   <h2>Das stärkste Bild: das Gate <span class="red">beim Scheitern</span></h2>
   <pre style="margin-top:.4em"><code class="hljs" data-trim>
 $ ./demo-gate-at-failure.sh
-  1) korrektes Modell            5/5  grün
+  1) korrektes Modell            6/6  grün
   2) naives Modell injiziert     (Gebühr verschwindet)
   3) Orakel:  Falsifiable        rot   ← verwirft das falsche Modell
-  4) revert                      5/5  grün
+  4) revert                      6/6  grün
   </code></pre>
   <p class="fragment lead">Ein grüner Lauf ist ein Cursor-Klon mit Vokabular. Ein erzwungenes <span class="red">rotes</span> Resultat ist der Beweis.</p>
 </section>
 
 <section data-background-color="#0e1116">
-  <h2>Drei Schichten an <em>einem</em> Invarianten</h2>
+  <h2>Drei Schichten an <em>zwei</em> Invarianten</h2>
   <ul>
     <li><strong>Typen</strong> — <code>int64</code>-Cent: eine Fehlerklasse kann syntaktisch nicht entstehen</li>
     <li><strong>FsCheck-Property</strong> — über Zufallsfolgen <em>geprüft</em> (fand den Mis-Spec)</li>
@@ -139,7 +139,7 @@ theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
     total (buchen hb bs) = total hb
 -- sorry-frei · ohne Mathlib · #print axioms → propext, Quot.sound
   </code></pre>
-  <p class="fragment muted"><small>Ehrlich: <em>ein</em> Invariant ist Lean-bewiesen; die übrigen sind FsCheck-only. Die Kette ist nur für die Werterhaltung geschlossen.</small></p>
+  <p class="fragment muted"><small>Ehrlich: <em>zwei</em> Invarianten sind Lean-bewiesen (Werterhaltung + Nichtnegativität); die übrigen (Isolation, Replay) sind FsCheck-only.</small></p>
 </section>
 
 <section data-background-color="#0e1116">
@@ -169,7 +169,7 @@ theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
   <h2>Ehrliche Grenzen</h2>
   <ul>
     <li><strong>N = 2</strong> Fallstudien — Anwendbarkeit, nicht Skalierung</li>
-    <li><strong>Ein</strong> Lean-bewiesener Invariant; weitere Roadmap</li>
+    <li><strong>Zwei</strong> Lean-bewiesene Invarianten; weitere Roadmap</li>
     <li>Verifizierer-akzeptiert <span class="red">≠</span> korrekt (VeriAct) — das Orakel allein genügt nicht</li>
     <li>Der Mensch bleibt am Modell-Gate — <span class="acc">operational und normativ</span></li>
   </ul>
@@ -194,9 +194,9 @@ theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
 <section data-background-color="#0e1116">
   <h2>Selbst prüfen</h2>
   <pre><code class="hljs language-bash" data-trim>
-git clone https://github.com/Koschnag/cong-driven-development   # 36/36
+git clone https://github.com/Koschnag/cong-driven-development   # 37/37
 git clone https://github.com/Koschnag/runenruf                  # 46/46
-git clone https://github.com/Koschnag/ledger-casestudy          # 5/5
+git clone https://github.com/Koschnag/ledger-casestudy          # 6/6
   lean proofs/Werterhaltung.lean      # sorry-frei
   ./demo-gate-at-failure.sh           # das Gate beim Scheitern
   </code></pre>

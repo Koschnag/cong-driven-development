@@ -112,7 +112,7 @@ cdd sync-tests --write       <span class="ok"># Aligned bei abgedecktem Test-Mar
 <section><div class="wrap">
   <h2>Die Belege</h2>
   <p class="lead">Zwei öffentliche Fallstudien — CI-grün, in Minuten reproduzierbar. Copy-paste: ein frischer Klon liefert genau diese Zahlen.</p>
-<pre><span class="c"># Methode/IDE — erwartet: 36/36</span>
+<pre><span class="c"># Methode/IDE — erwartet: 37/37</span>
 git clone https://github.com/Koschnag/cong-driven-development &amp;&amp; cd cong-driven-development
 dotnet test tests/Cdd.Tests
 
@@ -120,7 +120,7 @@ dotnet test tests/Cdd.Tests
 git clone https://github.com/Koschnag/runenruf &amp;&amp; cd runenruf
 dotnet test tests/Runenruf.Tests
 
-<span class="c"># Fallstudie B: Hauptbuch (schlägt zurück) — erwartet: 5/5</span>
+<span class="c"># Fallstudie B: Hauptbuch (schlägt zurück) — erwartet: 6/6</span>
 git clone https://github.com/Koschnag/ledger-casestudy &amp;&amp; cd ledger-casestudy
 dotnet test tests/Ledger.Tests
 lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [propext, Quot.sound]</span>
@@ -129,7 +129,7 @@ lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [prope
     <tr><th>Repo</th><th>Rolle</th><th>Anker</th><th>CI</th></tr>
     <tr><td><a href="https://github.com/Koschnag/cong-driven-development" target="_blank">cong-driven-development</a></td><td>Methode / IDE</td><td class="pill">main</td><td><a href="https://github.com/Koschnag/cong-driven-development/actions" target="_blank">Actions ✓</a></td></tr>
     <tr><td><a href="https://github.com/Koschnag/runenruf" target="_blank">runenruf</a></td><td>Fallstudie A (Spiel)</td><td class="pill">56376a5</td><td><a href="https://github.com/Koschnag/runenruf/actions" target="_blank">Actions ✓</a></td></tr>
-    <tr><td><a href="https://github.com/Koschnag/ledger-casestudy" target="_blank">ledger-casestudy</a></td><td>Fallstudie B (Hauptbuch)</td><td class="pill">72b1284</td><td><a href="https://github.com/Koschnag/ledger-casestudy/actions" target="_blank">Actions ✓</a></td></tr>
+    <tr><td><a href="https://github.com/Koschnag/ledger-casestudy" target="_blank">ledger-casestudy</a></td><td>Fallstudie B (Hauptbuch)</td><td class="pill">0f39ab0</td><td><a href="https://github.com/Koschnag/ledger-casestudy/actions" target="_blank">Actions ✓</a></td></tr>
   </table>
 </div></section>
 
@@ -151,7 +151,7 @@ lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [prope
   <p class="lead">Was die Arbeit <em>nicht</em> behauptet — im Paper als Klasse B markiert.</p>
   <ul class="open">
     <li><strong>N = 2</strong> Fallstudien — Anwendbarkeit, nicht Skalierung; beide klein.</li>
-    <li><strong>Ein</strong> Lean-bewiesener Invariant (Werterhaltung); weitere auf der Roadmap.</li>
+    <li><strong>Zwei</strong> Lean-bewiesene Invarianten (Werterhaltung + Nichtnegativität); weitere auf der Roadmap.</li>
     <li>Erprobter Kern ist <strong>CLI + MCP-Server + Konvergenz-Orakel</strong>; das Web-Cockpit inkl. Chat-Loop ist <strong>experimentell</strong>.</li>
     <li>Das Cockpit hat <strong>keine eingebaute Authentifizierung</strong> — im Homelab hinter Reverse-Proxy/SSO betreiben (siehe <a href="https://github.com/Koschnag/cong-driven-development/blob/main/docs/homelab.md" target="_blank">homelab.md</a>).</li>
     <li>Den intellektuellen Kern hat nicht ich erfunden (Lahiri: „Grand Challenge"; Storey: „Intent Debt"). <strong>Keine Prioritäts-Behauptung.</strong></li>
