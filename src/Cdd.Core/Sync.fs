@@ -111,21 +111,25 @@ module Sync =
                    for m in Regex.Matches(text, "\[spot:\s*([a-zA-Z0-9_-]+)\]") -> m.Groups.[1].Value |])
             |> Set.ofArray
 
-    /// Misst die Konvergenz der Test-Knoten: abgedeckt → Aligned, sonst Pending.
+    /// Das Konvergenz-Orakel. Ein Test-Knoten wird NUR dann `Aligned`, wenn ein
+    /// echter grüner Test ihn abdeckt (Marker aus dem Testlauf) — sonst `Pending`.
+    /// Test-PASS, nicht Prozess-Exit-0: die tragende Disziplin der Methode.
+    /// Andere Knotenarten bleiben unberührt.
+    let SetzeSpecAligned (covered: Set<string>) (entry: SpotEntry) : SpotEntry =
+        match entry.Payload with
+        | TestNode _ ->
+            let aligned = Set.contains (idValue entry.Id) covered
+            { entry with Convergence = (if aligned then Aligned else Pending) }
+        | _ -> entry
+
+    /// Misst die Konvergenz der Test-Knoten über das Orakel `SetzeSpecAligned`.
     /// Liefert (Id, gespeichert, gemessen) für alle Abweichungen + aktualisierte Knoten.
     let syncTests (covered: Set<string>) (entries: SpotEntry list) =
-        let measured (e: SpotEntry) =
-            if Set.contains (idValue e.Id) covered then Aligned else Pending
+        let updated = entries |> List.map (SetzeSpecAligned covered)
         let mismatches =
-            entries
-            |> List.choose (fun e ->
-                match e.Payload with
-                | TestNode _ when e.Convergence <> measured e -> Some(e.Id, e.Convergence, measured e)
+            List.zip entries updated
+            |> List.choose (fun (o, n) ->
+                match o.Payload with
+                | TestNode _ when o.Convergence <> n.Convergence -> Some(o.Id, o.Convergence, n.Convergence)
                 | _ -> None)
-        let updated =
-            entries
-            |> List.map (fun e ->
-                match e.Payload with
-                | TestNode _ -> { e with Convergence = measured e }
-                | _ -> e)
         mismatches, updated
