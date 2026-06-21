@@ -19,16 +19,22 @@ docker run --rm caddy:2 caddy hash-password --plaintext 'DEIN_PASS'
 
 # 2) Konfig anlegen
 cp .env.example .env
-#   CDD_PASS_HASH=<hash aus Schritt 1> eintragen
+#   CDD_PASS_HASH=<hash aus Schritt 1> eintragen — ROH, ohne Anführungszeichen,
+#   das '$' NICHT verdoppeln (env_file reicht den Wert literal durch).
 #   optional: CDD_DOMAIN=cdd.cong42.de  (echte Domain → Let's-Encrypt)
 
 # 3) Starten
 docker compose up -d
 ```
 
-Erreichbar unter `https://<CDD_DOMAIN>:8443` (Standard `localhost`). Bei einer echten,
-auf den Host zeigenden Domain holt Caddy automatisch ein Let's-Encrypt-Zertifikat —
-dann Port `443` mappen statt `8443`.
+> **Hash-Falle:** Der bcrypt-Hash enthält `$`. Würde er über `${..}`-Interpolation
+> laufen, zerlegt Docker Compose ihn — deshalb kommt er hier über `env_file` (literal).
+> In der `.env` daher **keine Quotes** und **kein `$$`-Escaping**.
+
+Erreichbar unter `https://<CDD_DOMAIN>` (Standard `localhost`, internes TLS-Zertifikat →
+Browser-Warnung im Dev-Fall). Bei einer echten, auf den Host zeigenden Domain holt Caddy
+automatisch ein Let's-Encrypt-Zertifikat (Port 80 + 443 müssen öffentlich erreichbar sein).
+Lokal ohne root: in der `.env` `CDD_HTTP_PORT`/`CDD_HTTPS_PORT` auf Werte > 1024 setzen.
 
 Update: `docker compose pull && docker compose up -d`. Der SPOT bleibt im Volume `cdd-data`.
 

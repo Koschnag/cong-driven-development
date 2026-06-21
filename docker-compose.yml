@@ -1,32 +1,30 @@
 # CDD im Homelab — Cockpit „Cong OS" hinter Reverse-Proxy mit Basic-Auth.
-# Schnellstart: docs/homelab.md
+# Schnellstart + Hinweise: docs/homelab.md
 #
 #   1) docker run --rm caddy:2 caddy hash-password --plaintext 'DEIN_PASS'
-#   2) .env anlegen (CDD_PASS_HASH=..., optional CDD_DOMAIN, ANTHROPIC_API_KEY)
-#   3) docker compose up -d   → https://<CDD_DOMAIN>:8443
+#   2) cp .env.example .env  → CDD_PASS_HASH eintragen (roh, OHNE Anführungszeichen)
+#   3) docker compose up -d
+#
+# Wichtig: Konfig kommt über `env_file` (literal an die Container) statt über
+# ${..}-Interpolation — sonst zerlegt Compose das '$' im bcrypt-Hash.
 
 services:
   cdd:
     image: ghcr.io/koschnag/cdd:latest
     restart: unless-stopped
+    env_file: .env
     volumes:
       - cdd-data:/data            # SPOT-Graph persistent
-    environment:
-      # Optional — nur für die Cockpit-Chat-Loop (souveräne Engine-Kette):
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OLLAMA_HOST: ${OLLAMA_HOST:-}
     expose:
-      - "8080"                    # NICHT direkt veröffentlicht — nur via proxy
+      - "8080"                    # NICHT veröffentlicht — nur über proxy erreichbar
 
   proxy:
     image: caddy:2
     restart: unless-stopped
+    env_file: .env                # CDD_USER / CDD_PASS_HASH / CDD_DOMAIN literal
     ports:
-      - "${CDD_HTTPS_PORT:-8443}:443"
-    environment:
-      CDD_DOMAIN: ${CDD_DOMAIN:-localhost}
-      CDD_USER: ${CDD_USER:-cong}
-      CDD_PASS_HASH: ${CDD_PASS_HASH:?Bitte CDD_PASS_HASH setzen — siehe docs/homelab.md}
+      - "${CDD_HTTP_PORT:-80}:80"     # für HTTP→HTTPS-Redirect + ACME (echte Domain)
+      - "${CDD_HTTPS_PORT:-443}:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

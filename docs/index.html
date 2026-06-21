@@ -62,7 +62,7 @@
   <span class="badge">● Open Source · Forschungsprototyp · F#/.NET · CI-grün</span>
   <h1>Das Terminierungs-Orakel</h1>
   <p class="sub">Ein AI-natives Entwicklungs-Framework, in dem Review zur <strong>Konvergenz gegen eine externalisierte, getypte Spezifikation</strong> wird — nicht der Diff, den ein Mensch liest und glaubt.</p>
-  <div class="formula">Generator&nbsp; &#8869; &nbsp;Pr&uuml;f-Orakel</div>
+  <div class="formula">Generator&nbsp;&#8869;&nbsp;Pr&uuml;f-Orakel</div>
   <div class="cta">
     <a class="btn primary lg" href="blog.html">📝 Die Idee in 5 Min</a>
     <a class="btn lg" href="onboarding.html">🎓 Geführte Tour</a>
@@ -74,7 +74,8 @@
 <section><div class="wrap">
   <h2>Worum es geht</h2>
   <p class="lead">Die Skeptiker haben recht — Voll-Automation ist Hype. Trotzdem lässt sich eine Schraube weiterdrehen.</p>
-  <p style="max-width:760px">Die Grenze der KI-Software-Automation ist das <strong>Setzen der Invariante</strong>: im System nicht selbst-fundierbar (ein Regress, der nur an einem Anker außerhalb des Prüfvorgangs terminiert), und <em>dass</em> der Mensch ihn setzt, ist eine Wahl — kein Penrose-Lucas. Alles danach kann die Maschine prüfen, wenn die Architektur stimmt: Der KI-Generator kann per Werkzeug-Allowlist <strong>keinen Code schreiben</strong>; das Orakel setzt einen Spec-Knoten nur auf <code>Aligned</code>, wenn ein <em>echter</em> Test grün ist — Test-PASS, nicht bloßer Exit-0. Genau das unterscheidet es von Kiro oder GitHub Spec Kit, wo dasselbe System Spec, Code und Test erzeugt.</p>
+  <p style="max-width:760px">Die Grenze der KI-Software-Automation ist das <strong>Setzen der Invariante</strong>: im System nicht selbst-fundierbar (ein Regress, der nur an einem Anker außerhalb des Prüfvorgangs terminiert), und <em>dass</em> der Mensch ihn setzt, ist eine Wahl — kein Penrose-Lucas.</p>
+  <p style="max-width:760px">Alles danach kann die Maschine prüfen, wenn die Architektur stimmt: Der KI-Generator kann per Werkzeug-Allowlist <strong>keinen Code schreiben</strong>; das Orakel setzt einen Spec-Knoten nur auf <code>Aligned</code>, wenn ein <em>echter</em> Test grün ist — Test-PASS, nicht bloßer Exit-0. Genau das unterscheidet es von Kiro oder GitHub Spec&nbsp;Kit, wo <em>dasselbe</em> System Spec, Code und Test erzeugt.</p>
   <div class="actions" style="margin-top:8px"><a class="btn" href="blog.html">→ Ganzer Beitrag mit Diagrammen</a></div>
 </div></section>
 
@@ -151,20 +152,21 @@ lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [prope
   <ul class="open">
     <li><strong>N = 2</strong> Fallstudien — Anwendbarkeit, nicht Skalierung; beide klein.</li>
     <li><strong>Ein</strong> Lean-bewiesener Invariant (Werterhaltung); weitere auf der Roadmap.</li>
-    <li>Das Cockpit hat <strong>keine eingebaute Authentifizierung</strong> — im Homelab hinter Reverse-Proxy/SSO betreiben.</li>
+    <li>Erprobter Kern ist <strong>CLI + MCP-Server + Konvergenz-Orakel</strong>; das Web-Cockpit inkl. Chat-Loop ist <strong>experimentell</strong>.</li>
+    <li>Das Cockpit hat <strong>keine eingebaute Authentifizierung</strong> — im Homelab hinter Reverse-Proxy/SSO betreiben (siehe <a href="https://github.com/Koschnag/cong-driven-development/blob/main/docs/homelab.md" target="_blank">homelab.md</a>).</li>
     <li>Den intellektuellen Kern hat nicht ich erfunden (Lahiri: „Grand Challenge"; Storey: „Intent Debt"). <strong>Keine Prioritäts-Behauptung.</strong></li>
     <li><strong>Preprint, nicht peer-reviewed.</strong></li>
   </ul>
 </div></section>
 
 <section><div class="wrap">
-  <h2>Für Reviewer</h2>
-  <p class="lead">Wenn du das fachlich prüfen willst — der Pfad, Stelle für Stelle.</p>
+  <h2>Tiefer einsteigen</h2>
+  <p class="lead">Nichts davon musst du mir glauben — alles ist Code, Commit oder reproduzierbarer Lauf.</p>
   <ul class="checks">
-    <li>A-Marken nachfahren — die Reproduktions-Blöcke oben. Stimmen die Zahlen?</li>
-    <li>Paper lesen — Abstract, A/B-Tabelle (§6.5), Grenzen (§6), Fazit (§8).</li>
-    <li>B-Marken verantworten — trägt jede menschliche Setzung?</li>
-    <li>Den formalen Kern prüfen — <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/proofs/Werterhaltung.lean" target="_blank">Werterhaltung.lean</a> (sorry-frei) + <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/demo-gate-at-failure.sh" target="_blank">demo-gate-at-failure.sh</a>.</li>
+    <li>Zahlen nachfahren — die Reproduktions-Blöcke oben; ein frischer Klon liefert sie.</li>
+    <li>Das Orakel im Code — <code>Cdd.Core.Sync.SetzeSpecAligned</code> (<a href="https://github.com/Koschnag/cong-driven-development/blob/main/src/Cdd.Core/Sync.fs" target="_blank">Sync.fs</a>): ein Knoten wird <code>Aligned</code> nur bei abgedecktem grünem Test.</li>
+    <li>Der formale Kern — <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/proofs/Werterhaltung.lean" target="_blank">Werterhaltung.lean</a> (sorry-frei) + <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/demo-gate-at-failure.sh" target="_blank">demo-gate-at-failure.sh</a> (Orakel verwirft falsches Modell).</li>
+    <li>Das Paper — Abstract, A/B-Verifizierbarkeitstabelle (§6.5), Grenzen (§6), Fazit (§8).</li>
   </ul>
   <details>
     <summary>Paper einbetten (Vorschau)</summary>
