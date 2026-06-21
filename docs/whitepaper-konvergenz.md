@@ -143,7 +143,7 @@ Ehrlich und in der Test-Suite als „Defekt 4" dokumentiert: `SetzeSpecAligned` 
 
 ### 5.2 Ehrliche Selbst-Konvergenz
 
-Das Selbst-Modell umfasst aktuell 66 Knoten: 62 `Aligned`, 4 `Pending`. Die Test-Suite zählt 36 von 36 grünen Tests. Diese Zahlen sind das Resultat einer dokumentierten, ehrlichen Konvergenz, nicht eines geschönten Endzustands:
+Das Selbst-Modell umfasst aktuell 66 Knoten: 62 `Aligned`, 4 `Pending`. Die Test-Suite zählt 37 von 37 grünen Tests. Diese Zahlen sind das Resultat einer dokumentierten, ehrlichen Konvergenz, nicht eines geschönten Endzustands:
 
 - **5 abgelöste Knoten gelöscht** — Spezifikationen, die von neueren abgelöst wurden, bleiben nicht als Karteileichen `Aligned`, sondern verschwinden.
 - **3 e2e-verifizierte UI-Specs promotet** — von `Pending` nach `Aligned` erst nach echter End-to-End-Verifikation.

@@ -207,7 +207,7 @@ eine Schraube weiter, nicht das gelöste Problem.
 Den Kern bildet eine Umkehrung des Akzeptanzkriteriums. Statt \glqq der Agent hält an, wenn er
 zufrieden ist\grqq{} gilt \glqq der Agent hält an, wenn ein externes, getyptes Orakel die
 Konvergenz gegen die Spezifikation bestätigt\grqq. Die Methode und ihre IDE-Realisierung liegen
-in \texttt{cong-driven-development}~\cite{cdd2026}, ausgewertet am Commit \texttt{main}. Das tragende Artefakt
+in \texttt{cong-driven-development}~\cite{cdd2026}, ausgewertet am Commit \texttt{v0.6.0}. Das tragende Artefakt
 ist \texttt{SPOT} (\emph{Single Point of Truth}): ein typisierter F\#-Discriminated-Union-Graph,
 in dem jeder Knoten als ein \texttt{JSON} pro Knoten unter \texttt{.spot/} materialisiert ist.
 Der Konvergenzzustand jedes Knotens ist auf vier Werte getypt: \texttt{Aligned},
@@ -218,7 +218,7 @@ keinen Testlauf. Dass diese Marker zu bestandenen Tests gehören, erzwingt die g
 (rot blockt den Merge) zusammen mit dem reflexiven Selbst-Test --- daraus folgt \texttt{Aligned}
 $\Rightarrow$ Test-PASS, nicht bloßer Exit-Code $0$. Das Selbst-Modell der
 Methode umfasst $66$ Knoten, davon $62$ \texttt{Aligned} und $4$ \texttt{Pending}, bei
-$37/37$ grünen Tests (autoritativer Runner-Count @\,\texttt{main}); der reflexive
+$37/37$ grünen Tests (autoritativer Runner-Count @\,\texttt{v0.6.0}); der reflexive
 Selbst-Gate trägt den Knoten \texttt{spec-gate-selbst-hart}. Dass das Gate auf sich selbst
 angewandt grün ist, ist eine A-Aussage; dass es das \emph{Richtige} prüft, ist eine B-Aussage
 (siehe \Cref{bem:spec-welt}).
@@ -233,7 +233,7 @@ zwei voneinander unabhängige Achsen.
 Der Generator besitzt kein Schreibrecht auf das Prüf-Orakel. Technisch erzwungen wird dies
 durch eine Werkzeug-Allowlist ohne Schreibzugriff des Generators auf den Gate-Pfad; der
 Generator kann das Urteil über seine eigene Ausgabe nicht fälschen. Diese Achse ist real und
-maschinell prüfbar --- sie ist eine A-Aussage, verankert im Code @\,\texttt{main}.
+maschinell prüfbar --- sie ist eine A-Aussage, verankert im Code @\,\texttt{v0.6.0}.
 
 \paragraph{Epistemische Achse (Generator $\perp$ Spezifikation-Autor).}
 Die zweite Achse betrifft die \emph{Herkunft} der Spezifikation. Sie gilt nur, sofern die
@@ -302,8 +302,8 @@ verantwortungsbehaftet ist ---, und \emph{keine} Unmöglichkeitsaussage über Ma
 zweiter Agent könnte die Invariante setzen; der Mensch ist hier \emph{verschoben}, nicht durch
 ein Theorem als notwendig erwiesen. Wir vermeiden bewusst jede Formulierung im Sinne von
 \glqq unmechanisierbar\grqq{} oder \glqq nur ein Mensch kann\grqq{}; das wäre der Penrose/Lucas-Fehlschluss,
-den wir ablehnen. Die Theoreme aus \Cref{sec:einleitung} --- Rice als Motivation, Gödel und
-Tarski (sofern überhaupt herangezogen) als bloße Analogie --- tragen diese Aussage nicht: aus
+den wir ablehnen. Weder Rice (als Motivation, \Cref{sec:einleitung}) noch die Gödel/Tarski-Analogie
+(\Cref{sec:reflexiv-theorie}) tragen diese Aussage: aus
 keinem von ihnen folgt die Unersetzlichkeit eines Menschen.
 \end{bemerkung}
 
@@ -462,7 +462,7 @@ Domäne.
 Über beide Fallstudien hinweg ist die verifizierte Invariante deutlich kürzer als ihre
 Implementierung: das Verhältnis liegt zwischen rund $40\times$ und $125\times$
 (\Cref{sec:runenruf}: $\sim\!125$ LoC Domäne; \Cref{sec:ledger}: $\sim\!41$ LoC Domäne, jeweils
-gegen die kompakte Property bzw.\ das Kern-Theorem). Wir formulieren die Lesart dieser Zahlen
+gegen die tragende Property bzw.\ das Kern-Theorem, jeweils im Kern eine Zeile). Wir formulieren die Lesart dieser Zahlen
 streng konditional und eng.
 
 \begin{bemerkung}[Kompression ist Diskrimination, keine Äquivalenz]
@@ -490,7 +490,7 @@ selbst.
 \label{sec:reflexiv-selbstgate}
 
 Das Selbstmodell von \texttt{CDD}
-ist im Repository \texttt{cong-driven-development}\,@\,\texttt{main} als typisierter
+ist im Repository \texttt{cong-driven-development}\,@\,\texttt{v0.6.0} als typisierter
 F\#-DU-Graph abgelegt: ein JSON-Knoten je Element unter \texttt{.spot/}, mit den
 Konvergenzzuständen \texttt{Aligned}, \texttt{Pending}, \texttt{Diverged} und
 \texttt{Orphaned}. Das Orakel \texttt{SetzeSpecAligned} markiert einen Test-Knoten
@@ -661,10 +661,10 @@ ist der zentrale Hebel von Logik gegenüber bloßer LLM-Plausibilität.
     \midrule
     Runenruf: $46/46$ Tests grün & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
     Ledger: $6/6$ Tests grün & \AB{A} & \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0} (Runner) \\
-    CDD-Selbst-Gate: $37/37$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{main} (Runner) \\
+    CDD-Selbst-Gate: $37/37$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{v0.6.0} (Runner) \\
     Werterhaltung + Nichtnegativität \texttt{sorry}-frei & \AB{A} & \texttt{\#print axioms} (nur \texttt{propext}, \texttt{Quot.sound})\,@\,\texttt{0f39ab0} \\
     Lean ohne Mathlib, CI \texttt{lean-proof} grün & \AB{A} & CI-Job \texttt{lean-proof}\,@\,\texttt{0f39ab0} \\
-    Allowlist-Trennung Generator~$\perp$~Prüf-Orakel & \AB{A} & Code\,@\,\texttt{main} \\
+    Allowlist-Trennung Generator~$\perp$~Prüf-Orakel & \AB{A} & Code\,@\,\texttt{v0.6.0} \\
     Negativ-Artefakt \texttt{demo-gate-at-failure.sh} & \AB{A} & Skript\,@\,\texttt{0f39ab0} \\
     FsCheck \texttt{spec-siegel-lager-nichtnegativ} (jeder Seed/Folge) & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
     Kompressionsfaktoren ($\sim\!40$--$125\times$) als LoC-Zahlen & \AB{A} & Code\,@\,\texttt{56376a5}/\texttt{0f39ab0} \\
@@ -769,14 +769,14 @@ sondern sein Terminierungs-Orakel. Unsere Antwort ist Konvergenz gegen eine
 externalisierte, getypte Spec, geprüft durch ein vom Generator architektonisch
 getrenntes Orakel. Wir belegen das mit zwei kleinen Fallstudien
 (\texttt{runenruf}\,@\,\texttt{56376a5}, $46/46$; \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0}, $6/6$),
-einem reflexiven Selbst-Gate (\texttt{cong-driven-development}\,@\,\texttt{main},
+einem reflexiven Selbst-Gate (\texttt{cong-driven-development}\,@\,\texttt{v0.6.0},
 $37/37$, $62/66$ \texttt{Aligned}) und genau zwei maschinell bewiesenen
 Invarianten (\texttt{Werterhaltung.lean}: \texttt{werterhaltung} + \texttt{nichtnegativ}, \texttt{sorry}-frei).
 
 Wir schließen mit einer Lücke, nicht mit einem Versprechen. Die Spec-gegen-Welt-Bindung
 bleibt~\AB{B}; die Grund-Invariante terminiert den Regress nur durch einen externen
 Anker, dessen Setzung eine Wahl ist und keine berechnungstheoretische Notwendigkeit;
-die Beweiskette ist erst für eine einzige Eigenschaft geschlossen; $N=2$ zeigt
+die Beweiskette ist erst für zwei Eigenschaften (Werterhaltung, Nichtnegativität) geschlossen; $N=2$ zeigt
 Anwendbarkeit, nicht Skalierung. Aus keinem Theorem folgt, dass ein Mensch hier
 unersetzlich wäre --- ein zweiter, hinreichend unabhängiger Agent könnte den
 Dekorrelator stellen. Was wir zeigen, ist bescheidener und überprüfbarer: dass
@@ -802,7 +802,7 @@ nachfolgenden Befehle reproduzieren die autoritativen Runner-Counts, den
     \toprule
     \textbf{Repository} & \textbf{Commit} & \textbf{Rolle} \\
     \midrule
-    \texttt{Koschnag/cong-driven-development} & \texttt{main} & Methode/IDE, reflexives Selbst-Gate \\
+    \texttt{Koschnag/cong-driven-development} & \texttt{v0.6.0} & Methode/IDE, reflexives Selbst-Gate \\
     \texttt{Koschnag/runenruf} & \texttt{56376a5} & Existenzbeweis (Simulationsdomäne) \\
     \texttt{Koschnag/ledger-casestudy} & \texttt{0f39ab0} & Gegenstück (echtes IO, Lean-Beweis) \\
     \bottomrule
@@ -908,7 +908,7 @@ Cherny, Boris:
 Nguyen, Cong Chanh Vinzenz:
 \newblock cong-driven-development: A Spec-Convergent Method and IDE for Agentic
 Software Development.
-\newblock Software-Repository, \texttt{github.com/Koschnag/cong-driven-development}\,@\,\texttt{main}, 2026.
+\newblock Software-Repository, \texttt{github.com/Koschnag/cong-driven-development}\,@\,\texttt{v0.6.0}, 2026.
 
 \bibitem{tessl2026}
 Tessl:
