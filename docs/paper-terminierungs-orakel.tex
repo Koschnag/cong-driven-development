@@ -201,6 +201,30 @@ eine Schraube weiter, nicht das gelöste Problem.
 \section{Methode}
 \label{sec:methode}
 
+\paragraph{Begriffe für Leser ohne F\#/Lean-Hintergrund.}
+Diese Arbeit nutzt Werkzeuge aus der funktionalen und formalen Programmierung; zur
+Einordnung jeweils eine grobe Analogie aus der OOP-/Java-Welt.
+\begin{description}
+  \item[F\#] Funktionale Sprache auf .NET (gleiche Laufzeit wie C\#), unveränderlich per
+    Voreinstellung, mit Pattern Matching und algebraischen Datentypen --- grob: Java mit
+    \texttt{record}, \texttt{sealed} und Pattern-\texttt{switch}, durchgängig.
+  \item[Discriminated Union (DU)] Ein Typ, dessen Wert genau einer von mehreren Fällen ist
+    (Summentyp); der SPOT-Graph ist so getypt. Analog: \texttt{sealed interface} mit Records
+    und erschöpfendem \texttt{switch}.
+  \item[Lean 4] Ein Theorembeweiser --- man formuliert einen Satz, der Compiler prüft den
+    Beweis, der dann für \emph{alle} Fälle gilt (nicht stichprobenhaft wie ein Test). Am
+    nächsten in der OOP-Welt: Dafny bzw.\ JML/KeY.
+  \item[\texttt{sorry}-frei] \texttt{sorry} ist Leans Platzhalter \glqq Beweis ausgelassen\grqq{}, eine
+    Lücke, die dennoch kompiliert. \emph{\texttt{sorry}-frei} bedeutet: keine solche Lücke;
+    \texttt{\#print axioms} weist die benutzten Grundannahmen aus (hier nur \texttt{propext},
+    \texttt{Quot.sound}).
+  \item[Property-based Testing / FsCheck] Statt fester Beispiel-Eingaben werden hunderte
+    Zufallseingaben generiert und eine \emph{Eigenschaft} geprüft; bei Fehlschlag wird auf das
+    kleinste Gegenbeispiel \glqq geshrinkt\grqq{}. Analog: jqwik bzw.\ QuickCheck.
+  \item[Orakel] Der Schritt, der \glqq fertig/korrekt?\grqq{} entscheidet --- hier: ein Knoten wird nur
+    \texttt{Aligned}, wenn ein echter Test grün ist, nicht weil \glqq der Agent fertig sagt\grqq{}.
+\end{description}
+
 \subsection{Konvergenz gegen eine externalisierte Spezifikation}
 \label{sec:konvergenz}
 
