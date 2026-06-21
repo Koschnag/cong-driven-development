@@ -119,7 +119,7 @@ flowchart TB
     <p>Ein Spiel — der <strong>Existenzbeweis</strong>: der Loop kann gegen ein Orakel terminieren, das Exit-0 nicht glaubt. Tragende FsCheck-Property <code>spec-siegel-lager-nichtnegativ</code> über jeden Seed und jede Befehlsfolge. Ehrlich: die freundlichste Domäne — die Spec <em>ist</em> die Welt.</p>
   </div>
   <div class="card">
-    <h3>📒 ledger-casestudy <span class="pill">5/5</span></h3>
+    <h3>📒 ledger-casestudy <span class="pill">6/6</span></h3>
     <p>Ein doppisches Hauptbuch — das <strong>Gegenstück</strong>: echtes IO, ein veränderliches Requirement, int64-Cent statt Float. Hier ist „trifft das Modell die Welt" nicht leer.</p>
   </div>
 </div>
@@ -130,11 +130,11 @@ flowchart TB
 <pre class="mermaid">
 stateDiagram-v2
   [*] --> Gruen1
-  Gruen1: Korrektes Modell · 5/5 gruen
+  Gruen1: Korrektes Modell · 6/6 gruen
   Gruen1 --> Rot: naives Modell injiziert (Gebuehr verschwindet)
   Rot: ROT — Falsifiable, after 4 tests
   Rot --> Gruen2: Fix = Doppik (Gebuehr als Gegenbuchung)
-  Gruen2: Wert bleibt neutral · 5/5 gruen
+  Gruen2: Wert bleibt neutral · 6/6 gruen
   Gruen2 --> [*]
 </pre>
 <p class="cap"><code>./demo-gate-at-failure.sh</code> führt genau das reproduzierbar vor: grün → naives Modell → Orakel rot → revert. Der naive Entwurf behauptet, Geld verschwinde nicht; die Invariante verwirft ihn.</p>
@@ -146,9 +146,9 @@ stateDiagram-v2
 
 <h2>Die Grenzen, ungeschönt</h2>
 
-<p>Zwei kleine Fallstudien, ein Spiel und ein Hauptbuch. Kein Issue-Tracker, keine unbeschränkte Autonomie — die ist nicht da, und ich behaupte nicht, dass sie es ist. Der Property-Layer (FsCheck) ist real in beiden Repos. <strong>Lean ist für die Werterhaltung bewiesen</strong> — <code>proofs/Werterhaltung.lean</code>, sorry-frei (<code>#print axioms</code> nennt nur <code>propext</code>, <code>Quot.sound</code>), CI-verifiziert. Für weitere Invarianten: Roadmap, nicht behauptet.</p>
+<p>Zwei kleine Fallstudien, ein Spiel und ein Hauptbuch. Kein Issue-Tracker, keine unbeschränkte Autonomie — die ist nicht da, und ich behaupte nicht, dass sie es ist. Der Property-Layer (FsCheck) ist real in beiden Repos. <strong>Lean ist für Werterhaltung und Nichtnegativität bewiesen</strong> — <code>proofs/Werterhaltung.lean</code>, sorry-frei (<code>#print axioms</code> nennt für beide nur <code>propext</code>, <code>Quot.sound</code>), CI-verifiziert. Für weitere Invarianten: Roadmap, nicht behauptet.</p>
 
-<p>Damit ist für diesen einen Invarianten die Kette <strong>Typen → Property → Beweis</strong> geschlossen: dieselbe Erhaltung wird getypt, über Zufallsfolgen geprüft und für <em>jede</em> Folge bewiesen. Der Mensch bleibt am Modell-Gate — operational und normativ, nicht metaphysisch.</p>
+<p>Damit ist für zwei Invarianten die Kette <strong>Typen → Property → Beweis</strong> geschlossen: dieselbe Erhaltung wird getypt, über Zufallsfolgen geprüft und für <em>jede</em> Folge bewiesen. Der Mensch bleibt am Modell-Gate — operational und normativ, nicht metaphysisch.</p>
 
 <h2>Den Kern habe nicht ich erfunden</h2>
 
@@ -165,7 +165,7 @@ stateDiagram-v2
 git clone https://github.com/Koschnag/runenruf &amp;&amp; cd runenruf
 dotnet test tests/Runenruf.Tests
 
-<span class="c"># Fallstudie B: Hauptbuch (schlägt zurück) — erwartet: 5/5</span>
+<span class="c"># Fallstudie B: Hauptbuch (schlägt zurück) — erwartet: 6/6</span>
 git clone https://github.com/Koschnag/ledger-casestudy &amp;&amp; cd ledger-casestudy
 dotnet test tests/Ledger.Tests
 lean proofs/Werterhaltung.lean   <span class="ok"># sorry-frei: axioms [propext, Quot.sound]</span>
