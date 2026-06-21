@@ -177,6 +177,19 @@ lean proofs/Werterhaltung.lean   <span class="ok"># sorry-frei: axioms [propext,
   <a class="btn" href="paper-terminierungs-orakel.pdf" target="_blank">Paper (PDF, 19 S.)</a>
 </div>
 
+<hr>
+
+<h2>F#, Lean, „sorry-frei" &amp; Co — kurz erklärt</h2>
+<p>Für alle ohne funktionalen/formalen Hintergrund, je mit Java-Analogie:</p>
+<ul class="refs" style="font-size:15px;line-height:1.6">
+  <li><strong>F#</strong> — funktionale .NET-Sprache (Runtime wie C#), immutable by default, Pattern Matching. <em>≈ Java mit <code>record</code> + <code>sealed</code> + Pattern-<code>switch</code>, durchgängig.</em></li>
+  <li><strong>Discriminated Union</strong> — ein Wert ist genau einer von N Fällen; so ist der SPOT-Graph getypt. <em>≈ <code>sealed interface</code> + records + erschöpfendes <code>switch</code>.</em></li>
+  <li><strong>Lean 4</strong> — ein Theorembeweiser: der Compiler prüft einen mathematischen Beweis. Anders als Tests (Stichproben) gilt er für <em>jeden</em> Fall. <em>≈ am nächsten Dafny / JML+KeY.</em></li>
+  <li><strong>„sorry-frei"</strong> — <code>sorry</code> ist Leans Platzhalter „Beweis ausgelassen" (eine Lücke, die trotzdem kompiliert). sorry-frei = keine Lücke; <code>#print axioms</code> zeigt nur Standard-Axiome, keine Schummel.</li>
+  <li><strong>Property-based Testing (FsCheck)</strong> — prüft eine Eigenschaft über hunderte Zufallseingaben und „shrinkt" Fehler auf das minimale Gegenbeispiel. <em>≈ jqwik / QuickCheck.</em></li>
+  <li><strong>Orakel</strong> — der Schritt, der „fertig/korrekt?" entscheidet; hier: grün nur bei echtem grünem Test, nicht bei „Agent sagt fertig".</li>
+</ul>
+
 <h2>Quellen</h2>
 <ul class="refs">
   <li>Lahiri, <em>Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents</em>, arXiv:2603.17150 (2026).</li>

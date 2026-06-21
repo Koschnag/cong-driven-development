@@ -80,6 +80,45 @@
 </div></section>
 
 <section><div class="wrap">
+  <h2>Begriffe — für Devs ohne F#/Lean</h2>
+  <p class="lead">Das Projekt nutzt ein paar Werkzeuge aus der funktionalen/formalen Ecke. Kurz übersetzt, je mit Java-Analogie.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>F#</h3>
+      <p>Funktionale Sprache auf .NET (dieselbe Runtime wie C#). Immutable by default, Pattern Matching, knappe Typen.<br><span style="color:var(--accent)">≈ Java</span> mit <code>record</code> + <code>sealed</code> + Pattern-<code>switch</code> — aber durchgängig und kürzer.</p>
+    </div>
+    <div class="card">
+      <h3>Discriminated Union (DU)</h3>
+      <p>Ein Typ, dessen Wert <em>genau einer</em> von mehreren Fällen ist (Summentyp). Der SPOT-Graph ist so getypt: Spec | Test | Risk | Component …<br><span style="color:var(--accent)">≈ Java</span> <code>sealed interface</code> + records + erschöpfendes <code>switch</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Lean 4</h3>
+      <p>Ein <strong>Theorembeweiser</strong>: man formuliert einen mathematischen Satz, der Compiler prüft den Beweis. Anders als Tests (Stichproben) gilt ein Beweis für <em>alle</em> Fälle.<br><span style="color:var(--accent)">≈ Java</span> kein echtes Pendant; am nächsten: Dafny / JML+KeY.</p>
+    </div>
+    <div class="card">
+      <h3>„sorry-frei"</h3>
+      <p><code>sorry</code> ist Leans Platzhalter „Beweis hier ausgelassen" — eine Lücke, die trotzdem kompiliert (wie ein <code>// TODO</code>, das durchwinkt). <strong>sorry-frei</strong> = keine einzige Lücke; <code>#print axioms</code> listet die Grundannahmen, bei uns nur Standard (<code>propext</code>, <code>Quot.sound</code>), keine Schummel.</p>
+    </div>
+    <div class="card">
+      <h3>Property-based Testing / FsCheck</h3>
+      <p>Statt fester Beispiel-Eingaben generiert das Framework hunderte Zufallseingaben und prüft eine <em>Eigenschaft</em>; schlägt sie fehl, „shrinkt" es auf das kleinste Gegenbeispiel.<br><span style="color:var(--accent)">≈ Java</span> jqwik (bzw. QuickCheck).</p>
+    </div>
+    <div class="card">
+      <h3>Orakel</h3>
+      <p>Der Schritt, der entscheidet „fertig/korrekt?". Hier: ein Knoten wird nur <code>Aligned</code>, wenn ein <em>echter</em> Test grün ist — nicht weil „der Agent sagt fertig".</p>
+    </div>
+    <div class="card">
+      <h3>SPOT</h3>
+      <p>Single Point of Truth — der eine getypte Graph, der Spec, Test, Risiko, Komponente … als Knoten hält. Ein JSON pro Knoten, git-versioniert, diffbar.</p>
+    </div>
+    <div class="card">
+      <h3>MCP</h3>
+      <p>Model Context Protocol — die standardisierte Schnittstelle, über die ein KI-Client (z. B. Claude) Werkzeuge aufruft, hier um den SPOT zu lesen/ändern.<br><span style="color:var(--accent)">≈ Java</span> eine API-Spec für Tool-Calls.</p>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
   <h2>Ausprobieren &amp; betreiben</h2>
   <p class="lead">Drei Wege — vom Binary bis zum Homelab-Betrieb wie ein Cloud-Programm.</p>
   <div class="grid">
