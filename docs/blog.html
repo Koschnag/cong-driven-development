@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eine Schraube weiter — Wo die Grenze der KI-Automation liegt, und wie man sie typisiert</title>
+<meta name="description" content="„Coding is solved" ist Marketing. Die Skeptiker haben recht. Trotzdem lässt sich eine Schraube weiterdrehen: Review wird Konvergenz gegen eine externalisierte, getypte Spezifikation — Generator und Prüf-Orakel architektonisch getrennt. Zwei öffentliche, CI-grüne Belege.">
+<!-- Open Graph / LinkedIn-Linkvorschau -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Eine Schraube weiter — die Grenze der KI-Automation, typisiert">
+<meta property="og:description" content="Die Skeptiker haben recht. Trotzdem: Review wird Konvergenz gegen eine getypte Spec — Generator ⊥ Prüf-Orakel. Zwei öffentliche, CI-grüne Belege, ein sorry-freier Lean-Beweis.">
+<meta property="og:url" content="https://koschnag.github.io/cong-driven-development/blog.html">
+<meta property="og:site_name" content="Das Terminierungs-Orakel">
+<meta name="twitter:card" content="summary">
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c2430; --ink:#e6edf3; --muted:#9aa7b4;
+    --line:#2a3340; --accent:#4c9aff; --green:#3fb950; --amber:#d29922; --red:#f85149;
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --ink:#1f2328; --muted:#59636e; --line:#d0d7de; --accent:#0969da; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+  header{padding:52px 0 28px;border-bottom:1px solid var(--line)}
+  .badge{display:inline-block;font-size:13px;font-weight:600;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 12px;margin-bottom:18px}
+  h1{font-size:32px;line-height:1.2;margin:0 0 12px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:18px;margin:0}
+  .meta{color:var(--muted);font-size:14px;margin-top:18px}
+  article{padding:8px 0 0}
+  article h2{font-size:23px;margin:40px 0 6px;line-height:1.25;letter-spacing:-.01em}
+  article p{margin:16px 0}
+  .lead{font-size:19px;color:var(--ink)}
+  blockquote{margin:26px 0;padding:4px 0 4px 20px;border-left:3px solid var(--accent);font-size:20px;line-height:1.45;color:var(--ink);font-weight:500}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);padding:1px 6px;border-radius:5px}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;font-family:var(--mono);font-size:13.5px;line-height:1.7;margin:22px 0}
+  pre .c{color:var(--muted)} pre .ok{color:var(--green)}
+  .fig{margin:28px 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 12px}
+  .fig .cap{color:var(--muted);font-size:13.5px;text-align:center;margin:10px 14px 2px}
+  .mermaid{display:flex;justify-content:center}
+  .cards{display:grid;grid-template-columns:1fr;gap:14px;margin:22px 0}
+  @media(min-width:560px){.cards{grid-template-columns:1fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h3{margin:0 0 6px;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--green);border:1px solid var(--green);border-radius:6px;padding:1px 7px}
+  .pill.amber{color:var(--amber);border-color:var(--amber)}
+  hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+  .btn{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 15px;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .btn:hover{border-color:var(--accent);text-decoration:none}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .refs{font-size:14px;color:var(--muted)} .refs li{margin:7px 0}
+  footer{padding:34px 0 64px;color:var(--muted);font-size:14px}
+  footer em{font-style:italic}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="badge">● Forschungsprototyp · Preprint · nicht peer-reviewed</span>
+  <h1>Eine Schraube weiter</h1>
+  <p class="sub">Wo genau die Grenze der KI-Software-Automation liegt — und wie man sie typisiert, statt sie zu bestreiten.</p>
+  <p class="meta">Cong Chanh Vinzenz Nguyen · F#/.NET · alle Zahlen clean-clone-reproduziert, alle Repos CI-grün</p>
+</div></header>
+
+<article><div class="wrap">
+
+<p class="lead">Ich teile die Skepsis. Voll-Automation ist Hype. Rice ist unentscheidbar; METRs 50-%-Zeithorizont liegt Anfang 2025 bei rund 50–110 Minuten (Verdopplung etwa alle 7 Monate); und verifizierer-akzeptierte Spezifikationen sind oft inkorrekt oder unvollständig. „Coding is solved" ist eine Marketing-Phrase ohne Träger. Ich bin nicht hier, um das zu bestreiten — ich bin hier, um eine Schraube weiterzudrehen.</p>
+
+<p>Die konstruktive Frage ist nicht <em>„klappt Automation?"</em>, sondern: <strong>Wo genau liegt die Grenze — und lässt sie sich typisieren?</strong></p>
+
+<h2>Die Grenze ist das Setzen der Invariante</h2>
+
+<p>Meine Antwort, so scharf wie ich sie halten kann — zweierlei, sauber getrennt:</p>
+
+<p><strong>(i) Strukturell.</strong> Die Grund-Invariante ist im System nicht selbst-fundierbar. Jede Begründung bräuchte eine weitere Invariante — ein Regress, der nur durch einen Anker <em>außerhalb</em> des Prüfvorgangs terminiert. Das ist ein Argument, kein Beweis.</p>
+
+<p><strong>(ii) Normativ.</strong> Dass der <em>Mensch</em> diesen Anker setzt, ist eine Wahl — keine Unmöglichkeitsaussage über Maschinen. Ausdrücklich <strong>nicht</strong> Penrose-Lucas: Rice trifft Mensch und Maschine symmetrisch. Wir wählen den Menschen, weil Intent extern zum Generator und verantwortungsbehaftet ist.</p>
+
+<blockquote>Heute heißt Akzeptanz: ein Mensch liest einen Diff und glaubt. Ich ersetze das durch: eine Maschine entscheidet Konvergenz gegen eine externalisierte, getypte Referenz.</blockquote>
+
+<h2>Die Architektur: Generator ⊥ Prüf-Orakel</h2>
+
+<p>Entscheidend ist die Architektur — und zwar zweiachsig. Generator und Prüf-Orakel sind <strong>mechanisch</strong> getrennt: die generierende Engine kann per Werkzeug-Allowlist keinen Code schreiben (fälschungssicher); das Orakel setzt einen Spec-Knoten nur dann auf <code>Aligned</code>, wenn ein <em>echter</em> <code>dotnet-test</code>-Lauf grün ist — geprüft wird Test-PASS, nicht bloßer Prozess-Exit-0.</p>
+
+<div class="fig">
+<pre class="mermaid">
+flowchart TB
+  H["Mensch — setzt die Invariante"]:::h --> SPEC["getypte Spec<br/>externalisierte Referenz"]:::s
+  GEN["KI-Generator<br/>Werkzeug-Allowlist:<br/>kein Schreibrecht aufs Gate"]:::gen --> CODE["Code + Tests"]:::c
+  SPEC --> GATE{"Prüf-Orakel<br/>echter dotnet-test grün?"}:::g
+  CODE --> GATE
+  GATE -->|"Test-PASS"| OK["Spec-Knoten: Aligned"]:::ok
+  GATE -->|"rot · Exit-0 ungleich PASS"| NO["verworfen → revert"]:::r
+  classDef h fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef s fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef gen fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef c fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef g fill:#1c1606,stroke:#d29922,color:#e6edf3;
+  classDef ok fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef r fill:#2a1416,stroke:#f85149,color:#e6edf3;
+</pre>
+<p class="cap">Der Unterschied zu Kiro oder GitHub Spec Kit: dort erzeugt <em>dasselbe</em> System Spec, Code und Test — die Referenz ist nicht unabhängig vom Prüfling. Hier ist sie es.</p>
+</div>
+
+<p><strong>Ehrlich die zweite Achse:</strong> Generator und <em>Spec-Autor</em> sind nur getrennt, wenn die Spec aus separater Quelle kommt. Schreibt dieselbe Modell-Instanz Spec <em>und</em> Code, korreliert der Fehler — und genau dort steht der Mensch als Dekorrelator. Ein zweiter, unabhängiger Agent könnte dieselbe Rolle einnehmen; <em>dass</em> es der Mensch ist, ist eine Setzung, kein Unmöglichkeitsbeweis.</p>
+
+<h2>Zwei öffentliche Belege — CI-grün, reproduzierbar</h2>
+
+<div class="cards">
+  <div class="card">
+    <h3>🎮 runenruf <span class="pill">46/46</span></h3>
+    <p>Ein Spiel — der <strong>Existenzbeweis</strong>: der Loop kann gegen ein Orakel terminieren, das Exit-0 nicht glaubt. Tragende FsCheck-Property <code>spec-siegel-lager-nichtnegativ</code> über jeden Seed und jede Befehlsfolge. Ehrlich: die freundlichste Domäne — die Spec <em>ist</em> die Welt.</p>
+  </div>
+  <div class="card">
+    <h3>📒 ledger-casestudy <span class="pill">5/5</span></h3>
+    <p>Ein doppisches Hauptbuch — das <strong>Gegenstück</strong>: echtes IO, ein veränderliches Requirement, int64-Cent statt Float. Hier ist „trifft das Modell die Welt" nicht leer.</p>
+  </div>
+</div>
+
+<p>Der naive erste Entwurf zieht eine Gebühr beim Sender ab und schreibt sie nirgends gut — Wert verschwindet. Die Invariante <code>spec-werterhaltung</code> (Gesamtsumme aller Konten konstant) fängt das ab — ohne dass je ein Diff gelesen wurde:</p>
+
+<div class="fig">
+<pre class="mermaid">
+stateDiagram-v2
+  [*] --> Gruen1
+  Gruen1: Korrektes Modell · 5/5 gruen
+  Gruen1 --> Rot: naives Modell injiziert (Gebuehr verschwindet)
+  Rot: ROT — Falsifiable, after 4 tests
+  Rot --> Gruen2: Fix = Doppik (Gebuehr als Gegenbuchung)
+  Gruen2: Wert bleibt neutral · 5/5 gruen
+  Gruen2 --> [*]
+</pre>
+<p class="cap"><code>./demo-gate-at-failure.sh</code> führt genau das reproduzierbar vor: grün → naives Modell → Orakel rot → revert. Der naive Entwurf behauptet, Geld verschwinde nicht; die Invariante verwirft ihn.</p>
+</div>
+
+<blockquote>Review ist Konvergenz gegen die Spec, nicht der gelesene Diff.</blockquote>
+
+<p>Und es komprimiert: eine 1-Zeilen-Invariante über den FsCheck-Generator deckt einen unbeschränkten Eingaberaum ab — gegenüber 41 LoC Ledger-Domain und 125 LoC Runenruf-Sim. Du reviewst eine Zeile, keinen 41-bis-125-Zeilen-Diff. <em>„Spec ist nur Code im Trenchcoat"</em> hält hier nicht: eine Beispieltabelle leistet, was die Invariante leistet, in diesen Fällen nachweislich nicht.</p>
+
+<h2>Die Grenzen, ungeschönt</h2>
+
+<p>Zwei kleine Fallstudien, ein Spiel und ein Hauptbuch. Kein Issue-Tracker, keine unbeschränkte Autonomie — die ist nicht da, und ich behaupte nicht, dass sie es ist. Der Property-Layer (FsCheck) ist real in beiden Repos. <strong>Lean ist für die Werterhaltung bewiesen</strong> — <code>proofs/Werterhaltung.lean</code>, sorry-frei (<code>#print axioms</code> nennt nur <code>propext</code>, <code>Quot.sound</code>), CI-verifiziert. Für weitere Invarianten: Roadmap, nicht behauptet.</p>
+
+<p>Damit ist für diesen einen Invarianten die Kette <strong>Typen → Property → Beweis</strong> geschlossen: dieselbe Erhaltung wird getypt, über Zufallsfolgen geprüft und für <em>jede</em> Folge bewiesen. Der Mensch bleibt am Modell-Gate — operational und normativ, nicht metaphysisch.</p>
+
+<h2>Den Kern habe nicht ich erfunden</h2>
+
+<p>Lahiri nennt ihn eine <em>Grand Challenge</em> („Intent Formalization", arXiv:2603.17150, 2026). Storey nennt das Fehlen externalisierter Begründung <em>„Intent Debt"</em> (arXiv:2603.22106, 2026). Die getypte Spec ist genau dieses externalisierte Rationale. Kambhampatis LLM-Modulo benennt den externen Verifizierer als Quelle der Garantie (arXiv:2402.01817).</p>
+
+<p>Ich beanspruche keine Priorität — „erster" wäre eine unbeweisbare Negativ-Existenzaussage. Konditional: mir ist keine publizierte Implementierung mit genau dieser Kombination bekannt — getypte externalisierte Spec + architektonisch getrennter Generator/Orakel + property-/beweis-verifiziertes Gate, für einen Kern-Invarianten bis zum sorry-freien Lean-Beweis durchgezogen. Neuheit ist eine Literatur-Aussage, kein Beweis.</p>
+
+<blockquote>Die Skeptiker haben die Diagnose recht. Ich liefere die Schraube danach.</blockquote>
+
+<hr>
+
+<h2>Selbst nachprüfen</h2>
+<pre><span class="c"># Fallstudie A: Spiel (Existenzbeweis) — erwartet: 46/46</span>
+git clone https://github.com/Koschnag/runenruf &amp;&amp; cd runenruf
+dotnet test tests/Runenruf.Tests
+
+<span class="c"># Fallstudie B: Hauptbuch (schlägt zurück) — erwartet: 5/5</span>
+git clone https://github.com/Koschnag/ledger-casestudy &amp;&amp; cd ledger-casestudy
+dotnet test tests/Ledger.Tests
+lean proofs/Werterhaltung.lean   <span class="ok"># sorry-frei: axioms [propext, Quot.sound]</span>
+./demo-gate-at-failure.sh        <span class="ok"># grün → Falsifiable (rot) → grün</span></pre>
+
+<div class="btnrow">
+  <a class="btn primary" href="index.html">→ Portal: alle Belege &amp; das Paper</a>
+  <a class="btn" href="onboarding.html">Geführte Tour (32 Folien)</a>
+  <a class="btn" href="paper-terminierungs-orakel.pdf" target="_blank">Paper (PDF, 19 S.)</a>
+</div>
+
+<h2 style="font-size:18px">Quellen</h2>
+<ul class="refs">
+  <li>Lahiri, <em>Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents</em>, arXiv:2603.17150 (2026).</li>
+  <li>Storey, <em>From Technical Debt to Cognitive and Intent Debt</em>, arXiv:2603.22106 (2026).</li>
+  <li>Kambhampati u. a., <em>LLMs Can't Plan, But Can Help Planning in LLM-Modulo Frameworks</em>, arXiv:2402.01817 (2024).</li>
+  <li>METR, <em>Measuring AI Ability to Complete Long Software Tasks</em>, arXiv:2503.14499 (2025).</li>
+  <li>Misu, Ma, Lopes, <em>VeriAct: Beyond Verifiability</em>, arXiv:2604.00280 (2026).</li>
+</ul>
+
+</div></article>
+
+<footer><div class="wrap">
+  <em>Diese Arbeit wurde KI-assistiert erzeugt. Dass sie korrekt ist und die Claims tragen, kann das System nicht aus sich selbst zertifizieren — derselbe Regress, den der Text beschreibt. Die maschinellen Marken sind re-runbar; die Setzung bleibt menschlich.</em>
+</div></footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({ startOnLoad:true, theme: dark ? 'dark' : 'default', securityLevel:'loose', flowchart:{ htmlLabels:true } });
+</script>
+</body>
+</html>
