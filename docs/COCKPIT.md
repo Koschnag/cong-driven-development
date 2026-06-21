@@ -58,22 +58,23 @@ die Abfrage hart `m.sensitive=0 AND c.sensitive=0`. Das ist nicht verhandelbar.
 > nicht auf „der Agent sagt fertig".
 
 „Man promptet nicht mehr, man baut den Loop, der nachpromptet, bis ein Ziel erreicht
-ist." Die ganze Aussage steckt im **Abbruchkriterium**. Cong OS treibt dafür den
-`cdd-mapper` (sichtbar als Faden-Turn) und das Gate hat **Zähne** — reine Logik, ohne
-IO testbar:
+ist." Die ganze Aussage steckt im **Abbruchkriterium**. Cong OS treibt dafür eine
+Konvergenz-Loop (`cdd-mapper`, experimentell, sichtbar als Faden-Turn). Das Gate ist als
+Konjunktion **entworfen** — Marker-Abdeckung *und* ein echter grüner Testlauf:
 
 ```
-GateBestanden  =  markerAligned  &&  testprojekte > 0  &&  alleTestsGruen
+GateBestanden  =  markerAligned  &&  testprojekte > 0  &&  alleTestsGruen   (Cockpit-Design)
 ```
 
-`Exit 0` reicht nicht: ein Lauf gilt nur grün, wenn die Ausgabe bestandene Tests
-ausweist und weder „Failed" noch „No test" enthält. Die Tests dazu schließen genau die
-Löcher, durch die ein Agent ein Gate täuscht. Erst wenn das Gate ehrlich grün ist, setzt
-ein **Orakel** (`SetzeSpecAligned`) die Spec auf `Aligned` — nur `Pending → Aligned`, nie
-von Hand, der Ausführer darf den Status nicht anfassen. Der Prompt verbietet ausdrücklich,
-Spec oder Tests zu ändern, „nur um das Gate zu täuschen".
+`Exit 0` reicht dafür nicht: ein Lauf gilt nur grün, wenn die Ausgabe bestandene Tests
+ausweist und weder „Failed" noch „No test" enthält. **Implementiert** ist heute das Orakel
+`SetzeSpecAligned` (`Cdd.Core.Sync`): es setzt einen Test-Knoten `Aligned` bei Marker-Präsenz
+im Testcode — nur `Pending → Aligned`, nie von Hand, der Ausführer darf den Status nicht
+anfassen. Dass diese Marker zu grünen Tests gehören, sichert die grüne CI-Suite plus der
+reflexive Selbst-Test; den `alleTestsGruen`-Teil im Cockpit selbst zu erzwingen, ist Roadmap.
+Der Prompt verbietet ausdrücklich, Spec oder Tests zu ändern, „nur um das Gate zu täuschen".
 
-→ Vertiefung: [GEGENENTWURF-POST.md](GEGENENTWURF-POST.md).
+→ Vertiefung: [GEGENENTWURF.md](../GEGENENTWURF.md).
 
 ### Beweis auf hartem Terrain (Capstone)
 
@@ -88,8 +89,9 @@ das Tool** entwickelt, nicht von Hand:
    + `Voelker.istStaerker` + zwei Tests implementierte.
 3. **Gate** — gemessen, nicht behauptet: `dotnet test` **29/29 grün** (unabhängig
    nachgemessen). Bemerkenswert: der Ausführer *durfte sich nicht selbst fertig erklären* —
-   er weigerte sich ausdrücklich, den Convergence-Status von Hand zu setzen. Erst das
-   Orakel, das die Tests wirklich gemessen hat, promotete die Spec auf `Aligned`.
+   er weigerte sich ausdrücklich, den Convergence-Status von Hand zu setzen. Die 29/29 wurden
+   unabhängig (CI) gemessen; das Orakel promotete die Spec auf `Aligned`, weil die zugehörigen
+   Test-Marker im Code vorlagen — die Messung selbst leistet die CI, nicht das Orakel.
 4. **Ergebnis** — `spec-kampfkraft` + beide Test-Knoten `Aligned`, `cdd validate` ohne
    Befund, das konvergierte Feature im Cockpit mit seiner Formal-Notation
    `⟦spec-kampfkraft⟧ := C₁ × C₂` sichtbar. (runenruf `cdd-mapper/auto` @ `78cd3a6`.)

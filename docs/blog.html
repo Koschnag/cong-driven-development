@@ -87,17 +87,17 @@
 
 <h2>Die Architektur: Generator ⊥ Prüf-Orakel</h2>
 
-<p>Entscheidend ist die Architektur — und zwar zweiachsig. Generator und Prüf-Orakel sind <strong>mechanisch</strong> getrennt: die generierende Engine kann per Werkzeug-Allowlist keinen Code schreiben (fälschungssicher); das Orakel setzt einen Spec-Knoten nur dann auf <code>Aligned</code>, wenn ein <em>echter</em> <code>dotnet-test</code>-Lauf grün ist — geprüft wird Test-PASS, nicht bloßer Prozess-Exit-0.</p>
+<p>Entscheidend ist die Architektur — und zwar zweiachsig. Generator und Prüf-Orakel sind <strong>mechanisch</strong> getrennt: die generierende Engine kann per Werkzeug-Allowlist keinen Code schreiben (fälschungssicher); das Orakel (<code>Sync.SetzeSpecAligned</code>) bindet <code>Aligned</code> an einen im Testcode abgedeckten Test, dessen Greenness die CI-Suite erzwingt (rot blockt den Merge) — Test-PASS, nicht bloßer Prozess-Exit-0.</p>
 
 <div class="fig">
 <pre class="mermaid">
 flowchart TB
   H["Mensch — setzt die Invariante"]:::h --> SPEC["getypte Spec<br/>externalisierte Referenz"]:::s
   GEN["KI-Generator<br/>Werkzeug-Allowlist:<br/>kein Schreibrecht aufs Gate"]:::gen --> CODE["Code + Tests"]:::c
-  SPEC --> GATE{"Prüf-Orakel<br/>echter dotnet-test grün?"}:::g
+  SPEC --> GATE{"Gate<br/>Marker abgedeckt + CI-Suite grün?"}:::g
   CODE --> GATE
   GATE -->|"Test-PASS"| OK["Spec-Knoten: Aligned"]:::ok
-  GATE -->|"rot · Exit-0 ungleich PASS"| NO["verworfen → revert"]:::r
+  GATE -->|"rot in der CI · nicht nur Exit-0"| NO["blockiert → revert"]:::r
   classDef h fill:#13243a,stroke:#4c9aff,color:#e6edf3;
   classDef s fill:#13243a,stroke:#4c9aff,color:#e6edf3;
   classDef gen fill:#161b22,stroke:#9aa7b4,color:#e6edf3;

@@ -81,7 +81,7 @@
     </div>
     <div class="card">
       <h3 class="acc">Generator ⊥ Orakel</h3>
-      <p class="lead">Generator: kein Schreibrecht auf den Code-Pfad (Allowlist). Orakel <code>SetzeSpecAligned</code>: nur bei echtem grünem <code>dotnet test</code> — Test-PASS, nicht Exit-0.</p>
+      <p class="lead">Generator: kein Schreibrecht auf den Code-Pfad (Allowlist). Orakel <code>SetzeSpecAligned</code>: <code>Aligned</code> bei abgedecktem Test-Marker, Greenness via CI-Suite — Test-PASS, nicht Exit-0.</p>
     </div>
   </div>
   <p class="fragment center" style="margin-top:.6em"><span class="green">Review = Konvergenz gegen die Spec, nicht der gelesene Diff.</span></p>
@@ -160,7 +160,7 @@ theorem werterhaltung (hb : Hauptbuch) (bs : List Buchung) :
 
 <section data-background-color="#0e1116" class="center">
   <h2>Reflexiv: das System gatet <span class="acc">sich selbst</span></h2>
-  <p class="lead">Ein Test prüft eine Invariante über das eigene <code>.spot/</code>-Modell: kein Knoten gilt als <code>Aligned</code> ohne echten Test.</p>
+  <p class="lead">Ein Test prüft eine Invariante über das eigene <code>.spot/</code>-Modell: kein <code>Aligned</code>-Test-Knoten ohne Test-Marker im Code — mit grüner CI-Suite folgt: kein <code>Aligned</code> ohne grünen Test.</p>
   <p class="fragment big">Das System härtet seinen eigenen Drift —</p>
   <p class="fragment lead">und macht sichtbar, dass der äußerste Bezugspunkt eine menschliche Setzung bleibt.</p>
 </section>

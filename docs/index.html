@@ -75,7 +75,7 @@
   <h2>Worum es geht</h2>
   <p class="lead">Die Skeptiker haben recht — Voll-Automation ist Hype. Trotzdem lässt sich eine Schraube weiterdrehen.</p>
   <p style="max-width:760px">Die Grenze der KI-Software-Automation ist das <strong>Setzen der Invariante</strong>: im System nicht selbst-fundierbar (ein Regress, der nur an einem Anker außerhalb des Prüfvorgangs terminiert), und <em>dass</em> der Mensch ihn setzt, ist eine Wahl — kein Penrose-Lucas.</p>
-  <p style="max-width:760px">Alles danach kann die Maschine prüfen, wenn die Architektur stimmt: Der KI-Generator kann per Werkzeug-Allowlist <strong>keinen Code schreiben</strong>; das Orakel setzt einen Spec-Knoten nur auf <code>Aligned</code>, wenn ein <em>echter</em> Test grün ist — Test-PASS, nicht bloßer Exit-0. Genau das unterscheidet es von Kiro oder GitHub Spec&nbsp;Kit, wo <em>dasselbe</em> System Spec, Code und Test erzeugt.</p>
+  <p style="max-width:760px">Alles danach kann die Maschine prüfen, wenn die Architektur stimmt: Der KI-Generator kann per Werkzeug-Allowlist <strong>keinen Code schreiben</strong>; das Orakel bindet <code>Aligned</code> an einen im Testcode abgedeckten Test, dessen Greenness die CI-Suite erzwingt (rot blockt den Merge) — Test-PASS, nicht bloßer Exit-0. Genau das unterscheidet es von Kiro oder GitHub Spec&nbsp;Kit, wo <em>dasselbe</em> System Spec, Code und Test erzeugt.</p>
   <div class="actions" style="margin-top:8px"><a class="btn" href="blog.html">→ Ganzer Beitrag mit Diagrammen</a></div>
 </div></section>
 
@@ -106,7 +106,7 @@ docker run -d --name cdd -p 8080:8080 -v /srv/cdd/data:/data ghcr.io/koschnag/cd
 cdd init                     <span class="c"># SPOT-Store (.spot/) anlegen</span>
 cdd derive-tests --write     <span class="c"># Spec-Kriterien → Test-Knoten</span>
 cdd derive-code --out tests/Derived.fs   <span class="c"># → F#-Test-Skelette</span>
-cdd sync-tests --write       <span class="ok"># Aligned NUR bei echtem grünem Test — das Gate mit Zähnen</span></pre>
+cdd sync-tests --write       <span class="ok"># Aligned bei abgedecktem Test-Marker; Greenness erzwingt die CI</span></pre>
 </div></section>
 
 <section><div class="wrap">
@@ -164,7 +164,7 @@ lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [prope
   <p class="lead">Nichts davon musst du mir glauben — alles ist Code, Commit oder reproduzierbarer Lauf.</p>
   <ul class="checks">
     <li>Zahlen nachfahren — die Reproduktions-Blöcke oben; ein frischer Klon liefert sie.</li>
-    <li>Das Orakel im Code — <code>Cdd.Core.Sync.SetzeSpecAligned</code> (<a href="https://github.com/Koschnag/cong-driven-development/blob/main/src/Cdd.Core/Sync.fs" target="_blank">Sync.fs</a>): ein Knoten wird <code>Aligned</code> nur bei abgedecktem grünem Test.</li>
+    <li>Das Orakel im Code — <code>Cdd.Core.Sync.SetzeSpecAligned</code> (<a href="https://github.com/Koschnag/cong-driven-development/blob/main/src/Cdd.Core/Sync.fs" target="_blank">Sync.fs</a>): setzt <code>Aligned</code> bei vorhandenem Test-Marker (<code>covered</code>) — die Greenness sichert die CI, nicht die Funktion.</li>
     <li>Der formale Kern — <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/proofs/Werterhaltung.lean" target="_blank">Werterhaltung.lean</a> (sorry-frei) + <a href="https://github.com/Koschnag/ledger-casestudy/blob/main/demo-gate-at-failure.sh" target="_blank">demo-gate-at-failure.sh</a> (Orakel verwirft falsches Modell).</li>
     <li>Das Paper — Abstract, A/B-Verifizierbarkeitstabelle (§6.5), Grenzen (§6), Fazit (§8).</li>
   </ul>
