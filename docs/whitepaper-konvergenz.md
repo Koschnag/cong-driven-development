@@ -109,7 +109,7 @@ FsCheck brauchte vier generierte Folgen, um den Verlust zu provozieren. Niemand 
 
 **Das Gate beim Scheitern.** Dies ist das stärkste Bild dieses Whitepapers. Nicht der grüne Lauf, sondern der rote. Ein Loop ohne externes Orakel hätte den naiven Entwurf produziert, mit Exit-Code 0 quittiert und Wert lautlos vernichtet — die Eigenschaft, die ihn entlarvt, existierte nicht. Hier existiert sie, sie ist unabhängig vom Prüfling formuliert, und sie fällt. Review ist an dieser Stelle nicht die Lektüre des Diffs, sondern die Konvergenz gegen die gesetzte Invariante.
 
-### 4.1 Drei Verifikationsschichten an einem Invarianten
+### 4.1 Drei Verifikationsschichten (Beispiel Werterhaltung)
 
 Derselbe Invariant — Werterhaltung — trägt in diesem Repository drei voneinander getrennte Garantien, von schwach und total nach stark und allquantifiziert:
 
