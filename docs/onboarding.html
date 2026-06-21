@@ -77,13 +77,27 @@ flowchart TD
   M["cong-driven-development<br/>Methode + IDE (Cong OS)<br/>SPOT-Modell · reflexives Selbst-Gate"]:::core
   M --> A["runenruf<br/>Fallstudie A · 46/46"]:::repo
   M --> B["ledger-casestudy<br/>Fallstudie B · 6/6 + 2 Lean-Beweise"]:::repo
-  M --> D["Dokumente<br/>Paper (19 S.) · Whitepaper · Position"]:::doc
+  M --> D["Dokumente<br/>Paper (20 S.) · Whitepaper · Position"]:::doc
   M --> S["GitHub Pages<br/>Review-Portal · Talk · dieses Onboarding"]:::doc
   classDef core fill:#13243a,stroke:#4c9aff,color:#e6edf3;
   classDef repo fill:#161b22,stroke:#3fb950,color:#e6edf3;
   classDef doc fill:#161b22,stroke:#d29922,color:#e6edf3;
   </div>
   <p class="cap">Drei Repositories + drei Texte + ein Portal. Alles public, alles an feste Commits gebunden.</p>
+</section>
+
+<!-- ============ BEGRIFFE ============ -->
+<section data-background-color="#0e1116">
+  <h2>Begriffe — für Devs ohne F#/Lean</h2>
+  <div class="grid3" style="font-size:.8em">
+    <div class="card"><h3>F#</h3><p>funktionale .NET-Sprache · ≈ Java mit <code>record</code>+<code>sealed</code>+Pattern-<code>switch</code></p></div>
+    <div class="card"><h3>Discriminated Union</h3><p>Wert = genau einer von N Fällen (so ist der SPOT getypt) · ≈ <code>sealed interface</code>+<code>switch</code></p></div>
+    <div class="card"><h3>Lean 4</h3><p>Theorembeweiser: gilt für <em>alle</em> Fälle, nicht Stichprobe · ≈ am nächsten Dafny</p></div>
+    <div class="card"><h3>„sorry-frei"</h3><p><code>sorry</code> = ausgelassener Beweis (kompiliert trotzdem); sorry-frei = keine Lücke, nur Standard-Axiome</p></div>
+    <div class="card"><h3>FsCheck</h3><p>Property-Test: hunderte Zufallseingaben + Shrinking aufs Minimal-Gegenbeispiel · ≈ jqwik</p></div>
+    <div class="card"><h3>Orakel</h3><p>der Schritt „fertig/korrekt?" — grün nur bei echtem Test, nicht „Agent sagt fertig"</p></div>
+  </div>
+  <p class="cap">Die formale/funktionale Ecke kurz übersetzt — der Rest der Tour nutzt diese Begriffe.</p>
 </section>
 
 <!-- ============ TEIL 1: PROBLEM ============ -->
