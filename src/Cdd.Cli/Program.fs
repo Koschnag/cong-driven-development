@@ -255,7 +255,11 @@ let main argv =
             System.IO.File.WriteAllText(path, Store.load root |> Export.toMarkdown)
             printfn "Kontextpaket geschrieben: %s" path
             0
-        | _                          -> usage (); 0
+        | [||] | [| "help" |] | [| "--help" |] | [| "-h" |] -> usage (); 0
+        | _                          ->
+            eprintfn "Unbekanntes Kommando oder Argument: %s" (String.concat " " argv)
+            usage ()
+            1
     with ex ->
         eprintfn "Fehler: %s" ex.Message
         1

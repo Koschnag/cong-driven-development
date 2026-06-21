@@ -93,8 +93,8 @@ module Sync =
                 | _ -> e)
         results, updated
 
-    /// Welche Test-Knoten sind durch echte automatisierte Tests abgedeckt?
-    /// Erkennung über Marker im Test-Quellcode:
+    /// Welche Test-Knoten tragen einen Marker im Test-Quellcode?
+    /// Erkennung über Marker-Präsenz (kein Testlauf, keine Pass/Fail-Prüfung):
     ///   F#/C#:  [<Trait("spot", "<test-knoten-id>")>]
     ///   beliebig: Kommentar  [spot: <test-knoten-id>]
     let scanTestMarkers (testDir: string) : Set<string> =
@@ -103,18 +103,21 @@ module Sync =
             let exts = set [ ".fs"; ".fsx"; ".cs"; ".mjs"; ".js" ]
             Directory.GetFiles(testDir, "*.*", SearchOption.AllDirectories)
             |> Array.filter (fun f ->
+                let p = f.Replace('\\', '/')  // OS-native Separatoren normalisieren (Windows: \obj\)
                 Set.contains (Path.GetExtension(f).ToLowerInvariant()) exts
-                && not (f.Contains "/obj/") && not (f.Contains "/bin/"))
+                && not (p.Contains "/obj/") && not (p.Contains "/bin/"))
             |> Array.collect (fun f ->
                 let text = File.ReadAllText f
                 [| for m in Regex.Matches(text, "Trait\(\"spot\",\s*\"([^\"]+)\"\)") -> m.Groups.[1].Value
                    for m in Regex.Matches(text, "\[spot:\s*([a-zA-Z0-9_-]+)\]") -> m.Groups.[1].Value |])
             |> Set.ofArray
 
-    /// Das Konvergenz-Orakel. Ein Test-Knoten wird NUR dann `Aligned`, wenn ein
-    /// echter grüner Test ihn abdeckt (Marker aus dem Testlauf) — sonst `Pending`.
-    /// Test-PASS, nicht Prozess-Exit-0: die tragende Disziplin der Methode.
-    /// Andere Knotenarten bleiben unberührt.
+    /// Das Konvergenz-Orakel. Ein Test-Knoten wird `Aligned`, wenn seine Id als
+    /// Marker im Testcode vorkommt (`covered`), sonst `Pending` — andere Knoten
+    /// bleiben unberührt. Diese Funktion prüft NUR Marker-Präsenz; dass die Tests
+    /// grün sind, sichert die CI-Suite (rot blockt den Merge) plus der reflexive
+    /// Selbst-Test. Zusammen gilt: ein `Aligned`-Test-Knoten ⇒ grüner Test, nicht
+    /// bloß Prozess-Exit-0.
     let SetzeSpecAligned (covered: Set<string>) (entry: SpotEntry) : SpotEntry =
         match entry.Payload with
         | TestNode _ ->
