@@ -93,6 +93,23 @@ let ``derive-tests is idempotent`` () =
     let secondPass = Derive.deriveTests (spec :: firstPass)
     Assert.Empty secondPass
 
+[<Fact; Trait("spot", "spec-derive-tests-test-3")>]
+let ``derive-tests corrects a stale name instead of leaving it drifted`` () =
+    // Ein abgeleiteter Test, dessen Name nicht mehr zum Kriterium an dieser Position passt
+    // (z. B. weil ein Kriterium eingefügt/umsortiert wurde).
+    let spec = sampleSpec "spec-a" [ crit 1; crit 2 ]
+    let stale =
+        { Id = EntityId "spec-a-test-1"
+          Convergence = Aligned
+          Payload = TestNode { SpecRef = EntityId "spec-a"; Name = "VERALTET"; Derived = true } }
+    let derived = Derive.deriveTests [ spec; stale ]
+    let names =
+        derived
+        |> List.choose (fun e -> match e.Payload with TestNode t -> Some(idValue e.Id, t.Name) | _ -> None)
+        |> Map.ofList
+    Assert.Equal("T — when w1 then t1", names.[idValue (EntityId "spec-a-test-1")])  // korrigiert
+    Assert.True(Map.containsKey (idValue (EntityId "spec-a-test-2")) names)          // fehlendes Kriterium erzeugt
+
 [<Fact>]
 let ``new node kinds round-trip`` () =
     let entries =
