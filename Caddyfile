@@ -1,0 +1,11 @@
+# Reverse-Proxy für das CDD-Cockpit mit Basic-Auth.
+# Variablen kommen aus der Umgebung (siehe docker-compose.yml / .env).
+# Bei CDD_DOMAIN=localhost stellt Caddy ein internes TLS-Zertifikat aus;
+# bei einer echten Domain holt Caddy automatisch Let's-Encrypt.
+
+{$CDD_DOMAIN:localhost} {
+	basic_auth {
+		{$CDD_USER:cong} {$CDD_PASS_HASH}
+	}
+	reverse_proxy cdd:8080
+}
