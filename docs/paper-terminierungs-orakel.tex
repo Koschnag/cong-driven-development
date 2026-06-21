@@ -212,9 +212,11 @@ ist \texttt{SPOT} (\emph{Single Point of Truth}): ein typisierter F\#-Discrimina
 in dem jeder Knoten als ein \texttt{JSON} pro Knoten unter \texttt{.spot/} materialisiert ist.
 Der Konvergenzzustand jedes Knotens ist auf vier Werte getypt: \texttt{Aligned},
 \texttt{Pending}, \texttt{Diverged}, \texttt{Orphaned}. Das Orakel
-\texttt{SetzeSpecAligned} setzt einen Knoten genau dann auf \texttt{Aligned}, wenn ein
-\emph{echter} grüner \texttt{dotnet test}-Lauf vorliegt --- entscheidend ist der Test-PASS, nicht
-der Exit-Code $0$; ein leerer oder übersprungener Lauf qualifiziert nicht. Das Selbst-Modell der
+\texttt{SetzeSpecAligned} setzt einen Test-Knoten genau dann auf \texttt{Aligned}, wenn seine
+Id als Marker im Test\-quellcode vorkommt (\texttt{covered}); die Funktion prüft Marker-Präsenz,
+keinen Testlauf. Dass diese Marker zu bestandenen Tests gehören, erzwingt die grüne CI-Suite
+(rot blockt den Merge) zusammen mit dem reflexiven Selbst-Test --- daraus folgt \texttt{Aligned}
+$\Rightarrow$ Test-PASS, nicht bloßer Exit-Code $0$. Das Selbst-Modell der
 Methode umfasst $66$ Knoten, davon $62$ \texttt{Aligned} und $4$ \texttt{Pending}, bei
 $36/36$ grünen Tests (autoritativer Runner-Count @\,\texttt{main}); der reflexive
 Selbst-Gate trägt den Knoten \texttt{spec-gate-selbst-hart}. Dass das Gate auf sich selbst
@@ -323,9 +325,9 @@ Der Code liegt in \texttt{github.com/Koschnag/runenruf}, ausgewertet am Commit
 \texttt{56376a5}. Die Simulationsdomäne umfasst rund $125$ Zeilen
 F\#/.NET-Code\,@\,\texttt{56376a5}. Über dem Generator-Loop steht das in
 \Cref{sec:konvergenz} beschriebene Orakel \texttt{SetzeSpecAligned},
-das einen \texttt{.spot/}-Knoten genau dann auf \texttt{Aligned} setzt, wenn ein
-\emph{echter} grüner \texttt{dotnet test}-Lauf vorliegt --- gewertet wird das Test-PASS, nicht
-der Prozess-Exitcode $0$.
+das einen Test-Knoten auf \texttt{Aligned} setzt, sobald ein Test-Marker ihn im
+Quellcode abdeckt; die CI-erzwungene grüne Suite bindet dieses \texttt{Aligned} an einen
+bestandenen Test --- gewertet wird das Test-PASS, nicht der Prozess-Exitcode $0$.
 
 \subsection{Verifikation}
 \label{sec:runenruf-verifikation}
@@ -491,11 +493,12 @@ Das Selbstmodell von \texttt{CDD}
 ist im Repository \texttt{cong-driven-development}\,@\,\texttt{main} als typisierter
 F\#-DU-Graph abgelegt: ein JSON-Knoten je Element unter \texttt{.spot/}, mit den
 Konvergenzzuständen \texttt{Aligned}, \texttt{Pending}, \texttt{Diverged} und
-\texttt{Orphaned}. Das Orakel \texttt{SetzeSpecAligned} markiert einen Knoten
-genau dann als \texttt{Aligned}, wenn ein echter grüner \texttt{dotnet test}
-vorliegt; maßgeblich ist der Test-\texttt{PASS}, nicht der Exit-Code~0 des
-Prozesses. Diese Unterscheidung ist nicht kosmetisch: Ein Prozess kann mit
-Exit-0 terminieren, ohne dass eine einzige Property tatsächlich geprüft wurde.
+\texttt{Orphaned}. Das Orakel \texttt{SetzeSpecAligned} markiert einen Test-Knoten
+als \texttt{Aligned}, sobald ein Test-Marker ihn im Quellcode abdeckt; die grüne
+CI-Suite (rot blockt den Merge) und der reflexive Selbst-Test binden dieses
+\texttt{Aligned} an einen bestandenen Test, sodass \texttt{Aligned} den Test-\texttt{PASS}
+impliziert, nicht den Exit-Code~0 des Prozesses. Diese Unterscheidung ist nicht kosmetisch:
+Ein Prozess kann mit Exit-0 terminieren, ohne dass eine einzige Property tatsächlich geprüft wurde.
 
 Der reflexive Selbst-Gate \texttt{spec-gate-selbst-hart}
 (Repository \texttt{@main}) wendet exakt dieses Orakel auf das Selbstmodell

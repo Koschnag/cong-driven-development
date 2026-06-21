@@ -115,9 +115,10 @@ SPOT, jede Sicht ist eine Projektion desselben Modells. → Volle Beschreibung i
 **[docs/COCKPIT.md](docs/COCKPIT.md)**. Kurz:
 
 - **Split-Mitte** — Architektur-Diagramm + Faden zugleich; `⌘0` gibt dem Faden Vollbild.
-- **Konvergenz-Loop** — der „▶ Loop bis Konvergenz"-Knopf treibt den `cdd-mapper`; das
-  Gate (`markerAligned && testprojekte>0 && alleTestsGruen`) hat Zähne, kein „Agent sagt
-  fertig" (→ [GEGENENTWURF-POST.md](docs/GEGENENTWURF-POST.md)).
+- **Konvergenz-Loop** — der „▶ Loop bis Konvergenz"-Knopf treibt die (experimentelle)
+  `cdd-mapper`-Loop; das Gate ist als `markerAligned && testprojekte>0 && alleTestsGruen`
+  **entworfen** — kein „Agent sagt fertig". Implementiert prüft `SetzeSpecAligned`
+  Marker-Präsenz, Greenness via CI (→ [GEGENENTWURF.md](GEGENENTWURF.md)).
 - **Formal-Sicht** — derselbe SPOT als „code behind" in Typentheorie / Prädikatenlogik /
   Kategorien (KaTeX), jede Linse mit ehrlichem Caveat.
 - **@-Gedächtnis** — `cong.db`-Volltextsuche (FTS5), serverseitig nur `sensitive=0`.
