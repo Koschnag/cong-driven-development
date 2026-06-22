@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop Engineering — eine Schraube weiter</title>
+<meta name="description" content="Loop Engineering, ehrlich zu Ende gedacht: Wir bauen seit jeher auf Blackboxes und validieren an Schnittstellen. Das Neue ist das Probabilistische — die Antwort ist, den Determinismus in die Gates zu verschieben. Mit ehrlichen Grenzen, Tokens und dem Werkzeugkasten F#/FsCheck/Lean.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Loop Engineering — eine Schraube weiter">
+<meta property="og:description" content="Wir bauen seit jeher auf Blackboxes und validieren an Schnittstellen. Das Neue ist das Probabilistische — die Antwort: Determinismus in die Gates. Mit ehrlichen Grenzen + Werkzeugkasten F#/FsCheck/Lean.">
+<meta property="og:url" content="https://koschnag.github.io/cong-driven-development/loop-engineering.html">
+<meta property="og:site_name" content="Das Terminierungs-Orakel">
+<meta property="og:image" content="https://koschnag.github.io/cong-driven-development/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://koschnag.github.io/cong-driven-development/og.png">
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c2430; --ink:#e6edf3; --muted:#9aa7b4;
+    --line:#2a3340; --accent:#4c9aff; --green:#3fb950; --amber:#d29922; --red:#f85149;
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --ink:#1f2328; --muted:#59636e; --line:#d0d7de; --accent:#0969da; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+  header{padding:52px 0 28px;border-bottom:1px solid var(--line)}
+  .badge{display:inline-block;font-size:13px;font-weight:600;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 12px;margin-bottom:18px}
+  h1{font-size:32px;line-height:1.2;margin:0 0 12px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:18px;margin:0}
+  .meta{color:var(--muted);font-size:14px;margin-top:18px}
+  article{padding:8px 0 0}
+  article h2{font-size:22px;margin:38px 0 6px;line-height:1.25;letter-spacing:-.01em}
+  article p{margin:16px 0}
+  .lead{font-size:19px;color:var(--ink)}
+  blockquote{margin:26px 0;padding:4px 0 4px 20px;border-left:3px solid var(--accent);font-size:20px;line-height:1.45;color:var(--ink);font-weight:500}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);padding:1px 6px;border-radius:5px}
+  hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}
+  .btn{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 15px;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .btn:hover{border-color:var(--accent);text-decoration:none}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .refs{font-size:14px;color:var(--muted)} .refs li{margin:7px 0}
+  footer{padding:34px 0 64px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="badge">● Position · Loop Engineering</span>
+  <h1>„My job is to write loops." — eine Schraube weiter</h1>
+  <p class="sub">Wir haben immer auf Blackboxes gebaut und an Schnittstellen validiert. Das Neue ist das Probabilistische. Die Antwort ist, den Determinismus in die Gates zu verschieben.</p>
+  <p class="meta">Cong Chanh Vinzenz Nguyen · F#/.NET</p>
+</div></header>
+
+<article><div class="wrap">
+
+<p class="lead">„My job is to write loops." Boris Cherny, der Kopf hinter Claude Code, beschreibt damit die nächste Abstraktionsstufe der Softwareentwicklung: Er promptet den Agenten nicht mehr – er baut die Schleife, die den Agenten anstößt und re-promptet, bis ein verifizierbares Ziel erreicht ist. „Loop Engineering" heißt das.</p>
+
+<p>Die Motivation teile ich – Teile davon praktiziere ich auch: bei Code-Reviews lasse ich via tmux verschiedene Agenten weitgehend autonom prüfen und fixen. Drei Vorbehalte hatte ich aber: lückenlose Spezifikation als Bedingung (sonst iteriert der Loop hartnäckig am Falschen), Cognitive Debt als Preis, und die Tokens, die ein Brute-Force-Loop verbrennt. Ich möchte einen Gedanken nachschieben, der die drei zusammenhält – und ehrlich gefragt: Kommt das so hin?</p>
+
+<h2>Wir bauen seit jeher auf Blackboxes</h2>
+
+<p>Der interessanteste Teil hängt für mich am Blackbox-Motiv. Denn ehrlich gesehen bauen wir seit jeher auf Blackboxes. Kaum jemand versteht die ganze Kette vom Transistor über ISA, Compiler und Betriebssystem bis zum gerenderten GUI. Wir beherrschen das nicht durch Vollverständnis, sondern an den Schnittstellen: Typen, Tests, Design by Contract. Und selbst die deterministischen Schichten vertrauen wir nicht blind – wir validieren sie. Der Compiler gilt nicht als korrekt, weil er deterministisch ist, sondern weil Jahrzehnte Praxis und Testsuiten ihn gehärtet haben; bei CompCert sogar ein formaler Coq-Beweis. Das ORM ist der Paradefall der leckenden Abstraktion (Spolsky): N+1, Transaktionsisolation, Lazy Loading bluten durch. Determinismus macht einen Fehler reproduzierbar, nicht abwesend. „Validieren statt blind vertrauen" galt also schon vor den LLMs – Cognitive Debt auch.</p>
+
+<h2>Wo die Analogie bricht: probabilistisch statt deterministisch</h2>
+
+<p>Und hier bricht die Analogie – genau der Bruch ist die Pointe: Die KI reiht sich nicht nahtlos in diesen Stack ein. Compiler und ORM sind im Kern deterministische Abbildungen ihres Inputs (modulo der bekannten Reproducible-Builds-Themen). Ein LLM ist intrinsisch probabilistisch – es modelliert eine Verteilung über Tokens, keine Funktion; selbst bei Temperatur 0 nicht garantiert bit-identisch (Floating-Point-Nichtassoziativität auf GPUs, variables Batching). Die saubere Achse ist also nicht „deterministisch vs. probabilistisch" allein, sondern: spezifizierter, getesteter Kontrakt vs. statistischer Generalisierer ohne Korrektheitsgarantie. Drei Annahmen, auf denen klassische Abstraktion ruht, fallen damit weg: Determinismus, spezifizierte Schnittstellen-Semantik, einmal amortisierte Verifikation. Die untere Schicht validiere ich einmal und vertraue ihr dann millionenfach. KI-Output muss ich pro Aufruf neu validieren.</p>
+
+<h2>Der Vorschlag: den Determinismus in die Gates verschieben</h2>
+
+<p>Daraus mein eigentlicher Vorschlag – Loop Engineering eine Schraube weiter: die Gates härten. Nicht den Agenten deterministisch machen, das geht nicht. Sondern die Akzeptanz-Entscheidung. Für die Klasse von Kriterien, die sich als entscheidbare maschinelle Checks ausdrücken lassen – universell quantifizierte Verträge (Design by Contract), Property-Based Tests, Typen, bounded Verifikation –, wird aus „Agent sagt fertig" ein reproduzierbares Pass/Fail. Der Generator bleibt probabilistisch; nur das Urteil über ein gegebenes Artefakt wird stabil. Das eliminiert die Stochastik nicht, es hegt sie ein: Nur was die Gates passiert, gilt als fertig.</p>
+
+<p>Und das prüfende Orakel muss vom Generator getrennt sein – schreibt dasselbe Modell Spec und Code, benotet sich der Agent selbst (korreliertes Versagen). Genau diesen Common-Mode-Defekt hat VeriAct gemessen (arXiv:2604.00280): Die Trennung trägt nur, wenn die Spec aus unabhängiger Quelle kommt – der Mensch ist hier der Dekorrelator, nicht der Loop.</p>
+
+<h2>Drei ehrliche Grenzen</h2>
+
+<p><strong>Erstens das alte Test-Orakel-Problem:</strong> Das Gate prüft die formalisierten Kriterien, nicht den wahren Intent. Ein Gate kann falsifizieren, nie vollständig verifizieren („Tests zeigen Anwesenheit, nicht Abwesenheit von Fehlern", Dijkstra), und nach Rice ist keine nicht-triviale semantische Eigenschaft allgemein entscheidbar. Das ist kein Defekt, das ist die Reichweite. Das Restrisiko verschwindet nicht – es wandert in die Vollständigkeit der Spec; und für UX, „fühlt sich richtig an", emergente Architektur gibt es kein mechanisches Orakel. Genau das sind die Findings, für die der Loop mich doch wieder braucht.</p>
+
+<p><strong>Zweitens terminiert ein Loop über einem deterministischen Akzeptanz-Prädikat nicht von selbst.</strong> Das Gate bestimmt, WAS akzeptiert wird – nicht OB und WIE SCHNELL der Loop ankommt. Es braucht ein hartes Iterations- und Token-Limit, das „gib auf, frag den Menschen" sagt.</p>
+
+<p><strong>Drittens die Cognitive Debt.</strong> Und hier liegt der eigentliche Punkt nicht an der Blackbox – die ist, wie gesagt, der Zweck von Abstraktion, kein Mangel. Die Grenze ist die <em>Rekonstruierbarkeit des mentalen Modells</em>. Klassisch geschriebener Code hatte einen Autor, der den Intent gehalten hat; das „Warum" ist – wenn auch nicht für jeden unmittelbar – im Code hinterlegt und lässt sich wiedergewinnen. Bei einem Loop, der sich per Brute Force an ein bestandenes Testergebnis herantastet, kann es dagegen sein, dass dieses „Warum" zu keinem Zeitpunkt in einem Kopf existiert hat. Cognitive Debt heißt dann nicht „gerade kennt niemand das Modul", sondern „das Modell ist nicht mehr herleitbar". Genau hier setzt der Vorschlag ein zweites Mal an: Eine formale, maschinenprüfbare Spec ist nicht nur ein Filter, sondern lesbares, geteiltes Systemwissen – der Versuch, das „Warum" herleitbar zu halten, nicht in einem Kopf, sondern als versioniertes, prüfbares Artefakt. Storey nennt dessen Fehlen Intent Debt (arXiv:2603.22106). Ehrlich bleibt die Spannung: Die Spec macht den Intent sichtbar und prüfbar, sie tilgt ihn nicht automatisch (sie kann selbst falsch sein), und sie deckt nur den formalisierbaren Teil des „Warum" – UX, Geschmack, Architektur-Rationale bleiben menschlich gehalten.</p>
+
+<h2>Zu den Tokens</h2>
+
+<p>Tendenziell sollten präzise Gates sparen, weil falsche Pfade früher abbrechen und gerichtetes Signal statt blindem Retry kommt. Aber das ist ein Trade-off, kein Gesetz: Die Spec selbst kostet Tokens und Menschenzeit, und ein zu hartes oder schlecht getroffenes Gate kann mehr Reparatur-Runden erzwingen statt weniger. Netto bleibt das eine empirische, projektabhängige Frage. Bei mir hat in zwei kleinen Fällen eine einzige Invariant-Zeile einen unbeschränkten Eingaberaum abgedeckt, den eine Beispieltabelle nur zeilenweise erwischt. Das ist ein Existenznachweis, keine Statistik – und nicht jeder hat ein AI-Lab im Rücken.</p>
+
+<h2>Womit man die Gates baut: F#, FsCheck, Lean</h2>
+
+<p>Ich nenne, wozu ich selbst greife – mit den Kosten zuerst, sonst betreibe ich genau das Marketing, von dem ich mich abgrenze. Kein Geheimtipp, kein Allheilmittel, sondern eine begründete Empfehlung für die Fälle, in denen sich das tragende Kriterium überhaupt formalisieren lässt.</p>
+
+<p><strong>F# kostet:</strong> kleinere Community, weniger Stellen, ein Umdenken weg vom imperativen Reflex – von „wie mache ich das" zu „welche Zustände sind überhaupt legal". Was es dafür kauft: Discriminated Unions machen die im Typ modellierten illegalen Zustände unrepräsentierbar – ein billiger Prüf-Schritt, den der Compiler bei jedem Build nachrechnet und der eine ganze Klasse von Agenten-Fehlern gar nicht erst entstehen lässt (nur diese Klasse – Logikfehler in erlaubten Zuständen bleiben). FsCheck (Property-Based Testing) ist dann das praktische Gate über unbeschränkten Eingaberäumen statt einer handgepflegten Beispieltabelle: eine Property als Stichprobe über den ganzen Raum, nicht eine Zeile pro Beispiel. Und es ist kein Spielzeug: volles .NET-Ökosystem, ein C#-Team kann inkrementell adoptieren, erst die Kern-Logik, dann mehr.</p>
+
+<p><strong>Lean 4 kostet mehr:</strong> eine steile Lernkurve, Produktionsadoption ist real winzig, und Modell-Treue ist Handarbeit – das Bewiesene muss dem laufenden Code wirklich entsprechen, sonst beweist man ein Phantom. Es lohnt nur für die wenigen Invarianten, die tragend sind (Werterhaltung, Sicherheit), nicht für alles. Dafür liefert es das stärkste Gate, das ich kenne: einen Beweis über alle Fälle statt einer Stichprobe, und sorry-frei heißt buchstäblich keine Lücke – genau die Garantie-Klasse, die ein Property-Test prinzipiell nicht geben kann. Konkret: Ich habe es in einem kleinen Projekt für eine tragende Invariante (Werterhaltung) bis zum sorry-freien Beweis durchgezogen; alle weiteren Invarianten bleiben FsCheck-Property bzw. Roadmap. Genau dieser Aufwand ist auch der Grund, warum es sich nur für wenige Invarianten lohnt.</p>
+
+<p>Der gemeinsame Nenner ist die formale Spec selbst – und damit die Brücke zurück zu oben. Sie ist die deterministische Prüfschicht, die den probabilistischen Generator einhegt, und zugleich der externalisierte Intent. Das ist nicht meine Idee: Lahiri (Microsoft Research) nennt „Intent Formalization" eine Grand Challenge für zuverlässiges Coding mit KI-Agenten (arXiv:2603.17150), und Storeys Intent Debt prägt den Begriff. Mein Beitrag ist nicht die These, sondern eine getypte, lauffähige Implementierung davon. Diese Werkzeuge sind in der Mainstream-Industrie unterrepräsentiert – nicht weil sie schlechter wären, sondern weil der Engpass bisher das Tippen war; jetzt verschiebt er sich zur Prüf-Stärke, und da spielen sie ihre Stärke aus.</p>
+
+<h2>Was bleibt</h2>
+
+<p>Eine Grenze bleibt auch hier: verifizierer-akzeptiert ist nicht dasselbe wie korrekt, eine Spec kann selbst falsch sein, und nicht jede Domäne hat ein sauberes Modell. Das tragende Kriterium muss gesetzt werden – diese Setzung liegt außerhalb des Entscheidungsproblems (ein zweiter Agent könnte sie ebenso treffen); der Mensch trägt sie, weil er rechenschaftspflichtig ist, nicht weil sie sich grundsätzlich nicht mechanisieren ließe. Wo es ein sauberes Modell gibt, ist es der Unterschied zwischen „der Agent sagt fertig" und „die Eigenschaft hält, geprüft".</p>
+
+<p>Wie Cherny seine Loops konkret betreibt und was er damit tatsächlich baut, dazu findet man erstaunlich wenig. Und bei Sätzen wie „Coding is solved" frage ich mich immer, wo Marketing endet und Realität beginnt.</p>
+
+<blockquote>Kommt das so hin? Wer verschiebt den Determinismus schon bewusst in die Gates – harte, maschinell prüfbare Akzeptanzkriterien statt „Agent sagt fertig", mit getrenntem Prüf-Orakel? Und wo stoßt ihr auf das Oracle-Problem – Ziele, für die es kein mechanisches „fertig" gibt?</blockquote>
+
+<hr>
+
+<div class="btnrow">
+  <a class="btn primary" href="index.html">→ Das Terminierungs-Orakel: Code, Paper, Belege</a>
+  <a class="btn" href="blog.html">Die Idee in 5 Min</a>
+</div>
+
+<h2 style="font-size:18px">Quellen</h2>
+<ul class="refs">
+  <li>Lahiri, <em>Intent Formalization: A Grand Challenge for Reliable Coding in the Age of AI Agents</em>, arXiv:2603.17150 (2026).</li>
+  <li>Storey, <em>From Technical Debt to Cognitive and Intent Debt</em>, arXiv:2603.22106 (2026).</li>
+  <li>Misu, Ma, Lopes, <em>VeriAct: Beyond Verifiability</em>, arXiv:2604.00280 (2026).</li>
+  <li>Rice (1953); Dijkstra (Tests zeigen Anwesenheit, nicht Abwesenheit von Fehlern); Spolsky, <em>The Law of Leaky Abstractions</em>.</li>
+</ul>
+
+</div></article>
+
+<footer><div class="wrap">
+  Cong Chanh Vinzenz Nguyen · <a href="index.html">Das Terminierungs-Orakel</a> · Preprint, nicht peer-reviewed.
+</div></footer>
+</body>
+</html>
