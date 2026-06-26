@@ -8,6 +8,7 @@ open System.Threading.Tasks
 open Xunit
 open Cdd.Core
 open Cdd.Core.Spot
+open FsCheck
 
 let private sampleSpec id criteria =
     { Id = EntityId id
@@ -522,3 +523,63 @@ let ``Reflexiv — jeder Aligned Test-Knoten im Selbst-Modell hat einen echten T
         Assert.True(
             List.isEmpty verwaiste,
             sprintf "Aligned Test-Knoten ohne echten Marker (= Aligned ohne Test): %A" verwaiste)
+
+// ===== Gate: das harte Grün-Gate (spec-gate-selbst-hart) =====
+
+[<Fact>]
+let ``Gate.parseTrx liest passed/failed aus TRX-Countern`` () =
+    let xml = "<ResultSummary outcome=\"Completed\"><Counters total=\"5\" executed=\"5\" passed=\"5\" failed=\"0\" passedButRunAborted=\"0\" /></ResultSummary>"
+    let r = Gate.parseTrx xml
+    Assert.Equal(5, r.Passed)
+    Assert.Equal(0, r.Failed)
+    Assert.True(Gate.istGruen r)
+
+[<Fact>]
+let ``Gate.istGruen: rot und leer sind nicht gruen, nur passed>0 und failed=0`` () =
+    Assert.False(Gate.istGruen { Gate.Passed = 3; Failed = 1; Skipped = 0 })
+    Assert.False(Gate.istGruen { Gate.Passed = 0; Failed = 0; Skipped = 0 })   // „No test"
+    Assert.True (Gate.istGruen { Gate.Passed = 3; Failed = 0; Skipped = 0 })
+
+[<Fact; Trait("spot", "spec-gate-selbst-hart-test-1")>]
+let ``Gate: failwith-TODO-Skelett (Marker da, Lauf rot) bleibt Pending — kein Aligned durch Marker-Erschleichung`` () =
+    let spec = sampleSpec "spec-x" [ crit 1 ]
+    let testNode =
+        { Id = EntityId "spec-x-test-1"
+          Convergence = Pending
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "T — when w1 then t1"; Derived = true } }
+    let covered = Set.singleton "spec-x-test-1"             // Marker IST präsent (failwith-Skelett)
+    let rot   : Gate.TrxResult = { Passed = 0; Failed = 1; Skipped = 0 }
+    let gruen : Gate.TrxResult = { Passed = 1; Failed = 0; Skipped = 0 }
+    // Der Cheat: das alte Marker-Orakel würde fälschlich Aligned liefern.
+    Assert.Equal(Aligned, (Sync.SetzeSpecAligned covered testNode).Convergence)
+    // Das harte Gate hält es bei rot auf Pending …
+    Assert.Equal(Pending, (Gate.setzeAlignedWennGruen rot covered testNode).Convergence)
+    // … und promoviert erst bei echtem Grün.
+    Assert.Equal(Aligned, (Gate.setzeAlignedWennGruen gruen covered testNode).Convergence)
+    // gateGruen kombiniert echten Lauf + strukturelle Validierung.
+    Assert.False(Gate.gateGruen rot [ spec; testNode ])
+    Assert.True (Gate.gateGruen gruen [ spec; testNode ])
+
+[<Fact>]
+let ``Gate-Property: ein nicht-gruener Lauf macht einen Test-Knoten NIE Aligned`` () =
+    let node =
+        { Id = EntityId "spec-x-test-1"
+          Convergence = Aligned    // selbst wenn er fälschlich Aligned WAR
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "n"; Derived = true } }
+    let prop (passed: int) (failed: int) (covered: bool) =
+        let trx : Gate.TrxResult = { Passed = abs passed; Failed = abs failed; Skipped = 0 }
+        let cov = if covered then Set.singleton "spec-x-test-1" else Set.empty
+        (not (Gate.istGruen trx)) ==>
+            ((Gate.setzeAlignedWennGruen trx cov node).Convergence <> Aligned)
+    Check.QuickThrowOnFailure prop
+
+[<Fact>]
+let ``Gate-Property: gruener Lauf + Marker => Aligned`` () =
+    let node =
+        { Id = EntityId "spec-x-test-1"
+          Convergence = Pending
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "n"; Derived = true } }
+    let prop (p: int) =
+        let trx : Gate.TrxResult = { Passed = (abs p % 64) + 1; Failed = 0; Skipped = 0 }
+        (Gate.setzeAlignedWennGruen trx (Set.singleton "spec-x-test-1") node).Convergence = Aligned
+    Check.QuickThrowOnFailure prop
