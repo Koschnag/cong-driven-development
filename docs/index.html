@@ -122,8 +122,13 @@
 
 <section><div class="wrap">
   <h2>Ausprobieren &amp; betreiben</h2>
-  <p class="lead">Drei Wege — vom Binary bis zum Homelab-Betrieb wie ein Cloud-Programm.</p>
+  <p class="lead">Vier Wege — vom Ein-Klick-Browser bis zum Homelab-Betrieb wie ein Cloud-Programm.</p>
   <div class="grid">
+    <div class="card">
+      <h3>☁️ Im Browser (Codespaces)</h3>
+      <p>Ein Klick → die echte CLI &amp; das Cockpit laufen im Browser (Cloud-Dev-Umgebung, kein Setup). Schnellster Weg, es <em>laufen</em> zu sehen.</p>
+      <div class="actions"><a class="btn primary" href="https://codespaces.new/Koschnag/cong-driven-development" target="_blank">Open in Codespaces</a></div>
+    </div>
     <div class="card">
       <h3>⬇️ Self-contained Binary</h3>
       <p>CLI + Cockpit für Linux/Windows/macOS — kein .NET-Runtime nötig. Auspacken, <code>cdd init</code>, los.</p>
@@ -172,6 +177,16 @@ lean proofs/Werterhaltung.lean      <span class="ok"># sorry-frei: axioms [prope
     <tr><td><a href="https://github.com/Koschnag/runenruf" target="_blank">runenruf</a></td><td>Fallstudie A (Spiel)</td><td class="pill">56376a5</td><td><a href="https://github.com/Koschnag/runenruf/actions" target="_blank">Actions ✓</a></td></tr>
     <tr><td><a href="https://github.com/Koschnag/ledger-casestudy" target="_blank">ledger-casestudy</a></td><td>Fallstudie B (Hauptbuch)</td><td class="pill">0f39ab0</td><td><a href="https://github.com/Koschnag/ledger-casestudy/actions" target="_blank">Actions ✓</a></td></tr>
   </table>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Das CDD-Ökosystem</h2>
+  <p class="lead">Bewusst <strong>getrennte, unabhängige Repos</strong> — kein Monorepo. Die Unabhängigkeit ist Teil des Belegs: reproduzierbar aus separaten Quellen, Generator und Prüf-Orakel dekorreliert.</p>
+  <div class="grid">
+    <div class="card"><h3>📓 notizdienst</h3><p>Fallstudie C — <strong>Fremdprojekt-Beweis</strong>: Prosa → SPOT → Tests → Code → Konvergenz an einem unabhängigen Projekt.</p><div class="actions"><a class="btn" href="https://github.com/Koschnag/notizdienst" target="_blank">Repo</a></div></div>
+    <div class="card"><h3>🎛️ cdd-programm</h3><p>Steuerzentrale / Control Plane: das Programm-Modell über CDD + Runenruf + Fallstudie, mit Live-Konvergenz-Dashboard.</p><div class="actions"><a class="btn" href="https://github.com/Koschnag/cdd-programm" target="_blank">Repo</a></div></div>
+    <div class="card"><h3>🎓 cdd-fallstudie</h3><p>Wissenschaftliche Fallstudie: spec-/modell-/konvergenz-getriebene Entwicklung mit LLMs — Thesis/Paper/Slides aus einem SPOT.</p><div class="actions"><a class="btn" href="https://github.com/Koschnag/cdd-fallstudie" target="_blank">Repo</a></div></div>
+  </div>
 </div></section>
 
 <section><div class="wrap">
