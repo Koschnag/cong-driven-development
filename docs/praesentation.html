@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDD — die Präsentation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root{ --acc:#4c9aff; --green:#3fb950; --amber:#d29922; --red:#f85149; --line:#2a3340; }
+  .reveal{ font-size:28px; }
+  .reveal h1,.reveal h2,.reveal h3{ text-transform:none; letter-spacing:-.01em; font-weight:700 }
+  .reveal h1{ font-size:1.7em } .reveal h2{ font-size:1.2em; color:#e6edf3 } .reveal h3{ font-size:.92em }
+  .reveal .acc{color:var(--acc)} .reveal .green{color:var(--green)} .reveal .red{color:var(--red)} .reveal .amber{color:var(--amber)} .reveal .muted{color:#9aa7b4}
+  .reveal small{ color:#9aa7b4; font-size:.62em } .reveal .lead{ color:#9aa7b4; font-size:.82em } .reveal .big{ font-size:1.4em; line-height:1.3 }
+  .reveal section{ text-align:left } .reveal .center{ text-align:center }
+  .reveal ul{ margin-left:.3em } .reveal li{ margin:.26em 0 }
+  .reveal code{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.85em; background:#1c2430; padding:1px 6px; border-radius:5px }
+  .reveal pre{ width:100%; box-shadow:none; font-size:.46em; border:1px solid var(--line); border-radius:8px }
+  .reveal .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px } .reveal .card{ border:1px solid var(--line); border-radius:10px; padding:12px 16px; background:#0f141b }
+  .reveal .tag{ display:inline-block; border:1px solid var(--acc); color:var(--acc); border-radius:999px; padding:2px 14px; font-size:.5em }
+  .reveal .mermaid{ display:flex; justify-content:center; align-items:center; margin:.1em 0 }
+  .reveal .mermaid svg{ max-height:62vh !important; height:auto !important; max-width:100% !important }
+  .reveal .cap{ text-align:center; color:#9aa7b4; font-size:.6em; margin-top:.2em }
+  .reveal iframe{ width:100%; height:64vh; border:1px solid var(--line); border-radius:10px; background:#0e1116 }
+  .reveal footer{ position:fixed; bottom:8px; right:14px; font-size:12px; color:#59636e }
+  .reveal .partno{ position:fixed; bottom:8px; left:14px; font-size:12px; color:#3f4a57 }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<section class="center" data-background-color="#0e1116">
+  <span class="tag">Präsentation · zum Durchklicken · mit Live-Demo</span>
+  <h1>Das Terminierungs-Orakel</h1>
+  <p class="lead">Diszipliniertes KI-Coding: ein Loop mit einem fälschungssicheren Gate.</p>
+  <p class="muted" style="margin-top:1em">Cong Chanh Vinzenz Nguyen · F#/.NET · alles Open Source &amp; CI-grün</p>
+  <p class="center" style="margin-top:1.1em"><small>weiter mit <span class="acc">→</span> · Übersicht <span class="acc">Esc</span></small></p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2 class="muted">Kein Vorwissen nötig.</h2>
+  <p class="big">Wir erklären alles über das, was du schon kennst:<br><span class="acc">CI · Code-Review · Tests · Typen.</span></p>
+  <p class="fragment lead" style="margin-top:1em">Ziel: du verstehst, <em>was</em> gebaut wurde und <em>warum</em> — und probierst es selbst aus.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Trend: man baut Schleifen, nicht Prompts</h2>
+  <p class="lead">Boris Cherny (Anthropic, Claude Code): „my job is to write loops." Die KI bessert sich selbst nach — bis ein Ziel erreicht ist.</p>
+  <div class="mermaid">
+flowchart LR
+  G["KI-Generator"]:::g -->|"Vorschlag"| C{"Prüfschritt"}:::c
+  C -->|"verworfen"| G
+  C -->|"akzeptiert"| T{"fertig?"}:::t
+  T -->|"nein"| G
+  T -->|"ja"| D(["Terminierung"]):::d
+  classDef g fill:#161b22,stroke:#4c9aff,color:#e6edf3;
+  classDef c fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef t fill:#1c2430,stroke:#d29922,color:#e6edf3;
+  classDef d fill:#13241a,stroke:#3fb950,color:#e6edf3;
+  </div>
+  <p class="cap">Die Architektur ist korrekt. <span class="acc">Die offene Frage: woran hängt „fertig?"</span></p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der blinde Fleck</h2>
+  <p class="lead">Wenn „fertig" heißt: „der Agent sagt es" oder „die Tests, die er sich <em>selbst</em> schrieb, sind grün" —</p>
+  <p class="big fragment red">— dann ist das ein selbst-genehmigter Pull Request.</p>
+  <ul>
+    <li class="fragment">Brute Force statt verbürgtem Endzustand</li>
+    <li class="fragment">Blackbox — keiner versteht mehr das „Warum" (Cognitive Debt)</li>
+    <li class="fragment">unkontrollierte Token-Kosten</li>
+  </ul>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2>Die Idee in einem Satz</h2>
+  <p class="big">Gib der Schleife ein <span class="acc">Gate</span>, so streng &amp; unabhängig wie eine gute <strong>CI</strong> —</p>
+  <p class="big fragment">und erst wenn es grün ist, gilt „fertig".</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Kern: Generator ⊥ Orakel</h2>
+  <div class="mermaid">
+flowchart TB
+  H["Mensch — setzt die Invariante"]:::h --> SPEC["getypte Spec"]:::s
+  GEN["KI-Generator<br/>darf KEINEN Code aufs Gate schreiben"]:::gen --> CODE["Code + Tests"]:::c
+  SPEC --> GATE{"Orakel: echter Test grün?"}:::g
+  CODE --> GATE
+  GATE -->|"grün"| OK["Aligned ✓"]:::ok
+  GATE -->|"rot / nur Exit-0"| NO["blockiert → revert"]:::r
+  classDef h fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef s fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef gen fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef c fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef g fill:#1c1606,stroke:#d29922,color:#e6edf3;
+  classDef ok fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef r fill:#2a1416,stroke:#f85149,color:#e6edf3;
+  </div>
+  <p class="cap">Wer Code schreibt, vergibt nicht selbst „grün". Sonst benotet sich der Agent selbst.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Die Referenz: der SPOT-Graph</h2>
+  <div class="mermaid">
+flowchart TD
+  SPOT["SPOT · Single Point of Truth<br/>ein getypter F#-Graph, 1 JSON pro Knoten"]:::core
+  SPOT --> A["Spec<br/>(Given/When/Then)"]:::n
+  SPOT --> B["Test"]:::n
+  SPOT --> C["Risk"]:::n
+  SPOT --> D["Invariant"]:::n
+  SPOT --> E["Component · ADR · Begriff"]:::n
+  classDef core fill:#13243a,stroke:#4c9aff,color:#e6edf3;
+  classDef n fill:#161b22,stroke:#3fb950,color:#e6edf3;
+  </div>
+  <p class="cap">Die Spec ist zugleich <span class="acc">externalisiertes, geteiltes Wissen</span> — gegen die Blackbox.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Der Fluss: Spec → Test → Code</h2>
+  <pre><code data-trim>cdd derive-tests   # je Akzeptanzkriterium ein Test-Knoten (KI-frei)
+cdd derive-code    # xUnit-Skelett mit Marker + failwith TODO  (= ROT)
+# Generator: Implementierung + echte Tests …
+cdd sync-tests     # misst Konvergenz gegen das Gate</code></pre>
+  <p class="lead">Tests sind <em>Derivat</em> der Spezifikation — nicht aus dem Bauch handgeschrieben.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Das harte Gate <small>(Cdd.Core.Gate)</small></h2>
+  <p class="lead">Früher: <code>Aligned</code> bei bloßer Marker-Präsenz — ein <code>failwith</code>-Skelett trägt den Marker, läuft aber rot.</p>
+  <div class="mermaid">
+flowchart LR
+  T["Test-Knoten + Marker"]:::n --> Q{"echter Lauf grün?<br/>passed&gt;0 ∧ failed=0"}:::g
+  Q -->|"ja"| AL["Aligned ✓"]:::ok
+  Q -->|"nein"| PE["Pending — kein Fake-Grün"]:::r
+  classDef n fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef g fill:#1c1606,stroke:#d29922,color:#e6edf3;
+  classDef ok fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  classDef r fill:#2a1416,stroke:#f85149,color:#e6edf3;
+  </div>
+  <p class="cap">Maschinell bewiesen (FsCheck): ein nicht-grüner Lauf macht einen Knoten <span class="green">nie</span> Aligned.</p>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2>Jetzt selbst ausprobieren 👇</h2>
+  <iframe src="demo.html" title="Live-Demo" loading="lazy"></iframe>
+  <p class="cap">Wähle, was der Agent schreibt — und sieh das Gate live entscheiden. (Vollbild: <a href="demo.html" target="_blank">demo.html</a>)</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Drei Verifikationsschichten</h2>
+  <div class="mermaid">
+flowchart LR
+  TY["Typen<br/>illegale Zustände unrepräsentierbar"]:::a --> PR["FsCheck-Property<br/>über unbeschränkte Eingaben"]:::b
+  PR --> LE["Lean-4-Beweis<br/>für JEDEN Fall, sorry-frei"]:::c
+  classDef a fill:#161b22,stroke:#4c9aff,color:#e6edf3;
+  classDef b fill:#161b22,stroke:#3fb950,color:#e6edf3;
+  classDef c fill:#13243a,stroke:#d29922,color:#e6edf3;
+  </div>
+  <p class="cap">Abgestuft nach Wichtigkeit. Zwei Invarianten sind bis zum Lean-Beweis durchgezogen (Werterhaltung, Nichtnegativität).</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Ralph × CDD: der Loop bekommt sein Orakel</h2>
+  <div class="mermaid">
+flowchart LR
+  R["Ralph<br/>Motor (Brute Force)"]:::r -->|"Tick"| GEN["Generator-Tick"]:::g
+  GEN --> GATE["CDD-Gate<br/>Validate → dotnet test → Marker"]:::o
+  GATE -->|"rot"| GEN
+  GATE -->|"alle Knoten grün"| DONE["Konvergenz (gemessen)"]:::d
+  classDef r fill:#2a1416,stroke:#f85149,color:#e6edf3;
+  classDef g fill:#161b22,stroke:#9aa7b4,color:#e6edf3;
+  classDef o fill:#1c1606,stroke:#d29922,color:#e6edf3;
+  classDef d fill:#0f1b14,stroke:#3fb950,color:#e6edf3;
+  </div>
+  <p class="cap">Ralph ist der Motor, CDD ist Bremse + Lenkung. Failure-Diagnose fließt in den nächsten Tick → gerichtet statt blind.</p>
+</section>
+
+<section data-background-color="#0e1116">
+  <h2>Ehrlich: die Grenzen</h2>
+  <ul>
+    <li>Ein Gate <strong>falsifiziert</strong> (rot blockt), verifiziert nie vollständig (Rice/Dijkstra). Grün ≠ korrekt.</li>
+    <li class="fragment">Nur die <strong>formalisierbare</strong> Klasse — UX, Geschmack, Architektur bleiben menschlich.</li>
+    <li class="fragment">Der Mensch <strong>setzt + verantwortet</strong> die Invariante. Eine falsche Spec fängt kein Gate.</li>
+    <li class="fragment">N=2 Fallstudien, Forschungsprototyp. <span class="muted">Steht <em>mit</em> der Skepsis — eine Schraube weiter, nicht „gelöst".</span></li>
+  </ul>
+</section>
+
+<section data-background-color="#0e1116" class="center">
+  <h2>Selbst sehen</h2>
+  <pre style="display:inline-block;text-align:left"><code data-trim>git clone github.com/Koschnag/cong-driven-development
+dotnet test tests/Cdd.Tests        # 42/42 grün</code></pre>
+  <p class="lead"><span class="acc">koschnag.github.io/cong-driven-development</span> — Einstieg · Live-Demo · Code · Paper</p>
+  <p class="fragment big" style="margin-top:.6em">Danke. Fragen?</p>
+</section>
+
+</div></div>
+<footer>CDD · Präsentation</footer>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  const dark = true;
+  mermaid.initialize({ startOnLoad:false, theme:'dark', securityLevel:'loose', flowchart:{ htmlLabels:true } });
+  import('https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.esm.js').then(async ({default:Reveal})=>{
+    const deck = new Reveal({ hash:true, slideNumber:'c/t' });
+    await deck.initialize();
+    const run = async () => {
+      const blocks = [...document.querySelectorAll('.mermaid:not([data-done])')];
+      for (const el of blocks){ el.setAttribute('data-done','1'); }
+      await mermaid.run({ nodes: blocks });
+      deck.layout();
+    };
+    run(); deck.on('slidechanged', run);
+  });
+</script>
+</body>
+</html>
