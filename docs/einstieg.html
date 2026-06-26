@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Loops &amp; Gates — für Einsteiger</title>
+<meta name="description" content="Noch nie Agentic-Loop-Coding gemacht? In 2 Minuten erklärt, über das, was du schon kennst: CI, Code-Review, TDD, Typen. Was ein Agentic Loop ist, wo der Haken liegt, und warum ein striktes Gate die Antwort ist.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agentic Loops & Gates — für Einsteiger">
+<meta property="og:description" content="Der sanfte Einstieg: Was ein Agentic Loop ist, wo der Haken liegt, und warum das Gate die Antwort ist — erklärt über CI, Code-Review und TDD, die du schon kennst.">
+<meta property="og:url" content="https://koschnag.github.io/cong-driven-development/einstieg.html">
+<meta property="og:site_name" content="Das Terminierungs-Orakel">
+<meta property="og:image" content="https://koschnag.github.io/cong-driven-development/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://koschnag.github.io/cong-driven-development/og.png">
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c2430; --ink:#e6edf3; --muted:#9aa7b4;
+    --line:#2a3340; --accent:#4c9aff; --green:#3fb950; --amber:#d29922; --red:#f85149;
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --ink:#1f2328; --muted:#59636e; --line:#d0d7de; --accent:#0969da; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+  header{padding:52px 0 28px;border-bottom:1px solid var(--line)}
+  .badge{display:inline-block;font-size:13px;font-weight:600;color:var(--green);border:1px solid var(--green);border-radius:999px;padding:3px 12px;margin-bottom:18px}
+  h1{font-size:32px;line-height:1.2;margin:0 0 12px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:18px;margin:0}
+  article{padding:8px 0 0}
+  article h2{font-size:22px;margin:38px 0 6px;line-height:1.25;letter-spacing:-.01em}
+  article p{margin:16px 0}
+  .lead{font-size:19px;color:var(--ink)}
+  blockquote{margin:26px 0;padding:4px 0 4px 20px;border-left:3px solid var(--accent);font-size:20px;line-height:1.45;color:var(--ink);font-weight:500}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);padding:1px 6px;border-radius:5px}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;font-family:var(--mono);font-size:14px;line-height:1.7;margin:20px 0}
+  .analogy{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 18px;margin:20px 0}
+  .analogy strong{color:var(--accent)}
+  hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}
+  .btn{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 15px;font-size:14.5px;font-weight:600;color:var(--ink)}
+  .btn:hover{border-color:var(--accent);text-decoration:none}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  footer{padding:34px 0 64px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="badge">● Einstieg · kein Vorwissen nötig</span>
+  <h1>Agentic Loops &amp; Gates — für Einsteiger</h1>
+  <p class="sub">Noch nie mit KI in einer Schleife entwickelt? Hier ist die ganze Idee in ein paar Minuten — erklärt über das, was du schon jeden Tag benutzt: CI, Code-Review, TDD, Typen.</p>
+</div></header>
+
+<article><div class="wrap">
+
+<p class="lead">Wenn du KI bisher so nutzt, dass du etwas fragst, das Ergebnis liest und es per Copy-Paste übernimmst — dann kennst du erst die halbe Geschichte. Die andere Hälfte heißt <strong>Agentic-Loop-Coding</strong>, und genau darum geht es hier.</p>
+
+<h2>1 · Was ist ein „Agentic Loop"?</h2>
+<p>Statt der KI <em>einen</em> Prompt zu geben, baust du eine <strong>Schleife</strong>, die die KI immer wieder anstößt: Sie schreibt Code, führt Tests aus, liest die Fehler, korrigiert, wiederholt — bis ein Ziel erreicht ist. Boris Cherny (Anthropic, Claude Code) bringt es auf den Punkt: „My job is to write loops." Man programmiert nicht mehr direkt, man baut die Schleife.</p>
+<p>Die einfachste Variante heißt „Ralph" und ist buchstäblich eine Zeile Bash:</p>
+<pre>while :; do  cat prompt.md | claude  ; done</pre>
+<p>Brute Force — und erstaunlich oft wirksam, weil das Modell beim erneuten Lesen seine eigenen Fehler bemerkt und nachbessert. Das ist der „Loop" in Loop Engineering.</p>
+
+<h2>2 · Wo ist der Haken?</h2>
+<p>Eine simple Frage: <strong>Woran erkennt die Schleife, dass sie fertig ist?</strong> Wenn die Antwort lautet „die KI sagt, sie ist fertig" — oder „die Tests sind grün, die die KI selbst geschrieben hat" —, dann tastet sich der Loop per Versuch-und-Irrtum an <em>irgendein</em> grünes Ergebnis heran. Nicht unbedingt an ein <em>korrektes</em>.</p>
+<div class="analogy"><strong>Kennst du schon:</strong> Ein Test, den dieselbe Person schreibt, die den Code schreibt, beweist wenig. Es ist wie ein Pull Request, den man sich <em>selbst</em> genehmigt. Genau dieses Muster baut ein naiver Loop ein — nur tausendfach schneller.</div>
+
+<h2>3 · Die Idee in einem Satz</h2>
+<blockquote>Gib der Schleife ein Gate, das so streng und so unabhängig ist wie eine gute CI-Pipeline — und erst wenn dieses Gate grün ist, gilt „fertig".</blockquote>
+<p>Dieses Gate ist das <strong>Terminierungs-Orakel</strong>. Es entscheidet, was als „fertig" zählt — nicht die KI selbst. Und es muss vom Code-Schreiber getrennt sein, sonst benotet sich der Generator wieder selbst.</p>
+
+<h2>4 · Du kennst die Bausteine längst</h2>
+<p>Das Schöne: Du baust diese Gates heute schon, nur für Menschen statt für eine Schleife:</p>
+<div class="analogy"><strong>Typen / Compiler</strong> — ein Mini-Gate, das illegale Zustände gar nicht erst durchlässt. <strong>Tests / TDD</strong> — die Eigenschaft, die gelten muss. <strong>CI</strong> — das Gate, das rot wird, wenn etwas kaputt ist, egal wer es kaputt gemacht hat. <strong>Code-Review</strong> — eine <em>unabhängige</em> Prüfung durch jemand anderen.</div>
+<p>Loop Engineering „eine Schraube weiter" heißt nichts anderes, als dieselben Gates so scharf und so mechanisch zu machen, dass eine KI-Schleife dagegen <strong>konvergiert</strong>, statt zu raten. Aus „Agent sagt fertig" wird ein reproduzierbares grün/rot.</p>
+
+<h2>5 · Warum gerade jetzt?</h2>
+<p>Code zu schreiben wird billig. Der Engpass verschiebt sich von „tippen" zu „prüfen": Wie stelle ich sicher, dass das Generierte stimmt, ohne jede Zeile selbst zu lesen? Die Antwort sind <strong>stärkere, formalisierte Gates</strong> — Verträge, Property-Tests, Typen, im Extremfall Beweise. Werkzeuge, die jahrelang als „zu akademisch" galten, werden plötzlich praktisch, weil genau ihre Stärke — Prüf-Stärke — jetzt der Engpass ist.</p>
+
+<h2>6 · Und die Sorge ums Verständnis?</h2>
+<p>Berechtigt — wenn man das Denken an die KI abgibt, verliert das Team das „Warum" hinter dem Code (man nennt das <em>Cognitive Debt</em>). Aber der Witz ist: Eine formale, prüfbare Spec ist nicht nur ein Filter, sondern <strong>geteiltes, lesbares Systemwissen</strong> — das „Warum" als versioniertes Artefakt, nicht in einem einzelnen Kopf. Du gibst das Verständnis nicht ab, du hebst es eine Ebene höher.</p>
+
+<hr>
+
+<p>Das war die ganze Idee. Wenn du tiefer willst:</p>
+<div class="btnrow">
+  <a class="btn primary" href="blog.html">Die Idee in 5 Min</a>
+  <a class="btn" href="loop-engineering.html">Der ausführliche Essay</a>
+  <a class="btn" href="onboarding.html">Geführte Tour (Folien)</a>
+  <a class="btn" href="index.html">Code, Paper &amp; Belege</a>
+</div>
+
+<p style="color:var(--muted);font-size:15px">Begriffe wie F#, Lean oder „sorry-frei" werden auf der <a href="index.html">Startseite</a> kurz erklärt, je mit einer Analogie aus der Java-/OOP-Welt.</p>
+
+</div></article>
+
+<footer><div class="wrap">
+  Cong Chanh Vinzenz Nguyen · <a href="index.html">Das Terminierungs-Orakel</a> · Preprint, nicht peer-reviewed.
+</div></footer>
+</body>
+</html>
