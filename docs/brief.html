@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDD — Begleitdokument (Management-Brief)</title>
+<meta name="description" content="Einseitiger Management-Brief zu CDD: diszipliniertes KI-Coding mit einem fälschungssicheren Qualitäts-Gate. Problem, Lösung, Geschäftswert, ehrlicher Stand, konkreter Pilot-Ask.">
+<style>
+  :root{ --bg:#fff; --ink:#1f2328; --muted:#59636e; --line:#d0d7de; --acc:#0969da; --green:#1a7f37; --red:#cf222e; --panel:#f6f8fa; --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 64px}
+  h1{font-size:27px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:17px;margin:0 0 6px}
+  .meta{color:var(--muted);font-size:13px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+  h2{font-size:18px;margin:26px 0 6px}
+  p{margin:10px 0}
+  ul{margin:8px 0 8px 0;padding-left:22px} li{margin:5px 0}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:16px 0}
+  .ask{border-left:4px solid var(--acc)}
+  code{font-family:var(--mono);font-size:13px;background:var(--panel);padding:1px 6px;border-radius:5px}
+  .tl{color:var(--muted);font-size:13px;margin-top:24px;border-top:1px solid var(--line);padding-top:14px}
+  strong.k{color:var(--acc)}
+  @media print{ a{color:var(--ink)} .wrap{max-width:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Diszipliniertes KI-Coding mit einem fälschungssicheren Gate</h1>
+  <p class="sub">Management-Brief zu CDD (cong-driven-development)</p>
+  <p class="meta">Cong Chanh Vinzenz Nguyen · .NET-Architekt · Open Source, F#/.NET · Forschungsprototyp, nicht peer-reviewed · Stand v0.6.x</p>
+
+  <h2>Worum es geht (eine Minute)</h2>
+  <p>Teams lassen KI zunehmend nicht mehr einzeln prompten, sondern in einer <strong>Schleife</strong> laufen, die sich selbst nachbessert, bis ein Ziel erreicht ist („Loop Engineering"). Das offene Problem ist nicht, ob KI Code schreiben kann — sondern <strong class="k">woran die Schleife erkennt, dass sie fertig ist</strong>. Heute heißt „fertig" meist: der Agent sagt es selbst, oder die Tests, die er sich selbst geschrieben hat, sind grün. Das ist ein selbst-genehmigter Pull Request — schnell, aber ohne unabhängige Prüfung.</p>
+
+  <h2>Die Lösung</h2>
+  <p>Wir geben der KI-Schleife ein <strong>Gate, das so streng und unabhängig ist wie eine gute CI-Pipeline</strong>. Erst wenn dieses Gate grün ist, gilt „fertig". Zwei Bausteine:</p>
+  <ul>
+    <li><strong>Getyptes Modell (Spezifikation):</strong> Anforderungen als maschinenprüfbarer Vertrag statt Prosa im Ticket — zugleich externalisiertes, geteiltes Systemwissen.</li>
+    <li><strong>Fälschungssicheres Orakel:</strong> die KI, die Code schreibt, vergibt nicht selbst „grün". Ein getrenntes Gate misst echten Testlauf — ein <em>gefälschter</em> grüner Test (sieht grün aus, prüft nichts) wird beweisbar abgewiesen.</li>
+  </ul>
+  <p>Alles ist Open Source, CI-grün und reproduzierbar; das harte Grün-Gate ist im Code verankert und maschinell getestet.</p>
+
+  <h2>Der Geschäftswert</h2>
+  <ul>
+    <li><strong>Tempo + Qualität zugleich</strong> — KI-Geschwindigkeit mit einer Garantie an der Schnittstelle statt „hoffentlich stimmt's".</li>
+    <li><strong>Weniger Blackbox-Risiko</strong> — das „Warum" bleibt als Spec im Team, nicht in einem einzelnen Kopf.</li>
+    <li><strong>Kostenkontrolle</strong> — ein gerichteter Loop bricht falsche Pfade früh ab statt per Brute Force Tokens zu verbrennen (Trade-off, kein Selbstläufer).</li>
+    <li><strong>Günstigeres Review</strong> — Menschen prüfen Konvergenz gegen die Spec, nicht jede Code-Zeile.</li>
+  </ul>
+
+  <h2>Ehrlich: der Stand</h2>
+  <p>Kein „Coding is solved". Es trägt für <strong>formalisierbare</strong> Kriterien — nicht für UX, Geschmack, Architektur-Eleganz. Der Mensch setzt und verantwortet die tragende Anforderung; das bleibt bewusst so. Heute Forschungsprototyp mit zwei kleinen, belastbaren Fallstudien — ein Mechanik-Nachweis, keine Großserie. Diese Ehrlichkeit ist Absicht: sie trennt den Ansatz vom Hype.</p>
+
+  <div class="box ask">
+    <h2 style="margin-top:0">Der Ask — ein kleiner Pilot</h2>
+    <ul style="margin-bottom:0">
+      <li>eine echte, formalisierbare Anforderung aus dem Backlog,</li>
+      <li>~1–2 Wochen, ein Entwickler + ich,</li>
+      <li>Ergebnis: <strong>gemessene</strong> Konvergenz + Token-/Zeit-Telemetrie als Entscheidungsgrundlage.</li>
+    </ul>
+  </div>
+  <p>Risiko klein, Erkenntnis konkret — danach entscheiden wir mit Daten statt mit Meinung.</p>
+
+  <p class="tl">Selbst ansehen (alles öffentlich, ein Klick): <a href="https://koschnag.github.io/cong-driven-development/">koschnag.github.io/cong-driven-development</a> — Einstieg ohne Vorwissen, Live-Demo via Codespaces, Pitch-Deck, Code &amp; Belege.</p>
+</div>
+</body>
+</html>

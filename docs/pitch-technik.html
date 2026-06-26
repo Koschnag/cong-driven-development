@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDD — Technischer Überblick</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<style>
+  :root{ --acc:#0969da; --green:#1a7f37; --amber:#9a6700; --red:#cf222e; --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace; }
+  .reveal{ font-size:30px; }
+  .reveal h1,.reveal h2,.reveal h3{ text-transform:none; letter-spacing:-.01em; font-weight:700; color:#1f2328 }
+  .reveal h1{ font-size:1.7em } .reveal h2{ font-size:1.25em }
+  .reveal .acc{ color:var(--acc) } .reveal .green{ color:var(--green) } .reveal .red{ color:var(--red) } .reveal .muted{ color:#59636e }
+  .reveal small{ color:#59636e; font-size:.6em } .reveal .lead{ color:#59636e; font-size:.82em }
+  .reveal section{ text-align:left } .reveal .center{ text-align:center }
+  .reveal ul{ margin-left:.3em } .reveal li{ margin:.28em 0 }
+  .reveal code{ font-family:var(--mono); font-size:.85em; background:#f6f8fa; padding:1px 6px; border-radius:5px }
+  .reveal pre{ width:100%; box-shadow:none; font-size:.46em; border:1px solid #d0d7de; border-radius:8px }
+  .reveal .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px } .reveal .card{ border:1px solid #d0d7de; border-radius:10px; padding:12px 16px; background:#f6f8fa }
+  .reveal .tag{ display:inline-block; border:1px solid var(--acc); color:var(--acc); border-radius:999px; padding:2px 14px; font-size:.5em }
+  .reveal footer{ position:fixed; bottom:10px; right:16px; font-size:13px; color:#8c959f }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<section class="center"><span class="tag">Technischer Überblick · für Entscheider &amp; Architekten</span>
+  <h1>CDD — wie es funktioniert</h1>
+  <p class="lead">Diszipliniertes KI-Coding: ein Loop mit einem fälschungssicheren Terminierungs-Orakel. F#/.NET, Open Source.</p>
+  <p class="muted"><small>Cong Chanh Vinzenz Nguyen · ohne tiefen Formalismus — Tiefe steht im Paper</small></p>
+</section>
+
+<section>
+  <h2>Der Loop und sein blinder Fleck</h2>
+  <p class="lead">Agentic Coding = die KI in einer Schleife, die sich selbst nachbessert (z. B. „Ralph": <code>while :; do cat prompt | claude; done</code>).</p>
+  <ul>
+    <li>Der Motor (Brute Force + Persistenz) ist die <em>leichte</em> Hälfte.</li>
+    <li class="fragment red">Die schwere Hälfte: Woran terminiert er? „Agent sagt fertig" / Exit-0 / selbst geschriebene Tests sind kein verlässliches Orakel.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Der Kern: Generator ⊥ Orakel</h2>
+  <div class="grid2" style="margin-top:.3em">
+    <div class="card"><h3 class="acc">Generator</h3><p class="lead">schreibt Code + Tests. Per Werkzeug-Allowlist <strong>kein Schreibrecht aufs Gate</strong> — kann sich kein „grün" geben.</p></div>
+    <div class="card"><h3 class="acc">Orakel</h3><p class="lead">prozess-extern, entscheidet „fertig". Getrennt vom Generator → kein korreliertes Selbst-Benoten (vgl. VeriAct).</p></div>
+  </div>
+  <p class="fragment lead" style="margin-top:.5em">Die Trennung mildert Common-Mode-Fehler — sie eliminiert sie nicht (gleiche Kriterienquelle bleibt ein Restrisiko).</p>
+</section>
+
+<section>
+  <h2>Die Referenz: der SPOT-Graph</h2>
+  <p class="lead">Ein getypter F#-Discriminated-Union-Graph als Single Point of Truth — ein git-versioniertes JSON pro Knoten.</p>
+  <ul>
+    <li>Knoten: <code>Spec</code> (Given/When/Then), <code>Test</code>, <code>Risk</code>, <code>Component</code>, <code>Invariant</code>, <code>Begriff</code>, ADR …</li>
+    <li>Konvergenz je Knoten: <code>Aligned · Pending · Diverged · Orphaned</code>.</li>
+    <li class="fragment">Die Spec ist zugleich <strong>externalisiertes Systemwissen</strong> — gegen Blackbox/Cognitive Debt.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Der Fluss: Spec → Test → Code</h2>
+  <pre>cdd derive-tests   <span style="color:#59636e"># je Akzeptanzkriterium ein Test-Knoten (KI-frei, idempotent)</span>
+cdd derive-code    <span style="color:#59636e"># xUnit-Skelett mit Marker + failwith TODO (bewusst ROT)</span>
+<span style="color:#59636e"># Generator: Implementierung + echte Tests …</span>
+cdd sync-tests     <span style="color:#1a7f37"># misst Konvergenz gegen das Gate</span></pre>
+  <p class="lead">Tests sind Derivat der Spezifikation, nicht handgeschrieben aus dem Bauch.</p>
+</section>
+
+<section>
+  <h2>Das harte Gate <small>(Cdd.Core.Gate)</small></h2>
+  <p class="lead">Früher: <code>Aligned</code> bei bloßer Marker-Präsenz — ein <code>failwith</code>-Skelett trägt den Marker, läuft aber rot.</p>
+  <pre>setzeAlignedWennGruen: Aligned NUR wenn (Marker abgedeckt) UND (echter Lauf grün)
+  istGruen = passed &gt; 0 &amp;&amp; failed = 0     <span style="color:#59636e"># „No test" ist nicht grün</span>
+  gateGruen = istGruen &amp;&amp; keine Validate-Fehler</pre>
+  <p class="fragment"><span class="green">Maschinell getestet</span> — eine FsCheck-Property beweist: ein nicht-grüner Lauf macht einen Knoten <strong>nie</strong> Aligned. Kein erschlichenes Grün.</p>
+</section>
+
+<section>
+  <h2>Drei Verifikationsschichten</h2>
+  <div class="grid2">
+    <div class="card"><h3>Typen</h3><p class="lead">illegale Zustände unrepräsentierbar (F#-DUs) — der Compiler als Mini-Gate.</p></div>
+    <div class="card"><h3>FsCheck-Property</h3><p class="lead">eine Eigenschaft über <em>unbeschränkte</em> Eingaben statt Beispieltabelle.</p></div>
+  </div>
+  <p class="fragment lead" style="margin-top:.4em"><strong>Lean-4-Beweis</strong> für die tragenden Invarianten (Werterhaltung, Nichtnegativität): bewiesen für <em>jeden</em> Fall, sorry-frei. Die Kette Typen → Property → Beweis — abgestuft nach Wichtigkeit.</p>
+</section>
+
+<section>
+  <h2>Ralph × CDD: der Loop bekommt sein Orakel</h2>
+  <pre>PRE-LOOP (Mensch):   Domänenwissen → SPOT-Spec + Invarianten (die eigentliche Arbeit)
+LOOP-TICK:           Plan-Injektion → Generator-Tick → GATE (Validate → dotnet-test → Marker)
+TERMINIERUNG:        alle Ziel-Knoten Aligned (gemessen), NICHT „Agent sagt fertig"
+                     harte max-attempts NUR als Token-Notausgang</pre>
+  <p class="lead">Ralph ist der Motor, CDD ist Bremse + Lenkung. Failure-Diagnose fließt in den nächsten Tick → gerichtet statt blind.</p>
+</section>
+
+<section>
+  <h2>Ehrlich: die Grenzen</h2>
+  <ul>
+    <li>Ein Gate <strong>falsifiziert</strong> (rot blockt), es verifiziert nie vollständig (Rice/Dijkstra). Grün = „die Tests passen", nicht „korrekt".</li>
+    <li class="fragment">Nur die <strong>formalisierbare</strong> Klasse — UX/Architektur/Geschmack sind nicht konvergierbar.</li>
+    <li class="fragment">Der Mensch <strong>setzt + verantwortet</strong> die Invariante. Eine falsche Spec fängt kein Gate.</li>
+    <li class="fragment">N=2 Fallstudien, Forschungsprototyp. Terminierung ≠ garantierte Lieferung.</li>
+  </ul>
+</section>
+
+<section class="center">
+  <h2>Reproduzieren &amp; selbst sehen</h2>
+  <pre>git clone github.com/Koschnag/cong-driven-development &amp;&amp; dotnet test tests/Cdd.Tests   <span style="color:#1a7f37"># 42/42</span></pre>
+  <p class="lead">Ein-Klick im Browser: <strong class="acc">Open in Codespaces</strong> · Quick Guide &amp; Belege auf <strong class="acc">koschnag.github.io/cong-driven-development</strong></p>
+  <p class="fragment big">Fragen?</p>
+</section>
+
+</div></div>
+<footer>CDD · Technischer Überblick</footer>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize({ hash:true, slideNumber:'c/t', transition:'fade' });</script>
+</body>
+</html>
