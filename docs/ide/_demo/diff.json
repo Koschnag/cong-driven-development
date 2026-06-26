@@ -1,0 +1,1148 @@
+{
+  "Aligned": [
+    {
+      "Id": "adr-001-fsharp",
+      "Payload": {
+        "Case": "DecisionNode",
+        "Fields": {
+          "Item": {
+            "Title": "F# f\u00FCr die Domain",
+            "Context": "Das SPOT-Modell braucht Summen-Typen, Pattern-Matching und Unver\u00E4nderlichkeit",
+            "Choice": "F# mit Discriminated Unions als Modellsprache; C# nur f\u00FCr IO-Adapter",
+            "Consequences": "Kleinere Community, daf\u00FCr beweisbar korrektere Modelle und Lean-4-Anschlussf\u00E4higkeit",
+            "Supersedes": null
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "adr-002-json-store",
+      "Payload": {
+        "Case": "DecisionNode",
+        "Fields": {
+          "Item": {
+            "Title": "Ein JSON-File pro Knoten",
+            "Context": "Der SPOT muss git-diffbar, mergebar und ohne Server nutzbar sein",
+            "Choice": "Persistenz als .spot/\u003Cid\u003E.json via FSharp.SystemTextJson",
+            "Consequences": "Kein Query-Layer; bei Wachstum sp\u00E4ter SQLite/Index m\u00F6glich, Format bleibt Austauschformat",
+            "Supersedes": null
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "adr-003-github-only",
+      "Payload": {
+        "Case": "DecisionNode",
+        "Fields": {
+          "Item": {
+            "Title": "GitHub-native Infrastruktur",
+            "Context": "Eigene Domains/Server erzeugen Pflegekosten und private Abh\u00E4ngigkeiten",
+            "Choice": "Pages f\u00FCr die Demo, Actions f\u00FCr CI/CD, GHCR f\u00FCr Container, Releases f\u00FCr Binaries",
+            "Consequences": "Demo-Modus braucht localStorage statt Backend; volle Version via Codespaces/Container",
+            "Supersedes": null
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "adr-004-mpl2",
+      "Payload": {
+        "Case": "DecisionNode",
+        "Fields": {
+          "Item": {
+            "Title": "Lizenz MPL-2.0",
+            "Context": "Offenheit gew\u00FCnscht, aber Datei-Copyleft statt viralem Projekt-Copyleft",
+            "Choice": "MPL-2.0",
+            "Consequences": "Kommerzielle Nutzung m\u00F6glich, \u00C4nderungen an CDD-Dateien bleiben offen",
+            "Supersedes": null
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "comp-cli",
+      "Payload": {
+        "Case": "ComponentNode",
+        "Fields": {
+          "Item": {
+            "Name": "Cdd.Cli",
+            "DependsOn": [
+              "comp-core"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "comp-core",
+      "Payload": {
+        "Case": "ComponentNode",
+        "Fields": {
+          "Item": {
+            "Name": "Cdd.Core",
+            "DependsOn": []
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "comp-mcp",
+      "Payload": {
+        "Case": "ComponentNode",
+        "Fields": {
+          "Item": {
+            "Name": "Cdd.Mcp",
+            "DependsOn": [
+              "comp-core"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "comp-web",
+      "Payload": {
+        "Case": "ComponentNode",
+        "Fields": {
+          "Item": {
+            "Name": "Cdd.Web",
+            "DependsOn": [
+              "comp-core"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "inv-begriffe-definiert",
+      "Payload": {
+        "Case": "InvariantNode",
+        "Fields": {
+          "Item": {
+            "Description": "Jeder Begriff der ubiquit\u00E4ren Sprache ist definiert",
+            "Rule": "TermsNeedDefinition"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "inv-kritische-risiken",
+      "Payload": {
+        "Case": "InvariantNode",
+        "Fields": {
+          "Item": {
+            "Description": "Kritische Risiken brauchen eine Mitigation",
+            "Rule": "CriticalRisksNeedMitigation"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "inv-specs-getestet",
+      "Payload": {
+        "Case": "InvariantNode",
+        "Fields": {
+          "Item": {
+            "Description": "Jede Spec hat mindestens einen Test",
+            "Rule": "SpecsNeedTests"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "inv-term-praefix",
+      "Payload": {
+        "Case": "InvariantNode",
+        "Fields": {
+          "Item": {
+            "Description": "Begriffe hei\u00DFen term-*",
+            "Rule": {
+              "Case": "IdPrefix",
+              "Fields": {
+                "kind": "term",
+                "prefix": "term-"
+              }
+            }
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-evans-ddd",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Eric Evans \u2014 Domain-Driven Design",
+            "Source": "ISBN 978-0321125217",
+            "MediaType": "book",
+            "Takeaways": [
+              "Ubiquitous Language ist die Br\u00FCcke zwischen Fachseite und Code",
+              "Bounded Contexts begrenzen Modellg\u00FCltigkeit"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-fowler-blog",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Martin Fowler \u2014 Blog",
+            "Source": "https://martinfowler.com",
+            "MediaType": "blog",
+            "Takeaways": [
+              "Refactoring-Katalog",
+              "Evolution\u00E4re Architektur",
+              "Spec-by-Example"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "premise-cloud-first",
+      "Payload": {
+        "Case": "PremiseNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Cloud-first: nichts muss lokal laufen.",
+            "Rationale": "Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) tr\u00E4gt alles"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "premise-kein-python",
+      "Payload": {
+        "Case": "PremiseNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Kein Python \u2014 nie.",
+            "Rationale": "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchg\u00E4ngig"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "premise-typsicherheit",
+      "Payload": {
+        "Case": "PremiseNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Typsicherheit vor Flexibilit\u00E4t.",
+            "Rationale": "Illegale SPOT-Zust\u00E4nde sollen nicht repr\u00E4sentierbar sein \u2014 das Typsystem ist das Schema"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "risk-mda-drift",
+      "Payload": {
+        "Case": "RiskNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Modell und Code driften auseinander (der MDA-Friedhof)",
+            "Likelihood": "Medium",
+            "Impact": "Critical",
+            "Mitigation": "Konvergenz-Status je Knoten \u002B Round-Trip (Code\u2192Modell) auf der Roadmap"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "risk-pflegekosten",
+      "Payload": {
+        "Case": "RiskNode",
+        "Fields": {
+          "Item": {
+            "Statement": "SPOT-Pflege wird teurer als der Code, den er erzeugt",
+            "Likelihood": "Medium",
+            "Impact": "High",
+            "Mitigation": "Alles Ableitbare wird abgeleitet (Tests, Diagramme), nie handgepflegt"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "risk-spec-vollstaendigkeit",
+      "Payload": {
+        "Case": "RiskNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Spec-Vollst\u00E4ndigkeits-Falle: die Spec wird so komplex wie Code",
+            "Likelihood": "Medium",
+            "Impact": "High",
+            "Mitigation": "Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents f\u00FCllen L\u00FCcken, Validierung f\u00E4ngt Drift"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-agent-interface",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Agent-Interface",
+            "Intent": "Prosa-Eingaben werden durch eine KI in validierte Modell\u00E4nderungen \u00FCbersetzt",
+            "Criteria": [
+              {
+                "Given": "eine Prosa-Beschreibung einer Modell\u00E4nderung",
+                "When": "der Agent ausgef\u00FChrt wird (Claude direkt oder via kopiertem Prompt)",
+                "Then": "entsteht ein pr\u00FCfbarer \u00C4nderungsvorschlag (upsert/delete), der erst nach Best\u00E4tigung angewendet wird"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-cockpit-shell-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-cockpit-shell",
+            "Name": "Chat-primaere Cockpit-Shell \u2014 when die Shell rendert then sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-cockpit-shell",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Chat-primaere Cockpit-Shell",
+            "Intent": "Das Cockpit ist chat-primaer: eine Omnibar als einzige Tuer, eine Menueleiste, die Rail mit Flaechen, der Faden und eine Statuszeile.",
+            "Criteria": [
+              {
+                "Given": "das Cockpit ist gegen das Selbstmodell geladen",
+                "When": "die Shell rendert",
+                "Then": "sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-derive-code-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-derive-code",
+            "Name": "Modell \u2192 Code (derive-code) \u2014 when cdd derive-code l\u00E4uft then entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden \u00FCbersprungen",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-derive-code",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Modell \u2192 Code (derive-code)",
+            "Intent": "Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker",
+            "Criteria": [
+              {
+                "Given": "ein Test-Knoten ohne Marker im Test-Code",
+                "When": "cdd derive-code l\u00E4uft",
+                "Then": "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden \u00FCbersprungen"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-derive-tests-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-derive-tests",
+            "Name": "Spec\u2192Test-Ableitung \u2014 when cdd derive-tests --write l\u00E4uft then existiert genau ein Test-Knoten pro Kriterium",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-derive-tests-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-derive-tests",
+            "Name": "Spec\u2192Test-Ableitung \u2014 when derive-tests erneut l\u00E4uft then entstehen keine Duplikate (Idempotenz)",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-derive-tests",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Spec\u2192Test-Ableitung",
+            "Intent": "Tests sind Derivat der Spezifikation, nicht handgeschrieben",
+            "Criteria": [
+              {
+                "Given": "eine Spec mit n Akzeptanzkriterien",
+                "When": "cdd derive-tests --write l\u00E4uft",
+                "Then": "existiert genau ein Test-Knoten pro Kriterium"
+              },
+              {
+                "Given": "bereits abgeleitete Tests",
+                "When": "derive-tests erneut l\u00E4uft",
+                "Then": "entstehen keine Duplikate (Idempotenz)"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-diagram-surface-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-diagram-surface",
+            "Name": "Getypte Diagramm-Flaeche mit Toolbox \u2014 when die Diagramm-Flaeche rendert then erscheinen die Diagramm-Sichten, ein Cytoscape-Canvas und die Toolbox mit den Knotenarten",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-diagram-surface",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Getypte Diagramm-Flaeche mit Toolbox",
+            "Intent": "Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.",
+            "Criteria": [
+              {
+                "Given": "das Cockpit ist geladen",
+                "When": "die Diagramm-Flaeche rendert",
+                "Then": "erscheinen die Diagramm-Sichten, ein Cytoscape-Canvas und die Toolbox mit den Knotenarten"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-export-context-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-export-context",
+            "Name": "LLM-Kontextexport \u2014 when cdd export-context l\u00E4uft then entsteht ein einzelnes Markdown-Bundle mit Ontologie, Pr\u00E4missen, Entscheidungen, Specs und offenen Risiken",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-export-context",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "LLM-Kontextexport",
+            "Intent": "Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut",
+            "Criteria": [
+              {
+                "Given": "ein gef\u00FCllter SPOT-Graph",
+                "When": "cdd export-context l\u00E4uft",
+                "Then": "entsteht ein einzelnes Markdown-Bundle mit Ontologie, Pr\u00E4missen, Entscheidungen, Specs und offenen Risiken"
+              },
+              {
+                "Given": "das exportierte Bundle",
+                "When": "es einem LLM als Kontext \u00FCbergeben wird",
+                "Then": "kann es Implementierungsaufgaben ohne R\u00FCckfragen zur Dom\u00E4nensprache bearbeiten"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-fehlerliste-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-fehlerliste",
+            "Name": "Fehlerliste \u0026 Widerspruchs-Erkennung \u2014 when validiert wird then erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-fehlerliste-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-fehlerliste",
+            "Name": "Fehlerliste \u0026 Widerspruchs-Erkennung \u2014 when validiert wird then wird Mehrdeutigkeit als Warnung gemeldet",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-fehlerliste",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Fehlerliste \u0026 Widerspruchs-Erkennung",
+            "Intent": "Inkonsistenzen, Widerspr\u00FCche und Regelverst\u00F6\u00DFe sind eine klickbare Liste wie in Visual Studio",
+            "Criteria": [
+              {
+                "Given": "eine zyklische IsA/PartOf-Begriffshierarchie",
+                "When": "validiert wird",
+                "Then": "erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten"
+              },
+              {
+                "Given": "zwei Begriffe mit gleichem Namen",
+                "When": "validiert wird",
+                "Then": "wird Mehrdeutigkeit als Warnung gemeldet"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-formal-view-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-formal-view",
+            "Name": "Formale code-behind-Sicht \u2014 when auf eine Formal-Sicht gewechselt wird then rendert sie das Modell in formaler Notation mit KaTeX",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-formal-view",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Formale code-behind-Sicht",
+            "Intent": "Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.",
+            "Criteria": [
+              {
+                "Given": "die Diagramm-Flaeche",
+                "When": "auf eine Formal-Sicht gewechselt wird",
+                "Then": "rendert sie das Modell in formaler Notation mit KaTeX"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-gate-selbst-hart-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-gate-selbst-hart",
+            "Name": "Gate-Selbsth\u00E4rtung \u2014 when die reflexive Invariante \u00FCber das eigene Modell gepr\u00FCft wird then hat jeder als Aligned markierte Test-Knoten einen echten Trait-spot-Marker im Testcode, also kein Aligned ohne Test",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-governance-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-governance",
+            "Name": "Governance by Invariance \u2014 when cdd validate l\u00E4uft then werden Verst\u00F6\u00DFe als Fehler am verletzenden Knoten gemeldet",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-governance",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Governance by Invariance",
+            "Intent": "Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal \u002B CI) erzwungen",
+            "Criteria": [
+              {
+                "Given": "eine Invariante im SPOT",
+                "When": "cdd validate l\u00E4uft",
+                "Then": "werden Verst\u00F6\u00DFe als Fehler am verletzenden Knoten gemeldet"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-mcp-server",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "MCP-Server",
+            "Intent": "Jeder MCP-Client (Claude Code, Claude Desktop, \u2026) kann den SPOT direkt lesen, validieren und mutieren",
+            "Criteria": [
+              {
+                "Given": "ein verbundener MCP-Client",
+                "When": "spot_upsert oder spot_delete aufgerufen wird",
+                "Then": "wird die \u00C4nderung gespeichert und die Validierung (inkl. Invarianten) zur\u00FCckgemeldet"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-roundtrip-sync-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-roundtrip-sync",
+            "Name": "Round-Trip: Code \u2192 Modell \u2014 when cdd sync-code l\u00E4uft then wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-roundtrip-sync",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Round-Trip: Code \u2192 Modell",
+            "Intent": "Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet",
+            "Criteria": [
+              {
+                "Given": "src/*.fsproj und Component-Knoten",
+                "When": "cdd sync-code l\u00E4uft",
+                "Then": "wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-sync-docs-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-sync-docs",
+            "Name": "Doku-Konvergenz \u2014 when cdd sync-docs --check in der CI l\u00E4uft then schl\u00E4gt der Build fehl, bis sync-docs den Status neu generiert hat",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-sync-docs-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-sync-docs",
+            "Name": "Doku-Konvergenz \u2014 when cdd sync-docs l\u00E4uft then wird docs/decisions.md vollst\u00E4ndig daraus generiert",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-sync-docs",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Doku-Konvergenz",
+            "Intent": "Der README-Status wird aus dem Selbstmodell generiert \u2014 Doku-Drift ist ein CI-Fehler",
+            "Criteria": [
+              {
+                "Given": "ein veralteter README-Status",
+                "When": "cdd sync-docs --check in der CI l\u00E4uft",
+                "Then": "schl\u00E4gt der Build fehl, bis sync-docs den Status neu generiert hat"
+              },
+              {
+                "Given": "Pr\u00E4missen, Entscheidungen und Invarianten im Modell",
+                "When": "cdd sync-docs l\u00E4uft",
+                "Then": "wird docs/decisions.md vollst\u00E4ndig daraus generiert"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-sync-tests-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-sync-tests",
+            "Name": "Test-Konvergenz messen \u2014 when cdd sync-tests l\u00E4uft then wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-sync-tests",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Test-Konvergenz messen",
+            "Intent": "Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet",
+            "Criteria": [
+              {
+                "Given": "ein Test-Knoten und ein Test mit Trait(\u0022spot\u0022, id) oder [spot: id]-Marker",
+                "When": "cdd sync-tests l\u00E4uft",
+                "Then": "wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-validate-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-validate",
+            "Name": "Modell-Validierung \u2014 when cdd validate l\u00E4uft then wird ein Fehler mit Knoten-Id und Ziel gemeldet",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-validate-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-validate",
+            "Name": "Modell-Validierung \u2014 when cdd validate l\u00E4uft then werden alle Zyklus-Teilnehmer als Fehler markiert",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-validate",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Modell-Validierung",
+            "Intent": "Der SPOT-Graph ist jederzeit strukturell konsistent",
+            "Criteria": [
+              {
+                "Given": "ein Knoten mit Referenz auf eine nicht existierende Id",
+                "When": "cdd validate l\u00E4uft",
+                "Then": "wird ein Fehler mit Knoten-Id und Ziel gemeldet"
+              },
+              {
+                "Given": "Komponenten mit zyklischen Abh\u00E4ngigkeiten",
+                "When": "cdd validate l\u00E4uft",
+                "Then": "werden alle Zyklus-Teilnehmer als Fehler markiert"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-agent",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Agent",
+            "Definition": "LLM-gest\u00FCtzter Worker, der aus dem SPOT Implementierung, Tests und Doku ableitet",
+            "Synonyms": [
+              "AI-Agent"
+            ],
+            "Relations": [
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-spot"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-cockpit",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Cockpit",
+            "Definition": "Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift",
+            "Synonyms": [
+              "IDE"
+            ],
+            "Relations": [
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-spot"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-drift",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Drift",
+            "Definition": "Auseinanderlaufen von Modell und Code \u2014 das, was klassische MDA scheitern lie\u00DF",
+            "Synonyms": [],
+            "Relations": [
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-konvergenz"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-knoten",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Knoten",
+            "Definition": "Eintrag im SPOT-Graphen mit Identit\u00E4t, Nutzlast und Konvergenz-Status",
+            "Synonyms": [
+              "Entry",
+              "Node"
+            ],
+            "Relations": [
+              {
+                "Case": "PartOf",
+                "Fields": {
+                  "Item": "term-spot"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-konvergenz",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Konvergenz",
+            "Definition": "Grad der \u00DCbereinstimmung zwischen Modell-Knoten und Implementierung (Pending/Aligned/Diverged/Orphaned)",
+            "Synonyms": [],
+            "Relations": [
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-knoten"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-ontologie",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Ontologie",
+            "Definition": "Begriffsnetz der Dom\u00E4ne: Begriffe mit Definition und typisierten Beziehungen",
+            "Synonyms": [
+              "Begriffsmodell"
+            ],
+            "Relations": [
+              {
+                "Case": "PartOf",
+                "Fields": {
+                  "Item": "term-spot"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-spec",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Spec",
+            "Definition": "Maschinenlesbarer Vertrag: Intent plus Akzeptanzkriterien in Given/When/Then",
+            "Synonyms": [
+              "Spezifikation"
+            ],
+            "Relations": [
+              {
+                "Case": "IsA",
+                "Fields": {
+                  "Item": "term-knoten"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-spot",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "SPOT",
+            "Definition": "Single Point of Truth \u2014 der eine Graph, in dem Modell, Spec, Tests, Risiken, Wissen und Infrastruktur leben",
+            "Synonyms": [
+              "Single Point of Truth"
+            ],
+            "Relations": []
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "term-ubiquitaere-sprache",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Ubiquit\u00E4re Sprache",
+            "Definition": "Gemeinsames Vokabular von Fachseite, Technik und AI-Agents \u2014 definiert in der Ontologie",
+            "Synonyms": [
+              "Ubiquitous Language"
+            ],
+            "Relations": [
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-ontologie"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "tool-github-actions",
+      "Payload": {
+        "Case": "ToolNode",
+        "Fields": {
+          "Item": {
+            "Name": "GitHub Actions",
+            "Purpose": "CI/CD, Releases, Pages, Container \u2014 der Automatisierungs-Arm",
+            "Endpoint": null
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "tool-mermaid",
+      "Payload": {
+        "Case": "ToolNode",
+        "Fields": {
+          "Item": {
+            "Name": "Mermaid",
+            "Purpose": "Diagramm-Rendering (Graph, UML) aus dem SPOT",
+            "Endpoint": "https://cdn.jsdelivr.net/npm/mermaid@11"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    }
+  ],
+  "Pending": [
+    {
+      "Id": "spec-agent-interface-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-agent-interface",
+            "Name": "Agent-Interface \u2014 when der Agent ausgef\u00FChrt wird (Claude direkt oder via kopiertem Prompt) then entsteht ein pr\u00FCfbarer \u00C4nderungsvorschlag (upsert/delete), der erst nach Best\u00E4tigung angewendet wird",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
+    {
+      "Id": "spec-export-context-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-export-context",
+            "Name": "LLM-Kontextexport \u2014 when es einem LLM als Kontext \u00FCbergeben wird then kann es Implementierungsaufgaben ohne R\u00FCckfragen zur Dom\u00E4nensprache bearbeiten",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
+    {
+      "Id": "spec-gate-selbst-hart",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Gate-Selbsth\u00E4rtung",
+            "Intent": "Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch blo\u00DFe Behauptung",
+            "Criteria": [
+              {
+                "Given": "das Selbst-Modell unter .spot/ und der Testcode unter tests/",
+                "When": "die reflexive Invariante \u00FCber das eigene Modell gepr\u00FCft wird",
+                "Then": "hat jeder als Aligned markierte Test-Knoten einen echten Trait-spot-Marker im Testcode, also kein Aligned ohne Test"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
+    {
+      "Id": "spec-mcp-server-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-mcp-server",
+            "Name": "MCP-Server \u2014 when spot_upsert oder spot_delete aufgerufen wird then wird die \u00C4nderung gespeichert und die Validierung (inkl. Invarianten) zur\u00FCckgemeldet",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Pending"
+    }
+  ],
+  "Diverged": [],
+  "Orphaned": []
+}
