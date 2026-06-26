@@ -3,6 +3,22 @@
 Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 [Keep a Changelog](https://keepachangelog.com/), Versionierung nach [SemVer](https://semver.org/).
 
+## [0.7.0] — 2026-06-26
+
+### Added
+- **Hartes Grün-Gate (`Cdd.Core.Gate`).** `Aligned` nur noch bei abgedecktem
+  Marker UND echtem grünem Lauf (`setzeAlignedWennGruen`, `gateGruen`, TRX-Parser).
+  Schließt die Marker-vs-Grün-Lücke: ein `failwith`-TODO-Skelett trägt den Marker,
+  läuft aber rot — und bleibt jetzt `Pending`. Zwei FsCheck-Properties beweisen: ein
+  nicht-grüner Lauf macht einen Knoten **nie** `Aligned`. Realisiert die offene
+  Pending-Spec `spec-gate-selbst-hart`. **42/42** Tests (vorher 37/37).
+- **Öffentliche statische IDE-Demo** (`docs/ide/`): die echte Cong-OS-Oberfläche
+  mit gesnapshottetem Self-Modell (66 Knoten), read-only, kein Login, kein Server.
+- **Interaktive Gate-Demo** (`docs/demo.html`) + **Flagship-Präsentation**
+  (`docs/praesentation.html`, 14 Folien, eingebettete Demo); `onboarding`/`talk`
+  archiviert. Manager-Paket (Pitch, technischer Überblick, Brief, Quick Guide,
+  Entscheider-Hub) + Einsteiger-On-Ramp + Codespaces.
+
 ## [0.6.0] — 2026-06-21
 
 ### Added
