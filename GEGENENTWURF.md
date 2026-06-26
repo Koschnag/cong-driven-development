@@ -31,7 +31,7 @@ Die Skeptiker haben die Diagnose recht. Ich liefere die Schraube danach. Die Gru
 
 - **github.com/Koschnag/runenruf** — Fallstudie 1 (Spiel, Existenzbeweis). `git clone … && dotnet test tests/Runenruf.Tests` → 46/46 grün, inkl. FsCheck-Property `spec-siegel-lager-nichtnegativ` über jeden Seed/jede Befehlsfolge.
 - **github.com/Koschnag/ledger-casestudy** — Fallstudie 2 (Hauptbuch, schlägt zurück). `dotnet test tests/Ledger.Tests` → 6/6; `./demo-gate-at-failure.sh` zeigt das Orakel beim Verwerfen eines falschen Modells (`Falsifiable, after 4 tests`); `lean proofs/Werterhaltung.lean` beweist Werterhaltung und Nichtnegativität sorry-frei (CI-Job `lean-proof`).
-- **github.com/Koschnag/cong-driven-development** — die Methode/IDE (v0.6.0), Orakel `SetzeSpecAligned` (Aligned bei abgedecktem Test-Marker; Greenness via CI-Suite).
+- **github.com/Koschnag/cong-driven-development** — die Methode/IDE (v0.7.0), Orakel `SetzeSpecAligned` (Aligned bei abgedecktem Test-Marker; Greenness via CI-Suite).
 
 ## Quellen
 
