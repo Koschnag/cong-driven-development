@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <!-- @-Memory (Wahrheit #2): liest die sanitisierte cong-memory.db (FTS5). Bundle enthält FTS5. -->
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
   </ItemGroup>
 
 </Project>
