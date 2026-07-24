@@ -1,10 +1,10 @@
-# EIDOS — Zielbild für evidenzgesteuerte Softwareevolution
+# EIDOS — evidenzgesteuerte Softwareevolution
 
-> **Status:** öffentliches Architektur- und Forschungsprogramm.
-> **Nicht der Ist-Stand:** CDD implementiert heute den typisierten SPOT,
-> Konvergenzprüfungen, CLI, MCP und ein experimentelles Cockpit. EIDOS beschreibt
-> die nächste Schicht darüber. Vollautonomie, produktive Selbst-Evolution und
-> automatische Kausalität werden nicht behauptet.
+> **Status:** ausführbarer v0.8-alpha-Kernel bis `ZT2` plus öffentliches
+> Architektur- und Forschungsprogramm. Implementiert sind die Phasen 0–6:
+> epistemische Claims, System Twin, Mission Orders, Change Compiler, Evidence
+> Packs, isolierter OpsLab und Studio. Produktive Selbst-Evolution,
+> Outcome-/Strategy-Lernen und automatische Kausalität werden nicht behauptet.
 
 ## 1. These
 
@@ -30,8 +30,9 @@ Eine lineare Agentenkette ist dabei nicht die Architektur. Sie ist ein
 temporärer, für eine konkrete Lage erzeugter Ausführungsplan.
 
 **EIDOS** ist der Arbeitsname für dieses doctrine-getriebene
-Command-and-Control-System für Softwareevolution. CDD ist sein heute
-existierender, kleiner und falsifizierbarer Kernel.
+Command-and-Control-System für Softwareevolution. CDD enthält seinen ersten
+kleinen und falsifizierbaren Kernel; dessen Autorität endet hart bei einer
+lokalen, credential-freien `ZT2`-Sandbox.
 
 ## 2. Warum der heutige SPOT nicht genügt
 
@@ -341,17 +342,18 @@ System wird daran gemessen, ob es:
 
 ## 12. Roadmap
 
-| Phase | Ergebnis | Promotion-Gate |
-|---|---|---|
-| 0 | Constitution, Glossar, Risiken und Forschungsfragen im SPOT | Modell validiert |
-| 1 | EIDOS-Core-Verträge als F#-DUs | JSON-Roundtrip + Property Tests |
-| 2 | Read-only System Twin mit Provenienz und Unsicherheit | reproduzierbare Projektion |
-| 3 | Change Compiler v0 für einen synthetischen Change | deterministischer Candidate |
-| 4 | Gate Fabric und Evidence Pack | unabhängiger grüner/roter Nachweis |
-| 5 | autonomer OpsLab-Lauf auf `ZT2` | Sandbox, Abbruch und Replay |
-| 6 | Studio/Sim als Projektionen desselben Kernmodells | UI-Smoke + Modellgleichheit |
-| 7 | Outcome Loop und versionierte Strategy-Auswertung | keine Kausalitäts-Overclaims |
-| 8 | EvoSDLC-Bench und Vergleich mit linearen Agent Chains | reproduzierbare Studie |
+| Phase | Ergebnis | Promotion-Gate | Stand |
+|---|---|---|---|
+| 0 | Constitution, Glossar, Risiken und Forschungsfragen im SPOT | Modell validiert | ✅ v0.8 |
+| 1 | EIDOS-Core-Verträge als F#-DUs | Roundtrip + automatisierte Tests | ✅ v0.8 |
+| 2 | Read-only System Twin mit Provenienz und Unsicherheit | reproduzierbare Projektion | ✅ v0.8 |
+| 3 | Change Compiler v0 für einen synthetischen Change | deterministischer Candidate | ✅ v0.8 |
+| 4 | Gate Fabric und Evidence Pack | unabhängiger grüner/roter Nachweis | ✅ v0.8 |
+| 5 | autonomer OpsLab-Lauf auf `ZT2` | Sandbox, Abbruch und Replay | ✅ v0.8 |
+| 6 | Studio/Sim als Projektion desselben Kernmodells | Browser-Smoke + API-Modellgleichheit | ✅ v0.8 |
+| 7 | Outcome Loop und versionierte Strategy-Auswertung | keine Kausalitäts-Overclaims | 🔜 offen |
+| 8a | Assurance-Fault-Injection gegen Feature-Baseline | reproduzierbarer Construct Test | ✅ v0 |
+| 8b | externer EvoSDLC-Bench gegen reale Baselines | preregistrierte, reproduzierbare Studie | 🔜 offen |
 
 Der erste Demonstrator ist eine synthetische Report-/Submission-Plattform:
 versionierte Formate, deterministische Validierung, Reports, Auditlog und ein
@@ -365,11 +367,13 @@ Agentik liegt im Engineering-Prozess, nicht im produktiven Hot Path.
 | typisierter, git-versionierter SPOT | implementiert |
 | Konvergenz gegen Tests und grünes Gate | implementiert |
 | CLI, MCP und experimentelles Cockpit | implementiert |
-| epistemische Claim-Typen und Provenienz | spezifiziert, nicht implementiert |
-| Mission Orders und Doctrine-Dispatch | spezifiziert, nicht implementiert |
-| Change Compiler | spezifiziert, nicht implementiert |
-| Evidence Packs und Promotion Policy | spezifiziert, nicht implementiert |
-| Zero-Touch-Sandbox | Forschungs-/Implementierungsziel |
+| epistemische Claim-Typen und Provenienz | v0 implementiert |
+| Mission Orders und Doctrine-Dispatch | v0 bis `ZT2` implementiert |
+| Change Compiler | deterministischer synthetischer v0 implementiert |
+| Evidence Packs und Promotion Policy | content-addressed v0 implementiert |
+| Zero-Touch-Sandbox | synthetischer OpsLab auf `ZT2` implementiert |
+| EIDOS Studio | mobile-first PWA mit Run, Fault Injection, Replay und Feedback-Export |
+| EvoSDLC-Bench | v0 Construct Test; keine externe Validität behauptet |
 | Outcome- und Strategy-Lernen | Forschungsziel |
 | AGI | weder Zielbehauptung noch Ergebnis |
 
@@ -397,9 +401,27 @@ Spezifikationsqualität, Agenten-Evolution und Softwaregedächtnis:
 - Alex Iacob et al.:
   [The Red Queen Gödel Machine](https://arxiv.org/abs/2606.26294),
   2026.
+- Manoel Salgado Neto et al.:
+  [Collaborative and AI-Supported Requirements Elicitation](https://arxiv.org/abs/2606.24060),
+  2026.
+- Lekshmi Murali Rani et al.:
+  [AI for Requirements Engineering: Industry adoption and Practitioner perspectives](https://arxiv.org/abs/2511.01324),
+  2025/2026.
+- Jinwei Hu et al.:
+  [Responsible Agentic AI Requires Explicit Provenance](https://arxiv.org/abs/2605.17169),
+  2026.
+- Xing Zhang et al.:
+  [Who Grades the Grader?](https://arxiv.org/abs/2607.12790),
+  2026.
 - Thomas Kwa et al.:
   [Measuring AI Ability to Complete Long Software Tasks](https://arxiv.org/abs/2503.14499),
   2025/2026.
+- W3C:
+  [PROV-O: The PROV Ontology](https://www.w3.org/TR/prov-o/).
+- OpenSSF:
+  [SLSA Provenance](https://slsa.dev/spec/v1.2/).
+- NIST:
+  [SP 800-218 Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final).
 
 Die verteidigbare Forschungsleistung wäre nicht „die erste autonome
 Softwareentwicklung“, sondern eine präzise, falsifizierbare Integration:
@@ -409,3 +431,6 @@ Softwareentwicklung“, sondern eine präzise, falsifizierbare Integration:
 
 Ob diese Integration gegenüber einfacheren Baselines einen messbaren Vorteil
 liefert, ist eine Forschungsfrage — kein vorweggenommenes Ergebnis.
+
+Methodik, Befunde, reproduzierbare v0-Messung und Grenzen sind im
+**[Forschungsbericht](eidos-research-report.md)** dokumentiert.

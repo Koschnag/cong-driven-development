@@ -4,11 +4,16 @@
 //   [spot: spec-diagram-surface-test-1] Split-Diagramm rendert (Cytoscape-Canvas) + Toolbox
 //   [spot: spec-formal-view-test-1]     Formal-Sicht (code behind) rendert mit KaTeX
 import { spawn } from "node:child_process";
+import { cp, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import puppeteer from "puppeteer";
 
 const PORT = 5599;
 const repo = new URL("../..", import.meta.url).pathname;
-const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", repo, "--urls", `http://127.0.0.1:${PORT}`], { cwd: repo, stdio: "ignore" });
+const dataRoot = await mkdtemp(join(tmpdir(), "cdd-e2e-"));
+await cp(join(repo, ".spot"), join(dataRoot, ".spot"), { recursive: true });
+const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", dataRoot, "--urls", `http://127.0.0.1:${PORT}`], { cwd: repo, stdio: "ignore" });
 
 const fails = [];
 const ok = (cond, name) => { console.log((cond ? "OK   " : "FAIL ") + name); if (!cond) fails.push(name); };
@@ -58,10 +63,41 @@ try {
   await sleep(1500);
   await fetch(`http://127.0.0.1:${PORT}/api/spot/term-e2e-kaputt`, { method: "DELETE" });
 
+  // EIDOS Studio: responsive PWA surface + a real ZT2 run and replay.
+  await page.goto(`http://127.0.0.1:${PORT}/eidos.html`, { waitUntil: "networkidle2", timeout: 60000 });
+  ok(await page.evaluate(() => document.querySelectorAll(".pipeline li").length === 6), "EIDOS-Pipeline vollständig");
+  ok(await page.evaluate(() => /keine Credentials/.test(document.body.textContent || "")), "ZT2-Sicherheitsgrenze sichtbar");
+  await page.click("#run-clean");
+  await page.waitForFunction(() => document.querySelector("#run-badge")?.textContent === "promoted", { timeout: 30000 });
+  ok(await page.evaluate(() => /In ZT2 befördert/.test(document.querySelector("#run-status")?.textContent || "")), "OpsLab-Lauf promoviert nach ZT2");
+  ok(await page.evaluate(() => !document.querySelector("#open-sandbox")?.hidden), "Sandbox-Artefakt erreichbar");
+  ok(await page.evaluate(() => document.querySelectorAll(".pipeline li.done").length === 6), "alle EIDOS-Schritte evidenzbelegt");
+  ok(await page.evaluate(() => document.querySelector("#eidos-score")?.textContent === "10/10"), "Benchmark wird aus dem Kernel geladen");
+  await page.click("#replay");
+  await page.waitForFunction(() => /erneut verifiziert/.test(document.querySelector("#replay-state")?.textContent || ""), { timeout: 15000 });
+  ok(true, "EIDOS-Replay erfolgreich");
+
+  // Bug-/Feature-Kanal: lokaler, bewusst exportierter Issue-Entwurf ohne Credential.
+  await page.click("#open-feedback");
+  ok(await page.evaluate(() => document.querySelector("#feedback-dialog")?.open === true), "Feedback-Dialog öffnet");
+  await page.select("#feedback-kind", "feature");
+  await page.type("#feedback-summary", "Replay-Vergleich ergänzen");
+  await page.type("#feedback-details", "Zwei Runs sollen nachvollziehbar verglichen werden.");
+  await page.click("#feedback-form button[type=submit]");
+  ok(await page.evaluate(() => {
+    const drafts = JSON.parse(localStorage.getItem("eidos-feedback-drafts-v1") || "[]");
+    return drafts.length === 1 && /Feature Request/.test(drafts[0].markdown);
+  }), "Feature Request wird als aufbereiteter lokaler Issue-Entwurf gespeichert");
+
+  await page.setViewport({ width: 390, height: 844, isMobile: true });
+  await page.reload({ waitUntil: "networkidle2" });
+  ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "EIDOS mobil ohne horizontales Überlaufen");
+
   ok(jsErrors.length === 0, jsErrors.length ? "JS-Fehler: " + jsErrors.join("; ") : "keine JS-Fehler");
   await browser.close();
 } finally {
   server.kill();
+  await rm(dataRoot, { recursive: true, force: true });
 }
 console.log(fails.length ? `E2E: ${fails.length} FEHLER` : "E2E: ALLES GRÜN");
 process.exit(fails.length ? 1 : 0);

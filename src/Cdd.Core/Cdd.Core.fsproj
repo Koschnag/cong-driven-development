@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Spot.fs" />
     <Compile Include="Json.fs" />
+    <Compile Include="Eidos.fs" />
     <Compile Include="Store.fs" />
     <Compile Include="History.fs" />
     <Compile Include="Validate.fs" />

@@ -5,7 +5,7 @@
     "Fields": {
       "Item": {
         "Name": "EIDOS",
-        "Definition": "Zielarchitektur f\u00FCr doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; CDD ist ihr heutiger Kernel",
+        "Definition": "Doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; v0 implementiert den falsifizierbaren Kernel bis zur isolierten ZT2-Sandbox",
         "Synonyms": [
           "EIDOS Framework"
         ],

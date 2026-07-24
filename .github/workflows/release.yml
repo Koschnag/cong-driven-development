@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
-          for rid in linux-x64 win-x64 osx-arm64; do
+          for rid in linux-x64 linux-arm64 win-x64 osx-x64 osx-arm64; do
             dotnet publish src/Cdd.Cli -c Release -r "$rid" \
               --self-contained -p:PublishSingleFile=true -p:Version="$version" \
               -o "publish/$rid/cli"
@@ -35,6 +35,8 @@ jobs:
           done
           mkdir dist
           tar -czf "dist/cdd-$version-linux-x64.tar.gz" -C publish/linux-x64 .
+          tar -czf "dist/cdd-$version-linux-arm64.tar.gz" -C publish/linux-arm64 .
+          tar -czf "dist/cdd-$version-osx-x64.tar.gz" -C publish/osx-x64 .
           tar -czf "dist/cdd-$version-osx-arm64.tar.gz" -C publish/osx-arm64 .
           (cd publish/win-x64 && zip -qr "../../dist/cdd-$version-win-x64.zip" .)
 
@@ -43,3 +45,4 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

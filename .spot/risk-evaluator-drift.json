@@ -1,0 +1,15 @@
+{
+  "Id": "risk-evaluator-drift",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Ein lernendes oder vom Generator abh\u00E4ngiges Orakel driftet und belohnt Scheinerfolg",
+        "Likelihood": "High",
+        "Impact": "Critical",
+        "Mitigation": "Validatorversionen binden, Generator/Validator trennen, unver\u00E4nderliche Ankerf\u00E4lle und externe Audits verwenden"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

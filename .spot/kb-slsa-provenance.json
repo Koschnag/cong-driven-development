@@ -1,0 +1,18 @@
+{
+  "Id": "kb-slsa-provenance",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "SLSA Provenance",
+        "Source": "https://slsa.dev/spec/v1.2/",
+        "MediaType": "standard",
+        "Takeaways": [
+          "Artefakte werden an Builderidentit\u00E4t, Inputs, Zeit und Digests gebunden",
+          "Evidence Packs \u00FCbernehmen diese Bindungsprinzipien \u00FCber Builds hinaus"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

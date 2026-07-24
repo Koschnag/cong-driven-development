@@ -1,0 +1,18 @@
+{
+  "Id": "kb-nist-ssdf",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "NIST SP 800-218 Secure Software Development Framework",
+        "Source": "https://csrc.nist.gov/pubs/sp/800/218/final",
+        "MediaType": "standard",
+        "Takeaways": [
+          "Security-Praktiken werden risikoorientiert in bestehende Entwicklungsmodelle integriert",
+          "Provenienz, Security-Anforderungen, Risiken und Designentscheidungen sollen verfolgt werden"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
