@@ -3,6 +3,18 @@
 Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 [Keep a Changelog](https://keepachangelog.com/), Versionierung nach [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **EIDOS-Zielbild:** öffentliche Doctrine und Forschungsroadmap für
+  epistemisch typisierte, evidenzgesteuerte Change Compilation. Der Ist-Stand
+  von CDD und die noch nicht implementierten EIDOS-Capabilities werden
+  ausdrücklich getrennt.
+- **Maschinenlesbare EIDOS-Roadmap im SPOT:** Begriffe, Prämissen, ADR,
+  Forschungsquellen, Risiken und Pending-Spezifikationen für epistemische
+  Claims, Mission Orders, Change Compiler, Evidence Packs und eine
+  Zero-Touch-Sandbox.
+
 ## [0.7.0] — 2026-06-26
 
 ### Added
