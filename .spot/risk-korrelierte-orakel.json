@@ -1,0 +1,15 @@
+{
+  "Id": "risk-korrelierte-orakel",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Generator und Validator teilen denselben systematischen Fehler und erzeugen Scheinevidenz",
+        "Likelihood": "High",
+        "Impact": "Critical",
+        "Mitigation": "Kritische Orakel dekorrelieren, unabh\u00E4ngige Harnesses verwenden und Provenienz sowie Validatorversion im Evidence Pack binden"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

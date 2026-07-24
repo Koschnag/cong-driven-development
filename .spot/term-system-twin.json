@@ -1,0 +1,24 @@
+{
+  "Id": "term-system-twin",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "System Twin",
+        "Definition": "Zeitbezogene, provenienzbehaftete Projektion des bekannten Systems einschlie\u00DFlich Unsicherheit und Widerspruch",
+        "Synonyms": [
+          "Semantic System Twin"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

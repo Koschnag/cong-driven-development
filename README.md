@@ -43,6 +43,26 @@ Implementierung, Tests, Doku, Infrastruktur. Du monitorst, gibst Feedback, manag
 CDD ist der **Layer über LLMs**, der das SPOT-Modell + Konvergenz-Protokoll + Agent-Choreographie
 definiert.
 
+## EIDOS: das nächste Zielbild
+
+CDD ist heute ein kleiner, CI-verifizierter Kernel: typisierter SPOT,
+Konvergenz-Orakel, CLI, MCP und experimentelles Cockpit. **EIDOS** beschreibt
+die geplante Schicht darüber — doctrine-getriebene, epistemisch typisierte und
+evidenzgesteuerte Softwareevolution.
+
+Eine Agentic-SDLC-Chain ist darin kein festes Betriebssystem, sondern ein
+lageabhängig kompilierter Einsatzplan:
+
+```text
+Signal → Lagebild → Change Intent → Mission Order → Candidate
+       → unabhängige Assurance → Evidence → Sandbox → Outcome
+```
+
+Die vollständige Zielarchitektur, Trusted-Kernel-Regeln, Autonomiestufen,
+Forschungsfragen und Roadmap stehen in **[docs/eidos.md](docs/eidos.md)**.
+Sie sind ausdrücklich als Forschungs- und Implementierungsprogramm markiert,
+nicht als bereits gelieferte Produktfunktion.
+
 ## Architektur (Seed)
 
 ```
@@ -135,7 +155,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**66 Knoten im Selbstmodell** · 4 aktive Invarianten · 17/20 abgeleitete Tests automatisiert
+**100 Knoten im Selbstmodell** · 4 aktive Invarianten · 17/30 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -156,7 +176,12 @@ IsA/PartOf/RelatesTo-Beziehungen.
 
 ### In Arbeit / geplant (Pending)
 
+- 🔜 **Doctrine und Mission Orders** — Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen
+- 🔜 **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
+- 🔜 **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
+- 🔜 **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
+- 🔜 **Zero-Touch-Sandbox im OpsLab** — Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

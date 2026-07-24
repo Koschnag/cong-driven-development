@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-evidence-pack-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-evidence-pack",
+        "Name": "Evidence Packs und Promotion \u2014 when Promotion bewertet wird then wird der Candidate nicht bef\u00F6rdert und der konkrete Nachweisgrund bleibt auditierbar",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

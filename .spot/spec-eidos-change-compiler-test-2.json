@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-change-compiler-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-change-compiler",
+        "Name": "Semantic Change Compiler \u2014 when Impact und Risiken bewertet werden then bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

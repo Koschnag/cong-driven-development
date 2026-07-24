@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-epistemic-claims-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-epistemic-claims",
+        "Name": "Epistemisch typisierte Claims \u2014 when beide in den System-Twin projiziert werden then bleiben Originalsignal, Claim, Provenienz, Zeitpunkt, Scope und epistemischer Status getrennt erhalten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

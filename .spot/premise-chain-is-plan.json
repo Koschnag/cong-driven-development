@@ -1,0 +1,13 @@
+{
+  "Id": "premise-chain-is-plan",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Eine Agentenkette ist ein Plan, nicht die Architektur.",
+        "Rationale": "Doctrine, Lage, Risiko und verf\u00FCgbare Capabilities erzeugen pro Mission einen begrenzten Ausf\u00FChrungsplan"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
