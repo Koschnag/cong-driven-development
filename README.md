@@ -43,12 +43,12 @@ Implementierung, Tests, Doku, Infrastruktur. Du monitorst, gibst Feedback, manag
 CDD ist der **Layer über LLMs**, der das SPOT-Modell + Konvergenz-Protokoll + Agent-Choreographie
 definiert.
 
-## EIDOS: das nächste Zielbild
+## EIDOS v0.8 alpha: der erste ausführbare Evolutions-Kernel
 
-CDD ist heute ein kleiner, CI-verifizierter Kernel: typisierter SPOT,
-Konvergenz-Orakel, CLI, MCP und experimentelles Cockpit. **EIDOS** beschreibt
-die geplante Schicht darüber — doctrine-getriebene, epistemisch typisierte und
-evidenzgesteuerte Softwareevolution.
+CDD enthält jetzt einen kleinen, deterministischen **EIDOS-ZT2-Kernel**:
+epistemisch typisierte Claims, einen Read-only System Twin, Doctrine und
+Mission Orders, semantische Candidate-Kompilierung, unabhängige Evidence Packs,
+fail-closed Promotion sowie einen vollständig replaybaren OpsLab-Lauf.
 
 Eine Agentic-SDLC-Chain ist darin kein festes Betriebssystem, sondern ein
 lageabhängig kompilierter Einsatzplan:
@@ -58,10 +58,12 @@ Signal → Lagebild → Change Intent → Mission Order → Candidate
        → unabhängige Assurance → Evidence → Sandbox → Outcome
 ```
 
-Die vollständige Zielarchitektur, Trusted-Kernel-Regeln, Autonomiestufen,
-Forschungsfragen und Roadmap stehen in **[docs/eidos.md](docs/eidos.md)**.
-Sie sind ausdrücklich als Forschungs- und Implementierungsprogramm markiert,
-nicht als bereits gelieferte Produktfunktion.
+Der Scope endet absichtlich bei **ZT2**: kein Netzwerk, keine produktiven
+Credentials und keine Produktionsautorität. EIDOS Studio ist als
+mobile-first PWA auf Desktop und Smartphone nutzbar; die CLI-Releases laufen
+auf Linux, Windows und macOS. Architektur, Forschungsstand und ehrliche Grenzen
+stehen in **[docs/eidos.md](docs/eidos.md)** und
+**[docs/eidos-research-report.md](docs/eidos-research-report.md)**.
 
 ## Architektur (Seed)
 
@@ -93,6 +95,9 @@ dotnet run --project src/Cdd.Cli -- validate       # Modell prüfen (Exit 1 bei 
 dotnet run --project src/Cdd.Cli -- derive-tests --write   # Tests aus Spec-Kriterien ableiten
 dotnet run --project src/Cdd.Cli -- diff           # Drift-/Konvergenz-Report
 dotnet run --project src/Cdd.Cli -- export-context --out kontext.md  # SPOT als LLM-Vorlage + Doku
+dotnet run --project src/Cdd.Cli -- eidos run      # vollständiger synthetischer ZT2-Lauf
+dotnet run --project src/Cdd.Cli -- eidos replay <run-ordner>
+dotnet run --project src/Cdd.Cli -- eidos benchmark --out bench/eidos/results
 ```
 
 Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
@@ -109,6 +114,9 @@ Weitere Wege (alle GitHub-nativ):
 - **Codespaces:** Repo öffnen (devcontainer konfiguriert), `dotnet run --project src/Cdd.Web`
 - **Container:** `docker run -p 8080:8080 -v $PWD/.spot-demo:/data ghcr.io/koschnag/cdd:latest`
 - **Releases:** self-contained Binaries (CLI + Cockpit) für Linux/Windows/macOS
+- **EIDOS Studio:** Web-Cockpit starten und `/eidos.html` öffnen; als PWA auf
+  Android, iOS und Desktop installierbar. Bug-/Feature-Entwürfe bleiben lokal,
+  bis sie bewusst exportiert werden.
 
 ### MCP-Server (KI-Integration)
 
@@ -155,13 +163,16 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**100 Knoten im Selbstmodell** · 4 aktive Invarianten · 17/30 abgeleitete Tests automatisiert
+**107 Knoten im Selbstmodell** · 4 aktive Invarianten · 27/30 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
 - ✅ **Agent-Interface** — Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt
 - ✅ **Chat-primaere Cockpit-Shell** — Das Cockpit ist chat-primaer: eine Omnibar als einzige Tuer, eine Menueleiste, die Rail mit Flaechen, der Faden und eine Statuszeile.
+- ✅ **Doctrine und Mission Orders** — Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
+- ✅ **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
+- ✅ **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
 - ✅ **Getypte Diagramm-Flaeche mit Toolbox** — Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.
@@ -171,17 +182,14 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
+- ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
+- ✅ **Zero-Touch-Sandbox im OpsLab** — Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt
 
 ### In Arbeit / geplant (Pending)
 
-- 🔜 **Doctrine und Mission Orders** — Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen
-- 🔜 **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
-- 🔜 **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
-- 🔜 **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
-- 🔜 **Zero-Touch-Sandbox im OpsLab** — Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

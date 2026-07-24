@@ -1,0 +1,18 @@
+{
+  "Id": "kb-explicit-provenance",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Responsible Agentic AI Requires Explicit Provenance",
+        "Source": "https://arxiv.org/abs/2605.17169",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Verantwortung braucht \u00FCber den gesamten Agenten-Lebenszyklus explizite, eingreifbare Provenienz",
+          "Provenienz ist ein Strukturmerkmal, kein optionales Log-Detail"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

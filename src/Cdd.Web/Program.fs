@@ -13,6 +13,9 @@ type private EngineRunRequest =
       Engine  : string   // claude | mistral | ollama
       Model   : string }
 
+type private EidosRunRequest =
+    { Fault : string }
+
 /// Einheitliche JSON-Antworten über Cdd.Core.Json (nicht ASP.NETs Default-Serializer,
 /// der F#-DUs nicht versteht).
 let private json (value: 'T) : IResult =
@@ -323,6 +326,107 @@ let main argv =
             let derived = Derive.deriveTests entries
             if write then derived |> List.iter (Store.save root)
             json {| derived = derived; written = write |}))) |> ignore
+
+    // ── EIDOS v0: deterministic, credential-free ZT2 OpsLab ──────────────
+    // The web surface can start and replay only the synthetic local sandbox.
+    // No endpoint accepts a deployment target or production credential.
+    let eidosRunsRoot = Path.Combine(root, ".eidos", "runs")
+    let validRunId id = Store.isValidId (EntityId id) && id.StartsWith("run-", StringComparison.Ordinal)
+    let eidosRunRoot id = Path.Combine(eidosRunsRoot, id)
+    let loadEidosRun id =
+        let path = Path.Combine(eidosRunRoot id, "run.json")
+        if validRunId id && File.Exists path then
+            Some(Json.deserialize<Eidos.OpsLabRun> (File.ReadAllText path))
+        else None
+
+    app.MapGet("/api/eidos/runs", Func<IResult>(fun () ->
+        let runs =
+            if not (Directory.Exists eidosRunsRoot) then []
+            else
+                Directory.GetDirectories(eidosRunsRoot, "run-*")
+                |> Array.sortDescending
+                |> Array.choose (fun dir ->
+                    let id = Path.GetFileName dir
+                    loadEidosRun id)
+                |> Array.map (fun run ->
+                    {| runId = run.RunId
+                       startedAt = run.StartedAt
+                       status = run.Status
+                       candidateId = run.Candidate.Id
+                       evidencePackId = run.EvidencePack.Id
+                       replayVerified = run.Metrics.ReplayVerified
+                       fault = run.Fault |})
+                |> Array.toList
+        json {| runs = runs |})) |> ignore
+
+    app.MapGet("/api/eidos/runs/{id}", Func<string, IResult>(fun id ->
+        match loadEidosRun id with
+        | Some run -> json run
+        | None -> Results.NotFound())) |> ignore
+
+    app.MapPost("/api/eidos/runs", Func<HttpRequest, Task<IResult>>(fun req ->
+        task {
+            use reader = new StreamReader(req.Body)
+            let! body = reader.ReadToEndAsync()
+            let faultName =
+                if String.IsNullOrWhiteSpace body then "none"
+                else
+                    try (Json.deserialize<EidosRunRequest> body).Fault
+                    with _ -> ""
+            match Eidos.parseFault faultName with
+            | None ->
+                return badRequest "Unbekannter Fault-Injection-Modus."
+            | Some fault ->
+                try
+                    let run = Eidos.runOpsLab root DateTimeOffset.UtcNow fault
+                    return json run
+                with ex ->
+                    return Results.Text(
+                        Json.serialize {| error = ex.Message |},
+                        "application/json",
+                        statusCode = 500)
+        })) |> ignore
+
+    app.MapPost("/api/eidos/runs/{id}/replay", Func<string, IResult>(fun id ->
+        if not (validRunId id) || not (Directory.Exists(eidosRunRoot id)) then
+            Results.NotFound()
+        else
+            Eidos.replayOpsLab (eidosRunRoot id) |> json)) |> ignore
+
+    app.MapGet("/api/eidos/benchmark", Func<IResult>(fun () ->
+        Eidos.runBenchmark () |> json)) |> ignore
+
+    let sandboxAsset id asset =
+        if not (validRunId id) then Results.NotFound()
+        else
+            let relative =
+                if String.IsNullOrWhiteSpace asset then "index.html"
+                else asset.Replace('\\', '/')
+            let safe =
+                not (Path.IsPathRooted relative)
+                && relative.Split('/', StringSplitOptions.RemoveEmptyEntries)
+                   |> Array.forall (fun segment -> segment <> "." && segment <> "..")
+            let sandbox = Path.GetFullPath(Path.Combine(eidosRunRoot id, "sandbox"))
+            let target = Path.GetFullPath(Path.Combine(sandbox, relative))
+            let boundary = sandbox + string Path.DirectorySeparatorChar
+            if not safe
+               || not (target.StartsWith(boundary, StringComparison.Ordinal))
+               || not (File.Exists target) then
+                Results.NotFound()
+            else
+                let contentType =
+                    match Path.GetExtension(target).ToLowerInvariant() with
+                    | ".html" -> "text/html; charset=utf-8"
+                    | ".js" -> "text/javascript; charset=utf-8"
+                    | ".json" -> "application/json; charset=utf-8"
+                    | ".css" -> "text/css; charset=utf-8"
+                    | _ -> "application/octet-stream"
+                Results.File(target, contentType)
+
+    app.MapGet("/api/eidos/runs/{id}/sandbox", Func<string, IResult>(fun id ->
+        sandboxAsset id "index.html")) |> ignore
+    app.MapGet("/api/eidos/runs/{id}/sandbox/{**asset}", Func<string, string, IResult>(fun id asset ->
+        sandboxAsset id asset)) |> ignore
 
     // ── Laufzeit-Provider: Engines + Keys über die GUI verwalten (beliebige OpenAI-kompat Anbieter) ──
     // GET liefert den Key NIE im Klartext (nur keySet), claude+ollama sind eingebaut.

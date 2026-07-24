@@ -8,7 +8,6 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>cdd</ToolCommandName>
     <PackageId>Cdd.Cli</PackageId>
-    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -583,3 +583,189 @@ let ``Gate-Property: gruener Lauf + Marker => Aligned`` () =
         let trx : Gate.TrxResult = { Passed = (abs p % 64) + 1; Failed = 0; Skipped = 0 }
         (Gate.setzeAlignedWennGruen trx (Set.singleton "spec-x-test-1") node).Convergence = Aligned
     Check.QuickThrowOnFailure prop
+
+// ===== EIDOS v0: epistemic claims, mission dispatch, evidence and ZT2 =====
+
+let private eidosTime =
+    DateTimeOffset(2026, 7, 24, 12, 0, 0, TimeSpan.Zero)
+
+let private withEidosTemp (work: string -> unit) =
+    let dir = Path.Combine(Path.GetTempPath(), "cdd-eidos-test-" + Guid.NewGuid().ToString("N"))
+    Directory.CreateDirectory(dir) |> ignore
+    try work dir
+    finally
+        if Directory.Exists dir then Directory.Delete(dir, true)
+
+let private eidosFixtureClaim
+    (value: string)
+    (status: Eidos.EpistemicStatus)
+    (signal: Eidos.Signal)
+    : Eidos.Claim =
+    let provenance : Eidos.Provenance =
+        { SourceSignalIds = [ signal.Id ]
+          Actor = "test-owner"
+          Method = "fixture"
+          ToolVersion = "1"
+          RecordedAt = eidosTime }
+    Eidos.createClaim status "report" "format" value "contract" (Some 1.0M) provenance
+
+[<Fact; Trait("spot", "spec-eidos-epistemic-claims-test-1")>]
+let ``EIDOS keeps raw signal claim provenance time scope and epistemic status separate`` () =
+    let signal = Eidos.createSignal "owner" "contract" eidosTime "format v2 requested"
+    let claim = eidosFixtureClaim "v2" Eidos.Ratified signal
+    let twin = Eidos.projectTwin "v1" eidosTime [ "contract" ] [ signal ] [ claim ]
+    Assert.Single twin.Signals |> ignore
+    Assert.Single twin.Claims |> ignore
+    Assert.Equal(signal.Content, twin.Signals.Head.Content)
+    Assert.Equal(signal.ContentHash, Eidos.sha256 twin.Signals.Head.Content)
+    Assert.Equal(Eidos.Ratified, twin.Claims.Head.Claim.Status)
+    Assert.Equal(Eidos.Ratified, twin.Claims.Head.EffectiveStatus)
+    Assert.Equal("contract", twin.Claims.Head.Claim.Scope)
+    Assert.Equal<string list>([ signal.Id ], twin.Claims.Head.Claim.Provenance.SourceSignalIds)
+    Assert.Equal(eidosTime, twin.Claims.Head.Claim.Provenance.RecordedAt)
+
+[<Fact; Trait("spot", "spec-eidos-epistemic-claims-test-2")>]
+let ``EIDOS projection exposes contradiction and unknown instead of flattening them`` () =
+    let signal = Eidos.createSignal "owner" "contract" eidosTime "two incompatible declarations"
+    let first = eidosFixtureClaim "v1" Eidos.Declared signal
+    let second = eidosFixtureClaim "v2" Eidos.Declared signal
+    let twin =
+        Eidos.projectTwin "projection" eidosTime
+            [ "contract"; "runtime" ] [ signal ] [ first; second ]
+    Assert.Equal(2, twin.Claims.Length)
+    Assert.All(twin.Claims, fun claim -> Assert.Equal(Eidos.Contested, claim.EffectiveStatus))
+    Assert.Single twin.Conflicts |> ignore
+    Assert.Contains("runtime", twin.UnknownScopes)
+    Assert.Contains(twin.Findings, fun finding -> finding.StartsWith("Unknown scope:"))
+
+[<Fact; Trait("spot", "spec-eidos-mission-order-test-1")>]
+let ``EIDOS dispatch emits a complete typed ZT2 mission order`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        let mission = run.Mission
+        Assert.Equal(Eidos.ZT2, mission.TrustZone)
+        Assert.NotEmpty mission.Situation
+        Assert.NotEmpty mission.Intent.DesiredOutcome
+        Assert.NotEmpty mission.Scope
+        Assert.NotEmpty mission.Unit
+        Assert.NotEmpty mission.Constraints
+        Assert.NotEmpty mission.Obligations
+        Assert.NotEmpty mission.Success
+        Assert.NotEmpty mission.Abort
+        Assert.Equal(run.Doctrine.Version, mission.DoctrineVersion))
+
+[<Fact; Trait("spot", "spec-eidos-mission-order-test-2")>]
+let ``EIDOS control plane fails closed on budget capability and policy violations`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        match Eidos.controlCheck run.Doctrine run.Mission
+                  (run.Mission.Budget.MaxDurationSeconds + 1) run.Mission.Unit [] with
+        | Eidos.Abort reasons -> Assert.Contains(reasons, fun reason -> reason.Contains("budget"))
+        | other -> failwithf "expected Abort, got %A" other
+        match Eidos.controlCheck run.Doctrine run.Mission 1 [] [] with
+        | Eidos.Abort reasons -> Assert.Contains(reasons, fun reason -> reason.Contains("capabilities"))
+        | other -> failwithf "expected Abort, got %A" other
+        match Eidos.controlCheck run.Doctrine run.Mission 1 run.Mission.Unit [ "policy denied" ] with
+        | Eidos.Escalate(authority, reasons) ->
+            Assert.Equal(run.Doctrine.EscalationAuthority, authority)
+            Assert.Contains("policy denied", reasons)
+        | other -> failwithf "expected Escalate, got %A" other)
+
+[<Fact; Trait("spot", "spec-eidos-change-compiler-test-1")>]
+let ``EIDOS change compilation is deterministic and includes complete candidate metadata`` () =
+    withEidosTemp (fun firstDir ->
+        withEidosTemp (fun secondDir ->
+            let first = Eidos.runOpsLab firstDir eidosTime Eidos.NoFault
+            let second = Eidos.runOpsLab secondDir eidosTime Eidos.NoFault
+            Assert.Equal(first.Candidate.Id, second.Candidate.Id)
+            Assert.Equal(first.Candidate.ArtifactHash, second.Candidate.ArtifactHash)
+            Assert.Equal(first.Candidate.SemanticDelta, second.Candidate.SemanticDelta)
+            Assert.NotEmpty first.Candidate.ArtifactChanges
+            Assert.NotEmpty first.Candidate.AssuranceObligations
+            Assert.NotEmpty first.Candidate.DeploymentPlan
+            Assert.NotEmpty first.Candidate.RecoveryPlan))
+
+[<Fact; Trait("spot", "spec-eidos-change-compiler-test-2")>]
+let ``EIDOS retains rejected alternatives assumptions and a replayable compilation ledger`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        Assert.Single run.Compilation.Candidates |> ignore
+        Assert.Single run.Compilation.Rejected |> ignore
+        Assert.Equal("required-owner-team", run.Compilation.Rejected.Head.Name)
+        Assert.NotEmpty run.Candidate.Assumptions
+        Assert.Equal<Eidos.RejectedAlternative list>(
+            run.Compilation.Rejected,
+            run.Candidate.RejectedAlternatives)
+        Assert.True(Eidos.verifyLedger run.Compilation.Ledger)
+        Assert.Contains(run.Compilation.Ledger, fun event -> event.Kind = "AlternativeRejected"))
+
+[<Fact; Trait("spot", "spec-eidos-evidence-pack-test-1")>]
+let ``EIDOS evidence pack binds gate tool policy environment time and artifact`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        let pack = run.EvidencePack
+        Assert.True(Eidos.verifyEvidencePack pack)
+        Assert.Equal(run.Candidate.Id, pack.CandidateId)
+        Assert.Equal(run.Candidate.ArtifactHash, pack.ArtifactHash)
+        Assert.Equal(run.Candidate.PolicyVersion, pack.PolicyVersion)
+        Assert.StartsWith("zt2:", pack.Environment)
+        Assert.All(pack.Records, fun record ->
+            Assert.NotEmpty record.ValidatorId
+            Assert.NotEmpty record.ToolVersion
+            Assert.Equal(pack.Environment, record.Environment)
+            Assert.Equal(run.Candidate.ArtifactHash, record.ArtifactHash)
+            Assert.Equal(run.Candidate.PolicyVersion, record.PolicyVersion)
+            Assert.Equal(Eidos.sha256 record.Details, record.DetailsHash)))
+
+[<Fact; Trait("spot", "spec-eidos-evidence-pack-test-2")>]
+let ``EIDOS rejects missing stale red correlated and mismatched evidence with reasons`` () =
+    let faults =
+        [ Eidos.MissingEvidence
+          Eidos.StaleEvidence
+          Eidos.FailedGate
+          Eidos.CorrelatedValidator
+          Eidos.ArtifactMismatch
+          Eidos.PolicyMismatch
+          Eidos.TamperedPack ]
+    for fault in faults do
+        withEidosTemp (fun dir ->
+            let run = Eidos.runOpsLab dir eidosTime fault
+            Assert.Equal(Eidos.Rejected, run.Promotion.Status)
+            Assert.NotEmpty run.Promotion.Reasons)
+
+[<Fact; Trait("spot", "spec-eidos-zt2-opslab-test-1")>]
+let ``EIDOS OpsLab promotes only into an isolated static credential-free ZT2 sandbox`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        let sandbox = Path.Combine(dir, ".eidos", "runs", run.RunId, "sandbox")
+        Assert.Equal(Eidos.RunPromoted, run.Status)
+        Assert.True(Directory.Exists sandbox)
+        let deployment = File.ReadAllText(Path.Combine(sandbox, "deployment.json"))
+        Assert.Contains("\"network\": false", deployment)
+        Assert.Contains("\"credentialsMounted\": false", deployment)
+        Assert.Contains("\"productionAuthority\": false", deployment)
+        Assert.Equal(0, run.Metrics.MechanicalHumanTouches)
+        Assert.True(run.Metrics.ReplayVerified))
+
+[<Fact; Trait("spot", "spec-eidos-zt2-opslab-test-2")>]
+let ``EIDOS OpsLab gate failure leaves baseline unchanged and remains replayable`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.FailedGate
+        let runDir = Path.Combine(dir, ".eidos", "runs", run.RunId)
+        Assert.Equal(Eidos.RunRejected, run.Status)
+        Assert.False(Directory.Exists(Path.Combine(runDir, "sandbox")))
+        Assert.True(run.Metrics.ReplayVerified)
+        let replay = Eidos.replayOpsLab runDir
+        Assert.True(replay.Verified)
+        Assert.All(replay.Checks, fun (_, passed) -> Assert.True(passed)))
+
+[<Fact>]
+let ``EIDOS engineering benchmark is deterministic and reports its limited scope`` () =
+    let first = Eidos.runBenchmark ()
+    let second = Eidos.runBenchmark ()
+    Assert.Equal(first, second)
+    Assert.Equal(10, first.Eidos.Correct)
+    Assert.Equal(0, first.Eidos.UnsafeApprovals)
+    Assert.Equal(2, first.LinearBaseline.Correct)
+    Assert.Equal(8, first.LinearBaseline.UnsafeApprovals)
+    Assert.Contains("not external validity", first.ScopeNote)

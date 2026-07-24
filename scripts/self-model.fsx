@@ -40,7 +40,7 @@ let entries =
       term "term-ubiquitaere-sprache" "Ubiquitäre Sprache" "Gemeinsames Vokabular von Fachseite, Technik und AI-Agents — definiert in der Ontologie" [ "Ubiquitous Language" ] [ RelatesTo(EntityId "term-ontologie") ]
       term "term-cockpit" "Cockpit" "Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift" [ "IDE" ] [ RelatesTo(EntityId "term-spot") ]
       term "term-agent" "Agent" "LLM-gestützter Worker, der aus dem SPOT Implementierung, Tests und Doku ableitet" [ "AI-Agent" ] [ RelatesTo(EntityId "term-spot") ]
-      term "term-eidos" "EIDOS" "Zielarchitektur für doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; CDD ist ihr heutiger Kernel" [ "EIDOS Framework" ] [ RelatesTo(EntityId "term-spot") ]
+      term "term-eidos" "EIDOS" "Doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; v0 implementiert den falsifizierbaren Kernel bis zur isolierten ZT2-Sandbox" [ "EIDOS Framework" ] [ RelatesTo(EntityId "term-spot") ]
       term "term-signal" "Signal" "Unverändertes Rohereignis aus Feedback, Runtime, Entwicklung, Betrieb, Simulation oder Analyse" [ "Raw Event" ] [ PartOf(EntityId "term-eidos") ]
       term "term-doctrine" "Doctrine" "Versionierte, maschinenlesbare Regeln für Dispatch, Rechte, Assurance, Eskalation, Promotion und Abbruch" [ "Operational Doctrine" ] [ PartOf(EntityId "term-eidos") ]
       term "term-mission-order" "Mission Order" "Typisierter Auftrag mit Lage, Intent, Scope, Einheit, Constraints, Obligations, Berichts- und Abbruchkriterien" [ "Einsatzauftrag" ] [ PartOf(EntityId "term-eidos") ]
@@ -91,6 +91,8 @@ let entries =
         "Capability-Allowlists, kleinste Rechte, ZT2 als erstes Ziel, keine Produktiv-Credentials, harte Budgets und Fail-Closed-Abbruch"
       risk "risk-outcome-kausalitaet" "Das Evolutionary Memory speichert Korrelation als Ursache und verstärkt eine falsche Strategie" High High
         "Intervention, Störfaktoren und Konfidenz getrennt speichern; Strategy-Änderungen nur nach reproduzierbaren Outcome-Vergleichen"
+      risk "risk-evaluator-drift" "Ein lernendes oder vom Generator abhängiges Orakel driftet und belohnt Scheinerfolg" High Critical
+        "Validatorversionen binden, Generator/Validator trennen, unveränderliche Ankerfälle und externe Audits verwenden"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -229,8 +231,8 @@ let entries =
                   When = "cdd derive-code läuft"
                   Then = "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden übersprungen" } ] } }
 
-      // ── EIDOS-Zielbild: bewusst Pending, bis Code und Orakel existieren ─
-      { Id = EntityId "spec-eidos-epistemic-claims"; Convergence = Pending
+      // ── EIDOS v0: typisierter Kernel + unabhängige Orakel bis ZT2 ─────
+      { Id = EntityId "spec-eidos-epistemic-claims"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Epistemisch typisierte Claims"
             Intent = "Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet"
@@ -241,7 +243,7 @@ let entries =
                 { Given = "widersprüchliche Claims oder fehlende Evidenz"
                   When = "ein Lagebild erzeugt wird"
                   Then = "werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage geglättet" } ] } }
-      { Id = EntityId "spec-eidos-mission-order"; Convergence = Pending
+      { Id = EntityId "spec-eidos-mission-order"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Doctrine und Mission Orders"
             Intent = "Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen"
@@ -252,7 +254,7 @@ let entries =
                 { Given = "eine Mission mit überschrittenem Budget, fehlender Capability oder verletzter Policy"
                   When = "der Control Plane die Verletzung meldet"
                   Then = "wird fail closed abgebrochen oder an eine zuständige Authority eskaliert" } ] } }
-      { Id = EntityId "spec-eidos-change-compiler"; Convergence = Pending
+      { Id = EntityId "spec-eidos-change-compiler"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Semantic Change Compiler"
             Intent = "Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort"
@@ -263,7 +265,7 @@ let entries =
                 { Given = "mehrere zulässige Candidates"
                   When = "Impact und Risiken bewertet werden"
                   Then = "bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar" } ] } }
-      { Id = EntityId "spec-eidos-evidence-pack"; Convergence = Pending
+      { Id = EntityId "spec-eidos-evidence-pack"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Evidence Packs und Promotion"
             Intent = "Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators"
@@ -274,7 +276,7 @@ let entries =
                 { Given = "eine fehlende, veraltete oder rote Obligation"
                   When = "Promotion bewertet wird"
                   Then = "wird der Candidate nicht befördert und der konkrete Nachweisgrund bleibt auditierbar" } ] } }
-      { Id = EntityId "spec-eidos-zt2-opslab"; Convergence = Pending
+      { Id = EntityId "spec-eidos-zt2-opslab"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Zero-Touch-Sandbox im OpsLab"
             Intent = "Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt"
@@ -328,6 +330,42 @@ let entries =
             MediaType = "paper"
             Takeaways = [ "Offene Evolution kann Agentenvarianten empirisch über Benchmarks selektieren"
                           "Sandboxing und menschliche Aufsicht bleiben Teil der berichteten Sicherheitsmaßnahmen" ] } }
+      { Id = EntityId "kb-explicit-provenance"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Responsible Agentic AI Requires Explicit Provenance"; Source = "https://arxiv.org/abs/2605.17169"
+            MediaType = "paper"
+            Takeaways = [ "Verantwortung braucht über den gesamten Agenten-Lebenszyklus explizite, eingreifbare Provenienz"
+                          "Provenienz ist ein Strukturmerkmal, kein optionales Log-Detail" ] } }
+      { Id = EntityId "kb-collaborative-requirements"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Collaborative and AI-Supported Requirements Elicitation"; Source = "https://arxiv.org/abs/2606.24060"
+            MediaType = "paper"
+            Takeaways = [ "Stakeholder-Kollaboration plus AI-Synthese erzeugte im kontrollierten Versuch die bestbewerteten Artefakte"
+                          "EIDOS automatisiert mechanische Synthese, nicht normative Stakeholder-Autorität" ] } }
+      { Id = EntityId "kb-who-grades-grader"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Who Grades the Grader?"; Source = "https://arxiv.org/abs/2607.12790"
+            MediaType = "paper"
+            Takeaways = [ "Evolvierende Metriken brauchen unveränderliche Anker und unabhängige äußere Audits"
+                          "Entfernte Anker können Evaluatoren in triviale oder spielbare Metriken kollabieren lassen" ] } }
+      { Id = EntityId "kb-w3c-prov"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "W3C PROV-O"; Source = "https://www.w3.org/TR/prov-o/"
+            MediaType = "standard"
+            Takeaways = [ "Entity, Activity und Agent bilden einen interoperablen Provenienz-Kern"
+                          "EIDOS-v0 bleibt kompakt, soll seine Provenienz später auf PROV abbilden können" ] } }
+      { Id = EntityId "kb-slsa-provenance"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "SLSA Provenance"; Source = "https://slsa.dev/spec/v1.2/"
+            MediaType = "standard"
+            Takeaways = [ "Artefakte werden an Builderidentität, Inputs, Zeit und Digests gebunden"
+                          "Evidence Packs übernehmen diese Bindungsprinzipien über Builds hinaus" ] } }
+      { Id = EntityId "kb-nist-ssdf"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "NIST SP 800-218 Secure Software Development Framework"; Source = "https://csrc.nist.gov/pubs/sp/800/218/final"
+            MediaType = "standard"
+            Takeaways = [ "Security-Praktiken werden risikoorientiert in bestehende Entwicklungsmodelle integriert"
+                          "Provenienz, Security-Anforderungen, Risiken und Designentscheidungen sollen verfolgt werden" ] } }
 
       // ── Tools: Capabilities für Agents ────────────────────────────────
       { Id = EntityId "tool-mermaid"; Convergence = Aligned

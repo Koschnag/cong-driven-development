@@ -1,0 +1,18 @@
+{
+  "Id": "kb-w3c-prov",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "W3C PROV-O",
+        "Source": "https://www.w3.org/TR/prov-o/",
+        "MediaType": "standard",
+        "Takeaways": [
+          "Entity, Activity und Agent bilden einen interoperablen Provenienz-Kern",
+          "EIDOS-v0 bleibt kompakt, soll seine Provenienz sp\u00E4ter auf PROV abbilden k\u00F6nnen"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

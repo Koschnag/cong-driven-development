@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="EIDOS Studio: evidenzgesteuerte Softwareänderungen in einer isolierten ZT2-Sandbox.">
+  <title>EIDOS Studio α</title>
+  <link rel="manifest" href="eidos.webmanifest">
+  <link rel="icon" href="eidos-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="eidos.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="/" aria-label="Zurück zum CDD Cockpit">← CDD</a>
+    <div>
+      <strong>EIDOS Studio</strong>
+      <span class="alpha">α · ZT2</span>
+    </div>
+    <span id="connection" class="connection">verbinde …</span>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">EVIDENCE-GOVERNED CHANGE COMPILATION</p>
+      <h1 id="hero-title">Eine Änderung. Klare Grenzen. Prüfbare Evidenz.</h1>
+      <p class="lead">Der OpsLab-Demonstrator kompiliert eine abwärtskompatible
+        Schemaänderung, verwirft die unsichere Alternative und befördert ausschließlich
+        in eine lokale, credential-freie Sandbox.</p>
+      <div class="safety">
+        <span>✓ kein Netzwerk</span>
+        <span>✓ keine Credentials</span>
+        <span>✓ keine Produktionsrechte</span>
+      </div>
+    </section>
+
+    <section class="now-card" aria-labelledby="now-title">
+      <div>
+        <p class="eyebrow" id="now-title">JETZT</p>
+        <h2>Sauberen ZT2-Lauf starten</h2>
+        <p>Automatisch bis zum unabhängigen Promotion-Gate. Keine weitere Eingabe nötig.</p>
+      </div>
+      <button id="run-clean" class="primary">▶ OpsLab ausführen</button>
+    </section>
+
+    <ol class="pipeline" aria-label="EIDOS Ablauf">
+      <li data-step="signal"><span>1</span><b>Signal</b><small>Original erhalten</small></li>
+      <li data-step="mission"><span>2</span><b>Mission</b><small>Scope & Budget</small></li>
+      <li data-step="candidate"><span>3</span><b>Candidate</b><small>semantischer Delta</small></li>
+      <li data-step="evidence"><span>4</span><b>Evidence</b><small>unabhängige Gates</small></li>
+      <li data-step="promotion"><span>5</span><b>ZT2</b><small>fail closed</small></li>
+      <li data-step="replay"><span>6</span><b>Replay</b><small>Hash-Kette</small></li>
+    </ol>
+
+    <section id="run-panel" class="panel" aria-live="polite">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">LETZTER LAUF</p>
+          <h2 id="run-status">Noch kein Lauf</h2>
+        </div>
+        <span id="run-badge" class="badge neutral">bereit</span>
+      </div>
+      <p id="run-message" class="run-message">Starte den OpsLab-Lauf, um Mission, Candidate,
+        Evidence Pack und Replay-Nachweis zu erzeugen.</p>
+      <dl class="facts">
+        <div><dt>Run</dt><dd id="run-id">—</dd></div>
+        <div><dt>Candidate</dt><dd id="candidate-id">—</dd></div>
+        <div><dt>Evidence</dt><dd id="evidence-id">—</dd></div>
+        <div><dt>Replay</dt><dd id="replay-state">—</dd></div>
+      </dl>
+      <div id="reasons" class="reasons" hidden>
+        <h3>Gate-Begründung</h3>
+        <ul id="reason-list"></ul>
+      </div>
+      <div class="actions">
+        <button id="replay" disabled>↻ Erneut verifizieren</button>
+        <a id="open-sandbox" class="button-link" href="#" target="_blank" rel="noopener" hidden>Sandbox öffnen ↗</a>
+      </div>
+    </section>
+
+    <div class="two-column">
+      <section class="panel">
+        <p class="eyebrow">FALSIFIKATION</p>
+        <h2>Fehler gezielt injizieren</h2>
+        <p>Prüfe, dass fehlende, alte, rote oder korrelierte Evidenz wirklich blockiert.</p>
+        <label for="fault">Versuchsbedingung</label>
+        <select id="fault">
+          <option value="failed-gate">Kompatibilitäts-Gate rot</option>
+          <option value="stale-evidence">Evidenz veraltet</option>
+          <option value="correlated-validator">Generator = Validator</option>
+          <option value="missing-evidence">Recovery-Nachweis fehlt</option>
+          <option value="artifact-mismatch">Falscher Artefakt-Hash</option>
+          <option value="tampered-pack">Evidence Pack manipuliert</option>
+          <option value="budget-exceeded">Budget überschritten</option>
+        </select>
+        <button id="run-fault">Fehlerlauf starten</button>
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow">ENGINEERING-BENCHMARK</p>
+        <h2>Assurance-Fault-Injection</h2>
+        <div class="score-grid">
+          <div><strong id="eidos-score">—</strong><span>EIDOS korrekt</span></div>
+          <div><strong id="base-score">—</strong><span>lineare Baseline</span></div>
+          <div><strong id="unsafe-score">—</strong><span>unsichere Freigaben</span></div>
+        </div>
+        <p id="benchmark-note" class="fineprint">Benchmark wird geladen …</p>
+      </section>
+    </div>
+
+    <section class="panel history-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">AUDIT</p>
+          <h2>Lokale Laufhistorie</h2>
+        </div>
+        <button id="refresh-history" class="quiet">aktualisieren</button>
+      </div>
+      <div id="history" class="history"><p class="muted">Noch keine Läufe.</p></div>
+    </section>
+
+    <section class="panel feedback-panel">
+      <div>
+        <p class="eyebrow">FEEDBACK</p>
+        <h2>Bug oder Feature für den nächsten Sprint</h2>
+        <p>Erzeuge eine aufbereitete, portable Issue-Vorlage. Der Entwurf bleibt
+          lokal im Browser, bis Du ihn bewusst herunterlädst.</p>
+      </div>
+      <button id="open-feedback">Feedback erfassen</button>
+    </section>
+  </main>
+
+  <dialog id="feedback-dialog" aria-labelledby="feedback-title">
+    <form id="feedback-form" method="dialog">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">ISSUE-ENTWURF</p>
+          <h2 id="feedback-title">Feedback erfassen</h2>
+        </div>
+        <button id="close-feedback" class="quiet" type="button" aria-label="Dialog schließen">✕</button>
+      </div>
+      <p class="fineprint">Keine Zugangsdaten, internen Routen oder personenbezogenen Daten eintragen.</p>
+      <label for="feedback-kind">Typ</label>
+      <select id="feedback-kind" required>
+        <option value="bug">Bug Report</option>
+        <option value="feature">Feature Request</option>
+      </select>
+      <label for="feedback-summary">Kurztitel</label>
+      <input id="feedback-summary" maxlength="120" required
+        placeholder="Was soll korrigiert oder verbessert werden?">
+      <label for="feedback-details">Beobachtung oder gewünschtes Ergebnis</label>
+      <textarea id="feedback-details" maxlength="4000" rows="6" required
+        placeholder="Knapp, konkret und prüfbar beschreiben."></textarea>
+      <label for="feedback-context">Reproduktion / Kontext <span class="optional">(optional)</span></label>
+      <textarea id="feedback-context" maxlength="2000" rows="4"
+        placeholder="Schritte, Plattform und relevante Run-ID."></textarea>
+      <div class="actions">
+        <button class="primary" type="submit">Issue-Vorlage herunterladen</button>
+        <button id="copy-feedback" type="button">In Zwischenablage</button>
+      </div>
+      <p id="feedback-state" class="fineprint" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <footer>
+    <span>EIDOS v0.8 α · synthetischer Demonstrator</span>
+    <a href="https://github.com/Koschnag/cong-driven-development/blob/main/docs/eidos.md">Architektur</a>
+    <span>Produktionsautonomie: aus</span>
+  </footer>
+
+  <script type="module" src="eidos.js"></script>
+</body>
+</html>

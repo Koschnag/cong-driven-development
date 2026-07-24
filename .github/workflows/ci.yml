@@ -42,6 +42,10 @@ jobs:
           $cli derive-tests --write
           $cli validate
           $cli diff
+          $cli eidos run --out "$tmp"
+          run_dir=$(find "$tmp/.eidos/runs" -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          $cli eidos replay "$run_dir"
+          $cli eidos benchmark --out "$tmp/benchmark"
 
       - name: Selbstmodell validieren (CDD prüft CDD)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- validate
