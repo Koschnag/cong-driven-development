@@ -1,0 +1,24 @@
+{
+  "Id": "term-change-compiler",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Change Compiler",
+        "Definition": "Transformiert Intent, System-Twin, Policies und Evidenz in pr\u00FCfbare \u00C4nderungskandidaten samt Obligations und Recovery",
+        "Synonyms": [
+          "Semantic Change Compiler"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-eidos"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

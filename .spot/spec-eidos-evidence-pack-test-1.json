@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-evidence-pack-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-evidence-pack",
+        "Name": "Evidence Packs und Promotion \u2014 when Generator-unabh\u00E4ngige Gates laufen then bindet das Evidence Pack Ergebnis, Tool- und Policyversion, Umgebung, Zeitpunkt und Artefakt-Hash",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

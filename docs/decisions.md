@@ -4,14 +4,23 @@
 
 ## Prämissen (nicht verhandelbar)
 
+### Eine Agentenkette ist ein Plan, nicht die Architektur.
+*Doctrine, Lage, Risiko und verfügbare Capabilities erzeugen pro Mission einen begrenzten Ausführungsplan* · `premise-chain-is-plan`
+
 ### Cloud-first: nichts muss lokal laufen.
 *Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) trägt alles* · `premise-cloud-first`
+
+### Evidence vor Promotion.
+*Ein Candidate wird nur befördert, wenn alle risikoadaptiven Obligations mit benannter, reproduzierbarer Evidenz erfüllt sind* · `premise-evidence-before-promotion`
 
 ### Kein Python — nie.
 *Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig* · `premise-kein-python`
 
 ### Typsicherheit vor Flexibilität.
 *Illegale SPOT-Zustände sollen nicht repräsentierbar sein — das Typsystem ist das Schema* · `premise-typsicherheit`
+
+### Unknown bleibt unknown.
+*Fehlende Evidenz ist weder Zustimmung noch der Nachweis, dass ein Bereich nicht betroffen ist* · `premise-unknown-remains-unknown`
 
 ## Entscheidungen (ADRs)
 
@@ -34,6 +43,11 @@
 - **Kontext:** Offenheit gewünscht, aber Datei-Copyleft statt viralem Projekt-Copyleft
 - **Entscheidung:** MPL-2.0
 - **Konsequenzen:** Kommerzielle Nutzung möglich, Änderungen an CDD-Dateien bleiben offen
+
+### EIDOS als Zielarchitektur über dem CDD-Kernel · `adr-005-eidos-target`
+- **Kontext:** CDD besitzt SPOT und ein Konvergenz-Orakel, aber noch kein epistemisches Lagebild, Change Compilation, Mission Dispatch oder Outcome-Lernen
+- **Entscheidung:** CDD bleibt der überprüfbare Kernel; EIDOS wird als getrenntes, ehrlich als Pending markiertes Architektur- und Forschungsprogramm entwickelt
+- **Konsequenzen:** Neue Capabilities werden zuerst im SPOT spezifiziert; Produktclaims unterscheiden implementierten Ist-Stand und Zielbild
 
 ## Geltende Invarianten (Governance)
 

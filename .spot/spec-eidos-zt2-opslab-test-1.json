@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-zt2-opslab-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-zt2-opslab",
+        "Name": "Zero-Touch-Sandbox im OpsLab \u2014 when der EIDOS-Lauf auf ZT2 startet then erzeugt, pr\u00FCft und deployt er den Candidate ausschlie\u00DFlich in der Sandbox ohne produktive Credentials",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

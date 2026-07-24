@@ -40,11 +40,21 @@ let entries =
       term "term-ubiquitaere-sprache" "Ubiquitäre Sprache" "Gemeinsames Vokabular von Fachseite, Technik und AI-Agents — definiert in der Ontologie" [ "Ubiquitous Language" ] [ RelatesTo(EntityId "term-ontologie") ]
       term "term-cockpit" "Cockpit" "Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift" [ "IDE" ] [ RelatesTo(EntityId "term-spot") ]
       term "term-agent" "Agent" "LLM-gestützter Worker, der aus dem SPOT Implementierung, Tests und Doku ableitet" [ "AI-Agent" ] [ RelatesTo(EntityId "term-spot") ]
+      term "term-eidos" "EIDOS" "Zielarchitektur für doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; CDD ist ihr heutiger Kernel" [ "EIDOS Framework" ] [ RelatesTo(EntityId "term-spot") ]
+      term "term-signal" "Signal" "Unverändertes Rohereignis aus Feedback, Runtime, Entwicklung, Betrieb, Simulation oder Analyse" [ "Raw Event" ] [ PartOf(EntityId "term-eidos") ]
+      term "term-doctrine" "Doctrine" "Versionierte, maschinenlesbare Regeln für Dispatch, Rechte, Assurance, Eskalation, Promotion und Abbruch" [ "Operational Doctrine" ] [ PartOf(EntityId "term-eidos") ]
+      term "term-mission-order" "Mission Order" "Typisierter Auftrag mit Lage, Intent, Scope, Einheit, Constraints, Obligations, Berichts- und Abbruchkriterien" [ "Einsatzauftrag" ] [ PartOf(EntityId "term-eidos") ]
+      term "term-change-compiler" "Change Compiler" "Transformiert Intent, System-Twin, Policies und Evidenz in prüfbare Änderungskandidaten samt Obligations und Recovery" [ "Semantic Change Compiler" ] [ PartOf(EntityId "term-eidos") ]
+      term "term-evidence-pack" "Evidence Pack" "Versions-, zeit- und umgebungsgebündelter Nachweis für einen Kandidaten und seine Assurance Obligations" [ "Evidence-Carrying Change" ] [ PartOf(EntityId "term-eidos") ]
+      term "term-system-twin" "System Twin" "Zeitbezogene, provenienzbehaftete Projektion des bekannten Systems einschließlich Unsicherheit und Widerspruch" [ "Semantic System Twin" ] [ RelatesTo(EntityId "term-spot") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Kein Python — nie." "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
       premise "premise-cloud-first" "Cloud-first: nichts muss lokal laufen." "Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) trägt alles"
       premise "premise-typsicherheit" "Typsicherheit vor Flexibilität." "Illegale SPOT-Zustände sollen nicht repräsentierbar sein — das Typsystem ist das Schema"
+      premise "premise-evidence-before-promotion" "Evidence vor Promotion." "Ein Candidate wird nur befördert, wenn alle risikoadaptiven Obligations mit benannter, reproduzierbarer Evidenz erfüllt sind"
+      premise "premise-unknown-remains-unknown" "Unknown bleibt unknown." "Fehlende Evidenz ist weder Zustimmung noch der Nachweis, dass ein Bereich nicht betroffen ist"
+      premise "premise-chain-is-plan" "Eine Agentenkette ist ein Plan, nicht die Architektur." "Doctrine, Lage, Risiko und verfügbare Capabilities erzeugen pro Mission einen begrenzten Ausführungsplan"
 
       // ── Entscheidungen (ADRs) ─────────────────────────────────────────
       decision "adr-001-fsharp" "F# für die Domain"
@@ -63,6 +73,10 @@ let entries =
         "Offenheit gewünscht, aber Datei-Copyleft statt viralem Projekt-Copyleft"
         "MPL-2.0"
         "Kommerzielle Nutzung möglich, Änderungen an CDD-Dateien bleiben offen"
+      decision "adr-005-eidos-target" "EIDOS als Zielarchitektur über dem CDD-Kernel"
+        "CDD besitzt SPOT und ein Konvergenz-Orakel, aber noch kein epistemisches Lagebild, Change Compilation, Mission Dispatch oder Outcome-Lernen"
+        "CDD bleibt der überprüfbare Kernel; EIDOS wird als getrenntes, ehrlich als Pending markiertes Architektur- und Forschungsprogramm entwickelt"
+        "Neue Capabilities werden zuerst im SPOT spezifiziert; Produktclaims unterscheiden implementierten Ist-Stand und Zielbild"
 
       // ── Risiken ────────────────────────────────────────────────────────
       risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
@@ -71,6 +85,12 @@ let entries =
         "Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents füllen Lücken, Validierung fängt Drift"
       risk "risk-pflegekosten" "SPOT-Pflege wird teurer als der Code, den er erzeugt" Medium High
         "Alles Ableitbare wird abgeleitet (Tests, Diagramme), nie handgepflegt"
+      risk "risk-korrelierte-orakel" "Generator und Validator teilen denselben systematischen Fehler und erzeugen Scheinevidenz" High Critical
+        "Kritische Orakel dekorrelieren, unabhängige Harnesses verwenden und Provenienz sowie Validatorversion im Evidence Pack binden"
+      risk "risk-autonomie-blast-radius" "Autonome Änderungen überschreiten den freigegebenen Scope oder erreichen produktive Systeme" Medium Critical
+        "Capability-Allowlists, kleinste Rechte, ZT2 als erstes Ziel, keine Produktiv-Credentials, harte Budgets und Fail-Closed-Abbruch"
+      risk "risk-outcome-kausalitaet" "Das Evolutionary Memory speichert Korrelation als Ursache und verstärkt eine falsche Strategie" High High
+        "Intervention, Störfaktoren und Konfidenz getrennt speichern; Strategy-Änderungen nur nach reproduzierbaren Outcome-Vergleichen"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -105,14 +125,6 @@ let entries =
                 { Given = "bereits abgeleitete Tests"
                   When = "derive-tests erneut läuft"
                   Then = "entstehen keine Duplikate (Idempotenz)" } ] } }
-      { Id = EntityId "spec-cockpit-uml"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "Multidimensionale Sicht"
-            Intent = "Ein Modell, mehrere Projektionen — Graph und UML aus demselben SPOT"
-            Criteria =
-              [ { Given = "Begriffe mit IsA/PartOf/RelatesTo-Beziehungen"
-                  When = "der UML-Tab geöffnet wird"
-                  Then = "erscheint ein Klassendiagramm mit Generalisierung, Komposition und Assoziation" } ] } }
       { Id = EntityId "spec-export-context"; Convergence = Aligned
         Payload = SpecNode
           { Title = "LLM-Kontextexport"
@@ -133,36 +145,6 @@ let entries =
               [ { Given = "eine Prosa-Beschreibung einer Modelländerung"
                   When = "der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt)"
                   Then = "entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird" } ] } }
-
-      { Id = EntityId "spec-uml-cube"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "Modell-Navigation als Würfel"
-            Intent = "Der SPOT-Graph ist wie ein OLAP-Cube navigierbar: Slice, Dice, Drill-down, Verlinkungen"
-            Criteria =
-              [ { Given = "ein gewählter Knoten"
-                  When = "der Inspektor geöffnet ist"
-                  Then = "sind ein- und ausgehende Verlinkungen klickbar und die Historie per Zurück/Vor navigierbar" }
-                { Given = "aktive Filter (Knotenart/Konvergenz) oder Fokus-Modus"
-                  When = "Graph oder UML gerendert werden"
-                  Then = "zeigen sie nur die gefilterte Teilmenge bzw. die N-Hop-Nachbarschaft" } ] } }
-
-      { Id = EntityId "spec-form-editor"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "Formular-Editor"
-            Intent = "Knoten werden über Eingabefelder gepflegt — JSON ist Experten-Option, nicht Voraussetzung"
-            Criteria =
-              [ { Given = "eine Knotenart aus der Toolbox"
-                  When = "ein neuer Knoten angelegt wird"
-                  Then = "öffnet sich ein Formular mit passenden Feldern und Dropdowns für Referenzen" } ] } }
-
-      { Id = EntityId "spec-vs2015-ea-layout"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "VS2015-Design mit EA-Anatomie"
-            Intent = "Das Cockpit folgt Visual Studio 2015 (Chrome) und Enterprise Architect (Fensteranordnung)"
-            Criteria =
-              [ { Given = "das geöffnete Cockpit"
-                  When = "ein Knoten gewählt ist"
-                  Then = "zeigen Diagramme als zentrales Dokument, Eigenschaften rechts und die blaue Statusleiste Auswahl, Zähler und Validierungsstand" } ] } }
 
       // ── Invarianten: Governance by Invariance ────────────────────────
       { Id = EntityId "inv-specs-getestet"; Convergence = Aligned
@@ -198,15 +180,6 @@ let entries =
               [ { Given = "src/*.fsproj und Component-Knoten"
                   When = "cdd sync-code läuft"
                   Then = "wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert" } ] } }
-      { Id = EntityId "spec-uml-dnd"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "UML-Editor mit Drag and Drop"
-            Intent = "Beziehungen entstehen durch Ziehen zwischen Diagramm-Knoten, Doppelklick öffnet das Formular"
-            Criteria =
-              [ { Given = "zwei Begriffe im UML-Diagramm"
-                  When = "von einem zum anderen gezogen wird"
-                  Then = "wird die gewählte Beziehung (IsA/PartOf/RelatesTo) nach Bestätigung gespeichert" } ] } }
-
       { Id = EntityId "spec-mcp-server"; Convergence = Aligned
         Payload = SpecNode
           { Title = "MCP-Server"
@@ -215,27 +188,6 @@ let entries =
               [ { Given = "ein verbundener MCP-Client"
                   When = "spot_upsert oder spot_delete aufgerufen wird"
                   Then = "wird die Änderung gespeichert und die Validierung (inkl. Invarianten) zurückgemeldet" } ] } }
-      { Id = EntityId "spec-interactive-graph"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "Interaktiver Graph"
-            Intent = "Diagramm-Elemente sind frei positionierbar wie in Enterprise Architect; Layouts bleiben erhalten"
-            Criteria =
-              [ { Given = "ein verschobener Knoten im Graph"
-                  When = "die Seite neu geladen wird"
-                  Then = "behält der Knoten seine Position; Rechtsklick startet eine neue Beziehung" } ] } }
-
-      { Id = EntityId "spec-diagram-designer"; Convergence = Aligned
-        Payload = SpecNode
-          { Title = "Diagramm-Designer"
-            Intent = "Eine Zeichenfläche, viele Projektionen: Klassen, Use Case, Sequenz, Architektur, Topologie, Grid — alle Cube-gefiltert"
-            Criteria =
-              [ { Given = "ein aktiver Cube-Filter oder Fokus"
-                  When = "zwischen Designer-Sichten gewechselt wird"
-                  Then = "zeigt jede Sicht dieselbe gefilterte Teilmenge in ihrer Projektion" }
-                { Given = "eine Grid-Kachel"
-                  When = "sie angeklickt wird"
-                  Then = "wird in die Topologie des Knotens gedrillt (Fokus an)" } ] } }
-
       { Id = EntityId "spec-fehlerliste"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Fehlerliste & Widerspruchs-Erkennung"
@@ -277,6 +229,63 @@ let entries =
                   When = "cdd derive-code läuft"
                   Then = "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden übersprungen" } ] } }
 
+      // ── EIDOS-Zielbild: bewusst Pending, bis Code und Orakel existieren ─
+      { Id = EntityId "spec-eidos-epistemic-claims"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Epistemisch typisierte Claims"
+            Intent = "Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet"
+            Criteria =
+              [ { Given = "ein Rohsignal und eine maschinelle Interpretation"
+                  When = "beide in den System-Twin projiziert werden"
+                  Then = "bleiben Originalsignal, Claim, Provenienz, Zeitpunkt, Scope und epistemischer Status getrennt erhalten" }
+                { Given = "widersprüchliche Claims oder fehlende Evidenz"
+                  When = "ein Lagebild erzeugt wird"
+                  Then = "werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage geglättet" } ] } }
+      { Id = EntityId "spec-eidos-mission-order"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Doctrine und Mission Orders"
+            Intent = "Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen"
+            Criteria =
+              [ { Given = "ein klassifiziertes Change Intent und eine versionierte Doctrine"
+                  When = "eine Mission disponiert wird"
+                  Then = "entsteht eine Mission Order mit Lage, Ziel, Scope, Einheit, Constraints, Erfolg und Abbruch" }
+                { Given = "eine Mission mit überschrittenem Budget, fehlender Capability oder verletzter Policy"
+                  When = "der Control Plane die Verletzung meldet"
+                  Then = "wird fail closed abgebrochen oder an eine zuständige Authority eskaliert" } ] } }
+      { Id = EntityId "spec-eidos-change-compiler"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Semantic Change Compiler"
+            Intent = "Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort"
+            Criteria =
+              [ { Given = "ein Change Intent, ein versionierter System-Twin, Policies und aktuelle Evidenz"
+                  When = "der Change Compiler läuft"
+                  Then = "entstehen deterministische Candidate-Metadaten mit Semantic Delta, Artefakten, Obligations, Deployment und Recovery" }
+                { Given = "mehrere zulässige Candidates"
+                  When = "Impact und Risiken bewertet werden"
+                  Then = "bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar" } ] } }
+      { Id = EntityId "spec-eidos-evidence-pack"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Evidence Packs und Promotion"
+            Intent = "Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators"
+            Criteria =
+              [ { Given = "ein Candidate mit risikoadaptiven Assurance Obligations"
+                  When = "Generator-unabhängige Gates laufen"
+                  Then = "bindet das Evidence Pack Ergebnis, Tool- und Policyversion, Umgebung, Zeitpunkt und Artefakt-Hash" }
+                { Given = "eine fehlende, veraltete oder rote Obligation"
+                  When = "Promotion bewertet wird"
+                  Then = "wird der Candidate nicht befördert und der konkrete Nachweisgrund bleibt auditierbar" } ] } }
+      { Id = EntityId "spec-eidos-zt2-opslab"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Zero-Touch-Sandbox im OpsLab"
+            Intent = "Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt"
+            Criteria =
+              [ { Given = "eine synthetische versionierte Report-/Submission-Anwendung und eine Mission Order"
+                  When = "der EIDOS-Lauf auf ZT2 startet"
+                  Then = "erzeugt, prüft und deployt er den Candidate ausschließlich in der Sandbox ohne produktive Credentials" }
+                { Given = "ein Gate-Fehler, Timeout oder verletztes Abbruchkriterium"
+                  When = "die Mission endet"
+                  Then = "bleibt das Zielsystem unverändert und Event Ledger, Evidence und Recovery-Ergebnis sind replaybar" } ] } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode
@@ -289,6 +298,36 @@ let entries =
             MediaType = "book"
             Takeaways = [ "Ubiquitous Language ist die Brücke zwischen Fachseite und Code"
                           "Bounded Contexts begrenzen Modellgültigkeit" ] } }
+      { Id = EntityId "kb-intent-formalization"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Intent Formalization — Grand Challenge"; Source = "https://arxiv.org/abs/2603.17150"
+            MediaType = "paper"
+            Takeaways = [ "Die Lücke zwischen natürlichem Intent und prüfbarem Verhalten ist der zentrale Engpass"
+                          "Spezifikationsqualität braucht eigene Metriken und Interaktion" ] } }
+      { Id = EntityId "kb-intent-debt"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Cognitive and Intent Debt"; Source = "https://arxiv.org/abs/2603.22106"
+            MediaType = "paper"
+            Takeaways = [ "Fehlendes externalisiertes Rationale erzeugt Intent Debt"
+                          "Softwaregesundheit umfasst Code, gemeinsames Verständnis und explizites Intent-Wissen" ] } }
+      { Id = EntityId "kb-veriact"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "VeriAct — Beyond Verifiability"; Source = "https://arxiv.org/abs/2604.00280"
+            MediaType = "paper"
+            Takeaways = [ "Verifier-Akzeptanz allein garantiert keine korrekte oder vollständige Spezifikation"
+                          "Ein unabhängiges Spec-Harness macht Über- und Unterbeschränkung messbar" ] } }
+      { Id = EntityId "kb-llm-modulo"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "LLM-Modulo Frameworks"; Source = "https://arxiv.org/abs/2402.01817"
+            MediaType = "paper"
+            Takeaways = [ "LLMs und externe modellbasierte Verifizierer sollen bidirektional gekoppelt werden"
+                          "Der externe Verifizierer bleibt Quelle der belastbaren Garantie" ] } }
+      { Id = EntityId "kb-darwin-goedel-machine"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Darwin Gödel Machine"; Source = "https://arxiv.org/abs/2505.22954"
+            MediaType = "paper"
+            Takeaways = [ "Offene Evolution kann Agentenvarianten empirisch über Benchmarks selektieren"
+                          "Sandboxing und menschliche Aufsicht bleiben Teil der berichteten Sicherheitsmaßnahmen" ] } }
 
       // ── Tools: Capabilities für Agents ────────────────────────────────
       { Id = EntityId "tool-mermaid"; Convergence = Aligned

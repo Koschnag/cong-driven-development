@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-epistemic-claims-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-epistemic-claims",
+        "Name": "Epistemisch typisierte Claims \u2014 when ein Lagebild erzeugt wird then werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage gegl\u00E4ttet",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

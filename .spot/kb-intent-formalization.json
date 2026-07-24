@@ -1,0 +1,18 @@
+{
+  "Id": "kb-intent-formalization",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Intent Formalization \u2014 Grand Challenge",
+        "Source": "https://arxiv.org/abs/2603.17150",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Die L\u00FCcke zwischen nat\u00FCrlichem Intent und pr\u00FCfbarem Verhalten ist der zentrale Engpass",
+          "Spezifikationsqualit\u00E4t braucht eigene Metriken und Interaktion"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

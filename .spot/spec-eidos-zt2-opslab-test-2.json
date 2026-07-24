@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-zt2-opslab-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-zt2-opslab",
+        "Name": "Zero-Touch-Sandbox im OpsLab \u2014 when die Mission endet then bleibt das Zielsystem unver\u00E4ndert und Event Ledger, Evidence und Recovery-Ergebnis sind replaybar",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

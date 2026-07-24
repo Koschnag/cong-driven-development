@@ -1,0 +1,15 @@
+{
+  "Id": "risk-outcome-kausalitaet",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Das Evolutionary Memory speichert Korrelation als Ursache und verst\u00E4rkt eine falsche Strategie",
+        "Likelihood": "High",
+        "Impact": "High",
+        "Mitigation": "Intervention, St\u00F6rfaktoren und Konfidenz getrennt speichern; Strategy-\u00C4nderungen nur nach reproduzierbaren Outcome-Vergleichen"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
