@@ -1,11 +1,13 @@
-const CACHE = "eidos-static-v2";
+const CACHE = "eidos-static-v3";
+const scoped = (asset) => new URL(asset, self.registration.scope).pathname;
 const STATIC = [
-  "/eidos.html",
-  "/eidos.css",
-  "/eidos.js",
-  "/eidos.webmanifest",
-  "/eidos-icon.svg",
+  scoped("eidos.html"),
+  scoped("eidos.css"),
+  scoped("eidos.js"),
+  scoped("eidos.webmanifest"),
+  scoped("eidos-icon.svg"),
 ];
+const API_PREFIX = scoped("api/");
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(STATIC)));
@@ -23,7 +25,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith("/api/")) return;
+  if (url.pathname.startsWith(API_PREFIX)) return;
   event.respondWith(
     fetch(event.request)
       .then((response) => {

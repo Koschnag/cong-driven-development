@@ -2,14 +2,14 @@
   "name": "EIDOS Studio",
   "short_name": "EIDOS",
   "description": "Evidence-governed change compilation in an isolated ZT2 sandbox.",
-  "start_url": "/eidos.html",
-  "scope": "/",
+  "start_url": "./eidos.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#07111f",
   "theme_color": "#07111f",
   "icons": [
     {
-      "src": "/eidos-icon.svg",
+      "src": "eidos-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

@@ -5,15 +5,36 @@
 //   [spot: spec-formal-view-test-1]     Formal-Sicht (code behind) rendert mit KaTeX
 import { spawn } from "node:child_process";
 import { cp, mkdtemp, rm } from "node:fs/promises";
+import { createServer, request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import puppeteer from "puppeteer";
 
 const PORT = 5599;
+const PROXY_PORT = 5600;
 const repo = new URL("../..", import.meta.url).pathname;
 const dataRoot = await mkdtemp(join(tmpdir(), "cdd-e2e-"));
 await cp(join(repo, ".spot"), join(dataRoot, ".spot"), { recursive: true });
 const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", dataRoot, "--urls", `http://127.0.0.1:${PORT}`], { cwd: repo, stdio: "ignore" });
+const proxy = createServer((req, res) => {
+  if (!req.url?.startsWith("/cdd/")) {
+    res.writeHead(404).end();
+    return;
+  }
+  const upstream = httpRequest({
+    hostname: "127.0.0.1",
+    port: PORT,
+    path: req.url.slice("/cdd".length) || "/",
+    method: req.method,
+    headers: req.headers,
+  }, (response) => {
+    res.writeHead(response.statusCode || 502, response.headers);
+    response.pipe(res);
+  });
+  upstream.on("error", () => res.writeHead(502).end());
+  req.pipe(upstream);
+});
+await new Promise((resolve) => proxy.listen(PROXY_PORT, "127.0.0.1", resolve));
 
 const fails = [];
 const ok = (cond, name) => { console.log((cond ? "OK   " : "FAIL ") + name); if (!cond) fails.push(name); };
@@ -93,10 +114,19 @@ try {
   await page.reload({ waitUntil: "networkidle2" });
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "EIDOS mobil ohne horizontales Überlaufen");
 
+  // Reverse-Proxy-Unterpfad: relative API-/PWA-Pfade müssen unter /cdd/ bleiben.
+  await page.setViewport({ width: 1280, height: 800 });
+  await page.goto(`http://127.0.0.1:${PROXY_PORT}/cdd/eidos.html`, { waitUntil: "networkidle2", timeout: 60000 });
+  await page.click("#run-clean");
+  await page.waitForFunction(() => document.querySelector("#run-badge")?.textContent === "promoted", { timeout: 30000 });
+  ok(await page.evaluate(() => document.querySelector("#open-sandbox")?.getAttribute("href")?.startsWith("/cdd/api/eidos/")), "EIDOS API und Sandbox bleiben im Reverse-Proxy-Unterpfad");
+  ok(await page.evaluate(() => document.querySelector('link[rel="manifest"]')?.getAttribute("href") === "eidos.webmanifest"), "PWA-Manifest bleibt deployment-relativ");
+
   ok(jsErrors.length === 0, jsErrors.length ? "JS-Fehler: " + jsErrors.join("; ") : "keine JS-Fehler");
   await browser.close();
 } finally {
   server.kill();
+  proxy.close();
   await rm(dataRoot, { recursive: true, force: true });
 }
 console.log(fails.length ? `E2E: ${fails.length} FEHLER` : "E2E: ALLES GRÜN");
