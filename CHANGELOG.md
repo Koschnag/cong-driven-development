@@ -5,15 +5,32 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.8.0-alpha.1] — 2026-07-24
+
 ### Added
-- **EIDOS-Zielbild:** öffentliche Doctrine und Forschungsroadmap für
-  epistemisch typisierte, evidenzgesteuerte Change Compilation. Der Ist-Stand
-  von CDD und die noch nicht implementierten EIDOS-Capabilities werden
-  ausdrücklich getrennt.
-- **Maschinenlesbare EIDOS-Roadmap im SPOT:** Begriffe, Prämissen, ADR,
-  Forschungsquellen, Risiken und Pending-Spezifikationen für epistemische
-  Claims, Mission Orders, Change Compiler, Evidence Packs und eine
-  Zero-Touch-Sandbox.
+- **EIDOS v0.8 alpha / ZT2 Trusted Kernel:** epistemisch typisierte Claims,
+  Read-only System Twin, risikoadaptive Doctrine und Mission Orders,
+  deterministischer Semantic Change Compiler, content-addressed Evidence Packs,
+  fail-closed Promotion sowie append-only Ledger und Replay.
+- **Synthetisches OpsLab:** ein abwärtskompatibler Schema-Change wird ohne
+  mechanischen Human Touch bis in eine credential-freie lokale ZT2-Sandbox
+  ausgeführt. Neun Fault-Injection-Modi belegen die Ablehnung roter, fehlender,
+  alter, korrelierter, falsch gebundener oder manipulierter Evidenz.
+- **EIDOS Studio PWA:** mobile-first Oberfläche für Run, Falsifikation,
+  Benchmark, Sandbox, Replay und lokale Bug-/Feature-Issue-Entwürfe.
+- **EvoSDLC-Bench v0:** zehn deterministische Assurance-Fälle mit versionierten
+  JSON-/Markdown-Ergebnissen und einer bewusst schwachen linearen Baseline.
+- **Forschungsbericht und SPOT-Wissensbasis:** Quellen zu Intent-Formalisierung,
+  unabhängiger Verifikation, Requirements Engineering, Provenienz,
+  Evaluator-Drift, W3C PROV, SLSA und NIST SSDF.
+
+### Changed
+- Release-Artefakte decken Linux x64/ARM64, Windows x64 sowie macOS x64/ARM64 ab.
+
+### Security
+- EIDOS v0 besitzt keine Produktionsschnittstelle: Sandboxes erhalten weder
+  Netzwerk noch Credentials oder Produktionsautorität. Generator und
+  unabhängige Evidence-Validatoren dürfen nicht identisch sein.
 
 ## [0.7.0] — 2026-06-26
 
@@ -90,3 +107,4 @@ Web-Cockpit, reflexives Selbst-Modell, erster Lean-Beweis (Werterhaltung).
 
 [0.6.0]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.6.0
 [0.4.0]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.4.0
+[0.8.0-alpha.1]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.8.0-alpha.1
