@@ -5,6 +5,13 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+## [0.8.0-alpha.2] — 2026-07-24
+
+### Fixed
+- EIDOS Studio löst API, Sandbox, Service Worker, Manifest, Icon und CDD-Backlink
+  relativ zu seinem Deployment-Pfad auf. Die PWA funktioniert damit sowohl am
+  Domain-Root als auch hinter einem Reverse-Proxy-Unterpfad wie `/cdd/`.
+
 ## [0.8.0-alpha.1] — 2026-07-24
 
 ### Added
@@ -108,3 +115,4 @@ Web-Cockpit, reflexives Selbst-Modell, erster Lean-Beweis (Werterhaltung).
 [0.6.0]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.6.0
 [0.4.0]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.4.0
 [0.8.0-alpha.1]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.8.0-alpha.1
+[0.8.0-alpha.2]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.8.0-alpha.2

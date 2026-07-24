@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const steps = [...document.querySelectorAll(".pipeline li")];
+const apiBase = new URL("./api/eidos", window.location.href).pathname.replace(/\/$/, "");
 let currentRun = null;
 const feedbackStorageKey = "eidos-feedback-drafts-v1";
 
@@ -73,7 +74,7 @@ function renderRun(run) {
   $("#replay").disabled = false;
   const sandbox = $("#open-sandbox");
   sandbox.hidden = !promoted;
-  sandbox.href = `/api/eidos/runs/${encodeURIComponent(run.RunId)}/sandbox`;
+  sandbox.href = `${apiBase}/runs/${encodeURIComponent(run.RunId)}/sandbox`;
 }
 
 async function requestJson(url, options) {
@@ -88,7 +89,7 @@ async function requestJson(url, options) {
 async function run(fault) {
   setBusy(true);
   try {
-    const result = await requestJson("/api/eidos/runs", {
+    const result = await requestJson(`${apiBase}/runs`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ Fault: fault }),
@@ -117,7 +118,7 @@ async function replay() {
   $("#replay").textContent = "prüfe …";
   try {
     const result = await requestJson(
-      `/api/eidos/runs/${encodeURIComponent(currentRun.RunId)}/replay`,
+      `${apiBase}/runs/${encodeURIComponent(currentRun.RunId)}/replay`,
       { method: "POST" },
     );
     text("#replay-state", result.Verified ? "erneut verifiziert" : "Replay fehlgeschlagen");
@@ -134,7 +135,7 @@ async function replay() {
 
 async function loadBenchmark() {
   try {
-    const report = await requestJson("/api/eidos/benchmark");
+    const report = await requestJson(`${apiBase}/benchmark`);
     text("#eidos-score", `${report.Eidos.Correct}/${report.Eidos.Total}`);
     text("#base-score", `${report.LinearBaseline.Correct}/${report.LinearBaseline.Total}`);
     text("#unsafe-score", `${report.LinearBaseline.UnsafeApprovals}`);
@@ -161,7 +162,7 @@ function historyRow(item) {
   button.textContent = "anzeigen";
   button.addEventListener("click", async () => {
     try {
-      const run = await requestJson(`/api/eidos/runs/${encodeURIComponent(item.runId)}`);
+      const run = await requestJson(`${apiBase}/runs/${encodeURIComponent(item.runId)}`);
       renderRun(run);
       $("#run-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
@@ -175,7 +176,7 @@ function historyRow(item) {
 async function loadHistory() {
   const host = $("#history");
   try {
-    const result = await requestJson("/api/eidos/runs");
+    const result = await requestJson(`${apiBase}/runs`);
     host.replaceChildren();
     if (!result.runs.length) {
       const empty = document.createElement("p");
@@ -292,5 +293,5 @@ Promise.all([loadBenchmark(), loadHistory()])
   .catch(() => setConnection(false, "Kernel nicht erreichbar"));
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+  navigator.serviceWorker.register("./service-worker.js", { scope: "./" }).catch(() => {});
 }
