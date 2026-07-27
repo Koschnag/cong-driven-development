@@ -68,6 +68,7 @@ GitHub Releases**, später NuGet-Pakete.
 |---|---|---|
 | **Continuous** | Merge auf `main` | CI-Artefakte (Build + Testreport) |
 | **Release** | Git-Tag `vX.Y.Z` | GitHub Release mit Binaries (linux-x64, win-x64, osx-arm64) |
+| **Research Snapshot** | monatlich + manuell | Claim Ledger, Protokolle, Commit und SHA-256-Bundle |
 
 ### Versionierung: SemVer
 
@@ -94,6 +95,14 @@ kein Release — Tags zeigen nur auf verifizierte Stände.
 
 Releases sind unveränderlich. Bei einem kaputten Release: Fix auf `main`,
 neues PATCH-Release. Kein Überschreiben von Tags.
+
+### Research Releases
+
+`.github/workflows/research-snapshot.yml` erzeugt am ersten Tag jedes Monats ein
+reproduzierbares Actions-Artefakt. Ein öffentlicher Tag `research-YYYY.MM.N`
+entsteht nur in einem manuellen Lauf mit `create_draft=true`; der Release bleibt
+bis zur Datenschutz-, Claim-, Lizenz- und Reproduzierbarkeitsprüfung ein Draft.
+Research-Tags ersetzen keine SemVer-Produktversionen.
 
 ## 5. Qualitäts-Gates: SonarCloud + CodeQL
 

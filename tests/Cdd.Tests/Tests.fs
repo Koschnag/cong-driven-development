@@ -8,6 +8,7 @@ open System.Threading.Tasks
 open Xunit
 open Cdd.Core
 open Cdd.Core.Spot
+open CourseForge.Core
 open FsCheck
 
 let private sampleSpec id criteria =
@@ -21,6 +22,37 @@ let private sampleSpec id criteria =
 
 let private crit n =
     { Given = sprintf "g%d" n; When = sprintf "w%d" n; Then = sprintf "t%d" n }
+
+let private findRepoRoot () =
+    let rec loop (dir: DirectoryInfo) =
+        if File.Exists(Path.Combine(dir.FullName, "Cdd.slnx")) then dir.FullName
+        elif isNull dir.Parent then failwith "Repository root not found"
+        else loop dir.Parent
+    loop (DirectoryInfo AppContext.BaseDirectory)
+
+let private withSyntheticMoodle includeSensitive action =
+    let root = Path.Combine(Path.GetTempPath(), "courseforge-" + Guid.NewGuid().ToString("N"))
+    try
+        Directory.CreateDirectory(Path.Combine(root, "sections", "section_1")) |> ignore
+        Directory.CreateDirectory(Path.Combine(root, "sections", "section_2")) |> ignore
+        File.WriteAllText(
+            Path.Combine(root, "moodle_backup.xml"),
+            """<moodle_backup><information>
+                 <original_course_id>demo-101</original_course_id>
+                 <original_course_fullname>Generic Demo Course</original_course_fullname>
+                 <original_course_shortname>DEMO101</original_course_shortname>
+               </information></moodle_backup>""")
+        File.WriteAllText(
+            Path.Combine(root, "sections", "section_1", "section.xml"),
+            """<section id="1"><id>1</id><name>Foundations</name></section>""")
+        File.WriteAllText(
+            Path.Combine(root, "sections", "section_2", "section.xml"),
+            """<section id="2"><id>2</id><name>Transfer</name></section>""")
+        if includeSensitive then
+            File.WriteAllText(Path.Combine(root, "users.xml"), "<users><user>private</user></users>")
+        action root
+    finally
+        if Directory.Exists root then Directory.Delete(root, true)
 
 [<Fact>]
 let ``serialization round-trips a full graph`` () =
@@ -354,6 +386,145 @@ let ``sync scanProjects reads fsproj references`` () =
         Assert.Equal<string list>([ "A" ], (ps |> List.find (fun p -> p.Name = "B")).References)
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact; Trait("spot", "spec-research-claim-ledger-test-1")>]
+let ``research claim projection preserves status provenance and derivation`` () =
+    let source =
+        { Id = EntityId "kb-source"; Convergence = Aligned
+          Payload =
+            KnowledgeNode
+              { Title = "Source"
+                Source = "https://example.org/research"
+                MediaType = "paper"
+                Takeaways = [] } }
+    let claim =
+        { Id = EntityId "claim-gates"; Convergence = Aligned
+          Payload =
+            ResearchClaimNode
+              { Statement = "Harder independent gates can justify bounded autonomy."
+                Status = Proposed
+                Scope = "AI-assisted software evolution"
+                Provenance =
+                  { SourceRefs = [ source.Id ]
+                    DerivedFrom = [ source.Id ]
+                    RecordedAt = "2026-07-27T00:00:00Z"
+                    Method = "conceptual synthesis" }
+                Rationale = Some "Requires comparative experiments." } }
+    let restored = Json.serialize claim |> Json.deserialize<SpotEntry>
+    Assert.Equal(claim, restored)
+    Assert.Empty(Validate.validate [ source; claim ] |> Validate.errors)
+
+[<Fact; Trait("spot", "spec-research-claim-ledger-test-2")>]
+let ``verified research claims fail closed without valid public evidence provenance`` () =
+    let claim =
+        { Id = EntityId "claim-unproven"; Convergence = Pending
+          Payload =
+            ResearchClaimNode
+              { Statement = "Unproven"
+                Status = Verified
+                Scope = "test"
+                Provenance =
+                  { SourceRefs = []
+                    DerivedFrom = []
+                    RecordedAt = "not-a-date"
+                    Method = "" }
+                Rationale = None } }
+    let errors = Validate.validate [ claim ] |> Validate.errors
+    Assert.Contains(errors, fun finding -> finding.Message.Contains "ISO-8601")
+    Assert.Contains(errors, fun finding -> finding.Message.Contains "mindestens eine benannte Quelle")
+
+[<Fact; Trait("spot", "spec-courseforge-import-test-1")>]
+let ``courseforge imports only generic Moodle course metadata`` () =
+    withSyntheticMoodle false (fun root ->
+        match MoodleFolder.importExtractedFolder Defaults.importLimits root with
+        | Error errors -> failwithf "unexpected errors: %A" errors
+        | Ok imported ->
+            Assert.Equal("Generic Demo Course", imported.Course.Title)
+            Assert.Equal("DEMO101", imported.Course.ShortName)
+            Assert.Equal(2, imported.Course.Sections.Length)
+            Assert.Equal(64, imported.SourceFingerprint.Length))
+
+[<Fact; Trait("spot", "spec-courseforge-import-test-2")>]
+let ``courseforge excludes sensitive Moodle data and enforces quotas`` () =
+    withSyntheticMoodle true (fun root ->
+        match MoodleFolder.importExtractedFolder Defaults.importLimits root with
+        | Error errors -> failwithf "unexpected errors: %A" errors
+        | Ok imported ->
+            Assert.Contains(SensitiveDataExcluded, imported.Findings)
+            Assert.DoesNotContain("private", Json.serialize imported)
+        let oneFileOnly = { Defaults.importLimits with MaxFiles = 1 }
+        match MoodleFolder.importExtractedFolder oneFileOnly root with
+        | Error errors ->
+            Assert.Contains(errors, function FileLimitExceeded _ -> true | _ -> false)
+        | Ok _ -> failwith "file quota should reject the folder")
+
+[<Fact>]
+let ``courseforge prohibits DTDs in untrusted Moodle metadata`` () =
+    withSyntheticMoodle false (fun root ->
+        File.WriteAllText(
+            Path.Combine(root, "moodle_backup.xml"),
+            """<!DOCTYPE x [<!ENTITY probe SYSTEM "file:///not-allowed">]>
+               <moodle_backup><information><original_course_fullname>&probe;</original_course_fullname></information></moodle_backup>""")
+        match MoodleFolder.importExtractedFolder Defaults.importLimits root with
+        | Error errors ->
+            Assert.Contains(errors, function InvalidMetadata _ -> true | _ -> false)
+        | Ok _ -> failwith "DTD processing should be prohibited")
+
+[<Fact; Trait("spot", "spec-courseforge-gameplan-test-1")>]
+let ``courseforge creates a deterministic authoring-gated game plan`` () =
+    withSyntheticMoodle false (fun root ->
+        let imported =
+            MoodleFolder.importExtractedFolder Defaults.importLimits root
+            |> function Ok value -> value | Error errors -> failwithf "%A" errors
+        let first = GamePlanBuilder.create imported
+        let second = GamePlanBuilder.create imported
+        Assert.Equal(first, second)
+        Assert.Equal(8, first.Missions.Length)
+        Assert.All(first.Missions, fun mission -> Assert.True mission.NeedsAuthoring))
+
+[<Fact; Trait("spot", "spec-feedback-evolution-test-1")>]
+let ``public feedback can only create a proposal with assurance obligations`` () =
+    let signal =
+        { Id = "signal-1"
+          Kind = FeatureRequest
+          Summary = "Add another learning mechanic"
+          Reproduction = None
+          BuildVersion = "0.8.0"
+          ContainsPersonalData = false }
+    match Evolution.triage signal with
+    | Candidate proposal ->
+        Assert.True proposal.ProposalOnly
+        Assert.Contains(HumanPromotion, proposal.Obligations)
+        Assert.Contains(AccessibilityReview, proposal.Obligations)
+        let requestedAt = DateTimeOffset(2026, 7, 27, 12, 0, 0, TimeSpan.Zero)
+        let intent = EidosAdapter.toChangeIntent requestedAt proposal
+        Assert.Equal(requestedAt, intent.RequestedAt)
+        Assert.Equal(Medium, intent.Hazard.Highest)
+        Assert.Contains("human promotion required", intent.Constraints)
+        Assert.Contains("public-feedback", intent.Scope)
+    | result -> failwithf "unexpected triage result: %A" result
+
+[<Fact; Trait("spot", "spec-feedback-evolution-test-2")>]
+let ``sensitive and security feedback never enters autonomous evolution`` () =
+    let baseSignal =
+        { Id = "signal-2"
+          Kind = BugReport
+          Summary = "A report"
+          Reproduction = None
+          BuildVersion = "0.8.0"
+          ContainsPersonalData = true }
+    Assert.Equal(RejectedSensitive, Evolution.triage baseSignal)
+    Assert.Equal(
+        EscalatedSecurity,
+        Evolution.triage { baseSignal with Kind = SecurityOrPrivacy; ContainsPersonalData = false })
+
+[<Fact; Trait("spot", "spec-research-snapshots-test-1")>]
+let ``research snapshot workflow is versioned with the repository`` () =
+    let workflow = Path.Combine(findRepoRoot (), ".github", "workflows", "research-snapshot.yml")
+    Assert.True(File.Exists workflow)
+    let content = File.ReadAllText workflow
+    Assert.Contains("research-snapshot", content)
+    Assert.Contains("draft: true", content)
 
 [<Fact; Trait("spot", "spec-fehlerliste-test-1")>]
 let ``validate detects contradictory term hierarchy cycles`` () =
@@ -769,3 +940,15 @@ let ``EIDOS engineering benchmark is deterministic and reports its limited scope
     Assert.Equal(2, first.LinearBaseline.Correct)
     Assert.Equal(8, first.LinearBaseline.UnsafeApprovals)
     Assert.Contains("not external validity", first.ScopeNote)
+
+[<Fact>]
+let ``sync scanRepo includes public example projects`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-roots-" + Guid.NewGuid().ToString("N"))
+    try
+        let example = Path.Combine(tmp, "examples", "Reference.Core")
+        Directory.CreateDirectory example |> ignore
+        File.WriteAllText(Path.Combine(example, "Reference.Core.fsproj"), "<Project></Project>")
+        let projects = Sync.scanRepo tmp
+        Assert.Contains(projects, fun project -> project.Name = "Reference.Core")
+    finally
+        if Directory.Exists tmp then Directory.Delete(tmp, true)

@@ -16,6 +16,14 @@ Bitte beilegen: betroffene Version/Commit, Reproduktion, Impact-Einschätzung.
 
 ## Scope
 
-CDD ist eine lokale CLI ohne Netzwerk-Listener. Relevant sind v. a.:
-unsichere Deserialisierung der `.spot/`-JSON-Dateien, Path-Traversal über
-Entity-Ids, und künftig der Umgang mit LLM-API-Credentials.
+Relevanter Scope:
+
+- unsichere Deserialisierung und Path Traversal über `.spot/`-Knoten;
+- CDD-Web-/MCP-Adapter und der Umgang mit Provider-Credentials;
+- Archive-, Link-, XML- und Ressourcenangriffe im CourseForge-Import;
+- unbeabsichtigte Verarbeitung oder Veröffentlichung personenbezogener Kursdaten;
+- Umgehung von Evidence-, Capability- oder Promotion-Gates.
+
+Bitte keine echten Moodle-Archive oder privaten Logs an eine Meldung hängen.
+Eine minimale synthetische Reproduktion ist bevorzugt; falls vertrauliche
+Evidenz zwingend nötig ist, stimmen wir einen geschützten Übertragungsweg ab.

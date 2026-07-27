@@ -1,0 +1,88 @@
+name: research-snapshot
+
+on:
+  schedule:
+    - cron: '17 7 1 * *'
+  workflow_dispatch:
+    inputs:
+      snapshot_id:
+        description: 'YYYY.MM.N (empty uses current UTC month with .1)'
+        required: false
+        type: string
+      create_draft:
+        description: 'Create a private-to-maintainers draft GitHub Research Release'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Resolve and validate snapshot id
+        id: meta
+        env:
+          REQUESTED_ID: ${{ inputs.snapshot_id }}
+        run: |
+          set -euo pipefail
+          snapshot="${REQUESTED_ID:-$(date -u +'%Y.%m').1}"
+          if [[ ! "$snapshot" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]+$ ]]; then
+            echo "snapshot_id must match YYYY.MM.N" >&2
+            exit 1
+          fi
+          echo "id=$snapshot" >> "$GITHUB_OUTPUT"
+
+      - name: Green gates
+        run: |
+          set -euo pipefail
+          dotnet build -c Release -warnaserror
+          dotnet test -c Release --no-build
+          dotnet run -c Release --no-build --project src/Cdd.Cli -- validate
+          dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-docs --check
+          bash scripts/check-public-data.sh
+
+      - name: Assemble reproducible research bundle
+        env:
+          SNAPSHOT_ID: ${{ steps.meta.outputs.id }}
+        run: |
+          set -euo pipefail
+          root="dist/research-snapshot-$SNAPSHOT_ID"
+          mkdir -p "$root"
+          cp -R research "$root/research"
+          cp -R .spot "$root/spot"
+          cp README.md CHANGELOG.md CITATION.cff PUBLICATION_POLICY.md "$root/"
+          dotnet run -c Release --no-build --project src/Cdd.Cli -- \
+            export-context --out "$root/spot-context.md"
+          git rev-parse HEAD > "$root/commit.txt"
+          date -u +'%Y-%m-%dT%H:%M:%SZ' > "$root/generated-at.txt"
+          manifest="dist/SHA256SUMS"
+          (cd "$root" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$manifest"
+          mv "$manifest" "$root/SHA256SUMS"
+          tar -czf "dist/cdd-research-$SNAPSHOT_ID.tar.gz" -C dist \
+            "research-snapshot-$SNAPSHOT_ID"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: research-snapshot-${{ steps.meta.outputs.id }}
+          path: dist/cdd-research-${{ steps.meta.outputs.id }}.tar.gz
+          retention-days: 90
+
+      - name: Create reviewed-publication draft
+        if: github.event_name == 'workflow_dispatch' && inputs.create_draft
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: research-${{ steps.meta.outputs.id }}
+          name: Research Snapshot ${{ steps.meta.outputs.id }}
+          body_path: research/releases/release-notes-template.md
+          files: dist/cdd-research-${{ steps.meta.outputs.id }}.tar.gz
+          draft: true
+          prerelease: true

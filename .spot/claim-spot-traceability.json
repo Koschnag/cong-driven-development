@@ -1,0 +1,27 @@
+{
+  "Id": "claim-spot-traceability",
+  "Payload": {
+    "Case": "ResearchClaimNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Ein typisierter Single Point of Truth kann die Nachverfolgbarkeit von Intent zu Code, Test, Evidenz und Outcome verbessern.",
+        "Status": "Proposed",
+        "Scope": "CDD/SPOT in kleinen und mittleren Softwareprojekten",
+        "Provenance": {
+          "SourceRefs": [
+            "kb-software-engineering-ki-gegenthese"
+          ],
+          "DerivedFrom": [
+            "spec-roundtrip-sync",
+            "spec-sync-tests",
+            "spec-sync-docs"
+          ],
+          "RecordedAt": "2026-07-27T00:00:00Z",
+          "Method": "Design-Science-Hypothese aus dem CDD-Prototyp"
+        },
+        "Rationale": "Der aktuelle Prototyp zeigt technische Machbarkeit, aber noch keine allgemeine Wirkung."
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

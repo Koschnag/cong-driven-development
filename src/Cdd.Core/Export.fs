@@ -14,6 +14,18 @@ module Export =
     let private levelLabel = function
         | Low -> "Low" | Medium -> "Medium" | High -> "High" | Critical -> "Critical"
 
+    let private epistemicLabel = function
+        | Observed -> "Observed"
+        | Declared -> "Declared"
+        | Inferred -> "Inferred"
+        | Proposed -> "Proposed"
+        | Ratified -> "Ratified"
+        | Verified -> "Verified"
+        | Contested -> "Contested"
+        | Unknown -> "Unknown"
+        | Deprecated -> "Deprecated"
+        | OutcomeConfirmed -> "OutcomeConfirmed"
+
     let toMarkdown (entries: SpotEntry list) : string =
         let sb = StringBuilder()
         let line (s: string) = sb.AppendLine(s) |> ignore
@@ -130,6 +142,29 @@ module Export =
                 for t in k.Takeaways do line (sprintf "  - %s" t)
             blank ()
 
+        let claims = pick (function ResearchClaimNode c -> Some c | _ -> None)
+        if not claims.IsEmpty then
+            line "## Forschungsclaims"
+            blank ()
+            line "Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementierungsstand."
+            blank ()
+            for e, c in claims do
+                line (sprintf "### %s (`%s`)" (epistemicLabel c.Status) (idValue e.Id))
+                line (sprintf "- **Aussage:** %s" c.Statement)
+                line (sprintf "- **Scope:** %s" c.Scope)
+                line (sprintf "- **Methode:** %s" c.Provenance.Method)
+                line (sprintf "- **Erfasst:** %s" c.Provenance.RecordedAt)
+                if not c.Provenance.SourceRefs.IsEmpty then
+                    line (sprintf "- **Quellen:** %s"
+                        (c.Provenance.SourceRefs |> List.map (idValue >> sprintf "`%s`") |> String.concat ", "))
+                if not c.Provenance.DerivedFrom.IsEmpty then
+                    line (sprintf "- **Abgeleitet aus:** %s"
+                        (c.Provenance.DerivedFrom |> List.map (idValue >> sprintf "`%s`") |> String.concat ", "))
+                match c.Rationale with
+                | Some rationale -> line (sprintf "- **Begründung:** %s" rationale)
+                | None -> ()
+                blank ()
+
         let tools = pick (function ToolNode t -> Some t | _ -> None)
         if not tools.IsEmpty then
             line "## Tools (Agent-Capabilities)"
@@ -160,6 +195,7 @@ module Export =
         | SpecNode s -> s.Title
         | DecisionNode d -> d.Title
         | KnowledgeNode k -> k.Title
+        | ResearchClaimNode c -> c.Statement
         | RiskNode r -> r.Statement
         | PremiseNode p -> p.Statement
         | InvariantNode i -> i.Description
@@ -188,6 +224,8 @@ module Export =
         | KnowledgeNode k ->
             let take = k.Takeaways |> List.map (sprintf "\n  - %s") |> String.concat ""
             sprintf "- **%s** (%s, %s) `%s`%s" k.Title k.MediaType k.Source id take
+        | ResearchClaimNode c ->
+            sprintf "- **%s** (%s) — %s `%s`" (epistemicLabel c.Status) c.Scope c.Statement id
         | ToolNode t -> sprintf "- **%s** — %s `%s`" t.Name t.Purpose id
         | PremiseNode p -> sprintf "- **%s** — %s `%s`" p.Statement p.Rationale id
         | InvariantNode i -> sprintf "- **%s** — %s `%s`" i.Description (ruleLabel i.Rule) id

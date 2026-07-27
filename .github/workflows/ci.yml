@@ -59,6 +59,9 @@ jobs:
       - name: Doku-Konvergenz prüfen (README ↔ Modell)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-docs --check
 
+      - name: Öffentliche Daten- und Pfadgrenze prüfen
+        run: bash scripts/check-public-data.sh
+
       - name: E2E (Cockpit im echten Browser)
         run: |
           cd tests/e2e

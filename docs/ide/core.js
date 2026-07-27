@@ -66,15 +66,15 @@ export const inner = (n) => n?.Payload?.Fields?.Item ?? (Array.isArray(n?.Payloa
 export const kindOf = (n) => (n?.Payload?.Case || '').replace(/Node$/, '').toLowerCase(); // spec|term|risk|...
 export const convOf = (n) => (typeof n?.Convergence === 'string' ? n.Convergence : (n?.Convergence?.Case ?? 'Pending'));
 
-export const KINDS = ['spec','test','risk','infra','component','premise','decision','knowledge','tool','term','invariant'];
+export const KINDS = ['spec','test','risk','infra','component','premise','decision','knowledge','claim','tool','term','invariant'];
 export const CONV  = ['Aligned','Pending','Diverged','Orphaned'];
-export const KIND_LABEL = { spec:'Spec', test:'Test', risk:'Risk', infra:'Infra', component:'Component', premise:'Prämisse', decision:'Entscheidung', knowledge:'Wissen', tool:'Tool', term:'Begriff', invariant:'Invariante' };
+export const KIND_LABEL = { spec:'Spec', test:'Test', risk:'Risk', infra:'Infra', component:'Component', premise:'Prämisse', decision:'Entscheidung', knowledge:'Wissen', claim:'Claim', tool:'Tool', term:'Begriff', invariant:'Invariante' };
 
 export function title(n) {
   const i = inner(n);
   switch (kindOf(n)) {
     case 'spec': case 'decision': case 'knowledge': return i.Title || idOf(n);
-    case 'risk': return i.Statement || idOf(n);
+    case 'risk': case 'claim': return i.Statement || idOf(n);
     case 'premise': return i.Statement || idOf(n);
     case 'invariant': return i.Description || idOf(n);
     case 'infra': return i.Resource || idOf(n);
@@ -90,6 +90,7 @@ export function summary(n) {
     case 'premise': return i.Rationale || '';
     case 'term': return i.Definition || '';
     case 'knowledge': return `${i.MediaType || ''} ${i.Source || ''}`.trim();
+    case 'claim': return `${i.Status || 'Unknown'} · ${i.Scope || ''}`.trim();
     case 'tool': return i.Purpose || '';
     case 'component': return (i.DependsOn?.length ? '→ ' + i.DependsOn.join(', ') : '');
     case 'test': return 'covers ' + (i.SpecRef || '?');
@@ -106,6 +107,10 @@ export function refs(n) {
     case 'component': (i.DependsOn || []).forEach(t => out.push({ rel: 'DependsOn', target: tid(t) })); break;
     case 'test': if (i.SpecRef) out.push({ rel: 'covers', target: tid(i.SpecRef) }); break;
     case 'decision': if (i.Supersedes) out.push({ rel: 'supersedes', target: tid(i.Supersedes) }); break;
+    case 'claim':
+      (i.Provenance?.SourceRefs || []).forEach(t => out.push({ rel: 'evidence', target: tid(t) }));
+      (i.Provenance?.DerivedFrom || []).forEach(t => out.push({ rel: 'derivedFrom', target: tid(t) }));
+      break;
   }
   return out.filter(e => e.target);
 }
@@ -120,6 +125,7 @@ export function fields(n) {
     case 'premise': add('Statement', i.Statement); add('Rationale', i.Rationale); break;
     case 'term': add('Definition', i.Definition); add('Synonyme', (i.Synonyms || []).join(', ')); break;
     case 'knowledge': add('Quelle', i.Source); add('Typ', i.MediaType); add('Takeaways', (i.Takeaways || []).join(' · ')); break;
+    case 'claim': add('Status', i.Status); add('Scope', i.Scope); add('Methode', i.Provenance?.Method); add('Erfasst', i.Provenance?.RecordedAt); add('Begründung', i.Rationale); break;
     case 'tool': add('Zweck', i.Purpose); add('Endpoint', i.Endpoint); break;
     case 'infra': add('Provider', i.Provider); add('Resource', i.Resource); break;
     case 'invariant': add('Regel', i.Rule?.Case ?? i.Rule); break;
@@ -138,20 +144,20 @@ export const escapeHtml = (s) => String(s ?? '').replace(/[&<>]/g, c => ({ '&': 
    ────────────────────────────────────────────────────────────────────────── */
 export const FAMILY = {
   spec: 'Classifier', term: 'Classifier', component: 'Classifier',     // first-class authored
-  invariant: 'Judgement', risk: 'Judgement', premise: 'Judgement',     // «constraint» (OCL/SysML)
+  invariant: 'Judgement', risk: 'Judgement', premise: 'Judgement', claim: 'Judgement', // «constraint» / Erkenntnisurteil
   knowledge: 'Artifact', tool: 'Artifact', infra: 'Artifact',          // «artifact» (Dinge-in-der-Welt)
   test: 'Derivation', decision: 'Derivation',                          // Operation, die ein Urteil erzeugt
 };
 // Familie → native Cytoscape-Form (die äußere Silhouette, GPU-gezeichnet, scharf bei jedem Zoom).
 export const SHAPE = {
   spec: 'round-rectangle', term: 'round-rectangle', component: 'round-rectangle',
-  invariant: 'cut-rectangle', risk: 'cut-rectangle', premise: 'cut-rectangle',
+  invariant: 'cut-rectangle', risk: 'cut-rectangle', premise: 'cut-rectangle', claim: 'cut-rectangle',
   knowledge: 'barrel', tool: 'barrel', infra: 'barrel',
   test: 'hexagon', decision: 'hexagon',
 };
 export const HUE = {
   spec: '#5B8DEF', term: '#7BA7F0', component: '#9FC0F5',
-  invariant: '#E0A13C', risk: '#C9762F', premise: '#D98A3D',
+  invariant: '#E0A13C', risk: '#C9762F', premise: '#D98A3D', claim: '#D6B94C',
   knowledge: '#6E8CA0', tool: '#4FB3A8', infra: '#5AA0B5',
   test: '#9B7BE0', decision: '#B58CE6',
 };
@@ -161,7 +167,7 @@ export const HUE = {
 // · ◰ Deployment-Knoten (Infra) · ⋎ Verzweigung (Decision).
 export const MARK = {
   spec: '⊢', term: '∈', component: '⊸', invariant: '⊨', risk: '◇',
-  premise: '∵', knowledge: '𝒦', tool: 'λ', infra: '◰', test: '⊨', decision: '⋎',
+  premise: '∵', claim: '⊢', knowledge: '𝒦', tool: 'λ', infra: '◰', test: '⊨', decision: '⋎',
 };
 // Familien-Silhouette als 20×20-Pfad (4 Formen, über die 11 Arten wiederverwendet).
 const OUTLINE = {
@@ -214,11 +220,11 @@ export function surfaceIcon(id, size = 18) {
    ────────────────────────────────────────────────────────────────────────── */
 export const PREFIX = {
   spec: 'spec-', test: 'test-', risk: 'risk-', infra: 'infra-', component: 'comp-',
-  premise: 'premise-', decision: 'adr-', knowledge: 'kb-', tool: 'tool-', term: 'term-', invariant: 'inv-',
+  premise: 'premise-', decision: 'adr-', knowledge: 'kb-', claim: 'claim-', tool: 'tool-', term: 'term-', invariant: 'inv-',
 };
 const CASE = {
   spec: 'SpecNode', test: 'TestNode', risk: 'RiskNode', infra: 'InfraNode', component: 'ComponentNode',
-  premise: 'PremiseNode', decision: 'DecisionNode', knowledge: 'KnowledgeNode', tool: 'ToolNode',
+  premise: 'PremiseNode', decision: 'DecisionNode', knowledge: 'KnowledgeNode', claim: 'ResearchClaimNode', tool: 'ToolNode',
   term: 'TermNode', invariant: 'InvariantNode',
 };
 // ASCII-Slug: Store.isValidId erlaubt nur [a-zA-Z0-9_-] → Umlaute/Spaces transliterieren, sonst 400.
@@ -238,6 +244,7 @@ const SKELETON = {
   premise:   t => ({ Statement: t, Rationale: '' }),
   decision:  t => ({ Title: t, Context: '', Choice: '', Consequences: '', Supersedes: null }),
   knowledge: t => ({ Title: t, Source: '', MediaType: 'link', Takeaways: [] }),
+  claim:     t => ({ Statement: t, Status: 'Proposed', Scope: '', Provenance: { SourceRefs: [], DerivedFrom: [], RecordedAt: new Date().toISOString(), Method: '' }, Rationale: null }),
   tool:      t => ({ Name: t, Purpose: '', Endpoint: null }),
   term:      t => ({ Name: t, Definition: '', Synonyms: [], Relations: [] }),
   invariant: t => ({ Description: t, Rule: 'TermsNeedDefinition' }),

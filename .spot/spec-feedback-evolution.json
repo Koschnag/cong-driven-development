@@ -1,0 +1,25 @@
+{
+  "Id": "spec-feedback-evolution",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Feedback zu kontrolliertem EIDOS Change Intent",
+        "Intent": "Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege erzeugen, die ein expliziter Adapter in risikotypisierte EIDOS Change Intents ohne Promotion-Autoritaet kompiliert.",
+        "Criteria": [
+          {
+            "Given": "ein oeffentlicher Feature- oder Bug-Report ohne personenbezogene Daten",
+            "When": "das Signal klassifiziert wird",
+            "Then": "entsteht ein ProposalOnly FeedbackChangeProposal und daraus ein risikotypisierter EIDOS Change Intent mit Assurance und menschlichem Promotion Gate"
+          },
+          {
+            "Given": "ein Signal mit personenbezogenen Daten oder Security-Bezug",
+            "When": "das Signal klassifiziert wird",
+            "Then": "wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -158,7 +158,7 @@ export function mountThread(el, store, actions) {
   function welcome() {
     const n = store.get().nodes.length;
     say('system',
-      `Cong OS bereit. Ein Faden, eine Tür (⌘K). ${n} SPOT-Knoten geladen. ` +
+      `CDD Studio bereit. Ein Faden, eine Tür (⌘K). ${n} SPOT-Knoten geladen. ` +
       `Klick unten einen Vorschlag, drück ⌘. für das Nächste, oder tipp einen Auftrag. Ziffern 1–6 rufen Flächen, Esc schließt die Bühne.`);
     focusInput();
   }

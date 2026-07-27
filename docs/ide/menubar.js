@@ -30,7 +30,7 @@ export function mountMenubar(el, store, actions) {
       ['Hell / Dunkel', () => actions.toggleTheme()],
     ]],
     ['Hilfe', [
-      ['Was ist Cong OS?', () => actions.ask('Was ist Cong OS, was bist du, und wie arbeite ich am besten mit dir?')],
+      ['Was ist CDD Studio?', () => actions.ask('Was ist CDD Studio, was bist du, und wie arbeite ich am besten mit dir?')],
     ]],
   ];
 

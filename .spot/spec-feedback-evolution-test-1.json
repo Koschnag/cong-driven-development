@@ -1,0 +1,14 @@
+{
+  "Id": "spec-feedback-evolution-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-feedback-evolution",
+        "Name": "Feedback zu kontrolliertem Change Intent \u2014 when das Signal klassifiziert wird then entsteht ein ProposalOnly Change Intent mit Assurance und menschlichem Promotion Gate",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
