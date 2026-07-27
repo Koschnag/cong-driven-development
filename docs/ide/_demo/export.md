@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 123 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 133 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 102 · Pending 21 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 125 · Pending 8 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -12,7 +12,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - bezieht sich auf `term-spot`
 - **Change Compiler** *(auch: Semantic Change Compiler)* — Transformiert Intent, System-Twin, Policies und Evidenz in prüfbare Änderungskandidaten samt Obligations und Recovery
   - Teil von `term-eidos`
-- **Claim** *(auch: Forschungsclaim)* — Epistemisch typisierte, provenienzbehaftete Aussage, deren Status getrennt von Implementierungs- und Marketingreife gefuehrt wird
+- **Claim** *(auch: Forschungsclaim)* — Epistemisch typisierte, provenienzbehaftete Aussage: operativ als EIDOS Claim, oeffentlich nur als explizit sanitizierte ResearchClaimNode-Projektion; ihr Status bleibt von Implementierungs- und Marketingreife getrennt
   - ist ein `term-knoten`
 - **Cockpit** *(auch: IDE)* — Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift
   - bezieht sich auf `term-spot`
@@ -22,7 +22,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - Teil von `term-eidos`
 - **Drift** — Auseinanderlaufen von Modell und Code — das, was klassische MDA scheitern ließ
   - bezieht sich auf `term-konvergenz`
-- **EIDOS** *(auch: EIDOS Framework)* — Zielarchitektur für doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; CDD ist ihr heutiger Kernel
+- **EIDOS** *(auch: EIDOS Framework)* — Doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; v0 implementiert den falsifizierbaren Kernel bis zur isolierten ZT2-Sandbox
   - bezieht sich auf `term-spot`
 - **Evidence Pack** *(auch: Evidence-Carrying Change)* — Versions-, zeit- und umgebungsgebündelter Nachweis für einen Kandidaten und seine Assurance Obligations
   - Teil von `term-eidos`
@@ -135,31 +135,31 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN das Cockpit ist geladen WHEN die Diagramm-Flaeche rendert THEN erscheinen die Diagramm-Sichten, ein Cytoscape-Canvas und die Toolbox mit den Knotenarten
 
-### Semantic Change Compiler (`spec-eidos-change-compiler`, Pending)
+### Semantic Change Compiler (`spec-eidos-change-compiler`, Aligned)
 **Intent:** Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 
 - GIVEN ein Change Intent, ein versionierter System-Twin, Policies und aktuelle Evidenz WHEN der Change Compiler läuft THEN entstehen deterministische Candidate-Metadaten mit Semantic Delta, Artefakten, Obligations, Deployment und Recovery
 - GIVEN mehrere zulässige Candidates WHEN Impact und Risiken bewertet werden THEN bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar
 
-### Epistemisch typisierte Claims (`spec-eidos-epistemic-claims`, Pending)
+### Epistemisch typisierte Claims (`spec-eidos-epistemic-claims`, Aligned)
 **Intent:** Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
 
 - GIVEN ein Rohsignal und eine maschinelle Interpretation WHEN beide in den System-Twin projiziert werden THEN bleiben Originalsignal, Claim, Provenienz, Zeitpunkt, Scope und epistemischer Status getrennt erhalten
 - GIVEN widersprüchliche Claims oder fehlende Evidenz WHEN ein Lagebild erzeugt wird THEN werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage geglättet
 
-### Evidence Packs und Promotion (`spec-eidos-evidence-pack`, Pending)
+### Evidence Packs und Promotion (`spec-eidos-evidence-pack`, Aligned)
 **Intent:** Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
 
 - GIVEN ein Candidate mit risikoadaptiven Assurance Obligations WHEN Generator-unabhängige Gates laufen THEN bindet das Evidence Pack Ergebnis, Tool- und Policyversion, Umgebung, Zeitpunkt und Artefakt-Hash
 - GIVEN eine fehlende, veraltete oder rote Obligation WHEN Promotion bewertet wird THEN wird der Candidate nicht befördert und der konkrete Nachweisgrund bleibt auditierbar
 
-### Doctrine und Mission Orders (`spec-eidos-mission-order`, Pending)
+### Doctrine und Mission Orders (`spec-eidos-mission-order`, Aligned)
 **Intent:** Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen
 
 - GIVEN ein klassifiziertes Change Intent und eine versionierte Doctrine WHEN eine Mission disponiert wird THEN entsteht eine Mission Order mit Lage, Ziel, Scope, Einheit, Constraints, Erfolg und Abbruch
 - GIVEN eine Mission mit überschrittenem Budget, fehlender Capability oder verletzter Policy WHEN der Control Plane die Verletzung meldet THEN wird fail closed abgebrochen oder an eine zuständige Authority eskaliert
 
-### Zero-Touch-Sandbox im OpsLab (`spec-eidos-zt2-opslab`, Pending)
+### Zero-Touch-Sandbox im OpsLab (`spec-eidos-zt2-opslab`, Aligned)
 **Intent:** Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt
 
 - GIVEN eine synthetische versionierte Report-/Submission-Anwendung und eine Mission Order WHEN der EIDOS-Lauf auf ZT2 startet THEN erzeugt, prüft und deployt er den Candidate ausschließlich in der Sandbox ohne produktive Credentials
@@ -171,10 +171,10 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - GIVEN ein gefüllter SPOT-Graph WHEN cdd export-context läuft THEN entsteht ein einzelnes Markdown-Bundle mit Ontologie, Prämissen, Entscheidungen, Specs und offenen Risiken
 - GIVEN das exportierte Bundle WHEN es einem LLM als Kontext übergeben wird THEN kann es Implementierungsaufgaben ohne Rückfragen zur Domänensprache bearbeiten
 
-### Feedback zu kontrolliertem Change Intent (`spec-feedback-evolution`, Aligned)
-**Intent:** Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege mit risikoadaptiven Obligations erzeugen.
+### Feedback zu kontrolliertem EIDOS Change Intent (`spec-feedback-evolution`, Aligned)
+**Intent:** Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege erzeugen, die ein expliziter Adapter in risikotypisierte EIDOS Change Intents ohne Promotion-Autoritaet kompiliert.
 
-- GIVEN ein oeffentlicher Feature- oder Bug-Report ohne personenbezogene Daten WHEN das Signal klassifiziert wird THEN entsteht ein ProposalOnly Change Intent mit Assurance und menschlichem Promotion Gate
+- GIVEN ein oeffentlicher Feature- oder Bug-Report ohne personenbezogene Daten WHEN das Signal klassifiziert wird THEN entsteht ein ProposalOnly FeedbackChangeProposal und daraus ein risikotypisierter EIDOS Change Intent mit Assurance und menschlichem Promotion Gate
 - GIVEN ein Signal mit personenbezogenen Daten oder Security-Bezug WHEN das Signal klassifiziert wird THEN wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate
 
 ### Fehlerliste & Widerspruchs-Erkennung (`spec-fehlerliste`, Aligned)
@@ -202,6 +202,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 **Intent:** Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 
 - GIVEN ein verbundener MCP-Client WHEN spot_upsert oder spot_delete aufgerufen wird THEN wird die Änderung gespeichert und die Validierung (inkl. Invarianten) zurückgemeldet
+
+### Sanitisiertes öffentliches Research-Claim-Ledger (`spec-research-claim-ledger`, Aligned)
+**Intent:** Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
+
+- GIVEN eine öffentliche Forschungsbehauptung mit benannten Quellen und Ableitungen WHEN sie als ResearchClaimNode serialisiert und validiert wird THEN bleiben epistemischer Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen reproduzierbar erhalten
+- GIVEN ein als Verified oder OutcomeConfirmed markierter Research-Claim WHEN öffentliche Evidenz oder gültige Provenienz fehlt THEN schlägt die Validierung fail-closed fehl
 
 ### Reproduzierbare Research Snapshots (`spec-research-snapshots`, Pending)
 **Intent:** Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
@@ -233,6 +239,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 ## Risiken
 
 - **Autonome Änderungen überschreiten den freigegebenen Scope oder erreichen produktive Systeme** (Likelihood Medium, Impact Critical) — Mitigation: Capability-Allowlists, kleinste Rechte, ZT2 als erstes Ziel, keine Produktiv-Credentials, harte Budgets und Fail-Closed-Abbruch
+- **Ein lernendes oder vom Generator abhängiges Orakel driftet und belohnt Scheinerfolg** (Likelihood High, Impact Critical) — Mitigation: Validatorversionen binden, Generator/Validator trennen, unveränderliche Ankerfälle und externe Audits verwenden
 - **Generator und Validator teilen denselben systematischen Fehler und erzeugen Scheinevidenz** (Likelihood High, Impact Critical) — Mitigation: Kritische Orakel dekorrelieren, unabhängige Harnesses verwenden und Provenienz sowie Validatorversion im Evidence Pack binden
 - **Modell und Code driften auseinander (der MDA-Friedhof)** (Likelihood Medium, Impact Critical) — Mitigation: Konvergenz-Status je Knoten + Round-Trip (Code→Modell) auf der Roadmap
 - **Das Evolutionary Memory speichert Korrelation als Ursache und verstärkt eine falsche Strategie** (Likelihood High, Impact High) — Mitigation: Intervention, Störfaktoren und Konfidenz getrennt speichern; Strategy-Änderungen nur nach reproduzierbaren Outcome-Vergleichen
@@ -244,7 +251,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - **Cdd.Cli** (`comp-cli`) → hängt ab von `comp-core`
 - **Cdd.Core** (`comp-core`)
-- **CourseForge.Core** (`comp-courseforge`)
+- **CourseForge.Core** (`comp-courseforge`) → hängt ab von `comp-core`
 - **Cdd.Mcp** (`comp-mcp`) → hängt ab von `comp-core`
 - **Cdd.Web** (`comp-web`) → hängt ab von `comp-core`
 
@@ -253,12 +260,18 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **No Silver Bullet: Essence and Accidents of Software Engineering** (paper, http://www.cs.unc.edu/techreports/86-020.pdf)
   - Software besitzt essenzielle und akzidentelle Schwierigkeiten
   - Werkzeuge koennen akzidentelle Arbeit reduzieren, ohne die konzeptuelle Essenz aufzuheben
+- **Collaborative and AI-Supported Requirements Elicitation** (paper, https://arxiv.org/abs/2606.24060)
+  - Stakeholder-Kollaboration plus AI-Synthese erzeugte im kontrollierten Versuch die bestbewerteten Artefakte
+  - EIDOS automatisiert mechanische Synthese, nicht normative Stakeholder-Autorität
 - **Darwin Gödel Machine** (paper, https://arxiv.org/abs/2505.22954)
   - Offene Evolution kann Agentenvarianten empirisch über Benchmarks selektieren
   - Sandboxing und menschliche Aufsicht bleiben Teil der berichteten Sicherheitsmaßnahmen
 - **Eric Evans — Domain-Driven Design** (book, ISBN 978-0321125217)
   - Ubiquitous Language ist die Brücke zwischen Fachseite und Code
   - Bounded Contexts begrenzen Modellgültigkeit
+- **Responsible Agentic AI Requires Explicit Provenance** (paper, https://arxiv.org/abs/2605.17169)
+  - Verantwortung braucht über den gesamten Agenten-Lebenszyklus explizite, eingreifbare Provenienz
+  - Provenienz ist ein Strukturmerkmal, kein optionales Log-Detail
 - **Martin Fowler — Blog** (blog, https://martinfowler.com)
   - Refactoring-Katalog
   - Evolutionäre Architektur
@@ -276,6 +289,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - Moodle-Kursbackups verwenden die Endung .mbz
   - Backups koennen Nutzer-, Rollen-, Datei-, Kommentar-, Abschluss-, Log- und Bewertungsdaten enthalten
   - Ein generischer Importer muss Metadaten und personenbezogene Inhalte strikt trennen
+- **NIST SP 800-218 Secure Software Development Framework** (standard, https://csrc.nist.gov/pubs/sp/800/218/final)
+  - Security-Praktiken werden risikoorientiert in bestehende Entwicklungsmodelle integriert
+  - Provenienz, Security-Anforderungen, Risiken und Designentscheidungen sollen verfolgt werden
+- **SLSA Provenance** (standard, https://slsa.dev/spec/v1.2/)
+  - Artefakte werden an Builderidentität, Inputs, Zeit und Digests gebunden
+  - Evidence Packs übernehmen diese Bindungsprinzipien über Builds hinaus
 - **Software Engineering im KI-Zeitalter: Gegenthese zum Hype** (essay, https://www.linkedin.com/pulse/software-engineering-im-ki-zeitalter-gegenthese-zum-hype-nguyen-imnof/)
   - Der Mensch arbeitet am System: Intent, Spezifikationen, Invarianten und Governance
   - KI reduziert Implementierungsmechanik, nicht automatisch essenzielle Komplexität
@@ -284,6 +303,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **VeriAct — Beyond Verifiability** (paper, https://arxiv.org/abs/2604.00280)
   - Verifier-Akzeptanz allein garantiert keine korrekte oder vollständige Spezifikation
   - Ein unabhängiges Spec-Harness macht Über- und Unterbeschränkung messbar
+- **W3C PROV-O** (standard, https://www.w3.org/TR/prov-o/)
+  - Entity, Activity und Agent bilden einen interoperablen Provenienz-Kern
+  - EIDOS-v0 bleibt kompakt, soll seine Provenienz später auf PROV abbilden können
+- **Who Grades the Grader?** (paper, https://arxiv.org/abs/2607.12790)
+  - Evolvierende Metriken brauchen unveränderliche Anker und unabhängige äußere Audits
+  - Entfernte Anker können Evaluatoren in triviale oder spielbare Metriken kollabieren lassen
 
 ## Forschungsclaims
 
@@ -326,19 +351,6 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - `claim-gates-bound-autonomy` (claim, Pending)
 - `claim-spot-traceability` (claim, Pending)
 - `spec-agent-interface-test-1` (test, Pending)
-- `spec-eidos-change-compiler-test-1` (test, Pending)
-- `spec-eidos-change-compiler-test-2` (test, Pending)
-- `spec-eidos-change-compiler` (spec, Pending)
-- `spec-eidos-epistemic-claims` (spec, Pending)
-- `spec-eidos-evidence-pack-test-1` (test, Pending)
-- `spec-eidos-evidence-pack-test-2` (test, Pending)
-- `spec-eidos-evidence-pack` (spec, Pending)
-- `spec-eidos-mission-order-test-1` (test, Pending)
-- `spec-eidos-mission-order-test-2` (test, Pending)
-- `spec-eidos-mission-order` (spec, Pending)
-- `spec-eidos-zt2-opslab-test-1` (test, Pending)
-- `spec-eidos-zt2-opslab-test-2` (test, Pending)
-- `spec-eidos-zt2-opslab` (spec, Pending)
 - `spec-export-context-test-2` (test, Pending)
 - `spec-gate-selbst-hart` (spec, Pending)
 - `spec-mcp-server-test-1` (test, Pending)

@@ -5,7 +5,9 @@
     "Fields": {
       "Item": {
         "Name": "CourseForge.Core",
-        "DependsOn": []
+        "DependsOn": [
+          "comp-core"
+        ]
       }
     }
   },

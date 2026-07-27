@@ -199,19 +199,19 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**107 Knoten im Selbstmodell** · 4 aktive Invarianten · 27/30 abgeleitete Tests automatisiert
+**133 Knoten im Selbstmodell** · 4 aktive Invarianten · 35/38 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
 - ✅ **Agent-Interface** — Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt
 - ✅ **Chat-primaere Cockpit-Shell** — Das Cockpit ist chat-primaer: eine Omnibar als einzige Tuer, eine Menueleiste, die Rail mit Flaechen, der Faden und eine Statuszeile.
+- ✅ **Course IR zu authoring-gegatem Spielplan** — Ein importierter Kurs erzeugt reproduzierbare Lernmissions-Skelette, ohne fachliche Richtigkeit vorzutaueschen.
+- ✅ **Datensparsamer Moodle-Folder-Import** — Ein generischer Course-IR-Adapter liest nur benoetigte Kursmetadaten und schliesst sensible Moodle-Daten aus.
 - ✅ **Doctrine und Mission Orders** — Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen
-- ✅ **Course IR zu authoring-gegatem Spielplan** — Ein importierter Kurs erzeugt reproduzierbare Lernmissions-Skelette, ohne fachliche Richtigkeit vorzutäuschen.
-- ✅ **Datensparsamer Moodle-Folder-Import** — Ein generischer Course-IR-Adapter liest nur benötigte Kursmetadaten und schließt sensible Moodle-Daten aus.
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
 - ✅ **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
 - ✅ **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
-- ✅ **Feedback zu kontrolliertem Change Intent** — Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege mit risikoadaptiven Obligations erzeugen.
+- ✅ **Feedback zu kontrolliertem EIDOS Change Intent** — Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege erzeugen, die ein expliziter Adapter in risikotypisierte EIDOS Change Intents ohne Promotion-Autoritaet kompiliert.
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
 - ✅ **Getypte Diagramm-Flaeche mit Toolbox** — Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.
@@ -221,6 +221,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
+- ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet

@@ -12,7 +12,8 @@ Der aktuelle Vertical Slice kann:
 - Nutzer-, Bewertungs-, Log- und Binärdaten ignorieren;
 - pro Abschnitt die Phasen Explore, Guided Practice, Independent Practice und
   Transfer Check erzeugen;
-- Bug-/Feature-Signale in `ProposalOnly` Change Intents überführen;
+- Bug-/Feature-Signale in `ProposalOnly`-Vorschläge triagieren und über eine
+  explizite Antikorruptionsschicht in risikotypisierte EIDOS Change Intents überführen;
 - sensible Signale verwerfen und Security-Signale getrennt eskalieren.
 
 Noch nicht implementiert:
@@ -20,7 +21,7 @@ Noch nicht implementiert:
 - das sichere Entpacken von `.mbz`;
 - semantische Extraktion von Lernzielen und Aufgaben;
 - eine konkrete Game-Runtime;
-- Candidate-Erzeugung und Sandbox-Ausführung;
+- CourseForge-spezifische Candidate-Erzeugung und Sandbox-Ausführung;
 - automatische oder produktive Promotion.
 
 `NeedsAuthoring=true` ist absichtlich ein hartes Ehrlichkeitsmerkmal: Aus einem

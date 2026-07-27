@@ -14,7 +14,7 @@ Beispiele sind generisch und synthetisch.
 | Track | Artefakt | Wahrheitsquelle |
 |---|---|---|
 | Theorie | Paper, Begriffe, Forschungsfragen | `.spot/` + `research/` |
-| Methode | CDD-Kernel und EIDOS-Zielarchitektur | `src/` + `.spot/` |
+| Methode | CDD-Kernel, EIDOS Trusted Kernel und Evolutionsroadmap | `src/` + `.spot/` |
 | Referenzprojekt | CourseForge: Course IR → Lernspielplan | `examples/CourseForge.Core/` |
 | Studio | Projektionen vom Claim bis zum Code | `src/Cdd.Web/`, `docs/ide/` |
 | Evidenz | Tests, Protokolle, Snapshots | `tests/`, `research/protocols/`, Releases |
