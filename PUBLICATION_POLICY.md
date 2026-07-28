@@ -26,7 +26,10 @@ Vor Merge oder Release:
 2. Gitleaks und `scripts/check-public-data.sh` sind grün.
 3. Research Claims sind nicht stärker formuliert als ihre Evidenz.
 4. Fixtures und Screenshots sind synthetisch geprüft.
-5. Ein Mensch prüft Diff, Quellen, Zahlen und Lizenzen.
+5. Exportierte PDFs, Bilder, Videos und Präsentationen werden separat geprüft; eine
+   bereinigte Quelldatei macht einen älteren Binärexport nicht automatisch sicher.
+6. Öffentliche Web-Runtimes bleiben ohne explizite Capability-Flags read-only.
+7. Ein Mensch prüft Diff, Quellen, Zahlen und Lizenzen.
 
 Ein öffentlicher Issue-Text ist bereits veröffentlicht. Sicherheits- oder
 Datenschutzprobleme gehören ausschließlich in GitHub Private Vulnerability Reporting.

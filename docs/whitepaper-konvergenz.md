@@ -1,6 +1,6 @@
 # Das Terminierungs-Orakel: Eine typisierte Konvergenz-Referenz für agentische Softwareentwicklung
 
-*Cong Chanh Vinzenz Nguyen — .NET-Architekt, independent research prototype*
+*Cong Chanh Vinzenz Nguyen — unabhängiger Forschungsprototyp*
 
 > **Reproduzierbarer historischer Snapshot:** Dieses Whitepaper beschreibt den
 > veröffentlichten Stand `v0.7.0`. Aktuelle Claims und Messwerte stehen im
@@ -270,4 +270,3 @@ lean proofs/Werterhaltung.lean     # CI-Job: lean-proof, grün auf GitHub-Hardwa
 10. Lesly Miculicich u. a.: „VeriGuard: Enhancing LLM Agent Safety via Verified Code Generation". arXiv:2510.05156, 2025.
 
 11. Tessl: „Spec-Driven Development with Tessl" (Framework + Spec-Registry). Agent-Enablement-Plattform, https://tessl.io, 2026.
-

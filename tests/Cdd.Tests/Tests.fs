@@ -952,3 +952,36 @@ let ``sync scanRepo includes public example projects`` () =
         Assert.Contains(projects, fun project -> project.Name = "Reference.Core")
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact; Trait("spot", "spec-public-runtime-boundary-test-1")>]
+let ``public runtime boundary is fail closed by default`` () =
+    let policy =
+        PublicRuntimeBoundary.fromEnvironment (fun _ -> "")
+    let allowed methodName path =
+        PublicRuntimeBoundary.classify methodName path
+        |> PublicRuntimeBoundary.isAllowed policy
+
+    Assert.True(allowed "GET" "/api/spot")
+    Assert.True(allowed "GET" "/research/")
+    Assert.False(allowed "POST" "/api/engine/run")
+    Assert.False(allowed "GET" "/api/providers")
+    Assert.False(allowed "GET" "/api/dwh/search")
+    Assert.False(allowed "GET" "/api/infra/status")
+
+[<Fact; Trait("spot", "spec-public-runtime-boundary-test-2")>]
+let ``memory writes require both explicit capabilities`` () =
+    let classify methodName = PublicRuntimeBoundary.classify methodName "/api/dwh/index"
+    let memoryOnly : PublicRuntimeBoundary.Policy =
+        { AllowMutations = false
+          EnableMemory = true
+          EnableInfra = false }
+    let mutationOnly : PublicRuntimeBoundary.Policy =
+        { AllowMutations = true
+          EnableMemory = false
+          EnableInfra = false }
+    let both = { memoryOnly with AllowMutations = true }
+
+    Assert.False(PublicRuntimeBoundary.isAllowed memoryOnly (classify "POST"))
+    Assert.False(PublicRuntimeBoundary.isAllowed mutationOnly (classify "POST"))
+    Assert.True(PublicRuntimeBoundary.isAllowed both (classify "POST"))
+    Assert.True(PublicRuntimeBoundary.isAllowed memoryOnly (classify "GET"))

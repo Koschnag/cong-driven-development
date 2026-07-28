@@ -62,12 +62,19 @@ jobs:
       - name: Öffentliche Daten- und Pfadgrenze prüfen
         run: bash scripts/check-public-data.sh
 
+      - name: Video-Quellprojekt prüfen
+        run: |
+          npm ci --prefix media/research-overview --ignore-scripts
+          npm run --prefix media/research-overview lint
+          npm audit --prefix media/research-overview --audit-level=high
+
       - name: E2E (Cockpit im echten Browser)
         run: |
           cd tests/e2e
           npm install --no-fund --no-audit
           cd ../..
           node tests/e2e/smoke.mjs
+          node tests/e2e/research-studio.mjs
 
       - name: Testergebnisse hochladen
         if: always()

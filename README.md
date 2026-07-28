@@ -186,7 +186,8 @@ SPOT, jede Sicht ist eine Projektion desselben Modells. → Volle Beschreibung i
   Marker-Präsenz, Greenness via CI (→ [GEGENENTWURF.md](GEGENENTWURF.md)).
 - **Formal-Sicht** — derselbe SPOT als „code behind" in Typentheorie / Prädikatenlogik /
   Kategorien (KaTeX), jede Linse mit ehrlichem Caveat.
-- **@-Gedächtnis** — `knowledge-store.db`-Volltextsuche (FTS5), serverseitig nur `sensitive=0`.
+- **@-Gedächtnis** — optionale sanitisierte Knowledge-Store-Projektion; default-deny und
+  serverseitig auf nicht-sensitive Einträge begrenzt.
 - **Souveräne Engine-Kette** — Claude Code primär, Mistral-EU + lokales Ollama über einen
   echten agentischen Tool-Loop gegen die SPOT-Tools.
 - **EA-Toolbox + Symbol-System** — UML/SysML-Glyphen, Konvergenz am Rand; Knoten/Relationen
@@ -199,7 +200,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**133 Knoten im Selbstmodell** · 4 aktive Invarianten · 35/38 abgeleitete Tests automatisiert
+**142 Knoten im Selbstmodell** · 4 aktive Invarianten · 39/42 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -211,6 +212,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
 - ✅ **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
 - ✅ **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
+- ✅ **Fail-closed public runtime boundary** — Eine oeffentliche CDD-Auslieferung darf ohne explizite Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen.
 - ✅ **Feedback zu kontrolliertem EIDOS Change Intent** — Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege erzeugen, die ein expliziter Adapter in risikotypisierte EIDOS Change Intents ohne Promotion-Autoritaet kompiliert.
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
@@ -231,6 +233,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
+- 🔜 **SPOT-projiziertes Research Studio** — Eine review-orientierte Oberflaeche zeigt Forschungsstand, Luecken, Grenzen, Medien und Teilprojekte, ohne eine zweite Wahrheit oder automatische Promotion zu erzeugen.
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

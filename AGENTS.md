@@ -32,7 +32,7 @@ in einem Temp-Verzeichnis ausführen.
 - Jede Logik-Änderung braucht Tests in `tests/Cdd.Tests/Tests.fs`.
 - Öffentliche Daten müssen `PUBLICATION_POLICY.md` erfüllen: keine echten
   Moodle-Archive, Personendaten, privaten Routen, DWH-Inhalte oder Credentials.
-- Forschungsclaims als `ClaimNode` im SPOT pflegen; Status und Evidenz nicht
+- Forschungsclaims als `ResearchClaimNode` im SPOT pflegen; Status und Evidenz nicht
   stärker formulieren als der reproduzierbare Nachweis.
 - Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, …), PRs gegen `main`,
   Squash-Merge. Details: `docs/devops.md`.
