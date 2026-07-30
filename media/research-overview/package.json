@@ -23,7 +23,10 @@
     "upgrade": "remotion upgrade",
     "lint": "tsc",
     "render": "remotion render ResearchOverview ../../docs/media/cdd-research-overview.mp4",
-    "poster": "remotion still ResearchOverview ../../docs/media/cdd-research-overview-poster.png --frame=90"
+    "poster": "remotion still ResearchOverview ../../docs/media/cdd-research-overview-poster.png --frame=90",
+    "render:cc11": "remotion render CC11Launch ../../docs/cc11/media/cc11-launch-film.mp4 --codec=h264 --crf=18",
+    "render:cc11:vertical": "remotion render CC11LaunchVertical ../../docs/cc11/media/cc11-launch-vertical.mp4 --codec=h264 --crf=18",
+    "poster:cc11": "remotion still CC11Launch ../../docs/cc11/media/cc11-launch-poster.png --frame=840"
   },
   "sideEffects": [
     "*.css"
