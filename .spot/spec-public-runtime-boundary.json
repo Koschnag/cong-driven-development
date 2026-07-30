@@ -1,0 +1,17 @@
+{
+  "Id": "spec-public-runtime-boundary",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Fail-closed public runtime boundary",
+        "Intent": "Eine oeffentliche CDD-Auslieferung darf ohne explizite Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen.",
+        "Criteria": [
+          { "Given": "keine Capability-Umgebungsvariable gesetzt ist", "When": "ein oeffentlicher oder privilegierter Pfad klassifiziert wird", "Then": "nur read-only SPOT- und statische Projektionen sind erlaubt" },
+          { "Given": "Memory geschrieben werden soll", "When": "nur eine der Freigaben Memory oder Mutation gesetzt ist", "Then": "die Operation bleibt gesperrt" }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,25 @@
+{
+  "Id": "spec-research-claim-ledger",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Sanitisiertes öffentliches Research-Claim-Ledger",
+        "Intent": "Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.",
+        "Criteria": [
+          {
+            "Given": "eine öffentliche Forschungsbehauptung mit benannten Quellen und Ableitungen",
+            "When": "sie als ResearchClaimNode serialisiert und validiert wird",
+            "Then": "bleiben epistemischer Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen reproduzierbar erhalten"
+          },
+          {
+            "Given": "ein als Verified oder OutcomeConfirmed markierter Research-Claim",
+            "When": "öffentliche Evidenz oder gültige Provenienz fehlt",
+            "Then": "schlägt die Validierung fail-closed fehl"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

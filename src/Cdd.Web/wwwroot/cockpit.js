@@ -105,7 +105,7 @@ const actions = {
     });
   },
 
-  // ── @-Gedächtnis (Wahrheit #2): knowledge-store.db-Volltextsuche (nur sensitive=0) → Bühne mit Treffer-Karten ──
+  // ── @-Gedächtnis: sanitisierte Volltext-Projektion → Bühne mit Treffer-Karten ──
   async dwhSearch(q, mode) {
     const term = (q || '').trim();
     if (!term) return;

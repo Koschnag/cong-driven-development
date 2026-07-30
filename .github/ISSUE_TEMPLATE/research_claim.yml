@@ -1,0 +1,44 @@
+name: 🔬 Research claim
+description: Eine CDD-Hypothese, Gegenposition oder Evidenz diskutieren
+labels: [research, needs-triage]
+body:
+  - type: dropdown
+    id: epistemic_status
+    attributes:
+      label: Vorgeschlagener Erkenntnisstatus
+      options:
+        - Proposed
+        - Observed
+        - Declared
+        - Inferred
+        - Contested
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: statement
+    attributes:
+      label: Präzise Aussage
+      description: Falsifizierbar und mit klarem Scope formulieren.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Quelle oder Evidenz
+      description: Öffentliche Primärquelle, reproduzierbares Artefakt oder begründete Gegenposition.
+    validations:
+      required: true
+  - type: textarea
+    id: falsifier
+    attributes:
+      label: Was würde die Aussage widerlegen?
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_safe
+    attributes:
+      label: Veröffentlichungsprüfung
+      options:
+        - label: Quellen und Text sind öffentlich teilbar und enthalten keine privaten Daten.
+          required: true

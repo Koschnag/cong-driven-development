@@ -3,6 +3,7 @@ open System.IO
 open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Http
+open Microsoft.Extensions.Primitives
 open Cdd.Core
 open Cdd.Core.Spot
 
@@ -29,8 +30,8 @@ let private badRequest (msg: string) : IResult =
 let private withStore (root: string) (f: SpotEntry list -> IResult) : IResult =
     try
         f (Store.load root)
-    with ex ->
-        Results.Text(Json.serialize {| error = ex.Message |}, "application/json", statusCode = 500)
+    with _ ->
+        Results.Text(Json.serialize {| error = "SPOT konnte nicht geladen werden." |}, "application/json", statusCode = 500)
 
 /// Laufzeit-Provider (OpenAI-kompatibel): Keys werden über die GUI eingetragen, beliebige Anbieter.
 /// Persistenz: providers.json (gitignored, Pfad via CDD_PROVIDERS oder ~/.config/cdd/). claude+ollama
@@ -70,6 +71,30 @@ let main argv =
     let builder = WebApplication.CreateBuilder(Array.ofList webArgs)
     let app = builder.Build()
 
+    let runtimePolicy =
+        PublicRuntimeBoundary.fromEnvironment (fun key ->
+            Environment.GetEnvironmentVariable key |> Option.ofObj |> Option.defaultValue "")
+
+    app.Use(fun (ctx: HttpContext) (next: RequestDelegate) ->
+        task {
+            ctx.Response.Headers.Append("X-Content-Type-Options", StringValues "nosniff")
+            ctx.Response.Headers.Append("Referrer-Policy", StringValues "strict-origin-when-cross-origin")
+            ctx.Response.Headers.Append("Permissions-Policy", StringValues "camera=(), microphone=(), geolocation=()")
+            ctx.Response.Headers.Append("Content-Security-Policy",
+                StringValues ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+                "img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; " +
+                "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"))
+            let capability =
+                PublicRuntimeBoundary.classify ctx.Request.Method ctx.Request.Path.Value
+            if PublicRuntimeBoundary.isAllowed runtimePolicy capability then
+                do! next.Invoke(ctx)
+            else
+                ctx.Response.StatusCode <- StatusCodes.Status403Forbidden
+                ctx.Response.ContentType <- "application/json"
+                ctx.Response.Headers.Append("Cache-Control", StringValues "no-store")
+                do! ctx.Response.WriteAsync(Json.serialize {| error = "Capability ist in diesem Deployment deaktiviert." |})
+        } :> Task) |> ignore
+
     app.UseDefaultFiles() |> ignore
     app.UseStaticFiles() |> ignore
 
@@ -89,8 +114,8 @@ let main argv =
                 else
                     Store.save root entry
                     return json entry
-            with ex ->
-                return badRequest (sprintf "JSON ungültig: %s" ex.Message)
+            with _ ->
+                return badRequest "JSON ungültig oder nicht mit dem SPOT-Schema kompatibel."
         })) |> ignore
 
     app.MapDelete("/api/spot/{id}", Func<string, IResult>(fun id ->
@@ -107,10 +132,10 @@ let main argv =
         withStore root (fun entries ->
             Results.Text(Export.toMarkdown entries, "text/markdown")))) |> ignore
 
-    // @-Memory (Wahrheit #2): Volltextsuche über die SANITISIERTE knowledge-store.db (FTS5).
-    // sensitive=0 ist nicht verhandelbar: die DB enthält bereits NUR sensitive=0-Daten (sensitiv
-    // Daten verlassen den Mac nie); falls CDD_MEMORY_DB doch auf eine DB mit sensitive-Spalte zeigt,
-    // wird hart doppelt gefiltert. Read-only. Kein Treffer ohne Conversation (Doppel-Join).
+    // Optionaler Knowledge-Store-Adapter (FTS5). Standardmäßig ist die gesamte
+    // Oberfläche deaktiviert; CDD_ENABLE_MEMORY=true schaltet nur explizit
+    // sanitizierte Daten frei. Eine vorhandene sensitive-Spalte wird zusätzlich
+    // serverseitig fail-closed gefiltert. Kein Treffer ohne Conversation (Doppel-Join).
     app.MapGet("/api/dwh/search", Func<HttpRequest, IResult>(fun req ->
         let q = req.Query.["q"].ToString()
         let limit =
@@ -148,12 +173,12 @@ let main argv =
                     hits.Add(box {| system = g 0; title = g 1; role = g 2; created_at = g 3
                                     snippet = g 4; conv_id = g 5; msg_id = g 6 |})
                 json {| available = true; hits = hits.ToArray() |}
-            with ex ->
-                json {| available = false; note = sprintf "Suche fehlgeschlagen: %s" ex.Message; hits = ([||]: obj[]) |})) |> ignore
+            with _ ->
+                json {| available = false; note = "Suche fehlgeschlagen."; hits = ([||]: obj[]) |})) |> ignore
 
-    // ── RAG (Wahrheit #2, semantisch): souverän, lokal. Ollama nomic-embed-text + Brute-Force-Cosine
-    //    in .NET (KEIN sqlite-vec — die native Extension ist jung; Brute-Force über ~local vectors ist
-    //    <100 ms und braucht keine Fremd-Lib). Embeddings als BLOB-Tabelle in der sanitisierten DB. ──
+    // ── RAG (Wahrheit #2, semantisch): lokal betreibbar. Ollama nomic-embed-text +
+    //    Brute-Force-Cosine in .NET. Embeddings bleiben in der sanitisierten DB;
+    //    für größere Bestände ist ein dedizierter Vektorindex ein expliziter Adapter. ──
     let ollamaBase () =
         let b = Environment.GetEnvironmentVariable("CDD_OLLAMA")
         if System.String.IsNullOrWhiteSpace b then "http://localhost:11434" else b.TrimEnd('/')
@@ -214,7 +239,7 @@ let main argv =
                     | None -> ()
                 let total = (use c = conn.CreateCommand() in c.CommandText <- "SELECT COUNT(*) FROM embeddings"; System.Convert.ToInt32(c.ExecuteScalar()))
                 json {| ok = true; indexed = indexed; total_embedded = total |}
-            with ex -> json {| ok = false; note = ex.Message |})) |> ignore
+            with _ -> json {| ok = false; note = "Indexierung fehlgeschlagen." |})) |> ignore
 
     // Semantische Suche: Query embedden, Brute-Force-Cosine über alle Embeddings, Top-K, sensitive=0-Join.
     app.MapGet("/api/dwh/semantic", Func<HttpRequest, IResult>(fun req ->
@@ -252,14 +277,10 @@ let main argv =
                                 let g (i: int) = if rd.IsDBNull i then "" else rd.GetValue(i).ToString()
                                 hits.Add(box {| system = g 0; title = g 1; role = g 2; created_at = g 3; snippet = g 4; score = System.Math.Round(score, 3) |})
                         json {| available = true; hits = hits.ToArray() |}
-                with ex -> json {| available = false; note = ex.Message; hits = ([||]: obj[]) |})) |> ignore
+                with _ -> json {| available = false; note = "Semantische Suche fehlgeschlagen."; hits = ([||]: obj[]) |})) |> ignore
 
-    // Infra/Prod-Heartbeat für die Bühne (Komodo/Coolify werden via MCP adoptiert).
-    // Bis das MCP-Backend verdrahtet ist: liefert den deklarierten DC-Plan + ok=false,
-    // damit die GUI nie einen toten/leeren View zeigt (Souveränität: lokaler Wahrheits-Plan).
-    // Infra-Status: ECHTE Live-Metriken des Hosts, auf dem das Cockpit läuft (runtime-host) — /proc + docker ps.
-    // Truth #4 ist damit live (nicht Stub) für den primären Host; die übrigen DC-Hosts (runtime-edge/runtime-services/runtime-compute)
-    // brauchen einen Agenten (Komodo-Periphery / SSH) und bleiben ehrlich „unknown" bis dahin.
+    // Optionaler Host-Heartbeat. Standardmäßig vollständig deaktiviert, weil
+    // Hostname, Container und Images Betriebsmetadaten offenlegen können.
     let readFile p = try System.IO.File.ReadAllText p with _ -> ""
     let runCmd (file: string) (args: string) : string =
         try
@@ -300,13 +321,10 @@ let main argv =
                     host = {| name = (if hostn = "" then "runtime-host" else hostn); uptime = uptime; load = load
                               memUsedMb = (memTotalMb - memAvailMb); memTotalMb = memTotalMb; diskUsedPct = df |}
                     hosts =
-                        [ host (if hostn = "" then "runtime-host" else hostn) "Cong OS · Ollama · Services (live)" "up"
-                          host "runtime-edge"      "Infra (DNS · Reverse-Proxy · private mesh)" "unknown"
-                          host "runtime-services" "Services (Nextcloud · YunoHost · Backups)" "unknown"
-                          host "runtime-compute"   "virtualization (VMs · Gaming-VM)" "unknown" ]
+                        [ host (if hostn = "" then "runtime-host" else hostn) "CDD runtime (live)" "up" ]
                     apps = apps |}
-        with ex ->
-            json {| ok = false; source = "error"; note = ex.Message; hosts = ([] : obj list); apps = ([] : obj list) |})) |> ignore
+        with _ ->
+            json {| ok = false; source = "error"; note = "Host-Status nicht verfügbar."; hosts = ([] : obj list); apps = ([] : obj list) |})) |> ignore
 
     // Modell-Historie aus git: weil jeder Knoten ein .spot/-JSON-File ist, IST `git log` die Historie.
     // Read-only, defensiv ([] ohne git). Zeitreise: /{id}/{hash} liefert den Knoten-Stand zum Commit.
@@ -380,9 +398,9 @@ let main argv =
                 try
                     let run = Eidos.runOpsLab root DateTimeOffset.UtcNow fault
                     return json run
-                with ex ->
+                with _ ->
                     return Results.Text(
-                        Json.serialize {| error = ex.Message |},
+                        Json.serialize {| error = "EIDOS-Lauf fehlgeschlagen." |},
                         "application/json",
                         statusCode = 500)
         })) |> ignore
@@ -455,7 +473,7 @@ let main argv =
                     let np = { p with Id = id; ApiKey = keptKey }
                     saveProviders ((existing |> List.filter (fun x -> x.Id <> id)) @ [ np ])
                     return json {| ok = true; id = id; keySet = (keptKey <> "") |}
-            with ex -> return badRequest (sprintf "Provider-JSON ungültig: %s" ex.Message)
+            with _ -> return badRequest "Provider-JSON ungültig."
         })) |> ignore
 
     app.MapDelete("/api/providers/{id}", Func<string, IResult>(fun id ->
@@ -524,7 +542,7 @@ let main argv =
     // ── Die Schmiede: EINE Prosa-Spielidee → Batch Pending-Specs (NUR Modell, KEIN Code). ──
     // Restriktive Allowlist (nur mcp__spot__*) → STRUKTURELL unmöglich, Code zu schreiben oder ein Gate
     // zu fälschen. Danach reviewt Cong die Specs (sein einziger Pflicht-Gate), dann „Alle konvergieren"
-    // (= /api/loop/run). Spec-Generierung läuft auf Cloud-Claude (zuverlässigste Zerlegung).
+    // (= /api/loop/run). Der ausgewählte Agent erzeugt ausschließlich Modellvorschläge.
     app.MapPost("/api/schmiede/generate", Func<HttpContext, Task>(fun ctx ->
         task {
             use reader = new StreamReader(ctx.Request.Body)
@@ -610,8 +628,8 @@ let main argv =
                     if isNull line then go <- false
                     elif line.StartsWith("{") then do! send line
                 proc.WaitForExit()
-            with ex ->
-                do! send (Json.serialize {| t = "error"; error = sprintf "Loop-Fehler (cdd-mapper im PATH? `dotnet tool install`?): %s" ex.Message |})
+            with _ ->
+                do! send (Json.serialize {| t = "error"; error = "Loop fehlgeschlagen; lokale Installation und Logs prüfen." |})
             do! ctx.Response.WriteAsync("event: done\ndata: {}\n\n")
             do! ctx.Response.Body.FlushAsync()
         } :> Task)) |> ignore

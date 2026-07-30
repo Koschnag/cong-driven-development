@@ -1,7 +1,12 @@
 name: 🚀 Feature Request
 description: Idee oder Verbesserungsvorschlag
-labels: [enhancement]
+labels: [enhancement, needs-triage]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Ein Feature Request ist ein **Signal**, keine Freigabe für autonome Code-
+        oder Produktivänderungen. Bitte nur generische, veröffentlichbare Inhalte verwenden.
   - type: textarea
     id: problem
     attributes:
@@ -19,3 +24,17 @@ body:
     attributes:
       label: Alternativen
       description: Was hast du erwogen und verworfen?
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Beobachtbares Erfolgskriterium
+      description: Woran ließe sich unabhängig prüfen, dass das Problem gelöst ist?
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_safe
+    attributes:
+      label: Veröffentlichungsprüfung
+      options:
+        - label: Der Vorschlag enthält keine personenbezogenen Daten, Credentials oder privaten Infrastrukturangaben.
+          required: true

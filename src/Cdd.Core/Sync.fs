@@ -29,10 +29,11 @@ module Sync =
                 { Name = Path.GetFileNameWithoutExtension f; References = refs })
             |> List.ofArray
 
-    /// Konventionelle Code-Wurzeln eines Repos — Werkzeuge sind Code wie alles andere.
-    let projectRoots = [ "src"; "tools"; "apps" ]
+    /// Konventionelle Code-Wurzeln eines Repos — Werkzeuge und Referenzprojekte
+    /// sind Code wie alles andere und müssen gegen Component-Knoten konvergieren.
+    let projectRoots = [ "src"; "tools"; "apps"; "examples" ]
 
-    /// Scannt alle Projekt-Wurzeln unter root (src, tools, apps).
+    /// Scannt alle Projekt-Wurzeln unter root (src, tools, apps, examples).
     let scanRepo (root: string) : CodeProject list =
         projectRoots
         |> List.collect (fun d -> scanProjects (Path.Combine(root, d)))

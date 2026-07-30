@@ -1,0 +1,15 @@
+{
+  "Id": "term-research-studio",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Research Studio",
+        "Definition": "Read-only Briefing-Projektion des oeffentlichen SPOT fuer Claims, Evidenz, Luecken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback.",
+        "Synonyms": ["Research Cockpit", "Forschungsbriefing"],
+        "Relations": []
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

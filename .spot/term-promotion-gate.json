@@ -1,0 +1,30 @@
+{
+  "Id": "term-promotion-gate",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Promotion Gate",
+        "Definition": "Explizite Authority- und Policy-Entscheidung, die einen geprueften Candidate in einen freigegebenen Zustand ueberfuehrt",
+        "Synonyms": [
+          "Freigabe-Gate"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-eidos"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-evidence-pack"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -43,19 +43,22 @@ Mistral: `MISTRAL_API_KEY`. Ollama: lokal.
 | **Plan** | "lies SPOT, schlage Specs/Risks vor + lege an" (mcp__spot__upsert) | Knoten, validate |
 | **Ideate** | Frage + SPOT-Kontext (Mistral/Ollama) | Chat-Antwort |
 | **Develop** | Claude Code headless im Repo (Read/Edit/Bash) | Diff + Konvergenz |
-| **Monitor** | validate + diff + (DC) dc-model.fsx über Mesh | Fehlerliste, Drift |
+| **Monitor** | validate + diff + expliziter Runtime-Adapter | Fehlerliste, Drift |
 | **Deploy** | Claude Code mit eng-gegateten Bash-Tools | Deploy-Log |
 
 ## Betrieb & Sicherheit
 
-- **Wo:** runtime-host `codespace`, an `private-mesh-interface` gebunden -> nur eigene Mesh-Geraete. systemd, im Backup.
-- **Blast-Radius:** beliebiger Code mit Host-`claude`-Auth -> enge Allowlist, permission-mode,
-  Denials brechen ab. VM = Sandbox (getrennt von Vault/Mail-VM).
-- **Nicht** in der gemieteten Cloud, **nicht** auf dem Mac.
+- **Default-deny:** ohne `CDD_ALLOW_MUTATIONS=true` sind Engine, Loop, Provider-
+  Verwaltung und alle schreibenden Endpunkte gesperrt.
+- **Netzgrenze:** Operator-Modus nur hinter starker Authentifizierung in einer
+  isolierten Laufzeit; die öffentliche Research-Site ist statisch/read-only.
+- **Blast-Radius:** enge Werkzeug-Allowlist, getrennte Sandbox und explizite
+  Promotion-Gates; Denials brechen ab.
 
 ## Verifiziert
 
-`dotnet build` gruen; 33/33 Tests gruen; `POST /api/engine/run` streamt `started -> ... -> done`.
+Aktuelle Build-, Test- und Konvergenzzahlen werden im Research Studio aus dem
+versionierten SPOT-Snapshot angezeigt; keine Zahl wird hier handgepflegt.
 
 ## Naechster Schnitt
 

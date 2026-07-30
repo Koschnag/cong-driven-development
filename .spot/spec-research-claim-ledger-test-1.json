@@ -1,0 +1,14 @@
+{
+  "Id": "spec-research-claim-ledger-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-research-claim-ledger",
+        "Name": "Research-Claim-Ledger — Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen bleiben reproduzierbar erhalten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
