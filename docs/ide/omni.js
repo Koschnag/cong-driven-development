@@ -4,8 +4,8 @@
 //   3) Pins (Präfix "pin ")
 //   4) freie Frage/Auftrag → geht an den Faden (Default, wenn nichts matcht)
 //
-// Ein Modell, kein Menü-Baum: alles ist hier, Enter führt aus. Asperger-freundlich:
-// vollständige, vorhersagbare Liste; ADHD-freundlich: Tippen→Tun in einem Schritt.
+// Ein Modell, kein Menü-Baum: alles ist hier, Enter führt aus. Vollständige,
+// vorhersagbare Liste; Tippen→Tun in einem Schritt.
 import { api, idOf, kindOf, convOf, title, escapeHtml } from './core.js';
 import { SURFACES } from './stage.js';
 
@@ -64,10 +64,10 @@ export function mountOmni(el, store, actions) {
     const lq = q.toLowerCase();
     const out = [];
 
-    // @-Präfix → Gedächtnis (knowledge-store.db, nur sensitive=0). Enter sucht, öffnet die Gedächtnis-Bühne.
+    // @-Präfix → sanitisierte Gedächtnis-Projektion. Enter öffnet die Bühne.
     if (q.startsWith('@')) {
       const term = q.slice(1).trim();
-      out.push({ type: 'dwh', q: term, label: '@ Gedächtnis durchsuchen: ' + (term || '…'), key: 'knowledge-store.db' });
+      out.push({ type: 'dwh', q: term, label: '@ Gedächtnis durchsuchen: ' + (term || '…'), key: 'Knowledge Store' });
       items = out; ai = 0; paint(); return;
     }
 

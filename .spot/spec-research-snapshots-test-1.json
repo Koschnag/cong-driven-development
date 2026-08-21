@@ -1,0 +1,14 @@
+{
+  "Id": "spec-research-snapshots-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-research-snapshots",
+        "Name": "Reproduzierbare Research Snapshots \u2014 when der Research-Snapshot-Workflow laeuft then entsteht ein pruefbares Bundle und bei manueller Freigabe ein Draft-Release statt einer ungeprueften Veroeffentlichung",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -16,6 +16,9 @@
 ### Kein Python — nie.
 *Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig* · `premise-kein-python`
 
+### Oeffentliche Artefakte sind generisch, synthetisch und vor Veroeffentlichung sanitisiert.
+*Forschung muss reproduzierbar sein, ohne personenbezogene Kurs-, Nutzer-, Infrastruktur- oder Betriebsdaten offenzulegen.* · `premise-public-sanitized`
+
 ### Typsicherheit vor Flexibilität.
 *Illegale SPOT-Zustände sollen nicht repräsentierbar sein — das Typsystem ist das Schema* · `premise-typsicherheit`
 
@@ -48,6 +51,16 @@
 - **Kontext:** CDD besitzt SPOT und ein Konvergenz-Orakel, aber noch kein epistemisches Lagebild, Change Compilation, Mission Dispatch oder Outcome-Lernen
 - **Entscheidung:** CDD bleibt der überprüfbare Kernel; EIDOS wird als getrenntes, ehrlich als Pending markiertes Architektur- und Forschungsprogramm entwickelt
 - **Konsequenzen:** Neue Capabilities werden zuerst im SPOT spezifiziert; Produktclaims unterscheiden implementierten Ist-Stand und Zielbild
+
+### CDD als reproduzierbares Forschungs-Monorepo · `adr-006-research-monorepo`
+- **Kontext:** Paper, Framework, Studio und Referenzprojekt muessen bis Version 1.0 auf denselben versionierten Forschungsstand zeigen.
+- **Entscheidung:** Research Track, CDD-Kernel, CourseForge-Referenzprojekt und Studio bleiben bis Version 1.0 in einem oeffentlichen, sanitisierten Monorepo.
+- **Konsequenzen:** Releases koennen Code, Claims, Protokolle und Evidenz gemeinsam pinnen; spaetere Distributionen duerfen getrennt paketiert werden.
+
+### Research Studio ist eine read-only SPOT-Projektion · `adr-007-public-research-studio`
+- **Kontext:** Ein visuelles Forschungsportal kann schnell zu einer zweiten, handgepflegten Wahrheit oder zu einem unkontrollierten Agenten-Frontend werden.
+- **Entscheidung:** Dynamische Forschungsobjekte werden aus dem oeffentlichen SPOT-Snapshot gerendert; Feedback erzeugt nur einen vom Menschen zu pruefenden Issue-Entwurf.
+- **Konsequenzen:** Kuratiertes Storytelling bleibt moeglich, Status und Evidenz bleiben versioniert; Medien muessen bei wesentlichen Modellveraenderungen erneut geprueft werden.
 
 ## Geltende Invarianten (Governance)
 

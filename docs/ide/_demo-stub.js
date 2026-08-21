@@ -1,5 +1,5 @@
 /* Statische IDE-Demo: fängt /api/*-Aufrufe ab und liefert echte, gesnapshottete
- * Antworten des Self-Modells (66 Knoten) aus. Lesen = echt; Schreiben/Live-Agent
+ * Antworten eines versionierten Self-Modell-Snapshots aus. Lesen = echt; Schreiben/Live-Agent
  * = schreibgeschützt (kein Backend, kein Login). Läuft als klassisches Script
  * VOR den ES-Modulen, patcht window.fetch, bevor die App ihn benutzt. */
 (function () {
@@ -10,7 +10,7 @@
   function badge() {
     if (shown || !document.body) return; shown = true;
     var d = document.createElement('div');
-    d.innerHTML = '🔒 <b>Demo-Modus</b> — echtes Self-Modell (66 Knoten), aber <b>schreibgeschützt</b>: Live-Agent &amp; Speichern sind hier aus. Voll nutzbar via <a href="https://codespaces.new/Koschnag/cong-driven-development" target="_blank" style="color:#4ea1ff">Codespaces</a>.';
+    d.innerHTML = '🔒 <b>Demo-Modus</b> — versionierter Self-Modell-Snapshot, aber <b>schreibgeschützt</b>: Live-Agent &amp; Speichern sind hier aus. Voll nutzbar via <a href="https://codespaces.new/Koschnag/cong-driven-development" target="_blank" style="color:#4ea1ff">Codespaces</a>.';
     d.style.cssText = 'position:fixed;bottom:12px;left:50%;transform:translateX(-50%);max-width:92vw;background:#161b22;color:#e6edf3;border:1px solid #d29922;border-radius:8px;padding:8px 16px;font:13px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.45)';
     document.body.appendChild(d);
   }

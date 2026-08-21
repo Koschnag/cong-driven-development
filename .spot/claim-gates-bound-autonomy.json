@@ -1,0 +1,27 @@
+{
+  "Id": "claim-gates-bound-autonomy",
+  "Payload": {
+    "Case": "ResearchClaimNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Der zulaessige Autonomiegrad eines Software-Agenten sollte durch unabhaengige, maschinenpruefbare und risikoadaptive Gates begrenzt werden.",
+        "Status": "Proposed",
+        "Scope": "Agentische Softwareevolution",
+        "Provenance": {
+          "SourceRefs": [
+            "kb-software-engineering-ki-gegenthese",
+            "kb-llm-modulo",
+            "kb-veriact"
+          ],
+          "DerivedFrom": [
+            "claim-essential-complexity-remains"
+          ],
+          "RecordedAt": "2026-07-27T00:00:00Z",
+          "Method": "Architekturhypothese aus Verifikationsliteratur und CDD-Gate-Modell"
+        },
+        "Rationale": "Vergleichbare Kandidaten muessen gegen korrelierte Orakel und einen ungeregelten Agenten getestet werden."
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

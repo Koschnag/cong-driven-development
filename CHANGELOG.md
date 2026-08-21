@@ -5,6 +5,20 @@ Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 
 ## [Unreleased]
 
+### Added
+- **CDD Research Program:** gemeinsamer, zitierbarer Track für Paper, Claim Ledger,
+  Framework, CDD Studio und das generische CourseForge-Referenzprojekt.
+- **Epistemisch typisierte Research-Claims:** Status, Scope, Provenienz, Zeitpunkt,
+  Quellen und Ableitungen werden als öffentliche SPOT-Projektion gespeichert und
+  fail-closed validiert.
+- **CourseForge Vertical Slice:** datensparsamer Import eines bereits extrahierten
+  Moodle-Backup-Ordners, Course IR, deterministische authoring-gegatete Spielpläne
+  und kontrollierte Feedback-zu-Change-Intent-Triage.
+- **Research Snapshots:** monatliches reproduzierbares Bundle; öffentliche Research
+  Releases entstehen ausschließlich als manuell angeforderte Drafts.
+- **Public Research & Data Policy:** synthetische Fixtures, öffentliche Issue-Gates
+  und deterministischer Check gegen private Pfade/Routen ergänzen Gitleaks.
+
 ## [0.8.0-alpha.2] — 2026-07-24
 
 ### Fixed
@@ -100,6 +114,9 @@ Web-Cockpit, reflexives Selbst-Modell, erster Lean-Beweis (Werterhaltung).
 
 ## Bekannte Grenzen (bewusst offen, dokumentiert)
 
+- CourseForge liest derzeit nur bereits extrahierte Metadaten; `.mbz`-Sandbox,
+  semantisches Authoring, Game-Runtime und Candidate-Ausführung sind offen.
+- Neue CDD-Claims sind Hypothesen (`Proposed`), keine empirisch bestätigten Ergebnisse.
 - **N = 2 Fallstudien**, beide klein — Anwendbarkeit, nicht Skalierung.
 - **Zwei** Lean-bewiesene Invarianten (Werterhaltung, Nichtnegativität); Isolation und
   Replay-Treue sind nur FsCheck-geprüft (Roadmap).

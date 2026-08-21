@@ -441,7 +441,7 @@ td.cell { cursor: pointer; color: var(--fg); } td.cell:hover { background: var(-
 .main { position: relative; }
 @media (max-width: 900px) { .main.dia-collapsed { grid-template-columns: 1fr; grid-template-rows: 0 1fr; } }
 
-/* ───────────── @-Gedächtnis: Treffer-Karten (knowledge-store.db, nur sensitive=0) ───────────── */
+/* ───────────── @-Gedächtnis: Treffer-Karten der sanitisierten Projektion ───────────── */
 .mem-card { background: var(--bg1); border: 1px solid var(--line); border-left: 3px solid var(--accent2); border-radius: 8px; padding: .5rem .7rem; margin: .4rem 0; }
 .mem-meta { display: flex; justify-content: space-between; align-items: baseline; font-size: 10.5px; color: var(--muted); margin-bottom: .2rem; }
 .mem-sys { text-transform: uppercase; letter-spacing: .5px; color: var(--accent); }

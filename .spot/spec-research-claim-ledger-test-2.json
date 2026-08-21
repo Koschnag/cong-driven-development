@@ -1,0 +1,14 @@
+{
+  "Id": "spec-research-claim-ledger-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-research-claim-ledger",
+        "Name": "Research-Claim-Ledger — Verified ohne öffentliche Evidenz oder gültige Provenienz wird abgelehnt",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

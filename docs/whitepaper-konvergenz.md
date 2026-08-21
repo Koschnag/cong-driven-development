@@ -1,6 +1,10 @@
 # Das Terminierungs-Orakel: Eine typisierte Konvergenz-Referenz für agentische Softwareentwicklung
 
-*Cong Chanh Vinzenz Nguyen — .NET-Architekt, independent research prototype*
+*Cong Chanh Vinzenz Nguyen — unabhängiger Forschungsprototyp*
+
+> **Reproduzierbarer historischer Snapshot:** Dieses Whitepaper beschreibt den
+> veröffentlichten Stand `v0.7.0`. Aktuelle Claims und Messwerte stehen im
+> [CDD Research Program](../research/README.md) und im SPOT-Selbstmodell.
 
 ---
 
@@ -58,7 +62,7 @@ Wir ersetzen das Terminierungs-Orakel. Der Loop terminiert nicht, wenn der Gener
 
 SPOT (Single Point of Truth) ist ein typisierter F#-Discriminated-Union-Graph. Jeder Knoten liegt als ein git-versioniertes JSON unter `.spot/` — die Referenz ist damit externalisiert, versioniert und Teil der Historie, nicht ein flüchtiger Prompt-Kontext. Genau das ist das von Storey geforderte „externalized rationale": die getypte Spec **ist** das externalisierte Rationale, das Intent Debt tilgt, statt sie auf den Reviewer zu verschieben.
 
-Jeder Knoten trägt einen Konvergenzzustand aus vier Werten: `Aligned`, `Pending`, `Diverged`, `Orphaned`. Das aktuelle Selbst-Modell des Werkzeugs (Koschnag/cong-driven-development, main) hat **66 Knoten, 62 Aligned, 4 Pending**, bei **42/42 grünen Unit-Tests**. Die vier Pending-Knoten sind ehrlich offen — zwei davon sind LLM-Ergebnis-Kriterien, die **nicht** mechanisch prüfbar sind und daher bewusst nicht auf `Aligned` gesetzt wurden. Im Zuge ehrlicher Konvergenz wurden 5 abgelöste Knoten gelöscht und 3 end-to-end verifizierte UI-Specs promotet. Die reflexive Selbstanwendung dieses Modells führen wir in Abschnitt 5 aus.
+Jeder Knoten trägt einen Konvergenzzustand aus vier Werten: `Aligned`, `Pending`, `Diverged`, `Orphaned`. Das Selbst-Modell des veröffentlichten Stands `v0.7.0` hat **66 Knoten, 62 Aligned, 4 Pending**, bei **42/42 grünen Unit-Tests**. Die vier Pending-Knoten sind ehrlich offen — zwei davon sind LLM-Ergebnis-Kriterien, die **nicht** mechanisch prüfbar sind und daher bewusst nicht auf `Aligned` gesetzt wurden. Im Zuge ehrlicher Konvergenz wurden 5 abgelöste Knoten gelöscht und 3 end-to-end verifizierte UI-Specs promotet. Die reflexive Selbstanwendung dieses Modells führen wir in Abschnitt 5 aus.
 
 ### 2.3 Generator/Orakel-Trennung
 
@@ -143,7 +147,7 @@ Ehrlich und in der Test-Suite als „Defekt 4" dokumentiert: `SetzeSpecAligned` 
 
 ### 5.2 Ehrliche Selbst-Konvergenz
 
-Das Selbst-Modell umfasst aktuell 66 Knoten: 62 `Aligned`, 4 `Pending`. Die Test-Suite zählt 42 von 42 grünen Tests. Diese Zahlen sind das Resultat einer dokumentierten, ehrlichen Konvergenz, nicht eines geschönten Endzustands:
+Das Selbst-Modell des Snapshots `v0.7.0` umfasst 66 Knoten: 62 `Aligned`, 4 `Pending`. Die Test-Suite zählt 42 von 42 grünen Tests. Diese Zahlen sind das Resultat einer dokumentierten, ehrlichen Konvergenz, nicht eines geschönten Endzustands:
 
 - **5 abgelöste Knoten gelöscht** — Spezifikationen, die von neueren abgelöst wurden, bleiben nicht als Karteileichen `Aligned`, sondern verschwinden.
 - **3 e2e-verifizierte UI-Specs promotet** — von `Pending` nach `Aligned` erst nach echter End-to-End-Verifikation.
@@ -211,11 +215,12 @@ Der Rest bleibt, und wir verkleinern ihn nicht: das *Setzen* der Invariante. Es 
 
 Alle drei Repositories sind öffentlich auf GitHub und CI-grün. Die folgenden Befehle klonen, bauen und prüfen die jeweilige Kette von Grund auf. Voraussetzungen: .NET SDK 9 für alle drei; zusätzlich `elan` (stellt die in `lean-toolchain` gepinnte Lean-4-Version bereit) für den Werterhaltungs-Beweis in `ledger-casestudy`.
 
-**Koschnag/cong-driven-development** (Branch main) — die Methode/IDE, Selbst-Modell 66 Knoten / 62 Aligned / 4 Pending, 42/42 Unit-Tests:
+**Koschnag/cong-driven-development** (`v0.7.0`) — die Methode/IDE, Selbst-Modell 66 Knoten / 62 Aligned / 4 Pending, 42/42 Unit-Tests:
 
 ```bash
 git clone https://github.com/Koschnag/cong-driven-development
 cd cong-driven-development
+git checkout v0.7.0
 dotnet test tests/Cdd.Tests   # erwartet: 42/42 grün
 ```
 
@@ -265,5 +270,3 @@ lean proofs/Werterhaltung.lean     # CI-Job: lean-proof, grün auf GitHub-Hardwa
 10. Lesly Miculicich u. a.: „VeriGuard: Enhancing LLM Agent Safety via Verified Code Generation". arXiv:2510.05156, 2025.
 
 11. Tessl: „Spec-Driven Development with Tessl" (Framework + Spec-Registry). Agent-Enablement-Plattform, https://tessl.io, 2026.
-
-

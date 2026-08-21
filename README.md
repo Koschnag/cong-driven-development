@@ -1,4 +1,6 @@
-# cong-driven-development (CDD)
+# Cong-Driven Development (CDD)
+
+### Evidence-gated software evolution — vom Forschungsclaim bis zum überprüften Release
 
 [![CI](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml/badge.svg)](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Koschnag/cong-driven-development)](https://github.com/Koschnag/cong-driven-development/releases/latest)
@@ -6,9 +8,43 @@
 [![Open in Codespaces](https://img.shields.io/badge/Codespaces-im%20Browser-24292e?logo=github)](https://codespaces.new/Koschnag/cong-driven-development)
 [![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-brightgreen.svg)](LICENSE)
 
-> **Vision:** AI-natives Software-Entwicklungs-Framework, das Modell, Spezifikation,
-> Test, Architektur, Infrastruktur und Wissensbasis in einem **Single Point of Truth**
-> (SPOT) vereint. Mensch beschreibt was, AI-Agents konvergieren auf das wie.
+> **Vision:** Wenn KI Implementierung beschleunigt, werden Intent, Spezifikation,
+> Modellierung, Verifikation und Governance zum Engpass. CDD macht diese Arbeit in
+> einem typisierten **Single Point of Truth (SPOT)** explizit und überprüfbar.
+
+## Öffentliches Forschungsprogramm
+
+CDD ist nicht nur ein Tool-Repository. Es veröffentlicht regelmäßig einen
+reproduzierbaren Forschungsstand aus vier miteinander verbundenen Artefakten:
+
+| Ergebnis | Hier zu finden | Aktueller Stand |
+|---|---|---|
+| **Paper & Research Track** | [`research/`](research/) · [Paper](docs/paper-terminierungs-orakel.pdf) | Preprint und offene Hypothesen |
+| **Framework / Engine** | [`src/Cdd.Core/`](src/Cdd.Core/) · [`src/Cdd.Cli/`](src/Cdd.Cli/) | ausführbarer F#-Kernel |
+| **Referenzprojekt CourseForge** | [`examples/CourseForge.Core/`](examples/CourseForge.Core/) | sicherer Metadata→Course-IR→Game-Plan Vertical Slice |
+| **CDD Studio** | [öffentliche IDE-Demo](https://koschnag.github.io/cong-driven-development/ide/) · [`src/Cdd.Web/`](src/Cdd.Web/) | experimentelle Projektion desselben SPOT |
+
+Der Claim-Ledger ist selbst Teil des SPOT: `Observed`, `Proposed`, `Verified`,
+`Contested` und `Unknown` bleiben unterscheidbar. Eine technisch implementierte
+Funktion ist dadurch nicht automatisch eine wissenschaftlich bestätigte Aussage.
+
+```text
+Signal → Claim / Change Intent → Candidate → unabhängige Assurance
+       → Evidence Pack → menschliches Promotion Gate → Outcome
+```
+
+Das generische Referenzprojekt **CourseForge** untersucht zwei Schleifen:
+
+- Moodle-Metadaten → datensparsamer Course IR → fachlich zu ratifizierender Lernspielplan;
+- Bug/Feature-Feedback → `ProposalOnly` Change Intent → Tests/Evidenz → Freigabe.
+
+Keine echte Kursdatei, kein Nutzerprofil und keine private Infrastruktur gehört in
+dieses öffentliche Repo. Verbindlich: [Public Research & Data Policy](PUBLICATION_POLICY.md).
+
+Der öffentliche Hintergrundimpuls ist
+[„Software Engineering im KI-Zeitalter: Gegenthese zum Hype“](https://www.linkedin.com/pulse/software-engineering-im-ki-zeitalter-gegenthese-zum-hype-nguyen-imnof/):
+*Embrace the Boring. Resist the Hype. Learn the Fundamentals. Go for Abstraction.*
+Der Essay liefert Hypothesen — ihre Gültigkeit muss die Forschung erst zeigen.
 
 ## Was es sein soll
 
@@ -150,7 +186,8 @@ SPOT, jede Sicht ist eine Projektion desselben Modells. → Volle Beschreibung i
   Marker-Präsenz, Greenness via CI (→ [GEGENENTWURF.md](GEGENENTWURF.md)).
 - **Formal-Sicht** — derselbe SPOT als „code behind" in Typentheorie / Prädikatenlogik /
   Kategorien (KaTeX), jede Linse mit ehrlichem Caveat.
-- **@-Gedächtnis** — `knowledge-store.db`-Volltextsuche (FTS5), serverseitig nur `sensitive=0`.
+- **@-Gedächtnis** — optionale sanitisierte Knowledge-Store-Projektion; default-deny und
+  serverseitig auf nicht-sensitive Einträge begrenzt.
 - **Souveräne Engine-Kette** — Claude Code primär, Mistral-EU + lokales Ollama über einen
   echten agentischen Tool-Loop gegen die SPOT-Tools.
 - **EA-Toolbox + Symbol-System** — UML/SysML-Glyphen, Konvergenz am Rand; Knoten/Relationen
@@ -163,16 +200,20 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**107 Knoten im Selbstmodell** · 4 aktive Invarianten · 27/30 abgeleitete Tests automatisiert
+**142 Knoten im Selbstmodell** · 4 aktive Invarianten · 39/42 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
 - ✅ **Agent-Interface** — Prosa-Eingaben werden durch eine KI in validierte Modelländerungen übersetzt
 - ✅ **Chat-primaere Cockpit-Shell** — Das Cockpit ist chat-primaer: eine Omnibar als einzige Tuer, eine Menueleiste, die Rail mit Flaechen, der Faden und eine Statuszeile.
+- ✅ **Course IR zu authoring-gegatem Spielplan** — Ein importierter Kurs erzeugt reproduzierbare Lernmissions-Skelette, ohne fachliche Richtigkeit vorzutaueschen.
+- ✅ **Datensparsamer Moodle-Folder-Import** — Ein generischer Course-IR-Adapter liest nur benoetigte Kursmetadaten und schliesst sensible Moodle-Daten aus.
 - ✅ **Doctrine und Mission Orders** — Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
 - ✅ **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
 - ✅ **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
+- ✅ **Fail-closed public runtime boundary** — Eine oeffentliche CDD-Auslieferung darf ohne explizite Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen.
+- ✅ **Feedback zu kontrolliertem EIDOS Change Intent** — Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege erzeugen, die ein expliziter Adapter in risikotypisierte EIDOS Change Intents ohne Promotion-Autoritaet kompiliert.
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
 - ✅ **Getypte Diagramm-Flaeche mit Toolbox** — Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.
@@ -182,6 +223,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
+- ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
@@ -190,6 +232,8 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ### In Arbeit / geplant (Pending)
 
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
+- 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
+- 🔜 **SPOT-projiziertes Research Studio** — Eine review-orientierte Oberflaeche zeigt Forschungsstand, Luecken, Grenzen, Medien und Teilprojekte, ohne eine zweite Wahrheit oder automatische Promotion zu erzeugen.
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

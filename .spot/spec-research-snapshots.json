@@ -1,0 +1,20 @@
+{
+  "Id": "spec-research-snapshots",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Reproduzierbare Research Snapshots",
+        "Intent": "Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.",
+        "Criteria": [
+          {
+            "Given": "ein gruener, sanitizierter Stand auf main oder ein manueller Snapshot-Auftrag",
+            "When": "der Research-Snapshot-Workflow laeuft",
+            "Then": "entsteht ein pruefbares Bundle und bei manueller Freigabe ein Draft-Release statt einer ungeprueften Veroeffentlichung"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}
