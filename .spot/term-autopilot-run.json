@@ -1,0 +1,31 @@
+{
+  "Id": "term-autopilot-run",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Autopilot Run",
+        "Definition": "Persistente, replaybare Ausf\u00FChrung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints",
+        "Synonyms": [
+          "Agentic SDLC Run",
+          "Durable Run"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-control-plane"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-mission-order"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

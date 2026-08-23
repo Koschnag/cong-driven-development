@@ -1,0 +1,15 @@
+{
+  "Id": "risk-agent-premature-stop",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Ein Worker beendet einen Turn ohne belastbaren Abschluss, w\u00E4hrend die Mission f\u00E4lschlich als erledigt erscheint",
+        "Likelihood": "High",
+        "Impact": "High",
+        "Mitigation": "Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

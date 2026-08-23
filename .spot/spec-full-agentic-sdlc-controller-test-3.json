@@ -1,0 +1,14 @@
+{
+  "Id": "spec-full-agentic-sdlc-controller-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-full-agentic-sdlc-controller",
+        "Name": "Persistente Full-Agentic-SDLC-Kette \u2014 when der Controller Promotion oder den n\u00E4chsten Slice bewertet then wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

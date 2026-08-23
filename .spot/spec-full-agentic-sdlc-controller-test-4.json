@@ -1,0 +1,14 @@
+{
+  "Id": "spec-full-agentic-sdlc-controller-test-4",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-full-agentic-sdlc-controller",
+        "Name": "Persistente Full-Agentic-SDLC-Kette \u2014 when Status oder Evaluation abgefragt werden then werden n\u00E4chste Aktion, vollst\u00E4ndiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

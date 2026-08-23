@@ -1,0 +1,16 @@
+{
+  "Id": "adr-009-deterministic-autopilot-controller",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "Deterministischer Controller \u00FCber austauschbaren Agent-Harnesses",
+        "Context": "Langlaufende Coding-Agenten k\u00F6nnen vorzeitig enden, ihren eigenen Erfolg \u00FCbersch\u00E4tzen oder bei gro\u00DFen Auftr\u00E4gen Kontext und Fortschritt verlieren",
+        "Choice": "CDD h\u00E4lt den langlebigen Run-Zustand, w\u00E4hlt die n\u00E4chste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses f\u00FChren die Aktionen aus",
+        "Consequences": "Agenten bleiben austauschbar und d\u00FCrfen nicht selbst promoten; CDD ben\u00F6tigt daf\u00FCr explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

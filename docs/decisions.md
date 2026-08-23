@@ -67,6 +67,11 @@
 - **Entscheidung:** CDD baut den typisierten semantischen Kern, Doctrine, Evidence-Promotion und Projektionen; Ausführung, Editoren, Diagramme, Telemetrie, Policy und Artefaktspeicher werden über offene Standards und Ports adaptiert
 - **Konsequenzen:** SPOT bleibt Domänenwahrheit; Theia, GLSP, LSP, MCP, OSLC, CDEvents, OTLP, OCI/in-toto und Workflow-Engines können unabhängig ersetzt oder schrittweise eingeführt werden
 
+### Deterministischer Controller über austauschbaren Agent-Harnesses · `adr-009-deterministic-autopilot-controller`
+- **Kontext:** Langlaufende Coding-Agenten können vorzeitig enden, ihren eigenen Erfolg überschätzen oder bei großen Aufträgen Kontext und Fortschritt verlieren
+- **Entscheidung:** CDD hält den langlebigen Run-Zustand, wählt die nächste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses führen die Aktionen aus
+- **Konsequenzen:** Agenten bleiben austauschbar und dürfen nicht selbst promoten; CDD benötigt dafür explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle
+
 ## Geltende Invarianten (Governance)
 
 - 🛡️ **Jeder Begriff der ubiquitären Sprache ist definiert** — jeder Begriff braucht eine Definition · `inv-begriffe-definiert`

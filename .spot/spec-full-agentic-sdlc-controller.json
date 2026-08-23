@@ -1,0 +1,35 @@
+{
+  "Id": "spec-full-agentic-sdlc-controller",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Persistente Full-Agentic-SDLC-Kette",
+        "Intent": "CDD f\u00FChrt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert \u00FCber kleine Work Slices statt \u00FCber einen unkontrollierten Modell-Loop",
+        "Criteria": [
+          {
+            "Given": "eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen",
+            "When": "der Autopilot die n\u00E4chste Aktion bestimmt",
+            "Then": "durchl\u00E4uft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabh\u00E4ngigen Reviewer und Checkpoint in einer typisierten Reihenfolge"
+          },
+          {
+            "Given": "ein Agenten-Turn ohne erwarteten Terminalmarker",
+            "When": "die Beobachtung im Run protokolliert wird",
+            "Then": "wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei ersch\u00F6pftem Budget fail-closed blockiert"
+          },
+          {
+            "Given": "fehlende oder rote Gates, korrelierte Rollen oder offene Review-Befunde",
+            "When": "der Controller Promotion oder den n\u00E4chsten Slice bewertet",
+            "Then": "wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt"
+          },
+          {
+            "Given": "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen",
+            "When": "Status oder Evaluation abgefragt werden",
+            "Then": "werden n\u00E4chste Aktion, vollst\u00E4ndiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}
