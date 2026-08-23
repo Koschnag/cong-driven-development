@@ -740,8 +740,9 @@ let ``Gate-Property: ein nicht-gruener Lauf macht einen Test-Knoten NIE Aligned`
     let prop (passed: int) (failed: int) (covered: bool) =
         let trx : Gate.TrxResult = { Passed = abs passed; Failed = abs failed; Skipped = 0 }
         let cov = if covered then Set.singleton "spec-x-test-1" else Set.empty
-        (not (Gate.istGruen trx)) ==>
-            ((Gate.setzeAlignedWennGruen trx cov node).Convergence <> Aligned)
+        FsCheck.Fluent.Prop.Implies(
+            not (Gate.istGruen trx),
+            (Gate.setzeAlignedWennGruen trx cov node).Convergence <> Aligned)
     Check.QuickThrowOnFailure prop
 
 [<Fact>]
