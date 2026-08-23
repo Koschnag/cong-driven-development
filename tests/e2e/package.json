@@ -2,5 +2,5 @@
   "name": "cdd-e2e",
   "private": true,
   "type": "module",
-  "dependencies": { "puppeteer": "^23" }
+  "dependencies": { "puppeteer": "^25" }
 }
