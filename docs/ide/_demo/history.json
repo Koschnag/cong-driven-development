@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "Hash": "c7058bf4fd52b4a8b7b7745b74083c915d0e0fd7",
+    "Short": "c7058bf",
+    "Author": "Cong",
+    "Date": "2026-07-27",
+    "Subject": "feat: establish public CDD research program"
+  },
+  {
+    "Hash": "c64f4b6efc59c15646a24ba327e0d864ae1855f8",
+    "Short": "c64f4b6",
+    "Author": "Nguyen Cong Chanh",
+    "Date": "2026-07-24",
+    "Subject": "feat: deliver EIDOS ZT2 alpha kernel (#57)"
+  },
+  {
+    "Hash": "e3d9044138e6ce793e42a410b743acb5ad34b6eb",
+    "Short": "e3d9044",
+    "Author": "Nguyen Cong Chanh",
+    "Date": "2026-07-24",
+    "Subject": "feat: model EIDOS evolution architecture (#56)"
+  },
+  {
+    "Hash": "786a7ba98a991a1b3578743dfea9e6cb4f6e8d9c",
+    "Short": "786a7ba",
+    "Author": "ccv.nguyen",
+    "Date": "2026-06-20",
+    "Subject": "cong-driven-development: spec-convergent method \u002B IDE"
+  }
+]

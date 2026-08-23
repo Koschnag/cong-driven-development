@@ -1,0 +1,25 @@
+{
+  "Id": "spec-studio-workspace-control-plane",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Offene Workspace-Control-Plane-Projektion",
+        "Intent": "CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz \u00FCber ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Dom\u00E4nenwahrheit offenzulegen",
+        "Criteria": [
+          {
+            "Given": "Git-, Work-Item- und Run-Beobachtungen eines Projekts",
+            "When": "der CDD-Kern den Workspace projiziert",
+            "Then": "werden Lifecycle, aktive Mission, Evidenzstand und Aufmerksamkeit deterministisch abgeleitet"
+          },
+          {
+            "Given": "ein verbundener Workspace und das offene Assurance-Portfolio",
+            "When": "die Control-Plane-Oberfl\u00E4che im Browser ge\u00F6ffnet wird",
+            "Then": "sind Mission, Runs, Quellen und austauschbare Vertr\u00E4ge responsiv sichtbar ohne den lokalen Projektpfad auszugeben"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

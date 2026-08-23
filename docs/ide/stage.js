@@ -4,7 +4,7 @@
 //   1 Plan    (F) — SPOT-Plan: Prämissen · Entscheidungen · Risiken · Specs (der axiomatische Kern)
 //   2 Modell  (—) — der ganze SPOT (Knoten + OLAP-Cube + Drift), inkl. Einzelknoten-Inspektor
 //   3 Dev     (C) — Entwicklung: Specs↔Tests↔Komponenten, „Tests ableiten“ an Ort und Stelle
-//   4 Infra   (E) — Homelab/DC: runtime-edge · runtime-services · runtime-compute (adoptiert Komodo via MCP-Backend)
+//   4 Runtime (E) — explizit freigeschaltete Betriebsadapter
 //   5 Prod    (D) — Produktion/Hosting (adoptiert Coolify via MCP-Backend)
 //   6 Doku    (—) — die lebende Doku = exakt der Kontext, den die Engine sieht
 //
@@ -140,15 +140,11 @@ function renderNode(el, store, actions, id) {
   else renderNodeDetail(lb, store, actions, n, { compact: false });
 }
 
-// ── Infra: ECHTE Live-Metriken von runtime-host (uptime/load/mem/disk + Docker). runtime-edge/runtime-services/runtime-compute: Periphery geplant. ──
+// ── Infra: optionaler, default-deny Host-Adapter (uptime/load/mem/disk + Container). ──
 function renderInfra(el, store, actions) {
   const inf = store.get().infra || {};
   const h = inf.host;
-  const hosts = inf.hosts || [
-    { name: 'runtime-edge', role: 'Infra (DNS · Reverse-Proxy · private mesh)', state: 'unknown' },
-    { name: 'runtime-services', role: 'Services (Nextcloud · YunoHost · Backups)', state: 'unknown' },
-    { name: 'runtime-compute', role: 'virtualization (VMs · Gaming-VM)', state: 'unknown' },
-  ];
+  const hosts = inf.hosts || [];
   const apps = inf.apps || [];
   const dot = (st) => st === 'up' || st === 'online' ? 'Aligned' : st === 'down' ? 'Diverged' : 'Pending';
   const metrics = h ? `<div class="infra-metrics">
@@ -156,7 +152,7 @@ function renderInfra(el, store, actions) {
       <span>load ${escapeHtml(h.load || '')}</span><span>mem ${h.memUsedMb}/${h.memTotalMb} MB</span>
       <span>disk ${escapeHtml(h.diskUsedPct || '')}</span></div>` : '';
   el.innerHTML =
-    `<div class="stage-hint">Homelab — ${inf.ok ? `<b>live</b> · ${escapeHtml(inf.source || '')}` : 'Backend offline → Plan'} <span class="adopt-tag">runtime-host live · runtime-edge/runtime-services/runtime-compute via Komodo-Periphery (geplant)</span></div>` +
+    `<div class="stage-hint">Runtime — ${inf.ok ? `<b>live</b> · ${escapeHtml(inf.source || '')}` : 'Host-Adapter deaktiviert'} <span class="adopt-tag">default-deny · explizites Opt-in</span></div>` +
     metrics +
     `<div class="stage-actions"><button data-ask>🤖 „Status aller Hosts holen“</button></div>` +
     hosts.map(x => `<div class="host-row">
@@ -171,7 +167,7 @@ function renderInfra(el, store, actions) {
         <span class="host-state">${escapeHtml(a.status || '')}</span>
       </div>`).join('') : '');
   el.querySelector('[data-ask]').onclick = () =>
-    actions.ask('Hol den Status von runtime-edge, runtime-services und runtime-compute aus dem Homelab und fasse Auffälligkeiten zusammen.');
+    actions.ask('Prüfe den Status der explizit konfigurierten Runtime-Hosts und fasse Auffälligkeiten zusammen.');
 }
 
 // ── Prod: Deployments (Coolify via MCP). Defensiv: ohne Backend ein klarer Auftrag-Knopf. ──
@@ -193,19 +189,19 @@ function renderProd(el, store, actions) {
   el.querySelector('[data-deploy]').onclick = () => actions.focusOmni();
 }
 
-// ── @-Gedächtnis: knowledge-store.db-Volltextsuche (NUR sensitive=0) als Treffer-Karten. „→ an den Faden" = einordnen. ──
+// ── @-Gedächtnis: optionaler sanitizierter Knowledge Store. ──
 function renderMemory(el, store, actions) {
   const s = store.get();
   const q = s.dwhQuery || '';
   if (s.dwhLoading) { el.innerHTML = `<div class="muted pad">Suche „${escapeHtml(q)}" im Gedächtnis…</div>`; return; }
   if (s.dwhAvailable === false) {
-    el.innerHTML = `<div class="stage-hint">@-Gedächtnis (knowledge-store.db, nur <code>sensitive=0</code>). <b>${escapeHtml(s.dwhNote || 'nicht verfügbar')}</b></div>`;
+    el.innerHTML = `<div class="stage-hint">@-Wissen (optionaler, sanitizierter Store). <b>${escapeHtml(s.dwhNote || 'deaktiviert')}</b></div>`;
     return;
   }
   const hits = s.dwhHits || [];
   const mode = s.dwhMode || 'keyword';
   el.innerHTML =
-    `<div class="stage-hint">@-Gedächtnis · „${escapeHtml(q)}" · ${hits.length} Treffer <span class="adopt-tag">knowledge-store.db · nur sensitive=0</span></div>` +
+    `<div class="stage-hint">@-Wissen · „${escapeHtml(q)}" · ${hits.length} Treffer <span class="adopt-tag">sanitizierte Projektion</span></div>` +
     `<div class="stage-actions mem-modes">
        <button data-mode="keyword" class="${mode === 'keyword' ? 'on' : ''}">wörtlich · FTS5</button>
        <button data-mode="semantic" class="${mode === 'semantic' ? 'on' : ''}">semantisch · Vektor</button></div>` +
@@ -218,7 +214,7 @@ function renderMemory(el, store, actions) {
   el.querySelectorAll('.mem-modes button').forEach(b => b.onclick = () => actions.dwhSearch(q, b.dataset.mode));
   el.querySelectorAll('.mem-card [data-i]').forEach(b => b.onclick = () => {
     const h = (store.get().dwhHits || [])[+b.dataset.i];
-    if (h) actions.ask(`Aus meinem Gedächtnis (${h.system}, „${h.title}"): „${h.snippet}". Ordne das ein und sag, ob daraus ein SPOT-Knoten werden sollte.`);
+    if (h) actions.ask(`Aus dem Knowledge Store (${h.system}, „${h.title}"): „${h.snippet}". Ordne das ein und sag, ob daraus ein SPOT-Knoten werden sollte.`);
   });
 }
 

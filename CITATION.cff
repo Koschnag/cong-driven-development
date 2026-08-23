@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use CDD, its research protocol, or CourseForge, please cite this repository and the exact release."
+title: "Cong-Driven Development: typed convergence and evidence-gated software evolution"
+type: software
+authors:
+  - family-names: "Nguyen"
+    given-names: "Cong Chanh Vinzenz"
+repository-code: "https://github.com/Koschnag/cong-driven-development"
+url: "https://koschnag.github.io/cong-driven-development/"
+license: "MPL-2.0"
+version: "0.8.0-alpha.2"
+keywords:
+  - "AI-assisted software engineering"
+  - "spec-driven development"
+  - "formal methods"
+  - "evidence-gated evolution"
+  - "serious games"

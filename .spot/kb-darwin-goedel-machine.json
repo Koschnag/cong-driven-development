@@ -1,0 +1,18 @@
+{
+  "Id": "kb-darwin-goedel-machine",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Darwin G\u00F6del Machine",
+        "Source": "https://arxiv.org/abs/2505.22954",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Offene Evolution kann Agentenvarianten empirisch \u00FCber Benchmarks selektieren",
+          "Sandboxing und menschliche Aufsicht bleiben Teil der berichteten Sicherheitsma\u00DFnahmen"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="CDD Research Studio: Claims, Evidenz, Grenzen, Prämissen und Teilprojekte als lebende Projektion des SPOT.">
+  <title>CDD Research Studio</title>
+  <link rel="stylesheet" href="research.css">
+  <script src="research.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#briefing">Zum Inhalt</a>
+  <header class="topbar">
+    <a class="brand" href="../"><span class="mark">C</span><span>CDD / Research Studio</span></a>
+    <div class="snapshot"><span class="pulse"></span><span id="snapshot-label">SPOT wird geladen …</span></div>
+    <button class="feedback-trigger" type="button" data-feedback-ref="Research Studio">Feedback geben</button>
+  </header>
+
+  <div class="shell">
+    <nav class="rail" aria-label="Research-Studio-Navigation">
+      <p class="eyebrow">BRIEFING</p>
+      <a href="#briefing">01 Überblick</a>
+      <a href="#claims">02 Claims</a>
+      <a href="#evidence">03 Evidenz</a>
+      <a href="#gaps">04 Offene Flanken</a>
+      <a href="#premises">05 Prämissen &amp; Grenzen</a>
+      <a href="#architecture">06 Systembild</a>
+      <a href="#projects">07 Teilprojekte</a>
+      <a href="#media">08 Medien</a>
+      <a href="#roadmap">09 Ideen &amp; Roadmap</a>
+      <p class="rail-note">Eine Projektion.<br>Ein SPOT.<br>Du gibst Feedback.</p>
+    </nav>
+
+    <main>
+      <section id="briefing" class="hero">
+        <div>
+          <p class="eyebrow">EVIDENCE-GATED SOFTWARE EVOLUTION</p>
+          <h1>Vom Forschungsstand<br>zur nächsten Entscheidung.</h1>
+          <p class="lede">CDD untersucht, wie KI-generierte Softwareänderungen durch explizite Absicht, unabhängige Evidenz und begrenzte Promotion kontrollierbar werden. Dieses Studio zeigt den versionierten Stand – einschließlich Lücken.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#claims">Forschungsstand prüfen</a>
+            <button class="button" type="button" data-feedback-ref="Gesamtprogramm">Einordnen / korrigieren</button>
+          </div>
+        </div>
+        <div class="thesis-card">
+          <span class="card-index">KERNMODELL</span>
+          <ol>
+            <li><b>Intent</b><span>Was soll gelten?</span></li>
+            <li><b>Candidate</b><span>Was wurde erzeugt?</span></li>
+            <li><b>Evidence</b><span>Was wurde unabhängig gemessen?</span></li>
+            <li><b>Promotion</b><span>Was darf wohin?</span></li>
+            <li><b>Outcome</b><span>Was hat sich tatsächlich bewährt?</span></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="metric-band" aria-label="Kennzahlen">
+        <article><strong id="metric-nodes">–</strong><span>SPOT-Knoten</span></article>
+        <article><strong id="metric-claims">–</strong><span>Forschungsclaims</span></article>
+        <article><strong id="metric-sources">–</strong><span>Referenzen</span></article>
+        <article><strong id="metric-open">–</strong><span>offene Knoten</span></article>
+      </section>
+
+      <section id="claims" class="section">
+        <div class="section-head"><div><p class="eyebrow">WAS WIR BEHAUPTEN</p><h2>Claims, nicht Gewissheiten</h2></div><p>Status, Scope, Methode und Quellen bleiben sichtbar. „Proposed“ ist bewusst kein Ergebnis.</p></div>
+        <div id="claim-list" class="stack" aria-live="polite"></div>
+      </section>
+
+      <section id="evidence" class="section split-section">
+        <div>
+          <p class="eyebrow">WORAUF ES BERUHT</p><h2>Evidenz &amp; Verweise</h2>
+          <p class="intro">Primärquellen, Standards und Vergleichsarbeiten sind als Knowledge Nodes referenziert. Ein Verweis ist noch kein Beleg für einen Claim.</p>
+        </div>
+        <div id="source-list" class="source-list"></div>
+      </section>
+
+      <section id="gaps" class="section dark-section">
+        <div class="section-head"><div><p class="eyebrow">WO ES BRECHEN KANN</p><h2>Offene Flanken &amp; Risiken</h2></div><p>Die wichtigsten Gegenargumente werden nicht im Kleingedruckten versteckt.</p></div>
+        <div id="risk-list" class="risk-grid"></div>
+        <h3 class="subhead">Noch nicht konvergiert</h3>
+        <div id="pending-list" class="pending-list"></div>
+      </section>
+
+      <section id="premises" class="section">
+        <div class="section-head"><div><p class="eyebrow">WAS WIR VORAUSSETZEN</p><h2>Prämissen &amp; Grenzen</h2></div><a href="../../PUBLICATION_POLICY.md">Publikationsgrenze lesen ↗</a></div>
+        <div id="premise-list" class="card-grid"></div>
+        <div class="boundary-note"><b>Öffentliche Grenze</b><p>Dieses Repository enthält nur generische Architektur, synthetische Fixtures und zitierfähige Quellen. Private Memory-, Betriebs-, Identitäts- und Infrastrukturdaten sind kein Forschungsartefakt.</p></div>
+      </section>
+
+      <section id="architecture" class="section">
+        <div class="section-head"><div><p class="eyebrow">WIE ES ZUSAMMENHÄNGT</p><h2>Ein System, mehrere Projektionen</h2></div><p>Der Drill-down endet nicht auf einer Folie, sondern bei versionierten Knoten, Tests und Code.</p></div>
+        <div class="architecture" role="img" aria-label="Intent fließt über SPOT, CDD und EIDOS zu Evidenz, Promotion und Outcome. CourseForge ist Referenzprojekt, Studio ist Projektion.">
+          <div class="arch-main">
+            <div class="arch-node input"><span>01</span><b>Intent</b><small>Feedback · Spec · Premise</small></div><i>→</i>
+            <div class="arch-node spot"><span>02</span><b>SPOT</b><small>getypter, versionierter Graph</small></div><i>→</i>
+            <div class="arch-node engine"><span>03</span><b>CDD + EIDOS</b><small>erzeugen · prüfen · begrenzen</small></div><i>→</i>
+            <div class="arch-node evidence"><span>04</span><b>Evidence Pack</b><small>Provenienz · Gates · Replay</small></div><i>→</i>
+            <div class="arch-node outcome"><span>05</span><b>Promotion + Outcome</b><small>menschlich verantwortet</small></div>
+          </div>
+          <div class="arch-projections"><div><b>CourseForge</b><span>Referenzprojekt</span></div><div><b>Research Studio</b><span>read-only Projektion</span></div><div><b>Paper · Deck · Video</b><span>publizierbare Sichten</span></div></div>
+        </div>
+      </section>
+
+      <section id="projects" class="section">
+        <div class="section-head"><div><p class="eyebrow">WAS ES BEREITS GIBT</p><h2>Übersicht der Teilprojekte</h2></div><p>Jedes Teilprojekt hat einen klaren Zweck und verweist auf seine Quelle.</p></div>
+        <div id="project-list" class="project-grid"></div>
+      </section>
+
+      <section id="media" class="section media-section">
+        <div class="section-head"><div><p class="eyebrow">ZEIGEN, NICHT NUR BESCHREIBEN</p><h2>Video, Präsentation &amp; Diagramme</h2></div><p>Alle Medien sind abgeleitete Briefings – der SPOT bleibt die Quelle.</p></div>
+        <div class="media-grid">
+          <div class="video-frame"><video controls preload="metadata" poster="../media/cdd-research-overview-poster.png"><source src="../media/cdd-research-overview.mp4" type="video/mp4">Das Video kann hier nicht wiedergegeben werden.</video></div>
+          <div class="media-links">
+            <a href="briefing.html"><span>Präsentation</span><b>Interaktives Research Briefing</b><small>Sechs Folien für Review und Vortrag – direkt im Browser</small></a>
+            <a href="../paper-terminierungs-orakel.pdf"><span>Paper</span><b>Terminierungsorakel · PDF</b><small>Zitierfähige Langfassung des bisherigen Forschungsstrangs</small></a>
+            <a href="https://github.com/Koschnag/cong-driven-development/tree/main/research"><span>Research Track</span><b>Paper, Claims &amp; Methodik</b><small>Versionierte Quelldokumente</small></a>
+          </div>
+        </div>
+      </section>
+
+      <section id="roadmap" class="section">
+        <div class="section-head"><div><p class="eyebrow">WAS ALS NÄCHSTES ENTSCHEIDBAR IST</p><h2>Ideen &amp; Roadmap</h2></div><p>Prioritäten sind Vorschläge. Feedback wird zum Change Intent, nicht automatisch zum Merge.</p></div>
+        <div id="decision-list" class="timeline"></div>
+      </section>
+
+      <section class="closing">
+        <p class="eyebrow">DEINE ROLLE</p><h2>Prüfe die Prämisse.<br>Fordere den Beleg.<br>Setze die Grenze.</h2>
+        <button class="button primary" type="button" data-feedback-ref="Research Review">Feedback formulieren</button>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="feedback-dialog">
+    <form id="feedback-form" method="dialog">
+      <div class="dialog-head"><div><p class="eyebrow">FEEDBACK → CHANGE INTENT</p><h2>Was sollen wir prüfen?</h2></div><button class="icon-button" value="cancel" aria-label="Schließen">×</button></div>
+      <label>Bezug<input id="feedback-ref" name="reference" readonly></label>
+      <label>Art<select id="feedback-kind" name="kind"><option>Gegenargument</option><option>Fehlende Quelle</option><option>Idee</option><option>Fehler</option><option>Priorität</option></select></label>
+      <label>Kernaussage<input id="feedback-summary" name="summary" maxlength="120" required placeholder="Kurz und prüfbar"></label>
+      <label>Begründung / gewünschter Test<textarea id="feedback-details" name="details" rows="6" placeholder="Welche Evidenz würde deine Aussage bestätigen oder widerlegen?"></textarea></label>
+      <p class="privacy">Es wird nichts automatisch gesendet. „Issue prüfen“ öffnet einen vorbefüllten GitHub-Entwurf, den du vor dem Absenden kontrollierst.</p>
+      <div class="dialog-actions"><button class="button" value="cancel">Abbrechen</button><button class="button primary" id="feedback-submit" value="default">Issue prüfen ↗</button></div>
+    </form>
+  </dialog>
+
+  <footer><span>CDD Research Studio</span><span>SPOT-projiziert · öffentlich · read-only · MPL-2.0</span><a href="https://github.com/Koschnag/cong-driven-development">Quellcode ↗</a></footer>
+</body>
+</html>

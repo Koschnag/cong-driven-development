@@ -1,0 +1,18 @@
+{
+  "Id": "kb-veriact",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "VeriAct \u2014 Beyond Verifiability",
+        "Source": "https://arxiv.org/abs/2604.00280",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Verifier-Akzeptanz allein garantiert keine korrekte oder vollst\u00E4ndige Spezifikation",
+          "Ein unabh\u00E4ngiges Spec-Harness macht \u00DCber- und Unterbeschr\u00E4nkung messbar"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

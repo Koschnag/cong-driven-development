@@ -1,0 +1,18 @@
+{
+  "Id": "kb-llm-modulo",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "LLM-Modulo Frameworks",
+        "Source": "https://arxiv.org/abs/2402.01817",
+        "MediaType": "paper",
+        "Takeaways": [
+          "LLMs und externe modellbasierte Verifizierer sollen bidirektional gekoppelt werden",
+          "Der externe Verifizierer bleibt Quelle der belastbaren Garantie"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

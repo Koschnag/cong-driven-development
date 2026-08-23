@@ -3,6 +3,56 @@
 Alle nennenswerten Änderungen an diesem Projekt. Format angelehnt an
 [Keep a Changelog](https://keepachangelog.com/), Versionierung nach [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **CDD Research Program:** gemeinsamer, zitierbarer Track für Paper, Claim Ledger,
+  Framework, CDD Studio und das generische CourseForge-Referenzprojekt.
+- **Epistemisch typisierte Research-Claims:** Status, Scope, Provenienz, Zeitpunkt,
+  Quellen und Ableitungen werden als öffentliche SPOT-Projektion gespeichert und
+  fail-closed validiert.
+- **CourseForge Vertical Slice:** datensparsamer Import eines bereits extrahierten
+  Moodle-Backup-Ordners, Course IR, deterministische authoring-gegatete Spielpläne
+  und kontrollierte Feedback-zu-Change-Intent-Triage.
+- **Research Snapshots:** monatliches reproduzierbares Bundle; öffentliche Research
+  Releases entstehen ausschließlich als manuell angeforderte Drafts.
+- **Public Research & Data Policy:** synthetische Fixtures, öffentliche Issue-Gates
+  und deterministischer Check gegen private Pfade/Routen ergänzen Gitleaks.
+
+## [0.8.0-alpha.2] — 2026-07-24
+
+### Fixed
+- EIDOS Studio löst API, Sandbox, Service Worker, Manifest, Icon und CDD-Backlink
+  relativ zu seinem Deployment-Pfad auf. Die PWA funktioniert damit sowohl am
+  Domain-Root als auch hinter einem Reverse-Proxy-Unterpfad wie `/cdd/`.
+
+## [0.8.0-alpha.1] — 2026-07-24
+
+### Added
+- **EIDOS v0.8 alpha / ZT2 Trusted Kernel:** epistemisch typisierte Claims,
+  Read-only System Twin, risikoadaptive Doctrine und Mission Orders,
+  deterministischer Semantic Change Compiler, content-addressed Evidence Packs,
+  fail-closed Promotion sowie append-only Ledger und Replay.
+- **Synthetisches OpsLab:** ein abwärtskompatibler Schema-Change wird ohne
+  mechanischen Human Touch bis in eine credential-freie lokale ZT2-Sandbox
+  ausgeführt. Neun Fault-Injection-Modi belegen die Ablehnung roter, fehlender,
+  alter, korrelierter, falsch gebundener oder manipulierter Evidenz.
+- **EIDOS Studio PWA:** mobile-first Oberfläche für Run, Falsifikation,
+  Benchmark, Sandbox, Replay und lokale Bug-/Feature-Issue-Entwürfe.
+- **EvoSDLC-Bench v0:** zehn deterministische Assurance-Fälle mit versionierten
+  JSON-/Markdown-Ergebnissen und einer bewusst schwachen linearen Baseline.
+- **Forschungsbericht und SPOT-Wissensbasis:** Quellen zu Intent-Formalisierung,
+  unabhängiger Verifikation, Requirements Engineering, Provenienz,
+  Evaluator-Drift, W3C PROV, SLSA und NIST SSDF.
+
+### Changed
+- Release-Artefakte decken Linux x64/ARM64, Windows x64 sowie macOS x64/ARM64 ab.
+
+### Security
+- EIDOS v0 besitzt keine Produktionsschnittstelle: Sandboxes erhalten weder
+  Netzwerk noch Credentials oder Produktionsautorität. Generator und
+  unabhängige Evidence-Validatoren dürfen nicht identisch sein.
+
 ## [0.7.0] — 2026-06-26
 
 ### Added
@@ -64,6 +114,9 @@ Web-Cockpit, reflexives Selbst-Modell, erster Lean-Beweis (Werterhaltung).
 
 ## Bekannte Grenzen (bewusst offen, dokumentiert)
 
+- CourseForge liest derzeit nur bereits extrahierte Metadaten; `.mbz`-Sandbox,
+  semantisches Authoring, Game-Runtime und Candidate-Ausführung sind offen.
+- Neue CDD-Claims sind Hypothesen (`Proposed`), keine empirisch bestätigten Ergebnisse.
 - **N = 2 Fallstudien**, beide klein — Anwendbarkeit, nicht Skalierung.
 - **Zwei** Lean-bewiesene Invarianten (Werterhaltung, Nichtnegativität); Isolation und
   Replay-Treue sind nur FsCheck-geprüft (Roadmap).
@@ -78,3 +131,5 @@ Web-Cockpit, reflexives Selbst-Modell, erster Lean-Beweis (Werterhaltung).
 
 [0.6.0]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.6.0
 [0.4.0]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.4.0
+[0.8.0-alpha.1]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.8.0-alpha.1
+[0.8.0-alpha.2]: https://github.com/Koschnag/cong-driven-development/releases/tag/v0.8.0-alpha.2

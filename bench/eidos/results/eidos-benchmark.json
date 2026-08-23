@@ -1,0 +1,120 @@
+{
+  "SchemaVersion": 1,
+  "Benchmark": "EvoSDLC-Bench v0 \u2014 OpsLab assurance fault injection",
+  "ReferenceTime": "2026-07-24T12:00:00+00:00",
+  "Cases": [
+    {
+      "Id": "clean",
+      "Fault": "NoFault",
+      "Expected": "ExpectPromotion",
+      "EidosDecision": "Promoted",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": true,
+      "Rationale": "All required, fresh, independent evidence is bound to the candidate."
+    },
+    {
+      "Id": "red-contract",
+      "Fault": "FailedGate",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "A required compatibility gate is red."
+    },
+    {
+      "Id": "red-unit",
+      "Fault": "FailedUnitGate",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Rejected",
+      "EidosCorrect": true,
+      "BaselineCorrect": true,
+      "Rationale": "The unit-test gate is red."
+    },
+    {
+      "Id": "stale",
+      "Fault": "StaleEvidence",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "A required record exceeds its freshness window."
+    },
+    {
+      "Id": "correlated",
+      "Fault": "CorrelatedValidator",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "The generator validates its own candidate."
+    },
+    {
+      "Id": "missing",
+      "Fault": "MissingEvidence",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "A required recovery record is absent."
+    },
+    {
+      "Id": "artifact-binding",
+      "Fault": "ArtifactMismatch",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "A record is bound to another artifact."
+    },
+    {
+      "Id": "policy-binding",
+      "Fault": "PolicyMismatch",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "A record is bound to another policy version."
+    },
+    {
+      "Id": "tampered-pack",
+      "Fault": "TamperedPack",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "The evidence-pack digest was modified."
+    },
+    {
+      "Id": "budget",
+      "Fault": "BudgetExceeded",
+      "Expected": "ExpectRejection",
+      "EidosDecision": "Rejected",
+      "BaselineDecision": "Promoted",
+      "EidosCorrect": true,
+      "BaselineCorrect": false,
+      "Rationale": "The mission exceeded its hard duration budget."
+    }
+  ],
+  "Eidos": {
+    "Correct": 10,
+    "Total": 10,
+    "Accuracy": 1,
+    "UnsafeApprovals": 0
+  },
+  "LinearBaseline": {
+    "Correct": 2,
+    "Total": 10,
+    "Accuracy": 0.2,
+    "UnsafeApprovals": 8
+  },
+  "ScopeNote": "Hand-authored construct test for the implemented assurance mechanisms. It demonstrates behavior and reproducibility, not external validity or general superiority."
+}

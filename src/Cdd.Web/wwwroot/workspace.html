@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>CDD Studio · Control Plane</title>
+  <link rel="icon" href="eidos-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="workspace.css">
+  <script src="workspace.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Zurück zum CDD Cockpit">
+      <span class="brand-mark">C</span>
+      <span><b>CDD Studio</b><small>Cong-Driven Development</small></span>
+    </a>
+    <nav aria-label="Studio-Navigation">
+      <a class="nav-link active" href="workspace.html">Control Plane</a>
+      <a class="nav-link" href="eidos.html">EIDOS Lab</a>
+      <a class="nav-link" href="./">Cockpit</a>
+    </nav>
+    <div class="live"><i></i><span>read-only observation</span></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">OPEN ENGINEERING CONTROL PLANE · PRE-ALPHA</p>
+        <h1>Ein Studio über dem<br><em>gesamten Lebenszyklus.</em></h1>
+        <p class="intro">Projekte, Agentenläufe, Evidenz und formale Absicherung in einer Sicht — ohne Modell, Editor, Forge oder Workflow-Engine zur Wahrheit zu erklären.</p>
+      </div>
+      <div class="principle-card">
+        <span>CDD CONTROL PRINCIPLE</span>
+        <blockquote>Autonomie wächst nur so weit wie unabhängige Orakel, Nachweise und Rückrollbarkeit tragen.</blockquote>
+        <div class="principle-meta"><b>Modelle arbeiten.</b><b>CDD entscheidet über Konvergenz.</b></div>
+      </div>
+    </section>
+
+    <section class="overview" aria-label="Portfolio-Übersicht">
+      <div class="metric"><span>Workspaces</span><strong id="metric-workspaces">—</strong><small>verbundene Projektionen</small></div>
+      <div class="metric"><span>Running-Status</span><strong id="metric-runs">—</strong><small>laut Run-Manifest</small></div>
+      <div class="metric"><span>Evidenz</span><strong id="metric-evidence">—</strong><small>Runs mit Summary</small></div>
+      <div class="metric"><span>Offene Verträge</span><strong id="metric-contracts">—</strong><small>ersetzbare Schnittstellen</small></div>
+    </section>
+
+    <section class="workspace-layout">
+      <aside class="workspace-rail" aria-label="Workspaces">
+        <div class="section-title"><span>WORKSPACES</span><button id="refresh" type="button" title="Aktualisieren">↻</button></div>
+        <div id="workspace-list" class="workspace-list" aria-live="polite">
+          <div class="skeleton"></div><div class="skeleton short"></div>
+        </div>
+        <p class="rail-note">Adapter lesen Git, SPOT und das offene <code>.ai</code>-Format. Keine lokalen Pfade oder Secrets verlassen den Host.</p>
+      </aside>
+
+      <article id="workspace-detail" class="workspace-detail" aria-live="polite">
+        <div class="empty-state"><span>◌</span><p>Workspace-Zustand wird gelesen …</p></div>
+      </article>
+    </section>
+
+    <section class="system-map">
+      <div class="section-heading">
+        <div><p class="eyebrow">OPEN BY CONSTRUCTION</p><h2>Der austauschbare Systemkern</h2></div>
+        <p>CDD baut die semantische Steuerung und übernimmt vorhandene FOSS-Bausteine hinter stabilen Verträgen.</p>
+      </div>
+      <div class="layer-map" aria-label="CDD Schichtenmodell">
+        <div class="layer users"><span>10</span><b>Intent & Authority</b><small>Mensch · Organisation · Gesellschaft</small></div>
+        <div class="layer cdd"><span>09</span><b>CDD Semantic Control Plane</b><small>SPOT · Claims · Doctrine · Promotion · Evolution</small></div>
+        <div class="layer assure"><span>08</span><b>Independent Assurance</b><small id="assurance-names">Typen · Tests · Modelle · Beweise · Runtime</small></div>
+        <div class="layer execute"><span>07</span><b>Replaceable Execution</b><small>Agents · Temporal · CI/CD · Ops · Sandboxes</small></div>
+        <div class="protocol-row" id="contract-chips"></div>
+      </div>
+    </section>
+
+    <section class="portfolio-grid">
+      <article class="portfolio-panel">
+        <div class="section-title"><span>RISK-ADAPTIVE ASSURANCE</span><small id="assurance-count">—</small></div>
+        <p class="panel-intro">Kein Formalismus ist universell. CDD kombiniert Verfahren nach Risiko und Systemform.</p>
+        <div id="assurance-list" class="assurance-list"></div>
+      </article>
+      <article class="portfolio-panel">
+        <div class="section-title"><span>OPEN ADAPTER CONTRACTS</span><small id="contract-count">—</small></div>
+        <p class="panel-intro">Die Domäne bleibt unabhängig von einzelnen Oberflächen, Anbietern und Laufzeitplattformen.</p>
+        <div id="contract-list" class="contract-list"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer><span>CDD Studio · Forschungsprototyp</span><span id="observed-at">Noch nicht beobachtet</span></footer>
+</body>
+</html>

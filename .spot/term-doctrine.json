@@ -1,0 +1,24 @@
+{
+  "Id": "term-doctrine",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Doctrine",
+        "Definition": "Versionierte, maschinenlesbare Regeln f\u00FCr Dispatch, Rechte, Assurance, Eskalation, Promotion und Abbruch",
+        "Synonyms": [
+          "Operational Doctrine"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-eidos"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

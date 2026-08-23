@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-mission-order-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-mission-order",
+        "Name": "Doctrine und Mission Orders \u2014 when der Control Plane die Verletzung meldet then wird fail closed abgebrochen oder an eine zust\u00E4ndige Authority eskaliert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -3,6 +3,7 @@ namespace Cdd.Core
 /// Validierung des SPOT-Graphen: strukturelle Integrität + Konvergenz-Hygiene.
 module Validate =
 
+    open System
     open Cdd.Core.Spot
 
     type Severity =
@@ -95,6 +96,13 @@ module Validate =
                 | TermNode _ -> Some e.Id
                 | _ -> None)
             |> Set.ofList
+        let knowledgeIds =
+            entries
+            |> List.choose (fun e ->
+                match e.Payload with
+                | KnowledgeNode _ -> Some e.Id
+                | _ -> None)
+            |> Set.ofList
         let cyclic = cyclicComponents entries
         let termCycles = cyclicTerms entries
         let ambiguousNames =
@@ -143,6 +151,34 @@ module Validate =
                 if k.Source.Trim() = "" then
                     yield { Severity = Warning; EntityId = e.Id
                             Message = "Knowledge-Quelle ohne Source (URL/Pfad/ISBN)" }
+            | ResearchClaimNode c ->
+                if c.Statement.Trim() = "" then
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = "Claim ohne Aussage" }
+                if c.Scope.Trim() = "" then
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = "Claim ohne Scope" }
+                if c.Provenance.Method.Trim() = "" then
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = "Claim-Provenienz ohne Methode" }
+                match DateTimeOffset.TryParse c.Provenance.RecordedAt with
+                | false, _ ->
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = "Claim-Provenienz hat keinen gültigen ISO-8601-Zeitpunkt" }
+                | true, _ -> ()
+                for source in c.Provenance.SourceRefs do
+                    if not (Set.contains source knowledgeIds) then
+                        yield { Severity = Error; EntityId = e.Id
+                                Message = sprintf "Claim-Quelle '%s' ist kein Knowledge-Knoten" (idValue source) }
+                for parent in c.Provenance.DerivedFrom do
+                    if not (Set.contains parent ids) then
+                        yield { Severity = Error; EntityId = e.Id
+                                Message = sprintf "Claim ist von unbekanntem Knoten '%s' abgeleitet" (idValue parent) }
+                match c.Status with
+                | Verified | OutcomeConfirmed when List.isEmpty c.Provenance.SourceRefs ->
+                    yield { Severity = Error; EntityId = e.Id
+                            Message = "Verified/OutcomeConfirmed braucht mindestens eine benannte Quelle" }
+                | _ -> ()
             | TermNode t ->
                 if t.Definition.Trim() = "" then
                     yield { Severity = Warning; EntityId = e.Id

@@ -1,0 +1,24 @@
+{
+  "Id": "term-evidence-pack",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Evidence Pack",
+        "Definition": "Versions-, zeit- und umgebungsgeb\u00FCndelter Nachweis f\u00FCr einen Kandidaten und seine Assurance Obligations",
+        "Synonyms": [
+          "Evidence-Carrying Change"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-eidos"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

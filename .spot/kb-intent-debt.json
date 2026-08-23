@@ -1,0 +1,18 @@
+{
+  "Id": "kb-intent-debt",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Cognitive and Intent Debt",
+        "Source": "https://arxiv.org/abs/2603.22106",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Fehlendes externalisiertes Rationale erzeugt Intent Debt",
+          "Softwaregesundheit umfasst Code, gemeinsames Verst\u00E4ndnis und explizites Intent-Wissen"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
