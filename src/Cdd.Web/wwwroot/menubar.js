@@ -26,6 +26,7 @@ export function mountMenubar(el, store, actions) {
       ['Ollama (lokal)', () => actions.setEngine('ollama')],
     ]],
     ['Extras', [
+      ['Control Plane / Workspaces', () => { window.location.href = '/workspace.html'; }],
       ['EIDOS Studio (ZT2)', () => { window.location.href = '/eidos.html'; }],
       ['Einstellungen', () => actions.summon('settings')],
       ['Hell / Dunkel', () => actions.toggleTheme()],

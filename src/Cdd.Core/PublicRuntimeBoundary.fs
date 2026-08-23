@@ -13,11 +13,13 @@ module PublicRuntimeBoundary =
         | MemoryRead
         | MemoryWrite
         | InfraRead
+        | WorkspaceRead
 
     type Policy =
         { AllowMutations : bool
           EnableMemory : bool
-          EnableInfra : bool }
+          EnableInfra : bool
+          EnableWorkspaces : bool }
 
     let private isWriteMethod (methodName: string) =
         match methodName.Trim().ToUpperInvariant() with
@@ -32,6 +34,8 @@ module PublicRuntimeBoundary =
             if isWriteMethod methodName then MemoryWrite else MemoryRead
         elif normalized.StartsWith("/api/infra/", StringComparison.Ordinal) then
             InfraRead
+        elif normalized.StartsWith("/api/studio/workspaces", StringComparison.Ordinal) then
+            WorkspaceRead
         elif normalized.StartsWith("/api/providers", StringComparison.Ordinal) then
             Mutation
         elif isWriteMethod methodName then
@@ -46,6 +50,7 @@ module PublicRuntimeBoundary =
         | MemoryRead -> policy.EnableMemory
         | MemoryWrite -> policy.EnableMemory && policy.AllowMutations
         | InfraRead -> policy.EnableInfra
+        | WorkspaceRead -> policy.EnableWorkspaces
 
     let private enabled (value: string) =
         String.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
@@ -53,4 +58,5 @@ module PublicRuntimeBoundary =
     let fromEnvironment (getValue: string -> string) : Policy =
         { AllowMutations = getValue "CDD_ALLOW_MUTATIONS" |> enabled
           EnableMemory = getValue "CDD_ENABLE_MEMORY" |> enabled
-          EnableInfra = getValue "CDD_ENABLE_INFRA" |> enabled }
+          EnableInfra = getValue "CDD_ENABLE_INFRA" |> enabled
+          EnableWorkspaces = getValue "CDD_ENABLE_WORKSPACES" |> enabled }

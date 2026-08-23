@@ -967,6 +967,7 @@ let ``public runtime boundary is fail closed by default`` () =
     Assert.False(allowed "GET" "/api/providers")
     Assert.False(allowed "GET" "/api/dwh/search")
     Assert.False(allowed "GET" "/api/infra/status")
+    Assert.False(allowed "GET" "/api/studio/workspaces")
 
 [<Fact; Trait("spot", "spec-public-runtime-boundary-test-2")>]
 let ``memory writes require both explicit capabilities`` () =
@@ -974,14 +975,84 @@ let ``memory writes require both explicit capabilities`` () =
     let memoryOnly : PublicRuntimeBoundary.Policy =
         { AllowMutations = false
           EnableMemory = true
-          EnableInfra = false }
+          EnableInfra = false
+          EnableWorkspaces = false }
     let mutationOnly : PublicRuntimeBoundary.Policy =
         { AllowMutations = true
           EnableMemory = false
-          EnableInfra = false }
+          EnableInfra = false
+          EnableWorkspaces = false }
     let both = { memoryOnly with AllowMutations = true }
 
     Assert.False(PublicRuntimeBoundary.isAllowed memoryOnly (classify "POST"))
     Assert.False(PublicRuntimeBoundary.isAllowed mutationOnly (classify "POST"))
     Assert.True(PublicRuntimeBoundary.isAllowed both (classify "POST"))
     Assert.True(PublicRuntimeBoundary.isAllowed memoryOnly (classify "GET"))
+
+[<Fact; Trait("spot", "spec-public-runtime-boundary-test-3")>]
+let ``live workspace observations require an explicit independent capability`` () =
+    let defaultPolicy = PublicRuntimeBoundary.fromEnvironment (fun _ -> "")
+    let enabledPolicy =
+        PublicRuntimeBoundary.fromEnvironment (fun key ->
+            if key = "CDD_ENABLE_WORKSPACES" then "true" else "")
+    let capability = PublicRuntimeBoundary.classify "GET" "/api/studio/workspaces"
+    Assert.False(PublicRuntimeBoundary.isAllowed defaultPolicy capability)
+    Assert.True(PublicRuntimeBoundary.isAllowed enabledPolicy capability)
+
+[<Fact; Trait("spot", "spec-risk-adaptive-assurance-portfolio-test-1")>]
+let ``assurance portfolio selects complementary formal and operational oracles by risk`` () =
+    let profile : Studio.MissionProfile =
+        { ConcurrentOrDistributed = true
+          RelationshipHeavy = true
+          HighIntegrity = true
+          SecuritySensitive = true
+          ProductionChange = true
+          RuntimeBehavior = true
+          CreativeOrNormative = false }
+    let recommendations = Studio.recommendAssurance profile
+    let recommendation id = recommendations |> List.find (fun item -> item.Tool.Id = id)
+    Assert.True((recommendation "assurance-alloy").Required)
+    Assert.True((recommendation "assurance-tla").Required)
+    Assert.True((recommendation "assurance-opa").Required)
+    Assert.True((recommendation "assurance-slsa").Required)
+    Assert.True((recommendation "assurance-runtime").Required)
+    Assert.False((recommendation "assurance-lean").Required)
+
+[<Fact; Trait("spot", "spec-risk-adaptive-assurance-portfolio-test-2")>]
+let ``normative missions retain named human authority without forcing unrelated formalisms`` () =
+    let profile : Studio.MissionProfile =
+        { ConcurrentOrDistributed = false
+          RelationshipHeavy = false
+          HighIntegrity = false
+          SecuritySensitive = false
+          ProductionChange = false
+          RuntimeBehavior = false
+          CreativeOrNormative = true }
+    let recommendations = Studio.recommendAssurance profile
+    Assert.Contains(recommendations, fun item -> item.Tool.Id = "assurance-human" && item.Required)
+    Assert.DoesNotContain(recommendations, fun item -> item.Tool.Id = "assurance-tla")
+    Assert.DoesNotContain(recommendations, fun item -> item.Tool.Id = "assurance-lean")
+
+[<Fact; Trait("spot", "spec-studio-workspace-control-plane-test-1")>]
+let ``workspace projection prioritizes live work and derives actual lifecycle state`` () =
+    let git : Studio.GitObservation =
+        { Available = true; Branch = "main"; Commit = "abc"; CommitTitle = "candidate"
+          CommittedAt = "2026-08-23T00:00:00Z"; Remote = "https://example.invalid/repo"
+          DirtyFiles = 0; Ahead = 0; Behind = 0 }
+    let item id status : Studio.WorkItemObservation =
+        { Id = id; Title = id; Status = status; Objective = "objective"; RequiredGates = [] }
+    let run id status summary : Studio.RunObservation =
+        { Id = id; Status = status; StartedAt = id; FinishedAt = None; HasSummary = summary }
+    let observation : Studio.WorkspaceObservation =
+        { Id = "project"; Name = "Project"; Git = git
+          WorkItems = [ item "T-3" "ready"; item "T-2" "blocked"; item "T-1" "running" ]
+          Runs = [ run "2026-01" "succeeded" true; run "2026-02" "running" false ]
+          SpotNodes = 42; Sources = [ "git"; "git"; ".ai/tasks/*.json" ]
+          ObservedAt = DateTimeOffset.Parse "2026-08-23T00:00:00Z" }
+    let snapshot = Studio.projectWorkspace observation
+    Assert.Equal(Studio.Blocked, snapshot.State)
+    Assert.Equal(Some "T-1", snapshot.ActiveMission |> Option.map (fun mission -> mission.Id))
+    Assert.Equal(1, snapshot.WorkItems.Ready)
+    Assert.Equal(1, snapshot.Runs.Running)
+    Assert.Equal(1, snapshot.Runs.WithSummary)
+    Assert.Equal<string list>([ ".ai/tasks/*.json"; "git" ], snapshot.Sources)
