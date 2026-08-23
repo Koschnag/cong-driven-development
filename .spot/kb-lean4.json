@@ -1,0 +1,13 @@
+{
+  "Id": "kb-lean4",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "Lean 4 Reference Manual",
+    "Source": "https://lean-lang.org/doc/reference/latest/",
+    "MediaType": "proof-assistant documentation",
+    "Takeaways": [
+      "Lean prueft Beweisterme in einem kleinen Kernel auf Basis abhaengiger Typentheorie",
+      "CDD reserviert deduktive Beweise fuer wenige tragende Invarianten statt alles formalisieren zu wollen"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

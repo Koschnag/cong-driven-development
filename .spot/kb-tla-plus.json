@@ -1,0 +1,13 @@
+{
+  "Id": "kb-tla-plus",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "TLA+ Documentation",
+    "Source": "https://docs.tlapl.us/",
+    "MediaType": "formal-method documentation",
+    "Takeaways": [
+      "TLA+ beschreibt Zustandsmaschinen und prueft Safety sowie Liveness verteilter oder nebenlaeufiger Systeme",
+      "CDD nutzt TLA+ selektiv fuer langlebige Orchestrierung, Lease-, Retry-, Promotion- und Recovery-Protokolle"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

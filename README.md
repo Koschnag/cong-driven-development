@@ -23,6 +23,7 @@ reproduzierbaren Forschungsstand aus vier miteinander verbundenen Artefakten:
 | **Framework / Engine** | [`src/Cdd.Core/`](src/Cdd.Core/) · [`src/Cdd.Cli/`](src/Cdd.Cli/) | ausführbarer F#-Kernel |
 | **Referenzprojekt CourseForge** | [`examples/CourseForge.Core/`](examples/CourseForge.Core/) | sicherer Metadata→Course-IR→Game-Plan Vertical Slice |
 | **CDD Studio** | [öffentliche IDE-Demo](https://koschnag.github.io/cong-driven-development/ide/) · [`src/Cdd.Web/`](src/Cdd.Web/) | experimentelle Projektion desselben SPOT |
+| **Open Control Plane** | [`docs/open-control-plane-landscape.md`](docs/open-control-plane-landscape.md) · `/workspace.html` | reale Workspace-Projektion und Tool-/Forschungslandkarte (Pre-Alpha) |
 
 Der Claim-Ledger ist selbst Teil des SPOT: `Observed`, `Proposed`, `Verified`,
 `Contested` und `Unknown` bleiben unterscheidbar. Eine technisch implementierte
@@ -45,6 +46,9 @@ Der öffentliche Hintergrundimpuls ist
 [„Software Engineering im KI-Zeitalter: Gegenthese zum Hype“](https://www.linkedin.com/pulse/software-engineering-im-ki-zeitalter-gegenthese-zum-hype-nguyen-imnof/):
 *Embrace the Boring. Resist the Hype. Learn the Fundamentals. Go for Abstraction.*
 Der Essay liefert Hypothesen — ihre Gültigkeit muss die Forschung erst zeigen.
+Der Vergleich mit Anthropic, OpenAI, formalen Methoden, FOSS-Werkzeugen und
+offenen SDLC-Standards steht in der
+**[Open-Control-Plane-Landschaft](docs/open-control-plane-landscape.md)**.
 
 ## Was es sein soll
 
@@ -175,6 +179,18 @@ Validierungs-Stand inklusive Invarianten.
 dotnet run --project src/Cdd.Web -- --root . --urls http://localhost:5179
 ```
 
+Die read-only Control-Plane-Projektion ist fail-closed und wird explizit für
+beliebig viele lokale Workspaces aktiviert:
+
+```bash
+CDD_ENABLE_WORKSPACES=true dotnet run --project src/Cdd.Web -- \
+  --root . --workspace ../referenzprojekt --urls http://localhost:5179
+```
+
+Danach zeigt `/workspace.html` Git-, `.spot`- und `.ai`-Beobachtungen, ohne
+lokale Hostpfade auszugeben. Ein Running-Status stammt aus dem Run-Manifest und
+ist ohne separaten Heartbeat ausdrücklich kein Prozess-Liveness-Nachweis.
+
 Das Cockpit ist **chat-primär**: ein Gesprächsfaden treibt einen Agenten über den
 SPOT, jede Sicht ist eine Projektion desselben Modells. → Volle Beschreibung in
 **[docs/COCKPIT.md](docs/COCKPIT.md)**. Kurz:
@@ -200,7 +216,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**142 Knoten im Selbstmodell** · 4 aktive Invarianten · 39/42 abgeleitete Tests automatisiert
+**161 Knoten im Selbstmodell** · 4 aktive Invarianten · 44/47 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -212,7 +228,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Doku-Konvergenz** — Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
 - ✅ **Epistemisch typisierte Claims** — Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet
 - ✅ **Evidence Packs und Promotion** — Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators
-- ✅ **Fail-closed public runtime boundary** — Eine oeffentliche CDD-Auslieferung darf ohne explizite Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen.
+- ✅ **Fail-closed public runtime boundary** — Eine öffentliche CDD-Auslieferung darf ohne Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen
 - ✅ **Feedback zu kontrolliertem EIDOS Change Intent** — Bug- und Feature-Signale duerfen nur pruefbare Vorschlaege erzeugen, die ein expliziter Adapter in risikotypisierte EIDOS Change Intents ohne Promotion-Autoritaet kompiliert.
 - ✅ **Fehlerliste & Widerspruchs-Erkennung** — Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
@@ -222,6 +238,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
+- ✅ **Offene Workspace-Control-Plane-Projektion** — CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 - ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
@@ -233,7 +250,8 @@ IsA/PartOf/RelatesTo-Beziehungen.
 
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
-- 🔜 **SPOT-projiziertes Research Studio** — Eine review-orientierte Oberflaeche zeigt Forschungsstand, Luecken, Grenzen, Medien und Teilprojekte, ohne eine zweite Wahrheit oder automatische Promotion zu erzeugen.
+- 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
+- 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

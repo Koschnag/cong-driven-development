@@ -5,9 +5,19 @@
     "Fields": {
       "Item": {
         "Name": "Research Studio",
-        "Definition": "Read-only Briefing-Projektion des oeffentlichen SPOT fuer Claims, Evidenz, Luecken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback.",
-        "Synonyms": ["Research Cockpit", "Forschungsbriefing"],
-        "Relations": []
+        "Definition": "Read-only Briefing-Projektion des \u00F6ffentlichen SPOT f\u00FCr Claims, Evidenz, L\u00FCcken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback",
+        "Synonyms": [
+          "Research Cockpit",
+          "Forschungsbriefing"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          }
+        ]
       }
     }
   },

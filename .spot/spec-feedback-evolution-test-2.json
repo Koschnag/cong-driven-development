@@ -5,7 +5,7 @@
     "Fields": {
       "Item": {
         "SpecRef": "spec-feedback-evolution",
-        "Name": "Feedback zu kontrolliertem Change Intent \u2014 when das Signal klassifiziert wird then wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate",
+        "Name": "Feedback zu kontrolliertem EIDOS Change Intent \u2014 when das Signal klassifiziert wird then wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate",
         "Derived": true
       }
     }
