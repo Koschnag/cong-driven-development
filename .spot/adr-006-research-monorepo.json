@@ -1,0 +1,16 @@
+{
+  "Id": "adr-006-research-monorepo",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "CDD als reproduzierbares Forschungs-Monorepo",
+        "Context": "Paper, Framework, Studio und Referenzprojekt muessen bis Version 1.0 auf denselben versionierten Forschungsstand zeigen.",
+        "Choice": "Research Track, CDD-Kernel, CourseForge-Referenzprojekt und Studio bleiben bis Version 1.0 in einem oeffentlichen, sanitisierten Monorepo.",
+        "Consequences": "Releases koennen Code, Claims, Protokolle und Evidenz gemeinsam pinnen; spaetere Distributionen duerfen getrennt paketiert werden.",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

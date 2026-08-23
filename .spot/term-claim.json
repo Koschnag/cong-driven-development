@@ -1,0 +1,24 @@
+{
+  "Id": "term-claim",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Claim",
+        "Definition": "Epistemisch typisierte, provenienzbehaftete Aussage: operativ als EIDOS Claim, oeffentlich nur als explizit sanitizierte ResearchClaimNode-Projektion; ihr Status bleibt von Implementierungs- und Marketingreife getrennt",
+        "Synonyms": [
+          "Forschungsclaim"
+        ],
+        "Relations": [
+          {
+            "Case": "IsA",
+            "Fields": {
+              "Item": "term-knoten"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

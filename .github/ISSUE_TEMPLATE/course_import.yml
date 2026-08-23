@@ -1,0 +1,37 @@
+name: 📦 Course import compatibility
+description: Generisches Problem mit einem LMS-/Moodle-Exportformat melden
+labels: [bug, courseforge, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Keine echten Kursarchive hochladen.** Erstelle eine minimale synthetische
+        Ordnerstruktur, die das Formatproblem reproduziert. Nutzer-, Bewertungs-,
+        Log- und urheberrechtlich geschützte Kursdaten gehören nicht in dieses Repo.
+  - type: input
+    id: source_version
+    attributes:
+      label: Moodle-/LMS-Version
+      placeholder: z. B. Moodle 5.0
+    validations:
+      required: true
+  - type: textarea
+    id: synthetic_structure
+    attributes:
+      label: Synthetische Struktur
+      description: Minimale Dateinamen/XML-Struktur oder Link auf einen sanitisierten Fixture-PR.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Course IR
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_safe
+    attributes:
+      label: Veröffentlichungsprüfung
+      options:
+        - label: Die Reproduktion ist synthetisch und enthält keine echten Kurs- oder Personendaten.
+          required: true

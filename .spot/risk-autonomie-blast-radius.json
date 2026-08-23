@@ -1,0 +1,15 @@
+{
+  "Id": "risk-autonomie-blast-radius",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Autonome \u00C4nderungen \u00FCberschreiten den freigegebenen Scope oder erreichen produktive Systeme",
+        "Likelihood": "Medium",
+        "Impact": "Critical",
+        "Mitigation": "Capability-Allowlists, kleinste Rechte, ZT2 als erstes Ziel, keine Produktiv-Credentials, harte Budgets und Fail-Closed-Abbruch"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

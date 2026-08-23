@@ -1,0 +1,14 @@
+{
+  "Id": "spec-research-studio-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-research-studio",
+        "Name": "SPOT-projiziertes Research Studio \u2014 when das Research Studio ge\u00F6ffnet wird then werden Claims, Quellen, Risiken, Pr\u00E4missen, Entscheidungen und Kennzahlen daraus projiziert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

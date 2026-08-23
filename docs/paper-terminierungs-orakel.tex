@@ -231,7 +231,7 @@ Einordnung jeweils eine grobe Analogie aus der OOP-/Java-Welt.
 Den Kern bildet eine Umkehrung des Akzeptanzkriteriums. Statt \glqq der Agent hält an, wenn er
 zufrieden ist\grqq{} gilt \glqq der Agent hält an, wenn ein externes, getyptes Orakel die
 Konvergenz gegen die Spezifikation bestätigt\grqq. Die Methode und ihre IDE-Realisierung liegen
-in \texttt{cong-driven-development}~\cite{cdd2026}, ausgewertet am Commit \texttt{v0.6.0}. Das tragende Artefakt
+in \texttt{cong-driven-development}~\cite{cdd2026}, ausgewertet am Commit \texttt{v0.7.0}. Das tragende Artefakt
 ist \texttt{SPOT} (\emph{Single Point of Truth}): ein typisierter F\#-Discriminated-Union-Graph,
 in dem jeder Knoten als ein \texttt{JSON} pro Knoten unter \texttt{.spot/} materialisiert ist.
 Der Konvergenzzustand jedes Knotens ist auf vier Werte getypt: \texttt{Aligned},
@@ -242,7 +242,7 @@ keinen Testlauf. Dass diese Marker zu bestandenen Tests gehören, erzwingt die g
 (rot blockt den Merge) zusammen mit dem reflexiven Selbst-Test --- daraus folgt \texttt{Aligned}
 $\Rightarrow$ Test-PASS, nicht bloßer Exit-Code $0$. Das Selbst-Modell der
 Methode umfasst $66$ Knoten, davon $62$ \texttt{Aligned} und $4$ \texttt{Pending}, bei
-$37/37$ grünen Tests (autoritativer Runner-Count @\,\texttt{v0.6.0}); der reflexive
+$42/42$ grünen Tests (autoritativer Runner-Count @\,\texttt{v0.7.0}); der reflexive
 Selbst-Gate trägt den Knoten \texttt{spec-gate-selbst-hart}. Dass das Gate auf sich selbst
 angewandt grün ist, ist eine A-Aussage; dass es das \emph{Richtige} prüft, ist eine B-Aussage
 (siehe \Cref{bem:spec-welt}).
@@ -257,7 +257,7 @@ zwei voneinander unabhängige Achsen.
 Der Generator besitzt kein Schreibrecht auf das Prüf-Orakel. Technisch erzwungen wird dies
 durch eine Werkzeug-Allowlist ohne Schreibzugriff des Generators auf den Gate-Pfad; der
 Generator kann das Urteil über seine eigene Ausgabe nicht fälschen. Diese Achse ist real und
-maschinell prüfbar --- sie ist eine A-Aussage, verankert im Code @\,\texttt{v0.6.0}.
+maschinell prüfbar --- sie ist eine A-Aussage, verankert im Code @\,\texttt{v0.7.0}.
 
 \paragraph{Epistemische Achse (Generator $\perp$ Spezifikation-Autor).}
 Die zweite Achse betrifft die \emph{Herkunft} der Spezifikation. Sie gilt nur, sofern die
@@ -514,7 +514,7 @@ selbst.
 \label{sec:reflexiv-selbstgate}
 
 Das Selbstmodell von \texttt{CDD}
-ist im Repository \texttt{cong-driven-development}\,@\,\texttt{v0.6.0} als typisierter
+ist im Repository \texttt{cong-driven-development}\,@\,\texttt{v0.7.0} als typisierter
 F\#-DU-Graph abgelegt: ein JSON-Knoten je Element unter \texttt{.spot/}, mit den
 Konvergenzzuständen \texttt{Aligned}, \texttt{Pending}, \texttt{Diverged} und
 \texttt{Orphaned}. Das Orakel \texttt{SetzeSpecAligned} markiert einen Test-Knoten
@@ -527,7 +527,7 @@ Ein Prozess kann mit Exit-0 terminieren, ohne dass eine einzige Property tatsäc
 Der reflexive Selbst-Gate \texttt{spec-gate-selbst-hart}
 (Repository \texttt{@main}) wendet exakt dieses Orakel auf das Selbstmodell
 an. Der autoritative Testlauf (Runner, nicht \texttt{grep}) meldet
-$37/37$~Tests grün; das Selbstmodell umfasst $66$~Knoten, davon $62$~\texttt{Aligned}
+$42/42$~Tests grün; das Selbstmodell umfasst $66$~Knoten, davon $62$~\texttt{Aligned}
 und $4$~\texttt{Pending}. Wir behaupten hier keine Vollständigkeit: Die vier
 \texttt{Pending}-Knoten sind genau die Stellen, an denen die Methode ihre eigene
 Spezifikation noch nicht eingeholt hat. Das ist der ehrliche, nicht der
@@ -685,10 +685,10 @@ ist der zentrale Hebel von Logik gegenüber bloßer LLM-Plausibilität.
     \midrule
     Runenruf: $46/46$ Tests grün & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
     Ledger: $6/6$ Tests grün & \AB{A} & \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0} (Runner) \\
-    CDD-Selbst-Gate: $37/37$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{v0.6.0} (Runner) \\
+    CDD-Selbst-Gate: $42/42$ Tests, $62/66$ \texttt{Aligned} & \AB{A} & \texttt{cong-driven-development}\,@\,\texttt{v0.7.0} (Runner) \\
     Werterhaltung + Nichtnegativität \texttt{sorry}-frei & \AB{A} & \texttt{\#print axioms} (nur \texttt{propext}, \texttt{Quot.sound})\,@\,\texttt{0f39ab0} \\
     Lean ohne Mathlib, CI \texttt{lean-proof} grün & \AB{A} & CI-Job \texttt{lean-proof}\,@\,\texttt{0f39ab0} \\
-    Allowlist-Trennung Generator~$\perp$~Prüf-Orakel & \AB{A} & Code\,@\,\texttt{v0.6.0} \\
+    Allowlist-Trennung Generator~$\perp$~Prüf-Orakel & \AB{A} & Code\,@\,\texttt{v0.7.0} \\
     Negativ-Artefakt \texttt{demo-gate-at-failure.sh} & \AB{A} & Skript\,@\,\texttt{0f39ab0} \\
     FsCheck \texttt{spec-siegel-lager-nichtnegativ} (jeder Seed/Folge) & \AB{A} & \texttt{runenruf}\,@\,\texttt{56376a5} (Runner) \\
     Kompressionsfaktoren ($\sim\!40$--$125\times$) als LoC-Zahlen & \AB{A} & Code\,@\,\texttt{56376a5}/\texttt{0f39ab0} \\
@@ -793,8 +793,8 @@ sondern sein Terminierungs-Orakel. Unsere Antwort ist Konvergenz gegen eine
 externalisierte, getypte Spec, geprüft durch ein vom Generator architektonisch
 getrenntes Orakel. Wir belegen das mit zwei kleinen Fallstudien
 (\texttt{runenruf}\,@\,\texttt{56376a5}, $46/46$; \texttt{ledger-casestudy}\,@\,\texttt{0f39ab0}, $6/6$),
-einem reflexiven Selbst-Gate (\texttt{cong-driven-development}\,@\,\texttt{v0.6.0},
-$37/37$, $62/66$ \texttt{Aligned}) und genau zwei maschinell bewiesenen
+einem reflexiven Selbst-Gate (\texttt{cong-driven-development}\,@\,\texttt{v0.7.0},
+$42/42$, $62/66$ \texttt{Aligned}) und genau zwei maschinell bewiesenen
 Invarianten (\texttt{Werterhaltung.lean}: \texttt{werterhaltung} + \texttt{nichtnegativ}, \texttt{sorry}-frei).
 
 Wir schließen mit einer Lücke, nicht mit einem Versprechen. Die Spec-gegen-Welt-Bindung
@@ -826,7 +826,7 @@ nachfolgenden Befehle reproduzieren die autoritativen Runner-Counts, den
     \toprule
     \textbf{Repository} & \textbf{Commit} & \textbf{Rolle} \\
     \midrule
-    \texttt{Koschnag/cong-driven-development} & \texttt{v0.6.0} & Methode/IDE, reflexives Selbst-Gate \\
+    \texttt{Koschnag/cong-driven-development} & \texttt{v0.7.0} & Methode/IDE, reflexives Selbst-Gate \\
     \texttt{Koschnag/runenruf} & \texttt{56376a5} & Existenzbeweis (Simulationsdomäne) \\
     \texttt{Koschnag/ledger-casestudy} & \texttt{0f39ab0} & Gegenstück (echtes IO, Lean-Beweis) \\
     \bottomrule
@@ -836,11 +836,11 @@ nachfolgenden Befehle reproduzieren die autoritativen Runner-Counts, den
 \subsection{Methode und Selbst-Gate}
 \label{app:repro-cdd}
 
-\begin{lstlisting}[language=bash,caption={CDD-Selbst-Gate: $37/37$ Tests, $62/66$ \texttt{Aligned}.},label={lst:repro-cdd}]
+\begin{lstlisting}[language=bash,caption={CDD-Selbst-Gate: $42/42$ Tests, $62/66$ \texttt{Aligned}.},label={lst:repro-cdd}]
 git clone https://github.com/Koschnag/cong-driven-development.git
 cd cong-driven-development
 git checkout main
-dotnet test tests/Cdd.Tests   # autoritativer Runner-Count: 37/37
+dotnet test tests/Cdd.Tests   # autoritativer Runner-Count: 42/42
 \end{lstlisting}
 
 \subsection{Fallstudie A: Runenruf}
@@ -932,7 +932,7 @@ Cherny, Boris:
 Nguyen, Cong Chanh Vinzenz:
 \newblock cong-driven-development: A Spec-Convergent Method and IDE for Agentic
 Software Development.
-\newblock Software-Repository, \texttt{github.com/Koschnag/cong-driven-development}\,@\,\texttt{v0.6.0}, 2026.
+\newblock Software-Repository, \texttt{github.com/Koschnag/cong-driven-development}\,@\,\texttt{v0.7.0}, 2026.
 
 \bibitem{tessl2026}
 Tessl:

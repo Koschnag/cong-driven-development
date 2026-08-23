@@ -1,0 +1,16 @@
+{
+  "Id": "adr-008-open-semantic-control-plane",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "CDD als offener semantischer Control Plane statt neuer Alles-Engine",
+        "Context": "Editoren, Diagrammwerkzeuge, Agent-Harnesses, Workflow-Engines, Forges und Observability-Systeme decken einzelne SDLC-Schichten ab und m\u00FCssen austauschbar bleiben",
+        "Choice": "CDD baut den typisierten semantischen Kern, Doctrine, Evidence-Promotion und Projektionen; Ausf\u00FChrung, Editoren, Diagramme, Telemetrie, Policy und Artefaktspeicher werden \u00FCber offene Standards und Ports adaptiert",
+        "Consequences": "SPOT bleibt Dom\u00E4nenwahrheit; Theia, GLSP, LSP, MCP, OSLC, CDEvents, OTLP, OCI/in-toto und Workflow-Engines k\u00F6nnen unabh\u00E4ngig ersetzt oder schrittweise eingef\u00FChrt werden",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

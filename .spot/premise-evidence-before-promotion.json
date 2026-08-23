@@ -1,0 +1,13 @@
+{
+  "Id": "premise-evidence-before-promotion",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Evidence vor Promotion.",
+        "Rationale": "Ein Candidate wird nur bef\u00F6rdert, wenn alle risikoadaptiven Obligations mit benannter, reproduzierbarer Evidenz erf\u00FCllt sind"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

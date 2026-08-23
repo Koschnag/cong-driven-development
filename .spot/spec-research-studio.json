@@ -1,0 +1,25 @@
+{
+  "Id": "spec-research-studio",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "SPOT-projiziertes Research Studio",
+        "Intent": "Eine Review-Oberfl\u00E4che zeigt Forschungsstand, L\u00FCcken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion",
+        "Criteria": [
+          {
+            "Given": "der versionierte SPOT-Snapshot geladen ist",
+            "When": "das Research Studio ge\u00F6ffnet wird",
+            "Then": "werden Claims, Quellen, Risiken, Pr\u00E4missen, Entscheidungen und Kennzahlen daraus projiziert"
+          },
+          {
+            "Given": "Feedback formuliert wurde",
+            "When": "die Nutzerin oder der Nutzer fortf\u00E4hrt",
+            "Then": "wird nur ein pr\u00FCfbarer GitHub-Issue-Entwurf ge\u00F6ffnet"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

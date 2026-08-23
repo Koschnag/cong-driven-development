@@ -1,0 +1,13 @@
+{
+  "Id": "premise-unknown-remains-unknown",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Unknown bleibt unknown.",
+        "Rationale": "Fehlende Evidenz ist weder Zustimmung noch der Nachweis, dass ein Bereich nicht betroffen ist"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,13 @@
+{
+  "Id": "kb-openai-agent-governance",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "OpenAI — Practices for Governing Agentic AI Systems",
+    "Source": "https://openai.com/index/practices-for-governing-agentic-ai-systems/",
+    "MediaType": "white paper",
+    "Takeaways": [
+      "Agentische Systeme brauchen ueber ihren gesamten Lebenszyklus zugeordnete Verantwortlichkeiten, sichere Betriebsgrenzen und Rechenschaft",
+      "CDD Doctrine und Evidence-Promotion operationalisieren einen Teil dieser Governance fuer Softwareevolution"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,18 @@
+{
+  "Id": "kb-who-grades-grader",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Who Grades the Grader?",
+        "Source": "https://arxiv.org/abs/2607.12790",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Evolvierende Metriken brauchen unver\u00E4nderliche Anker und unabh\u00E4ngige \u00E4u\u00DFere Audits",
+          "Entfernte Anker k\u00F6nnen Evaluatoren in triviale oder spielbare Metriken kollabieren lassen"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

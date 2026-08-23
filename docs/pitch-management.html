@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDD — Management-Pitch</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<style>
+  :root{ --acc:#0969da; --green:#1a7f37; --amber:#9a6700; --red:#cf222e; }
+  .reveal{ font-size:32px; }
+  .reveal h1,.reveal h2,.reveal h3{ text-transform:none; letter-spacing:-.01em; font-weight:700; color:#1f2328 }
+  .reveal h1{ font-size:1.7em } .reveal h2{ font-size:1.3em }
+  .reveal .acc{ color:var(--acc) } .reveal .green{ color:var(--green) } .reveal .red{ color:var(--red) } .reveal .amber{ color:var(--amber) }
+  .reveal .muted{ color:#59636e } .reveal small{ color:#59636e; font-size:.62em }
+  .reveal section{ text-align:left } .reveal .center{ text-align:center }
+  .reveal ul{ margin-left:.3em } .reveal li{ margin:.3em 0 }
+  .reveal .big{ font-size:1.4em; line-height:1.3 }
+  .reveal .lead{ color:#59636e; font-size:.82em }
+  .reveal .card{ border:1px solid #d0d7de; border-radius:10px; padding:14px 18px; background:#f6f8fa }
+  .reveal .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:left }
+  .reveal pre{ width:100%; box-shadow:none; font-size:.5em; border:1px solid #d0d7de; border-radius:8px }
+  .reveal .tag{ display:inline-block; border:1px solid var(--acc); color:var(--acc); border-radius:999px; padding:2px 14px; font-size:.5em }
+  .reveal .ask{ border-left:4px solid var(--acc); padding:6px 0 6px 18px }
+  .reveal footer{ position:fixed; bottom:10px; right:16px; font-size:13px; color:#8c959f }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<section class="center" data-background-color="#ffffff">
+  <span class="tag">Management-Pitch · 9 Folien · ~7 Minuten</span>
+  <h1>Vom Prompt zur <span class="acc">disziplinierten</span> KI-Fabrik</h1>
+  <p class="lead">Wie wir KI schnell Code schreiben lassen — <em>mit</em> einer Qualitätsgarantie an der Schnittstelle.</p>
+  <p class="muted" style="margin-top:1em">Cong Chanh Vinzenz Nguyen · .NET-Architekt</p>
+</section>
+
+<section data-background-color="#ffffff">
+  <h2>Das Problem — nicht „kann KI coden", sondern „wann ist sie fertig?"</h2>
+  <p class="lead">Moderne Teams lassen KI nicht mehr einzeln prompten, sondern in einer <strong>Schleife</strong> laufen, die sich selbst nachbessert (Boris Cherny, Claude Code: „my job is to write loops").</p>
+  <ul>
+    <li class="fragment"><strong>Woran erkennt die Schleife „fertig"?</strong> Heute: „der Agent sagt fertig" — oder die Tests, die die KI <em>sich selbst</em> geschrieben hat.</li>
+    <li class="fragment"><span class="red">Das ist ein selbst-genehmigter Pull Request.</span> Tausendfach schneller, aber niemand prüft unabhängig.</li>
+    <li class="fragment">Folgen: ungewisse Qualität, <strong>Blackbox</strong> (keiner versteht mehr das „Warum"), unkontrollierte Token-Kosten.</li>
+  </ul>
+</section>
+
+<section data-background-color="#ffffff" class="center">
+  <h2>Die Idee in einem Satz</h2>
+  <p class="big">Gib der KI-Schleife ein <span class="acc">Gate</span>, das so streng und unabhängig ist wie eine gute <strong>CI-Pipeline</strong> —</p>
+  <p class="big fragment">und erst wenn dieses Gate grün ist, gilt „fertig".</p>
+  <p class="fragment lead" style="margin-top:1em">Was ihr für Menschen längst macht (CI, Code-Review, Tests), machen wir mechanisch scharf genug für eine KI-Schleife.</p>
+</section>
+
+<section data-background-color="#ffffff">
+  <h2>Was wir gebaut haben: <span class="acc">CDD</span></h2>
+  <div class="grid2" style="margin-top:.4em">
+    <div class="card"><h3 class="acc">Getyptes Modell</h3><p class="lead">Anforderungen als prüfbare Spezifikation (was gelten muss), nicht als Prosa im Ticket.</p></div>
+    <div class="card"><h3 class="acc">Fälschungssicheres Gate</h3><p class="lead">Die KI, die Code schreibt, darf nicht selbst „grün" vergeben. Ein getrenntes Orakel entscheidet.</p></div>
+  </div>
+  <p class="fragment center" style="margin-top:.6em"><span class="green">Open Source · F#/.NET · alle Belege CI-grün und reproduzierbar.</span></p>
+  <p class="fragment muted"><small>Neu: das harte Grün-Gate weist einen <em>gefälschten</em> grünen Test beweisbar ab — maschinell getestet.</small></p>
+</section>
+
+<section data-background-color="#ffffff">
+  <h2>Demo — in einer Minute, im Browser</h2>
+  <ol>
+    <li>Ein Klick: <strong>„Open in Codespaces"</strong> → die echte Umgebung läuft im Browser, kein Setup.</li>
+    <li class="fragment">Die KI-Schleife arbeitet eine Spezifikation ab.</li>
+    <li class="fragment">Ein <span class="red">gefälschter</span> Test (sieht grün aus, prüft nichts) → das Gate hält ihn auf <strong>rot</strong>.</li>
+    <li class="fragment">Erst ein <span class="green">echter</span> grüner Test → der Knoten wird „fertig".</li>
+  </ol>
+  <p class="fragment lead">Das ist der ganze Punkt: <strong>„fertig" ist gemessen, nicht behauptet.</strong></p>
+</section>
+
+<section data-background-color="#ffffff">
+  <h2>Der Geschäftswert</h2>
+  <ul>
+    <li><strong>Tempo + Qualität zugleich</strong> — KI-Geschwindigkeit, aber mit einer Garantie an der Schnittstelle statt „hoffentlich stimmt's".</li>
+    <li class="fragment"><strong>Weniger Blackbox-Risiko</strong> — die Spec ist externalisiertes, geteiltes Wissen; das „Warum" bleibt im Team, nicht in einem Kopf.</li>
+    <li class="fragment"><strong>Kostenkontrolle</strong> — ein gerichteter Loop bricht falsche Pfade früh ab, statt per Brute Force Tokens zu verbrennen (Trade-off, kein Selbstläufer).</li>
+    <li class="fragment"><strong>Review wird billiger</strong> — Menschen prüfen Konvergenz gegen die Spec, nicht jede Code-Zeile.</li>
+  </ul>
+</section>
+
+<section data-background-color="#ffffff">
+  <h2>Ehrlich: was es <span class="red">nicht</span> ist</h2>
+  <ul>
+    <li>Kein „Coding is solved". Es funktioniert für <strong>formalisierbare</strong> Kriterien — nicht für UX, Geschmack, Architektur-Eleganz.</li>
+    <li class="fragment">Der Mensch <strong>setzt und verantwortet</strong> die tragende Anforderung. Das bleibt — bewusst.</li>
+    <li class="fragment">Heute <strong>Forschungsprototyp</strong>, zwei kleine Fallstudien. Belastbar als Mechanik-Nachweis, nicht als Großserie.</li>
+  </ul>
+  <p class="fragment lead">Diese Ehrlichkeit ist Absicht — sie unterscheidet uns vom Hype.</p>
+</section>
+
+<section data-background-color="#ffffff" class="center">
+  <h2>Der Ask</h2>
+  <div class="ask" style="display:inline-block;text-align:left;margin-top:.4em">
+    <p class="big">Ein kleiner, abgegrenzter <span class="acc">Pilot</span>:</p>
+    <ul>
+      <li>eine echte, formalisierbare Anforderung aus unserem Backlog,</li>
+      <li>~1–2 Wochen, ein Entwickler + ich,</li>
+      <li>Ergebnis: gemessene Konvergenz + Token-/Zeit-Telemetrie als Entscheidungsgrundlage.</li>
+    </ul>
+  </div>
+  <p class="fragment lead" style="margin-top:1em">Risiko klein, Erkenntnis konkret — danach entscheiden wir mit Daten.</p>
+</section>
+
+<section data-background-color="#ffffff" class="center">
+  <h2>Selbst ansehen</h2>
+  <p class="lead">Alles öffentlich, ein Klick entfernt:</p>
+  <p><strong class="acc">koschnag.github.io/cong-driven-development</strong></p>
+  <p class="muted"><small>Einstieg (kein Vorwissen) · Live-Demo via Codespaces · Code &amp; Belege · ausführlicher Essay</small></p>
+  <p class="fragment big" style="margin-top:.8em">Danke. Fragen?</p>
+</section>
+
+</div></div>
+<footer>CDD · Management-Pitch</footer>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize({ hash:true, slideNumber:'c/t', transition:'fade' });</script>
+</body>
+</html>

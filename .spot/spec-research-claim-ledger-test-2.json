@@ -1,0 +1,14 @@
+{
+  "Id": "spec-research-claim-ledger-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-research-claim-ledger",
+        "Name": "Sanitisiertes \u00F6ffentliches Research-Claim-Ledger \u2014 when \u00F6ffentliche Evidenz oder g\u00FCltige Provenienz fehlt then schl\u00E4gt die Validierung fail-closed fehl",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

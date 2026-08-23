@@ -1,0 +1,20 @@
+{
+  "Id": "kb-software-engineering-ki-gegenthese",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Software Engineering im KI-Zeitalter: Gegenthese zum Hype",
+        "Source": "https://www.linkedin.com/pulse/software-engineering-im-ki-zeitalter-gegenthese-zum-hype-nguyen-imnof/",
+        "MediaType": "essay",
+        "Takeaways": [
+          "Der Mensch arbeitet am System: Intent, Spezifikationen, Invarianten und Governance",
+          "KI reduziert Implementierungsmechanik, nicht automatisch essenzielle Komplexität",
+          "Autonomie muss an maschinenpruefbare, risikoadaptive Gates gebunden sein",
+          "Langfristige Grundlagen und explizite Modelle sind wichtiger als kurzfristiges Tool-Wissen"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

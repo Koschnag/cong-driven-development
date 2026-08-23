@@ -1,0 +1,14 @@
+{
+  "Id": "spec-eidos-mission-order-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-eidos-mission-order",
+        "Name": "Doctrine und Mission Orders \u2014 when eine Mission disponiert wird then entsteht eine Mission Order mit Lage, Ziel, Scope, Einheit, Constraints, Erfolg und Abbruch",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

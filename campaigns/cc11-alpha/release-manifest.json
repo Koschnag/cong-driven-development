@@ -1,0 +1,30 @@
+{
+  "schema": "cdd.public-campaign.v1",
+  "campaign": "cc11-alpha",
+  "release": "0.1.0-alpha.1",
+  "status": "release-candidate",
+  "canonicalUrl": "https://cong42.de/cc11/",
+  "position": "A system that can show its work.",
+  "publicBoundary": {
+    "allows": [
+      "sanitised architecture",
+      "synthetic examples",
+      "bounded release claims",
+      "public framework and research"
+    ],
+    "denies": [
+      "personal memory",
+      "credentials and routes",
+      "private operational receipts",
+      "owner conversations"
+    ]
+  },
+  "artefacts": [
+    "docs/cc11/index.html",
+    "docs/cc11/cc11.css",
+    "docs/cc11/cc11.js",
+    "docs/cc11/media/cc11-launch-film.mp4",
+    "docs/cc11/media/cc11-launch-vertical.mp4",
+    "media/research-overview/src/Cc11Campaign.tsx"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "Id": "spec-public-runtime-boundary-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-public-runtime-boundary",
+        "Name": "Fail-closed public runtime boundary \u2014 when nur eine der Freigaben Memory oder Mutation gesetzt ist then bleibt die Operation gesperrt",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

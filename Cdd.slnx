@@ -5,6 +5,9 @@
     <Project Path="src/Cdd.Mcp/Cdd.Mcp.csproj" />
     <Project Path="src/Cdd.Web/Cdd.Web.fsproj" />
   </Folder>
+  <Folder Name="/examples/">
+    <Project Path="examples/CourseForge.Core/CourseForge.Core.fsproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Cdd.Tests/Cdd.Tests.fsproj" />
   </Folder>

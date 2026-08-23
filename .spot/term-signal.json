@@ -1,0 +1,24 @@
+{
+  "Id": "term-signal",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Signal",
+        "Definition": "Unver\u00E4ndertes Rohereignis aus Feedback, Runtime, Entwicklung, Betrieb, Simulation oder Analyse",
+        "Synonyms": [
+          "Raw Event"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-eidos"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
