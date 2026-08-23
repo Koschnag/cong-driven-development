@@ -3,10 +3,10 @@
 > Eine souveräne, **chat-primäre** Kommandozentrale über einem getypten Modell.
 > Eine Eingabe treibt einen Agenten über mehrere *Wahrheiten*; jedes Ergebnis ist eine
 > Projektion desselben **Single Point of Truth** (SPOT). F#/C#/.NET, kein Python,
-> MPL-2.0, mesh-only, nichts ruft nach Hause.
+> MPL-2.0; optionale Provider und Betriebsadapter bleiben explizit konfiguriert.
 
 Cong OS ist die GUI von [CDD](../README.md): ein Browser-bedienbares Cockpit, das im
-eigenen Rechenzentrum läuft (eine `dotnet`-Binary, eine URL) und denselben SPOT-Graphen
+in einer kontrollierten Laufzeit läuft (eine `dotnet`-Binary, eine URL) und denselben SPOT-Graphen
 bedient, den die CLI und der MCP-Server schon kennen. Es ersetzt keine zweite Wahrheit
 durch eine GUI — es macht den einen Graphen *sichtbar, navigierbar und treibbar*.
 
@@ -16,8 +16,8 @@ Es gibt genau **einen Gesprächsfaden**. Alles andere — das Modell, der Plan, 
 Entwicklung, die Infrastruktur, die Produktion, die Doku — ist eine **Projektion**, die
 *neben* den Faden gerufen wird, nie eine konkurrierende Top-Level-Fläche.
 
-Drei feste Regionen, jedes Mal gleich (Asperger-freundlich: vorhersagbare Struktur;
-ADHD-freundlich: das Arbeitsgedächtnis liegt sichtbar außerhalb des Kopfes):
+Drei feste Regionen, jedes Mal gleich: eine vorhersagbare Struktur mit sichtbar
+externalisiertem Arbeitsgedächtnis.
 
 - **Schiene** (links) — externalisiertes Arbeitsgedächtnis: die *eine* nächste Aktion
   (JETZT) + Pins. Plus die EA-Toolbox am Diagramm.
@@ -39,18 +39,18 @@ Cong OS ist als Personal-OS über **vier Wahrheiten** gedacht. Ehrlich getrennt 
 | # | Wahrheit | Quelle | Status |
 |---|----------|--------|--------|
 | 1 | **Struktur** | SPOT (`.spot/`, getypter F#-DU-Graph) | **gebaut** — gelesen/geschrieben/validiert/getrieben |
-| 2 | **Inhalt** | `knowledge-store.db` Volltext (FTS5) | **gebaut** — `@`-Route, nur `sensitive=0` (s. u.) |
-| 3 | **Infra-Soll** | `dc-model` | Fahrplan |
-| 4 | **Infra-Ist** | Live-DC (Komodo via MCP) | Fahrplan (heute Adopt-Stub) |
+| 2 | **Inhalt** | optionale, sanitisierte Knowledge-Store-Projektion | **gebaut**, aber default-deny |
+| 3 | **Runtime-Soll** | versionierte Adapter-Konfiguration | Fahrplan |
+| 4 | **Runtime-Ist** | explizit freigeschaltete Telemetrie | Adapter gebaut, default-deny |
 
 ### Wahrheit #2: @-Gedächtnis — Souveränität by construction
 
-`@begriff` durchsucht das persönliche Data-Warehouse (`knowledge-store.db`, sanitized records) per
-FTS5 und rendert Treffer-Karten. Die **sensitiv/sensiblen Daten verlassen die Maschine
-nie**: das Cockpit liest eine *sanitisierte* `knowledge-store.db`, die ausschließlich
-`sensitive=0`-Zeilen enthält — die `sensitive`-Spalte existiert dort nicht einmal.
-Defense-in-depth: zeigt `CDD_MEMORY_DB` doch je auf eine DB mit `sensitive`-Spalte, filtert
-die Abfrage hart `m.sensitive=0 AND c.sensitive=0`. Das ist nicht verhandelbar.
+`@begriff` kann eine lokal betriebene, **sanitisierte** Volltext-Projektion durchsuchen.
+Der Adapter ist standardmäßig deaktiviert (`CDD_ENABLE_MEMORY=false`) und darf nur auf
+eine für diesen Zweck erzeugte Datenbank zeigen. Falls eine Quelle dennoch eine
+`sensitive`-Spalte enthält, filtert die Abfrage zusätzlich `sensitive=0`. Rohdaten,
+personenbezogene Bestände, Mengen und interne Speicherorte sind ausdrücklich kein Teil
+des öffentlichen Repositories.
 
 ## Der Konvergenz-Loop — der Kern
 
@@ -156,12 +156,14 @@ dotnet build -c Release
 dotnet src/Cdd.Web/bin/Release/net9.0/Cdd.Web.dll \
   --root /pfad/zum/repo --urls http://0.0.0.0:5179
 
-# optional: @-Gedächtnis aktivieren
+# optional: sanitisierte Knowledge-Store-Projektion aktivieren
+export CDD_ENABLE_MEMORY=true
 export CDD_MEMORY_DB=/pfad/zur/sanitisierten/knowledge-store.db
 ```
 
-Zugriff gestuft: Operator-Tier = volle Macht nur über das eigene Mesh; ein optionaler
-Public-Edge nur read+chat hinter SSO+MFA. Kein SaaS, kein Telemetrie-Heimruf.
+Zugriff gestuft: Der öffentliche Modus bleibt read-only. Mutation, Memory und
+Runtime-Telemetrie benötigen getrennte Opt-ins und eine vorgeschaltete starke
+Authentifizierung; siehe [homelab.md](homelab.md).
 
 ## Bedienung an einem Ort
 

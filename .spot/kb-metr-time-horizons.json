@@ -1,0 +1,13 @@
+{
+  "Id": "kb-metr-time-horizons",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "METR — Task-Completion Time Horizons",
+    "Source": "https://metr.org/time-horizons/",
+    "MediaType": "independent benchmark",
+    "Takeaways": [
+      "Time Horizon misst die menschliche Vergleichsdauer einer Aufgabe bei gegebener Erfolgswahrscheinlichkeit, nicht die reale Laufzeit eines Agenten",
+      "CDD muss Taskschwierigkeit, Zuverlaessigkeit, Harness und menschliche Intervention getrennt von bloesser Uptime messen"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

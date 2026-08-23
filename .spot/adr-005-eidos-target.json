@@ -1,0 +1,16 @@
+{
+  "Id": "adr-005-eidos-target",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "EIDOS als Zielarchitektur \u00FCber dem CDD-Kernel",
+        "Context": "CDD besitzt SPOT und ein Konvergenz-Orakel, aber noch kein epistemisches Lagebild, Change Compilation, Mission Dispatch oder Outcome-Lernen",
+        "Choice": "CDD bleibt der \u00FCberpr\u00FCfbare Kernel; EIDOS wird als getrenntes, ehrlich als Pending markiertes Architektur- und Forschungsprogramm entwickelt",
+        "Consequences": "Neue Capabilities werden zuerst im SPOT spezifiziert; Produktclaims unterscheiden implementierten Ist-Stand und Zielbild",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

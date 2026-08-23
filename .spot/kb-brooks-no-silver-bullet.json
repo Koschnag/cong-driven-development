@@ -1,0 +1,18 @@
+{
+  "Id": "kb-brooks-no-silver-bullet",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "No Silver Bullet: Essence and Accidents of Software Engineering",
+        "Source": "http://www.cs.unc.edu/techreports/86-020.pdf",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Software besitzt essenzielle und akzidentelle Schwierigkeiten",
+          "Werkzeuge koennen akzidentelle Arbeit reduzieren, ohne die konzeptuelle Essenz aufzuheben"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

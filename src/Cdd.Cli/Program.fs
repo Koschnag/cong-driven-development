@@ -19,6 +19,9 @@ let private usage () =
     printfn "  cdd sync-tests [--write] Round-Trip: Test-Knoten gegen echte Tests (Trait/Marker) messen"
     printfn "  cdd sync-docs [--check]  README-Status aus dem Modell generieren"
     printfn "  cdd derive-code [--out <datei>]  Test-Skelette für unabgedeckte Test-Knoten generieren"
+    printfn "  cdd eidos run [--out <ordner>] [--fault <name>]  ZT2-OpsLab vollständig ausführen"
+    printfn "  cdd eidos replay <run-ordner>  Ledger, Evidence und Sandbox erneut prüfen"
+    printfn "  cdd eidos benchmark [--out <ordner>]  reproduzierbaren Fault-Injection-Benchmark erzeugen"
 
 /// Seed-Knoten für `cdd init` — zeigt jede Knotenart einmal.
 let private seed : SpotEntry list =
@@ -229,6 +232,49 @@ let private cmdDeriveCode out =
     | None -> printf "%s" code
     0
 
+let private cmdEidosRun out faultName =
+    let outputRoot = out |> Option.defaultValue root |> System.IO.Path.GetFullPath
+    match Eidos.parseFault faultName with
+    | None ->
+        eprintfn "Unbekannter Fault '%s'. Erlaubt: none, failed-gate, failed-unit-gate, stale-evidence, correlated-validator, missing-evidence, artifact-mismatch, policy-mismatch, tampered-pack, budget-exceeded." faultName
+        1
+    | Some fault ->
+        let run = Eidos.runOpsLab outputRoot DateTimeOffset.UtcNow fault
+        let runDir = System.IO.Path.Combine(outputRoot, ".eidos", "runs", run.RunId)
+        printfn "EIDOS OpsLab: %A" run.Status
+        printfn "Run: %s" run.RunId
+        printfn "Candidate: %s" run.Candidate.Id
+        printfn "Evidence: %s" run.EvidencePack.Id
+        printfn "Replay: %b" run.Metrics.ReplayVerified
+        printfn "Artefakte: %s" runDir
+        0
+
+let private cmdEidosReplay runDir =
+    let result = Eidos.replayOpsLab (System.IO.Path.GetFullPath runDir)
+    for name, passed in result.Checks do
+        printfn "[%s] %s" (if passed then "OK  " else "FAIL") name
+    for reason in result.Reasons do eprintfn "%s" reason
+    printfn "Replay %s: %b" result.RunId result.Verified
+    if result.Verified then 0 else 1
+
+let private cmdEidosBenchmark out =
+    let report = Eidos.runBenchmark ()
+    printf "%s" (Eidos.benchmarkMarkdown report)
+    match out with
+    | None -> ()
+    | Some outputRoot ->
+        let outputRoot = System.IO.Path.GetFullPath outputRoot
+        System.IO.Directory.CreateDirectory outputRoot |> ignore
+        System.IO.File.WriteAllText(
+            System.IO.Path.Combine(outputRoot, "eidos-benchmark.json"),
+            Json.serialize report)
+        System.IO.File.WriteAllText(
+            System.IO.Path.Combine(outputRoot, "eidos-benchmark.md"),
+            Eidos.benchmarkMarkdown report)
+        printfn ""
+        printfn "Benchmark-Artefakte: %s" outputRoot
+    if report.Eidos.Correct = report.Eidos.Total then 0 else 1
+
 [<EntryPoint>]
 let main argv =
     try
@@ -248,6 +294,18 @@ let main argv =
         | [| "derive-code"; "--out"; path |] -> cmdDeriveCode (Some path)
         | [| "sync-docs" |]          -> cmdSyncDocs false
         | [| "sync-docs"; "--check" |] -> cmdSyncDocs true
+        | [| "eidos"; "run" |] -> cmdEidosRun None "none"
+        | [| "eidos"; "run"; "--out"; outputRoot |] ->
+            cmdEidosRun (Some outputRoot) "none"
+        | [| "eidos"; "run"; "--fault"; fault |] ->
+            cmdEidosRun None fault
+        | [| "eidos"; "run"; "--out"; outputRoot; "--fault"; fault |]
+        | [| "eidos"; "run"; "--fault"; fault; "--out"; outputRoot |] ->
+            cmdEidosRun (Some outputRoot) fault
+        | [| "eidos"; "replay"; runDir |] -> cmdEidosReplay runDir
+        | [| "eidos"; "benchmark" |] -> cmdEidosBenchmark None
+        | [| "eidos"; "benchmark"; "--out"; outputRoot |] ->
+            cmdEidosBenchmark (Some outputRoot)
         | [| "export-context" |] ->
             printf "%s" (Store.load root |> Export.toMarkdown)
             0

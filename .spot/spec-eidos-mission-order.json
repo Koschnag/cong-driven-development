@@ -1,0 +1,25 @@
+{
+  "Id": "spec-eidos-mission-order",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Doctrine und Mission Orders",
+        "Intent": "Jede Agentenausf\u00FChrung erh\u00E4lt einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen",
+        "Criteria": [
+          {
+            "Given": "ein klassifiziertes Change Intent und eine versionierte Doctrine",
+            "When": "eine Mission disponiert wird",
+            "Then": "entsteht eine Mission Order mit Lage, Ziel, Scope, Einheit, Constraints, Erfolg und Abbruch"
+          },
+          {
+            "Given": "eine Mission mit \u00FCberschrittenem Budget, fehlender Capability oder verletzter Policy",
+            "When": "der Control Plane die Verletzung meldet",
+            "Then": "wird fail closed abgebrochen oder an eine zust\u00E4ndige Authority eskaliert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

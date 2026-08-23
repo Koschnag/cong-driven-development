@@ -1,0 +1,25 @@
+{
+  "Id": "spec-eidos-change-compiler",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Semantic Change Compiler",
+        "Intent": "Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unpr\u00FCfbaren Einzelantwort",
+        "Criteria": [
+          {
+            "Given": "ein Change Intent, ein versionierter System-Twin, Policies und aktuelle Evidenz",
+            "When": "der Change Compiler l\u00E4uft",
+            "Then": "entstehen deterministische Candidate-Metadaten mit Semantic Delta, Artefakten, Obligations, Deployment und Recovery"
+          },
+          {
+            "Given": "mehrere zul\u00E4ssige Candidates",
+            "When": "Impact und Risiken bewertet werden",
+            "Then": "bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

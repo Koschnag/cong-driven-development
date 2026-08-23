@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0ece2">
+  <meta name="color-scheme" content="light">
+  <title>CC11 — A system that can show its work</title>
+  <meta name="description" content="CC11 is the private memory and automation research release of CC10: evidence-bound, human-gated and built to show what it knows, did and cannot claim.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="CC11 — A system that can show its work">
+  <meta property="og:description" content="Private memory. Typed action. Evidence before authority. Explore the CC11 alpha research release.">
+  <meta property="og:url" content="https://cong42.de/cc11/">
+  <meta property="og:image" content="https://cong42.de/cc11/og-cc11.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://cong42.de/cc11/">
+  <link rel="icon" href="mark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="cc11.css">
+  <script src="cc11.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <a class="identity" href="#top" aria-label="CC11 home">
+      <img src="mark.svg" width="56" height="56" alt="">
+      <span>CC11</span>
+      <small>Research release</small>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#model">Model</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#film">Film</a>
+      <a href="#research">Research</a>
+    </nav>
+    <a class="text-cta" href="https://github.com/Koschnag/cong-driven-development">Inspect the work <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-grid">
+        <div class="release-note" aria-label="Release status">
+          <span>Release 00.1</span>
+          <strong>Private shadow alpha</strong>
+          <time datetime="2026-07">July 2026</time>
+        </div>
+
+        <div class="hero-copy">
+          <p class="overline">CC10 → CC11 · Memory and automation plane</p>
+          <h1 id="hero-title">A system that can<br><em>show its work.</em></h1>
+          <p class="hero-intro">CC11 gives a personal system memory without giving a model the keys. Sources stay sources. Claims keep their status. Actions keep their receipts. Authority remains explicit.</p>
+          <div class="hero-actions">
+            <a class="solid-cta" href="#model">Read the model</a>
+            <a class="line-cta" href="#evidence">See what is proven</a>
+          </div>
+        </div>
+
+        <aside class="hero-aside" aria-label="CC11 release facts">
+          <dl>
+            <div><dt>Memory</dt><dd>Versioned and source-bound</dd></div>
+            <div><dt>Action</dt><dd>Typed, scoped and reversible</dd></div>
+            <div><dt>Promotion</dt><dd>Evidence-gated by design</dd></div>
+            <div><dt>Current state</dt><dd>Alpha · not a default system</dd></div>
+          </dl>
+        </aside>
+
+        <div class="system-figure" aria-label="Diagram: sources flow through memory and assurance to owner-controlled action">
+          <div class="figure-label">System figure 01 / The evidence path</div>
+          <div class="figure-grid">
+            <div class="figure-cell source-cell"><small>01</small><strong>Source</strong><span>Bytes · digest · origin</span></div>
+            <div class="figure-cell memory-cell"><small>02</small><strong>Memory</strong><span>Core + labelled lab</span></div>
+            <div class="figure-cell evidence-cell"><small>03</small><strong>Evidence</strong><span>Tests · receipts · limits</span></div>
+            <div class="figure-cell owner-cell"><small>04</small><strong>Owner gate</strong><span>Approve · pause · revoke</span></div>
+            <div class="figure-cell action-cell"><small>05</small><strong>Typed action</strong><span>Bounded public effect</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ledger-tape" aria-label="Core principles">
+      <div>
+        <span>NO INVISIBLE MEMORY</span><i>01</i>
+        <span>NO SELF-PROMOTION</span><i>02</i>
+        <span>NO UNTYPED AUTHORITY</span><i>03</i>
+        <span>NO CLAIM WITHOUT STATUS</span><i>04</i>
+      </div>
+    </div>
+
+    <section class="manifesto section" aria-labelledby="manifesto-title">
+      <div class="section-index">01 / Position</div>
+      <div class="manifesto-copy">
+        <p class="overline">The premise</p>
+        <h2 id="manifesto-title">Faster generation moves the bottleneck. It does not remove responsibility.</h2>
+      </div>
+      <div class="manifesto-body">
+        <p>When software can be generated in minutes, the scarce work becomes intent, evidence, memory and permission. CC11 treats those as architecture—not prompt etiquette.</p>
+        <p>It combines a conservative record with an experimental EIDOS lane. Both may inform decisions. Only one may become ratified truth, and only through an explicit promotion gate.</p>
+        <a class="editorial-link" href="https://github.com/Koschnag/cong-driven-development/blob/main/docs/eidos.md">Read the public EIDOS doctrine <span>↗</span></a>
+      </div>
+    </section>
+
+    <section class="model section dark-section" id="model" aria-labelledby="model-title">
+      <div class="section-index">02 / Operating model</div>
+      <div class="model-heading">
+        <p class="overline">One path, visible states</p>
+        <h2 id="model-title">The model does not get to declare itself correct.</h2>
+        <p>Select a stage to inspect what crosses the boundary—and what does not.</p>
+      </div>
+
+      <div class="model-interface">
+        <div class="model-steps" role="tablist" aria-label="CC11 operating stages">
+          <button role="tab" aria-selected="true" aria-controls="stage-detail" data-stage="source"><span>01</span><strong>Source</strong><small>Immutable input</small></button>
+          <button role="tab" aria-selected="false" aria-controls="stage-detail" data-stage="claim"><span>02</span><strong>Claim</strong><small>Typed assertion</small></button>
+          <button role="tab" aria-selected="false" aria-controls="stage-detail" data-stage="candidate"><span>03</span><strong>Candidate</strong><small>Experimental work</small></button>
+          <button role="tab" aria-selected="false" aria-controls="stage-detail" data-stage="assurance"><span>04</span><strong>Assurance</strong><small>Independent check</small></button>
+          <button role="tab" aria-selected="false" aria-controls="stage-detail" data-stage="promotion"><span>05</span><strong>Promotion</strong><small>Owner decision</small></button>
+          <button role="tab" aria-selected="false" aria-controls="stage-detail" data-stage="outcome"><span>06</span><strong>Outcome</strong><small>Receipt + replay</small></button>
+        </div>
+
+        <article class="stage-detail" id="stage-detail" aria-live="polite">
+          <div class="stage-meta"><span id="stage-number">Stage 01</span><span id="stage-status">Preserved</span></div>
+          <h3 id="stage-title">The record starts before the summary.</h3>
+          <p id="stage-description">Original bytes, provenance and digest remain addressable. A generated summary may help retrieval, but never replaces its source.</p>
+          <dl>
+            <div><dt>May enter</dt><dd id="stage-input">Owner-approved files, sessions and typed records</dd></div>
+            <div><dt>Must leave</dt><dd id="stage-output">A stable source identity and immutable digest</dd></div>
+            <div><dt>Hard boundary</dt><dd id="stage-boundary">No silent mutation, no invented provenance</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="generations section" aria-labelledby="generations-title">
+      <div class="section-index">03 / Generation shift</div>
+      <div class="generations-heading">
+        <p class="overline">Continuity, not a reset</p>
+        <h2 id="generations-title">CC10 operates.<br>CC11 remembers why.</h2>
+      </div>
+      <div class="comparison" role="table" aria-label="Comparison of CC10 and CC11">
+        <div class="comparison-head" role="row">
+          <span role="columnheader">Capability</span>
+          <strong role="columnheader">CC10 / working reference</strong>
+          <strong role="columnheader">CC11 / research release</strong>
+        </div>
+        <div role="row"><span role="cell">Daily surface</span><p role="cell">Private apps and operator actions</p><p role="cell">Matrix-first conversation with visible receipts</p></div>
+        <div role="row"><span role="cell">Memory</span><p role="cell">Searchable DWH and session archive</p><p role="cell">Versioned Core plus labelled experimental lane</p></div>
+        <div role="row"><span role="cell">Automation</span><p role="cell">Typed actions and approval boundaries</p><p role="cell">Common events, idempotency and replayable outcomes</p></div>
+        <div role="row"><span role="cell">Research</span><p role="cell">Operational case study</p><p role="cell">CDD/EIDOS claims, evidence packs and promotion gates</p></div>
+        <div role="row"><span role="cell">Status</span><p role="cell">Running system</p><p role="cell"><mark>Private shadow alpha</mark></p></div>
+      </div>
+    </section>
+
+    <section class="evidence section" id="evidence" aria-labelledby="evidence-title">
+      <div class="section-index">04 / Release ledger</div>
+      <div class="evidence-heading">
+        <p class="overline">Proof, not promise</p>
+        <h2 id="evidence-title">A release page should disclose the unfinished work.</h2>
+        <p>This ledger separates observed checks from pending gates. It is a public summary, not a substitute for private operational evidence.</p>
+      </div>
+
+      <div class="evidence-ledger">
+        <article>
+          <span class="ledger-id">V–01</span>
+          <div><h3>Protocol and domain</h3><p>Executable protocol tests and the F#/.NET domain build pass without warnings.</p></div>
+          <strong class="state verified">Verified</strong>
+        </article>
+        <article>
+          <span class="ledger-id">V–02</span>
+          <div><h3>Shadow memory core</h3><p>PostgreSQL/pgvector and the private API run resource-bounded and non-authoritative.</p></div>
+          <strong class="state observed">Observed</strong>
+        </article>
+        <article>
+          <span class="ledger-id">V–03</span>
+          <div><h3>Hot restore path</h3><p>Encrypted offsite receipt and representative control-data restore checks pass.</p></div>
+          <strong class="state verified">Verified</strong>
+        </article>
+        <article>
+          <span class="ledger-id">P–01</span>
+          <div><h3>Retrieval evaluation</h3><p>The frozen comparison of structured filters, full-text and vector retrieval remains open.</p></div>
+          <strong class="state pending">Pending</strong>
+        </article>
+        <article>
+          <span class="ledger-id">P–02</span>
+          <div><h3>Full integration receipt</h3><p>The Matrix → agent → typed action → outcome path is not yet release-evidenced end to end.</p></div>
+          <strong class="state pending">Pending</strong>
+        </article>
+        <article>
+          <span class="ledger-id">P–03</span>
+          <div><h3>Default cutover</h3><p>Promotion, durability, rollback and complete restore gates still block a stable release.</p></div>
+          <strong class="state blocked">Blocked</strong>
+        </article>
+      </div>
+      <p class="ledger-note">Snapshot: 30 July 2026 · Claims are deliberately narrower than the private receipts.</p>
+    </section>
+
+    <section class="film section dark-section" id="film" aria-labelledby="film-title">
+      <div class="section-index">05 / Release film</div>
+      <div class="film-copy">
+        <p class="overline">Thirty seconds, sound-off native</p>
+        <h2 id="film-title">Memory is not authority.</h2>
+        <p>A typographic field note about the boundary at the centre of CC11. No synthetic people. No stock future. The system itself is the visual language.</p>
+      </div>
+      <figure class="film-player">
+        <video controls playsinline preload="metadata" poster="media/cc11-launch-poster.png">
+          <source src="media/cc11-launch-film.mp4" type="video/mp4">
+          Your browser cannot play this video. A transcript follows below.
+        </video>
+        <figcaption>
+          <span>CC11 release film / 00:30</span>
+          <a href="#film-transcript">Read transcript</a>
+        </figcaption>
+      </figure>
+      <details id="film-transcript">
+        <summary>Film transcript</summary>
+        <p>AI can generate an answer. CC11 asks what the answer is allowed to become. Sources stay intact. Claims keep their status. Experiments stay labelled. Evidence travels with the change. Authority remains explicit. CC11. A system that can show its work. Private shadow alpha.</p>
+      </details>
+    </section>
+
+    <section class="research section" id="research" aria-labelledby="research-title">
+      <div class="section-index">06 / Public research</div>
+      <div class="research-title">
+        <p class="overline">The method stays inspectable</p>
+        <h2 id="research-title">The public work is CDD.<br>The private system is the case study.</h2>
+      </div>
+      <div class="research-grid">
+        <article>
+          <span>01</span>
+          <h3>Paper and claims</h3>
+          <p>Research claims carry scope, provenance and epistemic status. Proposed is not disguised as verified.</p>
+          <a href="https://koschnag.github.io/cong-driven-development/research/">Open Research Studio <span>↗</span></a>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Framework and engine</h3>
+          <p>The F# kernel, CLI and MCP surface make model, drift and evidence machine-checkable.</p>
+          <a href="https://github.com/Koschnag/cong-driven-development/tree/main/src">Inspect source <span>↗</span></a>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Reference project</h3>
+          <p>CourseForge explores a data-minimal course-to-learning-game pipeline with synthetic public fixtures.</p>
+          <a href="https://github.com/Koschnag/cong-driven-development/tree/main/examples/CourseForge.Core">See CourseForge <span>↗</span></a>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>CDD Studio</h3>
+          <p>Drill from premise and claim through specification, test, code and release evidence.</p>
+          <a href="https://koschnag.github.io/cong-driven-development/ide/">Open the public demo <span>↗</span></a>
+        </article>
+      </div>
+    </section>
+
+    <section class="boundary section" aria-labelledby="boundary-title">
+      <div class="section-index">07 / Boundary</div>
+      <div class="boundary-heading">
+        <p class="overline">Public by review, private by default</p>
+        <h2 id="boundary-title">The showcase is not the system.</h2>
+      </div>
+      <div class="boundary-columns">
+        <div>
+          <h3>Public</h3>
+          <ul>
+            <li>Sanitised architecture and doctrine</li>
+            <li>Synthetic examples and reproducible tests</li>
+            <li>Bounded release claims and known limits</li>
+            <li>Framework, papers and research snapshots</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Private</h3>
+          <ul>
+            <li>Personal memory and source documents</li>
+            <li>Credentials, routes and infrastructure detail</li>
+            <li>Operational receipts and recovery material</li>
+            <li>Owner conversations and approval evidence</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="finale" aria-labelledby="finale-title">
+      <p class="overline">Follow the release</p>
+      <h2 id="finale-title">Do not trust the demo.<br><em>Inspect the boundary.</em></h2>
+      <div>
+        <a class="solid-cta" href="https://github.com/Koschnag/cong-driven-development">Open the public repository <span>↗</span></a>
+        <a class="line-cta" href="https://koschnag.github.io/cong-driven-development/research/">Review the research</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-identity"><img src="mark.svg" width="48" height="48" alt=""><strong>CC11</strong><span>A private research release of CC10</span></div>
+    <div class="footer-meta">
+      <span>Alpha · July 2026</span>
+      <span>No analytics · No tracking</span>
+      <a href="https://cong42.de/security/">Security</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -8,6 +8,8 @@ open System.Threading.Tasks
 open Xunit
 open Cdd.Core
 open Cdd.Core.Spot
+open CourseForge.Core
+open FsCheck
 
 let private sampleSpec id criteria =
     { Id = EntityId id
@@ -20,6 +22,37 @@ let private sampleSpec id criteria =
 
 let private crit n =
     { Given = sprintf "g%d" n; When = sprintf "w%d" n; Then = sprintf "t%d" n }
+
+let private findRepoRoot () =
+    let rec loop (dir: DirectoryInfo) =
+        if File.Exists(Path.Combine(dir.FullName, "Cdd.slnx")) then dir.FullName
+        elif isNull dir.Parent then failwith "Repository root not found"
+        else loop dir.Parent
+    loop (DirectoryInfo AppContext.BaseDirectory)
+
+let private withSyntheticMoodle includeSensitive action =
+    let root = Path.Combine(Path.GetTempPath(), "courseforge-" + Guid.NewGuid().ToString("N"))
+    try
+        Directory.CreateDirectory(Path.Combine(root, "sections", "section_1")) |> ignore
+        Directory.CreateDirectory(Path.Combine(root, "sections", "section_2")) |> ignore
+        File.WriteAllText(
+            Path.Combine(root, "moodle_backup.xml"),
+            """<moodle_backup><information>
+                 <original_course_id>demo-101</original_course_id>
+                 <original_course_fullname>Generic Demo Course</original_course_fullname>
+                 <original_course_shortname>DEMO101</original_course_shortname>
+               </information></moodle_backup>""")
+        File.WriteAllText(
+            Path.Combine(root, "sections", "section_1", "section.xml"),
+            """<section id="1"><id>1</id><name>Foundations</name></section>""")
+        File.WriteAllText(
+            Path.Combine(root, "sections", "section_2", "section.xml"),
+            """<section id="2"><id>2</id><name>Transfer</name></section>""")
+        if includeSensitive then
+            File.WriteAllText(Path.Combine(root, "users.xml"), "<users><user>private</user></users>")
+        action root
+    finally
+        if Directory.Exists root then Directory.Delete(root, true)
 
 [<Fact>]
 let ``serialization round-trips a full graph`` () =
@@ -354,6 +387,145 @@ let ``sync scanProjects reads fsproj references`` () =
     finally
         if Directory.Exists tmp then Directory.Delete(tmp, true)
 
+[<Fact; Trait("spot", "spec-research-claim-ledger-test-1")>]
+let ``research claim projection preserves status provenance and derivation`` () =
+    let source =
+        { Id = EntityId "kb-source"; Convergence = Aligned
+          Payload =
+            KnowledgeNode
+              { Title = "Source"
+                Source = "https://example.org/research"
+                MediaType = "paper"
+                Takeaways = [] } }
+    let claim =
+        { Id = EntityId "claim-gates"; Convergence = Aligned
+          Payload =
+            ResearchClaimNode
+              { Statement = "Harder independent gates can justify bounded autonomy."
+                Status = Proposed
+                Scope = "AI-assisted software evolution"
+                Provenance =
+                  { SourceRefs = [ source.Id ]
+                    DerivedFrom = [ source.Id ]
+                    RecordedAt = "2026-07-27T00:00:00Z"
+                    Method = "conceptual synthesis" }
+                Rationale = Some "Requires comparative experiments." } }
+    let restored = Json.serialize claim |> Json.deserialize<SpotEntry>
+    Assert.Equal(claim, restored)
+    Assert.Empty(Validate.validate [ source; claim ] |> Validate.errors)
+
+[<Fact; Trait("spot", "spec-research-claim-ledger-test-2")>]
+let ``verified research claims fail closed without valid public evidence provenance`` () =
+    let claim =
+        { Id = EntityId "claim-unproven"; Convergence = Pending
+          Payload =
+            ResearchClaimNode
+              { Statement = "Unproven"
+                Status = Verified
+                Scope = "test"
+                Provenance =
+                  { SourceRefs = []
+                    DerivedFrom = []
+                    RecordedAt = "not-a-date"
+                    Method = "" }
+                Rationale = None } }
+    let errors = Validate.validate [ claim ] |> Validate.errors
+    Assert.Contains(errors, fun finding -> finding.Message.Contains "ISO-8601")
+    Assert.Contains(errors, fun finding -> finding.Message.Contains "mindestens eine benannte Quelle")
+
+[<Fact; Trait("spot", "spec-courseforge-import-test-1")>]
+let ``courseforge imports only generic Moodle course metadata`` () =
+    withSyntheticMoodle false (fun root ->
+        match MoodleFolder.importExtractedFolder Defaults.importLimits root with
+        | Error errors -> failwithf "unexpected errors: %A" errors
+        | Ok imported ->
+            Assert.Equal("Generic Demo Course", imported.Course.Title)
+            Assert.Equal("DEMO101", imported.Course.ShortName)
+            Assert.Equal(2, imported.Course.Sections.Length)
+            Assert.Equal(64, imported.SourceFingerprint.Length))
+
+[<Fact; Trait("spot", "spec-courseforge-import-test-2")>]
+let ``courseforge excludes sensitive Moodle data and enforces quotas`` () =
+    withSyntheticMoodle true (fun root ->
+        match MoodleFolder.importExtractedFolder Defaults.importLimits root with
+        | Error errors -> failwithf "unexpected errors: %A" errors
+        | Ok imported ->
+            Assert.Contains(SensitiveDataExcluded, imported.Findings)
+            Assert.DoesNotContain("private", Json.serialize imported)
+        let oneFileOnly = { Defaults.importLimits with MaxFiles = 1 }
+        match MoodleFolder.importExtractedFolder oneFileOnly root with
+        | Error errors ->
+            Assert.Contains(errors, function FileLimitExceeded _ -> true | _ -> false)
+        | Ok _ -> failwith "file quota should reject the folder")
+
+[<Fact>]
+let ``courseforge prohibits DTDs in untrusted Moodle metadata`` () =
+    withSyntheticMoodle false (fun root ->
+        File.WriteAllText(
+            Path.Combine(root, "moodle_backup.xml"),
+            """<!DOCTYPE x [<!ENTITY probe SYSTEM "file:///not-allowed">]>
+               <moodle_backup><information><original_course_fullname>&probe;</original_course_fullname></information></moodle_backup>""")
+        match MoodleFolder.importExtractedFolder Defaults.importLimits root with
+        | Error errors ->
+            Assert.Contains(errors, function InvalidMetadata _ -> true | _ -> false)
+        | Ok _ -> failwith "DTD processing should be prohibited")
+
+[<Fact; Trait("spot", "spec-courseforge-gameplan-test-1")>]
+let ``courseforge creates a deterministic authoring-gated game plan`` () =
+    withSyntheticMoodle false (fun root ->
+        let imported =
+            MoodleFolder.importExtractedFolder Defaults.importLimits root
+            |> function Ok value -> value | Error errors -> failwithf "%A" errors
+        let first = GamePlanBuilder.create imported
+        let second = GamePlanBuilder.create imported
+        Assert.Equal(first, second)
+        Assert.Equal(8, first.Missions.Length)
+        Assert.All(first.Missions, fun mission -> Assert.True mission.NeedsAuthoring))
+
+[<Fact; Trait("spot", "spec-feedback-evolution-test-1")>]
+let ``public feedback can only create a proposal with assurance obligations`` () =
+    let signal =
+        { Id = "signal-1"
+          Kind = FeatureRequest
+          Summary = "Add another learning mechanic"
+          Reproduction = None
+          BuildVersion = "0.8.0"
+          ContainsPersonalData = false }
+    match Evolution.triage signal with
+    | Candidate proposal ->
+        Assert.True proposal.ProposalOnly
+        Assert.Contains(HumanPromotion, proposal.Obligations)
+        Assert.Contains(AccessibilityReview, proposal.Obligations)
+        let requestedAt = DateTimeOffset(2026, 7, 27, 12, 0, 0, TimeSpan.Zero)
+        let intent = EidosAdapter.toChangeIntent requestedAt proposal
+        Assert.Equal(requestedAt, intent.RequestedAt)
+        Assert.Equal(Medium, intent.Hazard.Highest)
+        Assert.Contains("human promotion required", intent.Constraints)
+        Assert.Contains("public-feedback", intent.Scope)
+    | result -> failwithf "unexpected triage result: %A" result
+
+[<Fact; Trait("spot", "spec-feedback-evolution-test-2")>]
+let ``sensitive and security feedback never enters autonomous evolution`` () =
+    let baseSignal =
+        { Id = "signal-2"
+          Kind = BugReport
+          Summary = "A report"
+          Reproduction = None
+          BuildVersion = "0.8.0"
+          ContainsPersonalData = true }
+    Assert.Equal(RejectedSensitive, Evolution.triage baseSignal)
+    Assert.Equal(
+        EscalatedSecurity,
+        Evolution.triage { baseSignal with Kind = SecurityOrPrivacy; ContainsPersonalData = false })
+
+[<Fact; Trait("spot", "spec-research-snapshots-test-1")>]
+let ``research snapshot workflow is versioned with the repository`` () =
+    let workflow = Path.Combine(findRepoRoot (), ".github", "workflows", "research-snapshot.yml")
+    Assert.True(File.Exists workflow)
+    let content = File.ReadAllText workflow
+    Assert.Contains("research-snapshot", content)
+    Assert.Contains("draft: true", content)
+
 [<Fact; Trait("spot", "spec-fehlerliste-test-1")>]
 let ``validate detects contradictory term hierarchy cycles`` () =
     let term id rels =
@@ -522,3 +694,365 @@ let ``Reflexiv — jeder Aligned Test-Knoten im Selbst-Modell hat einen echten T
         Assert.True(
             List.isEmpty verwaiste,
             sprintf "Aligned Test-Knoten ohne echten Marker (= Aligned ohne Test): %A" verwaiste)
+
+// ===== Gate: das harte Grün-Gate (spec-gate-selbst-hart) =====
+
+[<Fact>]
+let ``Gate.parseTrx liest passed/failed aus TRX-Countern`` () =
+    let xml = "<ResultSummary outcome=\"Completed\"><Counters total=\"5\" executed=\"5\" passed=\"5\" failed=\"0\" passedButRunAborted=\"0\" /></ResultSummary>"
+    let r = Gate.parseTrx xml
+    Assert.Equal(5, r.Passed)
+    Assert.Equal(0, r.Failed)
+    Assert.True(Gate.istGruen r)
+
+[<Fact>]
+let ``Gate.istGruen: rot und leer sind nicht gruen, nur passed>0 und failed=0`` () =
+    Assert.False(Gate.istGruen { Gate.Passed = 3; Failed = 1; Skipped = 0 })
+    Assert.False(Gate.istGruen { Gate.Passed = 0; Failed = 0; Skipped = 0 })   // „No test"
+    Assert.True (Gate.istGruen { Gate.Passed = 3; Failed = 0; Skipped = 0 })
+
+[<Fact; Trait("spot", "spec-gate-selbst-hart-test-1")>]
+let ``Gate: failwith-TODO-Skelett (Marker da, Lauf rot) bleibt Pending — kein Aligned durch Marker-Erschleichung`` () =
+    let spec = sampleSpec "spec-x" [ crit 1 ]
+    let testNode =
+        { Id = EntityId "spec-x-test-1"
+          Convergence = Pending
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "T — when w1 then t1"; Derived = true } }
+    let covered = Set.singleton "spec-x-test-1"             // Marker IST präsent (failwith-Skelett)
+    let rot   : Gate.TrxResult = { Passed = 0; Failed = 1; Skipped = 0 }
+    let gruen : Gate.TrxResult = { Passed = 1; Failed = 0; Skipped = 0 }
+    // Der Cheat: das alte Marker-Orakel würde fälschlich Aligned liefern.
+    Assert.Equal(Aligned, (Sync.SetzeSpecAligned covered testNode).Convergence)
+    // Das harte Gate hält es bei rot auf Pending …
+    Assert.Equal(Pending, (Gate.setzeAlignedWennGruen rot covered testNode).Convergence)
+    // … und promoviert erst bei echtem Grün.
+    Assert.Equal(Aligned, (Gate.setzeAlignedWennGruen gruen covered testNode).Convergence)
+    // gateGruen kombiniert echten Lauf + strukturelle Validierung.
+    Assert.False(Gate.gateGruen rot [ spec; testNode ])
+    Assert.True (Gate.gateGruen gruen [ spec; testNode ])
+
+[<Fact>]
+let ``Gate-Property: ein nicht-gruener Lauf macht einen Test-Knoten NIE Aligned`` () =
+    let node =
+        { Id = EntityId "spec-x-test-1"
+          Convergence = Aligned    // selbst wenn er fälschlich Aligned WAR
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "n"; Derived = true } }
+    let prop (passed: int) (failed: int) (covered: bool) =
+        let trx : Gate.TrxResult = { Passed = abs passed; Failed = abs failed; Skipped = 0 }
+        let cov = if covered then Set.singleton "spec-x-test-1" else Set.empty
+        (not (Gate.istGruen trx)) ==>
+            ((Gate.setzeAlignedWennGruen trx cov node).Convergence <> Aligned)
+    Check.QuickThrowOnFailure prop
+
+[<Fact>]
+let ``Gate-Property: gruener Lauf + Marker => Aligned`` () =
+    let node =
+        { Id = EntityId "spec-x-test-1"
+          Convergence = Pending
+          Payload = TestNode { SpecRef = EntityId "spec-x"; Name = "n"; Derived = true } }
+    let prop (p: int) =
+        let trx : Gate.TrxResult = { Passed = (abs p % 64) + 1; Failed = 0; Skipped = 0 }
+        (Gate.setzeAlignedWennGruen trx (Set.singleton "spec-x-test-1") node).Convergence = Aligned
+    Check.QuickThrowOnFailure prop
+
+// ===== EIDOS v0: epistemic claims, mission dispatch, evidence and ZT2 =====
+
+let private eidosTime =
+    DateTimeOffset(2026, 7, 24, 12, 0, 0, TimeSpan.Zero)
+
+let private withEidosTemp (work: string -> unit) =
+    let dir = Path.Combine(Path.GetTempPath(), "cdd-eidos-test-" + Guid.NewGuid().ToString("N"))
+    Directory.CreateDirectory(dir) |> ignore
+    try work dir
+    finally
+        if Directory.Exists dir then Directory.Delete(dir, true)
+
+let private eidosFixtureClaim
+    (value: string)
+    (status: Eidos.EpistemicStatus)
+    (signal: Eidos.Signal)
+    : Eidos.Claim =
+    let provenance : Eidos.Provenance =
+        { SourceSignalIds = [ signal.Id ]
+          Actor = "test-owner"
+          Method = "fixture"
+          ToolVersion = "1"
+          RecordedAt = eidosTime }
+    Eidos.createClaim status "report" "format" value "contract" (Some 1.0M) provenance
+
+[<Fact; Trait("spot", "spec-eidos-epistemic-claims-test-1")>]
+let ``EIDOS keeps raw signal claim provenance time scope and epistemic status separate`` () =
+    let signal = Eidos.createSignal "owner" "contract" eidosTime "format v2 requested"
+    let claim = eidosFixtureClaim "v2" Eidos.Ratified signal
+    let twin = Eidos.projectTwin "v1" eidosTime [ "contract" ] [ signal ] [ claim ]
+    Assert.Single twin.Signals |> ignore
+    Assert.Single twin.Claims |> ignore
+    Assert.Equal(signal.Content, twin.Signals.Head.Content)
+    Assert.Equal(signal.ContentHash, Eidos.sha256 twin.Signals.Head.Content)
+    Assert.Equal(Eidos.Ratified, twin.Claims.Head.Claim.Status)
+    Assert.Equal(Eidos.Ratified, twin.Claims.Head.EffectiveStatus)
+    Assert.Equal("contract", twin.Claims.Head.Claim.Scope)
+    Assert.Equal<string list>([ signal.Id ], twin.Claims.Head.Claim.Provenance.SourceSignalIds)
+    Assert.Equal(eidosTime, twin.Claims.Head.Claim.Provenance.RecordedAt)
+
+[<Fact; Trait("spot", "spec-eidos-epistemic-claims-test-2")>]
+let ``EIDOS projection exposes contradiction and unknown instead of flattening them`` () =
+    let signal = Eidos.createSignal "owner" "contract" eidosTime "two incompatible declarations"
+    let first = eidosFixtureClaim "v1" Eidos.Declared signal
+    let second = eidosFixtureClaim "v2" Eidos.Declared signal
+    let twin =
+        Eidos.projectTwin "projection" eidosTime
+            [ "contract"; "runtime" ] [ signal ] [ first; second ]
+    Assert.Equal(2, twin.Claims.Length)
+    Assert.All(twin.Claims, fun claim -> Assert.Equal(Eidos.Contested, claim.EffectiveStatus))
+    Assert.Single twin.Conflicts |> ignore
+    Assert.Contains("runtime", twin.UnknownScopes)
+    Assert.Contains(twin.Findings, fun finding -> finding.StartsWith("Unknown scope:"))
+
+[<Fact; Trait("spot", "spec-eidos-mission-order-test-1")>]
+let ``EIDOS dispatch emits a complete typed ZT2 mission order`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        let mission = run.Mission
+        Assert.Equal(Eidos.ZT2, mission.TrustZone)
+        Assert.NotEmpty mission.Situation
+        Assert.NotEmpty mission.Intent.DesiredOutcome
+        Assert.NotEmpty mission.Scope
+        Assert.NotEmpty mission.Unit
+        Assert.NotEmpty mission.Constraints
+        Assert.NotEmpty mission.Obligations
+        Assert.NotEmpty mission.Success
+        Assert.NotEmpty mission.Abort
+        Assert.Equal(run.Doctrine.Version, mission.DoctrineVersion))
+
+[<Fact; Trait("spot", "spec-eidos-mission-order-test-2")>]
+let ``EIDOS control plane fails closed on budget capability and policy violations`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        match Eidos.controlCheck run.Doctrine run.Mission
+                  (run.Mission.Budget.MaxDurationSeconds + 1) run.Mission.Unit [] with
+        | Eidos.Abort reasons -> Assert.Contains(reasons, fun reason -> reason.Contains("budget"))
+        | other -> failwithf "expected Abort, got %A" other
+        match Eidos.controlCheck run.Doctrine run.Mission 1 [] [] with
+        | Eidos.Abort reasons -> Assert.Contains(reasons, fun reason -> reason.Contains("capabilities"))
+        | other -> failwithf "expected Abort, got %A" other
+        match Eidos.controlCheck run.Doctrine run.Mission 1 run.Mission.Unit [ "policy denied" ] with
+        | Eidos.Escalate(authority, reasons) ->
+            Assert.Equal(run.Doctrine.EscalationAuthority, authority)
+            Assert.Contains("policy denied", reasons)
+        | other -> failwithf "expected Escalate, got %A" other)
+
+[<Fact; Trait("spot", "spec-eidos-change-compiler-test-1")>]
+let ``EIDOS change compilation is deterministic and includes complete candidate metadata`` () =
+    withEidosTemp (fun firstDir ->
+        withEidosTemp (fun secondDir ->
+            let first = Eidos.runOpsLab firstDir eidosTime Eidos.NoFault
+            let second = Eidos.runOpsLab secondDir eidosTime Eidos.NoFault
+            Assert.Equal(first.Candidate.Id, second.Candidate.Id)
+            Assert.Equal(first.Candidate.ArtifactHash, second.Candidate.ArtifactHash)
+            Assert.Equal(first.Candidate.SemanticDelta, second.Candidate.SemanticDelta)
+            Assert.NotEmpty first.Candidate.ArtifactChanges
+            Assert.NotEmpty first.Candidate.AssuranceObligations
+            Assert.NotEmpty first.Candidate.DeploymentPlan
+            Assert.NotEmpty first.Candidate.RecoveryPlan))
+
+[<Fact; Trait("spot", "spec-eidos-change-compiler-test-2")>]
+let ``EIDOS retains rejected alternatives assumptions and a replayable compilation ledger`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        Assert.Single run.Compilation.Candidates |> ignore
+        Assert.Single run.Compilation.Rejected |> ignore
+        Assert.Equal("required-owner-team", run.Compilation.Rejected.Head.Name)
+        Assert.NotEmpty run.Candidate.Assumptions
+        Assert.Equal<Eidos.RejectedAlternative list>(
+            run.Compilation.Rejected,
+            run.Candidate.RejectedAlternatives)
+        Assert.True(Eidos.verifyLedger run.Compilation.Ledger)
+        Assert.Contains(run.Compilation.Ledger, fun event -> event.Kind = "AlternativeRejected"))
+
+[<Fact; Trait("spot", "spec-eidos-evidence-pack-test-1")>]
+let ``EIDOS evidence pack binds gate tool policy environment time and artifact`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        let pack = run.EvidencePack
+        Assert.True(Eidos.verifyEvidencePack pack)
+        Assert.Equal(run.Candidate.Id, pack.CandidateId)
+        Assert.Equal(run.Candidate.ArtifactHash, pack.ArtifactHash)
+        Assert.Equal(run.Candidate.PolicyVersion, pack.PolicyVersion)
+        Assert.StartsWith("zt2:", pack.Environment)
+        Assert.All(pack.Records, fun record ->
+            Assert.NotEmpty record.ValidatorId
+            Assert.NotEmpty record.ToolVersion
+            Assert.Equal(pack.Environment, record.Environment)
+            Assert.Equal(run.Candidate.ArtifactHash, record.ArtifactHash)
+            Assert.Equal(run.Candidate.PolicyVersion, record.PolicyVersion)
+            Assert.Equal(Eidos.sha256 record.Details, record.DetailsHash)))
+
+[<Fact; Trait("spot", "spec-eidos-evidence-pack-test-2")>]
+let ``EIDOS rejects missing stale red correlated and mismatched evidence with reasons`` () =
+    let faults =
+        [ Eidos.MissingEvidence
+          Eidos.StaleEvidence
+          Eidos.FailedGate
+          Eidos.CorrelatedValidator
+          Eidos.ArtifactMismatch
+          Eidos.PolicyMismatch
+          Eidos.TamperedPack ]
+    for fault in faults do
+        withEidosTemp (fun dir ->
+            let run = Eidos.runOpsLab dir eidosTime fault
+            Assert.Equal(Eidos.Rejected, run.Promotion.Status)
+            Assert.NotEmpty run.Promotion.Reasons)
+
+[<Fact; Trait("spot", "spec-eidos-zt2-opslab-test-1")>]
+let ``EIDOS OpsLab promotes only into an isolated static credential-free ZT2 sandbox`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.NoFault
+        let sandbox = Path.Combine(dir, ".eidos", "runs", run.RunId, "sandbox")
+        Assert.Equal(Eidos.RunPromoted, run.Status)
+        Assert.True(Directory.Exists sandbox)
+        let deployment = File.ReadAllText(Path.Combine(sandbox, "deployment.json"))
+        Assert.Contains("\"network\": false", deployment)
+        Assert.Contains("\"credentialsMounted\": false", deployment)
+        Assert.Contains("\"productionAuthority\": false", deployment)
+        Assert.Equal(0, run.Metrics.MechanicalHumanTouches)
+        Assert.True(run.Metrics.ReplayVerified))
+
+[<Fact; Trait("spot", "spec-eidos-zt2-opslab-test-2")>]
+let ``EIDOS OpsLab gate failure leaves baseline unchanged and remains replayable`` () =
+    withEidosTemp (fun dir ->
+        let run = Eidos.runOpsLab dir eidosTime Eidos.FailedGate
+        let runDir = Path.Combine(dir, ".eidos", "runs", run.RunId)
+        Assert.Equal(Eidos.RunRejected, run.Status)
+        Assert.False(Directory.Exists(Path.Combine(runDir, "sandbox")))
+        Assert.True(run.Metrics.ReplayVerified)
+        let replay = Eidos.replayOpsLab runDir
+        Assert.True(replay.Verified)
+        Assert.All(replay.Checks, fun (_, passed) -> Assert.True(passed)))
+
+[<Fact>]
+let ``EIDOS engineering benchmark is deterministic and reports its limited scope`` () =
+    let first = Eidos.runBenchmark ()
+    let second = Eidos.runBenchmark ()
+    Assert.Equal(first, second)
+    Assert.Equal(10, first.Eidos.Correct)
+    Assert.Equal(0, first.Eidos.UnsafeApprovals)
+    Assert.Equal(2, first.LinearBaseline.Correct)
+    Assert.Equal(8, first.LinearBaseline.UnsafeApprovals)
+    Assert.Contains("not external validity", first.ScopeNote)
+
+[<Fact>]
+let ``sync scanRepo includes public example projects`` () =
+    let tmp = Path.Combine(Path.GetTempPath(), "cdd-roots-" + Guid.NewGuid().ToString("N"))
+    try
+        let example = Path.Combine(tmp, "examples", "Reference.Core")
+        Directory.CreateDirectory example |> ignore
+        File.WriteAllText(Path.Combine(example, "Reference.Core.fsproj"), "<Project></Project>")
+        let projects = Sync.scanRepo tmp
+        Assert.Contains(projects, fun project -> project.Name = "Reference.Core")
+    finally
+        if Directory.Exists tmp then Directory.Delete(tmp, true)
+
+[<Fact; Trait("spot", "spec-public-runtime-boundary-test-1")>]
+let ``public runtime boundary is fail closed by default`` () =
+    let policy =
+        PublicRuntimeBoundary.fromEnvironment (fun _ -> "")
+    let allowed methodName path =
+        PublicRuntimeBoundary.classify methodName path
+        |> PublicRuntimeBoundary.isAllowed policy
+
+    Assert.True(allowed "GET" "/api/spot")
+    Assert.True(allowed "GET" "/research/")
+    Assert.False(allowed "POST" "/api/engine/run")
+    Assert.False(allowed "GET" "/api/providers")
+    Assert.False(allowed "GET" "/api/dwh/search")
+    Assert.False(allowed "GET" "/api/infra/status")
+    Assert.False(allowed "GET" "/api/studio/workspaces")
+
+[<Fact; Trait("spot", "spec-public-runtime-boundary-test-2")>]
+let ``memory writes require both explicit capabilities`` () =
+    let classify methodName = PublicRuntimeBoundary.classify methodName "/api/dwh/index"
+    let memoryOnly : PublicRuntimeBoundary.Policy =
+        { AllowMutations = false
+          EnableMemory = true
+          EnableInfra = false
+          EnableWorkspaces = false }
+    let mutationOnly : PublicRuntimeBoundary.Policy =
+        { AllowMutations = true
+          EnableMemory = false
+          EnableInfra = false
+          EnableWorkspaces = false }
+    let both = { memoryOnly with AllowMutations = true }
+
+    Assert.False(PublicRuntimeBoundary.isAllowed memoryOnly (classify "POST"))
+    Assert.False(PublicRuntimeBoundary.isAllowed mutationOnly (classify "POST"))
+    Assert.True(PublicRuntimeBoundary.isAllowed both (classify "POST"))
+    Assert.True(PublicRuntimeBoundary.isAllowed memoryOnly (classify "GET"))
+
+[<Fact; Trait("spot", "spec-public-runtime-boundary-test-3")>]
+let ``live workspace observations require an explicit independent capability`` () =
+    let defaultPolicy = PublicRuntimeBoundary.fromEnvironment (fun _ -> "")
+    let enabledPolicy =
+        PublicRuntimeBoundary.fromEnvironment (fun key ->
+            if key = "CDD_ENABLE_WORKSPACES" then "true" else "")
+    let capability = PublicRuntimeBoundary.classify "GET" "/api/studio/workspaces"
+    Assert.False(PublicRuntimeBoundary.isAllowed defaultPolicy capability)
+    Assert.True(PublicRuntimeBoundary.isAllowed enabledPolicy capability)
+
+[<Fact; Trait("spot", "spec-risk-adaptive-assurance-portfolio-test-1")>]
+let ``assurance portfolio selects complementary formal and operational oracles by risk`` () =
+    let profile : Studio.MissionProfile =
+        { ConcurrentOrDistributed = true
+          RelationshipHeavy = true
+          HighIntegrity = true
+          SecuritySensitive = true
+          ProductionChange = true
+          RuntimeBehavior = true
+          CreativeOrNormative = false }
+    let recommendations = Studio.recommendAssurance profile
+    let recommendation id = recommendations |> List.find (fun item -> item.Tool.Id = id)
+    Assert.True((recommendation "assurance-alloy").Required)
+    Assert.True((recommendation "assurance-tla").Required)
+    Assert.True((recommendation "assurance-opa").Required)
+    Assert.True((recommendation "assurance-slsa").Required)
+    Assert.True((recommendation "assurance-runtime").Required)
+    Assert.False((recommendation "assurance-lean").Required)
+
+[<Fact; Trait("spot", "spec-risk-adaptive-assurance-portfolio-test-2")>]
+let ``normative missions retain named human authority without forcing unrelated formalisms`` () =
+    let profile : Studio.MissionProfile =
+        { ConcurrentOrDistributed = false
+          RelationshipHeavy = false
+          HighIntegrity = false
+          SecuritySensitive = false
+          ProductionChange = false
+          RuntimeBehavior = false
+          CreativeOrNormative = true }
+    let recommendations = Studio.recommendAssurance profile
+    Assert.Contains(recommendations, fun item -> item.Tool.Id = "assurance-human" && item.Required)
+    Assert.DoesNotContain(recommendations, fun item -> item.Tool.Id = "assurance-tla")
+    Assert.DoesNotContain(recommendations, fun item -> item.Tool.Id = "assurance-lean")
+
+[<Fact; Trait("spot", "spec-studio-workspace-control-plane-test-1")>]
+let ``workspace projection prioritizes live work and derives actual lifecycle state`` () =
+    let git : Studio.GitObservation =
+        { Available = true; Branch = "main"; Commit = "abc"; CommitTitle = "candidate"
+          CommittedAt = "2026-08-23T00:00:00Z"; Remote = "https://example.invalid/repo"
+          DirtyFiles = 0; Ahead = 0; Behind = 0 }
+    let item id status : Studio.WorkItemObservation =
+        { Id = id; Title = id; Status = status; Objective = "objective"; RequiredGates = [] }
+    let run id status summary : Studio.RunObservation =
+        { Id = id; Status = status; StartedAt = id; FinishedAt = None; HasSummary = summary }
+    let observation : Studio.WorkspaceObservation =
+        { Id = "project"; Name = "Project"; Git = git
+          WorkItems = [ item "T-3" "ready"; item "T-2" "blocked"; item "T-1" "running" ]
+          Runs = [ run "2026-01" "succeeded" true; run "2026-02" "running" false ]
+          SpotNodes = 42; Sources = [ "git"; "git"; ".ai/tasks/*.json" ]
+          ObservedAt = DateTimeOffset.Parse "2026-08-23T00:00:00Z" }
+    let snapshot = Studio.projectWorkspace observation
+    Assert.Equal(Studio.Blocked, snapshot.State)
+    Assert.Equal(Some "T-1", snapshot.ActiveMission |> Option.map (fun mission -> mission.Id))
+    Assert.Equal(1, snapshot.WorkItems.Ready)
+    Assert.Equal(1, snapshot.Runs.Running)
+    Assert.Equal(1, snapshot.Runs.WithSummary)
+    Assert.Equal<string list>([ ".ai/tasks/*.json"; "git" ], snapshot.Sources)

@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # public-data guard scans the complete reachable history
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -42,6 +44,10 @@ jobs:
           $cli derive-tests --write
           $cli validate
           $cli diff
+          $cli eidos run --out "$tmp"
+          run_dir=$(find "$tmp/.eidos/runs" -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          $cli eidos replay "$run_dir"
+          $cli eidos benchmark --out "$tmp/benchmark"
 
       - name: Selbstmodell validieren (CDD prüft CDD)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- validate
@@ -55,12 +61,22 @@ jobs:
       - name: Doku-Konvergenz prüfen (README ↔ Modell)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-docs --check
 
+      - name: Öffentliche Daten- und Pfadgrenze prüfen
+        run: bash scripts/check-public-data.sh
+
+      - name: Video-Quellprojekt prüfen
+        run: |
+          npm ci --prefix media/research-overview --ignore-scripts
+          npm run --prefix media/research-overview lint
+          npm audit --prefix media/research-overview --audit-level=high
+
       - name: E2E (Cockpit im echten Browser)
         run: |
           cd tests/e2e
           npm install --no-fund --no-audit
           cd ../..
           node tests/e2e/smoke.mjs
+          node tests/e2e/research-studio.mjs
 
       - name: Testergebnisse hochladen
         if: always()

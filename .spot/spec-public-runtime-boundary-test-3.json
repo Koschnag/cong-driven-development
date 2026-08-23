@@ -1,0 +1,14 @@
+{
+  "Id": "spec-public-runtime-boundary-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-public-runtime-boundary",
+        "Name": "Fail-closed public runtime boundary \u2014 when keine explizite Workspace-Capability gesetzt ist then bleibt die Live-Projektion unabh\u00E4ngig von \u00F6ffentlichen Metadaten gesperrt",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

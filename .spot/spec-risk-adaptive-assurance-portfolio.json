@@ -1,0 +1,25 @@
+{
+  "Id": "spec-risk-adaptive-assurance-portfolio",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Risikoadaptives Assurance-Portfolio",
+        "Intent": "CDD w\u00E4hlt komplement\u00E4re offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen",
+        "Criteria": [
+          {
+            "Given": "eine hochintegre, verteilte oder produktive Mission",
+            "When": "Assurance Obligations abgeleitet werden",
+            "Then": "werden passende strukturelle, temporale, Policy-, Provenienz- und Runtime-Orakel kombiniert"
+          },
+          {
+            "Given": "eine kreative oder normative Mission ohne formale Risikomerkmale",
+            "When": "Assurance Obligations abgeleitet werden",
+            "Then": "bleibt benannte menschliche Autorit\u00E4t erhalten ohne unpassende Formalismen zu erzwingen"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

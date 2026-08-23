@@ -1,0 +1,24 @@
+{
+  "Id": "term-course-ir",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Course IR",
+        "Definition": "Technologieunabhaengige, datensparsame Zwischenrepraesentation eines Kurses als Quelle fuer validierbare Lernspiel-Artefakte",
+        "Synonyms": [
+          "Course Intermediate Representation"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-system-twin"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

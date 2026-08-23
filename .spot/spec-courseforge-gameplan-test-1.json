@@ -1,0 +1,14 @@
+{
+  "Id": "spec-courseforge-gameplan-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-courseforge-gameplan",
+        "Name": "Course IR zu authoring-gegatem Spielplan \u2014 when der Spielplan mehrfach erzeugt wird then entstehen identische Missionen, die bis zur fachlichen Ratifikation NeedsAuthoring behalten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

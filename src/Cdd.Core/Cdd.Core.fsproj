@@ -8,12 +8,16 @@
   <ItemGroup>
     <Compile Include="Spot.fs" />
     <Compile Include="Json.fs" />
+    <Compile Include="PublicRuntimeBoundary.fs" />
+    <Compile Include="Eidos.fs" />
+    <Compile Include="Studio.fs" />
     <Compile Include="Store.fs" />
     <Compile Include="History.fs" />
     <Compile Include="Validate.fs" />
     <Compile Include="Derive.fs" />
     <Compile Include="Diff.fs" />
     <Compile Include="Sync.fs" />
+    <Compile Include="Gate.fs" />
     <Compile Include="Export.fs" />
     <Compile Include="Engine.fs" />
     <Compile Include="Generate.fs" />

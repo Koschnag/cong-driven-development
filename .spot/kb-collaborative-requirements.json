@@ -1,0 +1,18 @@
+{
+  "Id": "kb-collaborative-requirements",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Collaborative and AI-Supported Requirements Elicitation",
+        "Source": "https://arxiv.org/abs/2606.24060",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Stakeholder-Kollaboration plus AI-Synthese erzeugte im kontrollierten Versuch die bestbewerteten Artefakte",
+          "EIDOS automatisiert mechanische Synthese, nicht normative Stakeholder-Autorit\u00E4t"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
