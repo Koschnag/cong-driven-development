@@ -481,7 +481,7 @@ let entries =
                           "Provenienz, Security-Anforderungen, Risiken und Designentscheidungen sollen verfolgt werden" ] } }
       { Id = EntityId "kb-riftward-representative-frame"; Convergence = Aligned
         Payload = KnowledgeNode
-          { Title = "Project Riftward: Representative Frame as Evidence Boundary"; Source = "https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md"
+          { Title = "Project Riftward: Representative Frame as Evidence Boundary"; Source = "https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/PERFORMANCE_BUDGET.md"
             MediaType = "longitudinal-case-study"
             Takeaways = [ "Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde"
                           "Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame" ] } }
