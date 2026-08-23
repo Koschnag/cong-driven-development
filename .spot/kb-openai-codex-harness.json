@@ -1,0 +1,13 @@
+{
+  "Id": "kb-openai-codex-harness",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "OpenAI — Unrolling and embedding the Codex harness",
+    "Source": "https://openai.com/index/unlocking-the-codex-harness/",
+    "MediaType": "engineering report",
+    "Takeaways": [
+      "Ein stabiler App-Server trennt den Agent-Loop von CLI, IDE und anderen Clients",
+      "CDD soll Harnesses als ersetzbare Ausfuehrungsebene einbetten statt deren Agent-Loop erneut zu implementieren"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

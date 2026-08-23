@@ -3,8 +3,9 @@
 //   [spot: spec-cockpit-shell-test-1]   Omnibar + Menüleiste + Rail-Flächen + Faden
 //   [spot: spec-diagram-surface-test-1] Split-Diagramm rendert (Cytoscape-Canvas) + Toolbox
 //   [spot: spec-formal-view-test-1]     Formal-Sicht (code behind) rendert mit KaTeX
+//   [spot: spec-studio-workspace-control-plane-test-2] Workspace-UI projiziert Missionen und Evidenz
 import { spawn } from "node:child_process";
-import { cp, mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { createServer, request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,10 +16,21 @@ const PROXY_PORT = 5600;
 const repo = new URL("../..", import.meta.url).pathname;
 const dataRoot = await mkdtemp(join(tmpdir(), "cdd-e2e-"));
 await cp(join(repo, ".spot"), join(dataRoot, ".spot"), { recursive: true });
+await mkdir(join(dataRoot, ".ai", "tasks"), { recursive: true });
+await mkdir(join(dataRoot, ".ai", "runtime", "runs", "run-e2e"), { recursive: true });
+await writeFile(join(dataRoot, ".ai", "config.json"), JSON.stringify({ projectId: "project-e2e" }));
+await writeFile(join(dataRoot, ".ai", "tasks", "T-900.json"), JSON.stringify({
+  id: "T-900", title: "Workspace projection", status: "running",
+  objective: "Project a real mission without leaking its host path.", requiredGates: ["G-TEST", "G-EVIDENCE"],
+}));
+await writeFile(join(dataRoot, ".ai", "runtime", "runs", "run-e2e", "run.json"), JSON.stringify({
+  runId: "run-e2e", status: "succeeded", startedAtUtc: "2026-08-23T12:00:00Z", finishedAtUtc: "2026-08-23T12:01:00Z",
+}));
+await writeFile(join(dataRoot, ".ai", "runtime", "runs", "run-e2e", "summary.json"), "{}");
 const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", dataRoot, "--urls", `http://127.0.0.1:${PORT}`], {
   cwd: repo,
   stdio: "ignore",
-  env: { ...process.env, CDD_ALLOW_MUTATIONS: "true" },
+  env: { ...process.env, CDD_ALLOW_MUTATIONS: "true", CDD_ENABLE_WORKSPACES: "true" },
 });
 const proxy = createServer((req, res) => {
   if (!req.url?.startsWith("/cdd/")) {
@@ -125,6 +137,19 @@ try {
   await page.waitForFunction(() => document.querySelector("#run-badge")?.textContent === "promoted", { timeout: 30000 });
   ok(await page.evaluate(() => document.querySelector("#open-sandbox")?.getAttribute("href")?.startsWith("/cdd/api/eidos/")), "EIDOS API und Sandbox bleiben im Reverse-Proxy-Unterpfad");
   ok(await page.evaluate(() => document.querySelector('link[rel="manifest"]')?.getAttribute("href") === "eidos.webmanifest"), "PWA-Manifest bleibt deployment-relativ");
+
+  // [spot: spec-studio-workspace-control-plane-test-2] Offene Workspace-Projektion im Studio.
+  await page.setViewport({ width: 1480, height: 900, isMobile: false });
+  await page.goto(`http://127.0.0.1:${PORT}/workspace.html`, { waitUntil: "networkidle2", timeout: 60000 });
+  await page.waitForFunction(() => document.querySelector("#metric-workspaces")?.textContent === "1");
+  ok(await page.evaluate(() => /T-900/.test(document.querySelector(".mission-id")?.textContent || "")), "Control Plane zeigt aktive Mission");
+  ok(await page.evaluate(() => document.querySelectorAll("#assurance-list .assurance-item").length >= 10), "Assurance-Portfolio wird aus dem Kernel projiziert");
+  ok(await page.evaluate(() => document.querySelectorAll("#contract-list .contract-item").length >= 6), "offene Adapterverträge werden projiziert");
+  const workspacePayload = await (await fetch(`http://127.0.0.1:${PORT}/api/studio/workspaces`)).text();
+  ok(!workspacePayload.includes(dataRoot), "Workspace-API legt keinen Hostpfad offen");
+  await page.setViewport({ width: 390, height: 844, isMobile: true });
+  await page.reload({ waitUntil: "networkidle2" });
+  ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "Control Plane mobil ohne horizontales Überlaufen");
 
   ok(jsErrors.length === 0, jsErrors.length ? "JS-Fehler: " + jsErrors.join("; ") : "keine JS-Fehler");
   await browser.close();

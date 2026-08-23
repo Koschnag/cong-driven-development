@@ -1,0 +1,14 @@
+{
+  "Id": "spec-studio-workspace-control-plane-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-studio-workspace-control-plane",
+        "Name": "Offene Workspace-Control-Plane-Projektion \u2014 when der CDD-Kern den Workspace projiziert then werden Lifecycle, aktive Mission, Evidenzstand und Aufmerksamkeit deterministisch abgeleitet",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

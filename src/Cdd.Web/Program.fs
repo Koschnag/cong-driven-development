@@ -56,17 +56,23 @@ let private saveProviders (ps: Provider list) =
 
 [<EntryPoint>]
 let main argv =
-    // "--root <pfad>" gehört uns; alle übrigen Argumente (z. B. --urls) gehen an ASP.NET.
-    let rec extractRoot acc args =
+    // "--root" ist der SPOT-Store; wiederholte "--workspace"-Argumente ergänzen
+    // read-only Projektprojektionen. Alle übrigen Argumente gehen an ASP.NET.
+    let rec extractStudioArgs root workspaces webArgs args =
         match args with
-        | "--root" :: value :: rest -> Some value, List.rev acc @ rest
-        | x :: rest -> extractRoot (x :: acc) rest
-        | [] -> None, List.rev acc
-    let rootArg, webArgs = extractRoot [] (List.ofArray argv)
+        | "--root" :: value :: rest -> extractStudioArgs (Some value) workspaces webArgs rest
+        | "--workspace" :: value :: rest -> extractStudioArgs root (value :: workspaces) webArgs rest
+        | x :: rest -> extractStudioArgs root workspaces (x :: webArgs) rest
+        | [] -> root, List.rev workspaces, List.rev webArgs
+    let rootArg, workspaceArgs, webArgs = extractStudioArgs None [] [] (List.ofArray argv)
     let root =
         rootArg
         |> Option.defaultValue (Directory.GetCurrentDirectory())
         |> Path.GetFullPath
+    let workspaceRoots =
+        root :: workspaceArgs
+        |> List.map Path.GetFullPath
+        |> List.distinct
 
     let builder = WebApplication.CreateBuilder(Array.ofList webArgs)
     let app = builder.Build()
@@ -100,6 +106,18 @@ let main argv =
 
     app.MapGet("/api/spot", Func<IResult>(fun () ->
         withStore root json)) |> ignore
+
+    // Open, vendor-neutral Studio seams are public product metadata. Live
+    // workspace state is separately capability-gated and exposes no host paths.
+    app.MapGet("/api/studio/portfolio", Func<IResult>(fun () ->
+        json {| contracts = Studio.openContracts
+                assurance = Studio.openAssurancePortfolio |})) |> ignore
+
+    app.MapGet("/api/studio/workspaces", Func<IResult>(fun () ->
+        let observedAt = DateTimeOffset.UtcNow
+        workspaceRoots
+        |> List.map (fun workspace -> Cdd.Web.WorkspaceAdapter.snapshot workspace observedAt)
+        |> fun workspaces -> json {| workspaces = workspaces |})) |> ignore
 
     app.MapPut("/api/spot/{id}", Func<string, HttpRequest, Task<IResult>>(fun id req ->
         task {
