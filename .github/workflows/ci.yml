@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0  # public-data guard scans the complete reachable history
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 
@@ -100,7 +100,7 @@ jobs:
 
       - name: Setup .NET
         if: steps.token.outputs.present == 'true'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 
