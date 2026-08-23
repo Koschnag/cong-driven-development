@@ -7,7 +7,8 @@ Kontext für AI-Agents (GitHub Copilot, Claude Code, etc.), die in diesem Repo a
 F#-Monorepo (.NET 9): `Cdd.Core` (Domain), `Cdd.Cli` (CLI `cdd`), `Cdd.Web`
 (Cockpit: REST-API + statisches Frontend, kein Node-Toolchain), `Cdd.Mcp`
 (MCP-Server, C#-IO-Adapter — bevorzugter Weg für KI-Clients, den SPOT zu
-bearbeiten), `Cdd.Tests` (xUnit).
+bearbeiten), `CourseForge.Core` (generisches, synthetisches Referenzprojekt),
+`Cdd.Tests` (xUnit).
 Kernkonzept: SPOT-Graph (Single Point of Truth) als Discriminated Union,
 persistiert als ein JSON-File pro Knoten unter `.spot/`.
 
@@ -29,6 +30,10 @@ in einem Temp-Verzeichnis ausführen.
   Abhängigkeiten zuerst).
 - JSON-Serialisierung ausschließlich über `Cdd.Core.Json` (FSharp.SystemTextJson).
 - Jede Logik-Änderung braucht Tests in `tests/Cdd.Tests/Tests.fs`.
+- Öffentliche Daten müssen `PUBLICATION_POLICY.md` erfüllen: keine echten
+  Moodle-Archive, Personendaten, privaten Routen, DWH-Inhalte oder Credentials.
+- Forschungsclaims als `ResearchClaimNode` im SPOT pflegen; Status und Evidenz nicht
+  stärker formulieren als der reproduzierbare Nachweis.
 - Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, …), PRs gegen `main`,
   Squash-Merge. Details: `docs/devops.md`.
 

@@ -1,4 +1,5 @@
-// CDD modelliert sich selbst: generiert das .spot/-Selbstmodell des Projekts.
+// CDD modelliert sich selbst: seedet und aktualisiert die Kernel-Knoten des
+// .spot/-Selbstmodells. Forschungs- und Erweiterungsknoten werden nicht gelöscht.
 // Ausführen (nach `dotnet build -c Release`):
 //   dotnet fsi scripts/self-model.fsx
 // Danach: dotnet run --project src/Cdd.Cli -- derive-tests --write && cdd validate
@@ -47,6 +48,7 @@ let entries =
       term "term-change-compiler" "Change Compiler" "Transformiert Intent, System-Twin, Policies und Evidenz in prüfbare Änderungskandidaten samt Obligations und Recovery" [ "Semantic Change Compiler" ] [ PartOf(EntityId "term-eidos") ]
       term "term-evidence-pack" "Evidence Pack" "Versions-, zeit- und umgebungsgebündelter Nachweis für einen Kandidaten und seine Assurance Obligations" [ "Evidence-Carrying Change" ] [ PartOf(EntityId "term-eidos") ]
       term "term-system-twin" "System Twin" "Zeitbezogene, provenienzbehaftete Projektion des bekannten Systems einschließlich Unsicherheit und Widerspruch" [ "Semantic System Twin" ] [ RelatesTo(EntityId "term-spot") ]
+      term "term-research-studio" "Research Studio" "Read-only Briefing-Projektion des öffentlichen SPOT für Claims, Evidenz, Lücken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback" [ "Research Cockpit"; "Forschungsbriefing" ] [ RelatesTo(EntityId "term-spot") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Kein Python — nie." "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
@@ -77,6 +79,10 @@ let entries =
         "CDD besitzt SPOT und ein Konvergenz-Orakel, aber noch kein epistemisches Lagebild, Change Compilation, Mission Dispatch oder Outcome-Lernen"
         "CDD bleibt der überprüfbare Kernel; EIDOS wird als getrenntes, ehrlich als Pending markiertes Architektur- und Forschungsprogramm entwickelt"
         "Neue Capabilities werden zuerst im SPOT spezifiziert; Produktclaims unterscheiden implementierten Ist-Stand und Zielbild"
+      decision "adr-007-public-research-studio" "Research Studio ist eine read-only SPOT-Projektion"
+        "Ein visuelles Forschungsportal kann schnell zu einer zweiten Wahrheit oder einem unkontrollierten Agenten-Frontend werden"
+        "Dynamische Forschungsobjekte kommen aus dem öffentlichen Snapshot; Feedback erzeugt nur einen vom Menschen zu prüfenden Issue-Entwurf"
+        "Storytelling bleibt möglich, Status und Evidenz versioniert; Medien brauchen bei Modelländerungen erneute Prüfung"
 
       // ── Risiken ────────────────────────────────────────────────────────
       risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
@@ -93,6 +99,8 @@ let entries =
         "Intervention, Störfaktoren und Konfidenz getrennt speichern; Strategy-Änderungen nur nach reproduzierbaren Outcome-Vergleichen"
       risk "risk-evaluator-drift" "Ein lernendes oder vom Generator abhängiges Orakel driftet und belohnt Scheinerfolg" High Critical
         "Validatorversionen binden, Generator/Validator trennen, unveränderliche Ankerfälle und externe Audits verwenden"
+      risk "risk-public-runtime-exposure" "Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Fähigkeiten unbeabsichtigt offen" Medium Critical
+        "App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -147,6 +155,30 @@ let entries =
               [ { Given = "eine Prosa-Beschreibung einer Modelländerung"
                   When = "der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt)"
                   Then = "entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird" } ] } }
+
+      { Id = EntityId "spec-public-runtime-boundary"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Fail-closed public runtime boundary"
+            Intent = "Eine öffentliche CDD-Auslieferung darf ohne Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen"
+            Criteria =
+              [ { Given = "keine Capability-Umgebungsvariable gesetzt ist"
+                  When = "ein öffentlicher oder privilegierter Pfad klassifiziert wird"
+                  Then = "sind nur read-only SPOT- und statische Projektionen erlaubt" }
+                { Given = "Memory geschrieben werden soll"
+                  When = "nur eine der Freigaben Memory oder Mutation gesetzt ist"
+                  Then = "bleibt die Operation gesperrt" } ] } }
+
+      { Id = EntityId "spec-research-studio"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "SPOT-projiziertes Research Studio"
+            Intent = "Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion"
+            Criteria =
+              [ { Given = "der versionierte SPOT-Snapshot geladen ist"
+                  When = "das Research Studio geöffnet wird"
+                  Then = "werden Claims, Quellen, Risiken, Prämissen, Entscheidungen und Kennzahlen daraus projiziert" }
+                { Given = "Feedback formuliert wurde"
+                  When = "die Nutzerin oder der Nutzer fortfährt"
+                  Then = "wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet" } ] } }
 
       // ── Invarianten: Governance by Invariance ────────────────────────
       { Id = EntityId "inv-specs-getestet"; Convergence = Aligned

@@ -1,0 +1,5 @@
+{
+  "Id": "spec-public-runtime-boundary-test-2",
+  "Payload": { "Case": "TestNode", "Fields": { "Item": { "SpecRef": "spec-public-runtime-boundary", "Name": "Memory-Schreiben benoetigt Memory- und Mutationsfreigabe", "Derived": true } } },
+  "Convergence": "Aligned"
+}

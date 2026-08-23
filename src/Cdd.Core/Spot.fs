@@ -77,6 +77,41 @@ module Spot =
           MediaType : string        // book | pdf | link | blog
           Takeaways : string list }
 
+    /// Publikationsstatus eines Forschungsclaims. Das ist die langlebige, öffentliche
+    /// SPOT-Projektion; operative Rohsignale und Claims bleiben im EIDOS-System-Twin.
+    /// Der Status ist keine Konvergenzbehauptung: Proposed kann technisch Aligned sein,
+    /// ohne deshalb wissenschaftlich Verified zu sein.
+    type ResearchEpistemicStatus =
+        | Observed
+        | Declared
+        | Inferred
+        | Proposed
+        | Ratified
+        | Verified
+        | Contested
+        | Unknown
+        | Deprecated
+        | OutcomeConfirmed
+
+    /// Veröffentlichbare Herkunft eines Forschungsclaims. Quellen zeigen auf
+    /// Knowledge-Knoten; DerivedFrom kann auf andere Forschungsclaims oder beliebige
+    /// SPOT-Knoten zeigen. RecordedAt ist ISO-8601.
+    type ResearchProvenance =
+        { SourceRefs  : EntityId list
+          DerivedFrom : EntityId list
+          RecordedAt  : string
+          Method      : string }
+
+    /// Sanitizierte Publikationsprojektion eines epistemisch typisierten Claims.
+    /// Keine numerische "Confidence": fehlende Evidenz bleibt explizit fehlende Evidenz.
+    /// EIDOS.Claim ist das operative Modell und darf private Rohsignal-IDs enthalten.
+    type ResearchClaim =
+        { Statement  : string
+          Status     : ResearchEpistemicStatus
+          Scope      : string
+          Provenance : ResearchProvenance
+          Rationale  : string option }
+
     /// Tool, mit dem Agents angereichert werden (Fähigkeits-Erweiterung).
     type Tool =
         { Name     : string
@@ -119,6 +154,7 @@ module Spot =
         | PremiseNode   of Premise
         | DecisionNode  of Decision
         | KnowledgeNode of Knowledge
+        | ResearchClaimNode of ResearchClaim
         | ToolNode      of Tool
         | TermNode      of Term
         | InvariantNode of Invariant
@@ -143,6 +179,7 @@ module Spot =
         | PremiseNode _   -> "premise"
         | DecisionNode _  -> "decision"
         | KnowledgeNode _ -> "knowledge"
+        | ResearchClaimNode _ -> "claim"
         | ToolNode _      -> "tool"
         | TermNode _      -> "term"
         | InvariantNode _ -> "invariant"

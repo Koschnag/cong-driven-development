@@ -1,0 +1,5 @@
+{
+  "Id": "spec-public-runtime-boundary-test-1",
+  "Payload": { "Case": "TestNode", "Fields": { "Item": { "SpecRef": "spec-public-runtime-boundary", "Name": "Nur read-only Projektionen sind ohne Opt-in erlaubt", "Derived": true } } },
+  "Convergence": "Aligned"
+}

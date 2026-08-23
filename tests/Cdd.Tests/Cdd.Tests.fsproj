@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Cdd.Core/Cdd.Core.fsproj" />
+    <ProjectReference Include="../../examples/CourseForge.Core/CourseForge.Core.fsproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,14 @@
+{
+  "Id": "spec-courseforge-import-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-courseforge-import",
+        "Name": "Datensparsamer Moodle-Folder-Import \u2014 when CourseForge den Ordner importiert then entsteht ein deterministischer Course IR mit Kurs und Abschnitten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

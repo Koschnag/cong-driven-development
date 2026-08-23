@@ -15,7 +15,11 @@ const PROXY_PORT = 5600;
 const repo = new URL("../..", import.meta.url).pathname;
 const dataRoot = await mkdtemp(join(tmpdir(), "cdd-e2e-"));
 await cp(join(repo, ".spot"), join(dataRoot, ".spot"), { recursive: true });
-const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", dataRoot, "--urls", `http://127.0.0.1:${PORT}`], { cwd: repo, stdio: "ignore" });
+const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", dataRoot, "--urls", `http://127.0.0.1:${PORT}`], {
+  cwd: repo,
+  stdio: "ignore",
+  env: { ...process.env, CDD_ALLOW_MUTATIONS: "true" },
+});
 const proxy = createServer((req, res) => {
   if (!req.url?.startsWith("/cdd/")) {
     res.writeHead(404).end();

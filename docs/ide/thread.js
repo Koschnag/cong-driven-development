@@ -34,7 +34,7 @@ export function mountThread(el, store, actions) {
   let abort = null, curTurn = null;
 
   // Modi = die Funktions-Achsen als EIN Wort. Wählt nur den System-Frame der Engine.
-  // Labels identisch zu den Flächen (eine Vokabel, kein Develop/Dev-Drift) — Asperger: ein Wort pro Konzept.
+  // Labels identisch zu den Flächen (eine Vokabel, kein Develop/Dev-Drift).
   const MODES = [
     ['plan', 'Plan'],
     ['dev', 'Dev'],
@@ -88,7 +88,7 @@ export function mountThread(el, store, actions) {
   }
 
   // Geführtes Durchklicken: eine Reihe anklickbarer nächster Schritte als eigener Turn.
-  // ADHD: immer eine sichtbare nächste Aktion, nie eine leere Seite. Klick führt aus.
+  // Immer eine sichtbare nächste Aktion, nie eine leere Seite. Klick führt aus.
   function suggest(steps) {
     if (!steps || !steps.length) return;
     const was = atBottom();
@@ -158,7 +158,7 @@ export function mountThread(el, store, actions) {
   function welcome() {
     const n = store.get().nodes.length;
     say('system',
-      `Cong OS bereit. Ein Faden, eine Tür (⌘K). ${n} SPOT-Knoten geladen. ` +
+      `CDD Studio bereit. Ein Faden, eine Tür (⌘K). ${n} SPOT-Knoten geladen. ` +
       `Klick unten einen Vorschlag, drück ⌘. für das Nächste, oder tipp einen Auftrag. Ziffern 1–6 rufen Flächen, Esc schließt die Bühne.`);
     focusInput();
   }

@@ -1,0 +1,20 @@
+{
+  "Id": "spec-courseforge-gameplan",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Course IR zu authoring-gegatem Spielplan",
+        "Intent": "Ein importierter Kurs erzeugt reproduzierbare Lernmissions-Skelette, ohne fachliche Richtigkeit vorzutaueschen.",
+        "Criteria": [
+          {
+            "Given": "derselbe Course IR und Source Fingerprint",
+            "When": "der Spielplan mehrfach erzeugt wird",
+            "Then": "entstehen identische Missionen, die bis zur fachlichen Ratifikation NeedsAuthoring behalten"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

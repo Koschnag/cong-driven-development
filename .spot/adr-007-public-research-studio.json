@@ -1,0 +1,16 @@
+{
+  "Id": "adr-007-public-research-studio",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "Research Studio ist eine read-only SPOT-Projektion",
+        "Context": "Ein visuelles Forschungsportal kann schnell zu einer zweiten, handgepflegten Wahrheit oder zu einem unkontrollierten Agenten-Frontend werden.",
+        "Choice": "Dynamische Forschungsobjekte werden aus dem oeffentlichen SPOT-Snapshot gerendert; Feedback erzeugt nur einen vom Menschen zu pruefenden Issue-Entwurf.",
+        "Consequences": "Kuratiertes Storytelling bleibt moeglich, Status und Evidenz bleiben versioniert; Medien muessen bei wesentlichen Modellveraenderungen erneut geprueft werden.",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
