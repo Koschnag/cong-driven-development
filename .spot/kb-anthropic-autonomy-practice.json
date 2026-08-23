@@ -1,0 +1,13 @@
+{
+  "Id": "kb-anthropic-autonomy-practice",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "Anthropic — Measuring AI agent autonomy in practice",
+    "Source": "https://www.anthropic.com/research/measuring-agent-autonomy",
+    "MediaType": "empirical research",
+    "Takeaways": [
+      "Reale Autonomie muss aus vielen produktiven Sitzungen und Interventionen gemessen werden",
+      "Erfahrene Nutzer erlauben mehr Automatik und greifen zugleich weiterhin gezielt ein; Post-Deployment-Monitoring bleibt notwendig"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

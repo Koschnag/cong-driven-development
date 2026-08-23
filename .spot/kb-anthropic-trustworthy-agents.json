@@ -1,0 +1,13 @@
+{
+  "Id": "kb-anthropic-trustworthy-agents",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "Anthropic — Trustworthy agents in practice",
+    "Source": "https://www.anthropic.com/research/trustworthy-agents",
+    "MediaType": "research",
+    "Takeaways": [
+      "Agentenverhalten entsteht gemeinsam aus Modell, Harness, Werkzeugen und Umgebung",
+      "Zuverlaessige Agenten brauchen menschliche Kontrolle, Unsicherheitsbehandlung und geschichtete Abwehr"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

@@ -5,10 +5,23 @@
     "Fields": {
       "Item": {
         "Title": "Fail-closed public runtime boundary",
-        "Intent": "Eine oeffentliche CDD-Auslieferung darf ohne explizite Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen.",
+        "Intent": "Eine \u00F6ffentliche CDD-Auslieferung darf ohne Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen",
         "Criteria": [
-          { "Given": "keine Capability-Umgebungsvariable gesetzt ist", "When": "ein oeffentlicher oder privilegierter Pfad klassifiziert wird", "Then": "nur read-only SPOT- und statische Projektionen sind erlaubt" },
-          { "Given": "Memory geschrieben werden soll", "When": "nur eine der Freigaben Memory oder Mutation gesetzt ist", "Then": "die Operation bleibt gesperrt" }
+          {
+            "Given": "keine Capability-Umgebungsvariable gesetzt ist",
+            "When": "ein \u00F6ffentlicher oder privilegierter Pfad klassifiziert wird",
+            "Then": "sind nur read-only SPOT- und statische Projektionen erlaubt"
+          },
+          {
+            "Given": "Memory geschrieben werden soll",
+            "When": "nur eine der Freigaben Memory oder Mutation gesetzt ist",
+            "Then": "bleibt die Operation gesperrt"
+          },
+          {
+            "Given": "lokale Workspace-Zust\u00E4nde beobachtet werden sollen",
+            "When": "keine explizite Workspace-Capability gesetzt ist",
+            "Then": "bleibt die Live-Projektion unabh\u00E4ngig von \u00F6ffentlichen Metadaten gesperrt"
+          }
         ]
       }
     }
