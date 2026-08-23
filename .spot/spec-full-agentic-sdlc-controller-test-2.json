@@ -1,0 +1,14 @@
+{
+  "Id": "spec-full-agentic-sdlc-controller-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-full-agentic-sdlc-controller",
+        "Name": "Persistente Full-Agentic-SDLC-Kette \u2014 when die Beobachtung im Run protokolliert wird then wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei ersch\u00F6pftem Budget fail-closed blockiert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

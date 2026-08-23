@@ -325,6 +325,7 @@ let ``decisionsMarkdown documents premises decisions and invariants`` () =
     Assert.Contains("### F# · `adr-x`", md)
     Assert.Contains("Geltende Invarianten", md)
     Assert.Contains("Specs getestet", md)
+    Assert.False(md.EndsWith(Environment.NewLine + Environment.NewLine, StringComparison.Ordinal))
 
 [<Fact; Trait("spot", "spec-sync-docs-test-1")>]
 let ``statusMarkdown reflects aligned and pending specs`` () =
@@ -1057,3 +1058,224 @@ let ``workspace projection prioritizes live work and derives actual lifecycle st
     Assert.Equal(1, snapshot.Runs.Running)
     Assert.Equal(1, snapshot.Runs.WithSummary)
     Assert.Equal<string list>([ ".ai/tasks/*.json"; "git" ], snapshot.Sources)
+
+// ===== Full-agentic SDLC controller: slicing, recovery, gates and review =====
+
+let private autopilotTime =
+    DateTimeOffset(2026, 8, 23, 12, 0, 0, TimeSpan.Zero)
+
+let private autopilotPlan recovery : Autopilot.RunPlan =
+    let worker id role readOnly : Autopilot.WorkerProfile =
+        { Id = id
+          Role = role
+          Provider = "test-provider"
+          Model = "test-model"
+          Harness = "test-harness/v1"
+          ReadOnly = readOnly
+          Capabilities = if readOnly then [ "repo.read" ] else [ "repo.read"; "artifact.write" ] }
+    { MissionId = "mission-agentic-sdlc"
+      Objective = "Deliver a reviewed and evidenced change."
+      Slices =
+        [ { Id = "slice-1"
+            Stage = Autopilot.Implement
+            Title = "Bounded implementation"
+            Objective = "Implement one behavior."
+            Scope = [ "src/Feature.fs"; "tests/FeatureTests.fs" ]
+            AcceptanceCriteria = [ "Behavior is deterministic." ]
+            RequiredGateIds = [ "gate-tests" ] } ]
+      Workers =
+        [ worker "scout-a" Autopilot.Scout true
+          worker "builder-a" Autopilot.Builder false
+          worker "critic-b" Autopilot.Critic true
+          worker "reviewer-c" Autopilot.Reviewer true ]
+      Gates =
+        [ { Id = "gate-tests"
+            Name = "Deterministic tests"
+            Program = "dotnet"
+            Arguments = [ "test"; "--no-restore" ]
+            ValidatorId = "dotnet-test-oracle"
+            TimeoutSeconds = 120 } ]
+      Recovery = recovery }
+
+let private autopilotTelemetry tools : Autopilot.AgentTelemetry =
+    { DurationMilliseconds = 10L
+      ToolCalls = tools
+      InputTokens = 20L
+      OutputTokens = 5L }
+
+let private observeAgent role worker session mode terminal subject output findings =
+    Autopilot.AgentTurnObserved
+        { WorkerId = worker
+          Role = role
+          SessionId = session
+          DispatchMode = mode
+          TerminalMarker = terminal
+          Summary = "test observation"
+          SubjectDigest = subject
+          OutputDigest = output
+          Findings = findings
+          Telemetry = autopilotTelemetry 2 }
+
+let private applyAutopilot offset observation run =
+    match Autopilot.applyObservation (autopilotTime.AddSeconds(float offset)) observation run with
+    | Ok updated -> updated
+    | Error errors -> failwith (String.concat " | " errors)
+
+let private createAutopilot recovery =
+    match Autopilot.create autopilotTime (autopilotPlan recovery) with
+    | Ok run -> run
+    | Error errors -> failwith (String.concat " | " errors)
+
+[<Fact; Trait("spot", "spec-full-agentic-sdlc-controller-test-1")>]
+let ``autopilot executes every slice through separated roles gates review and checkpoint`` () =
+    let policy : Autopilot.RecoveryPolicy =
+        { MaxSameSessionResumes = 2; MaxFreshStarts = 2; MaxRepairCycles = 2 }
+    let initial = createAutopilot policy
+    match Autopilot.nextAction initial with
+    | Autopilot.DispatchAgent action ->
+        Assert.Equal(Autopilot.Scout, action.Worker.Role)
+        Assert.Equal(Autopilot.FreshSession, action.Mode)
+        Assert.Equal<string list>([ "src/Feature.fs"; "tests/FeatureTests.fs" ], action.Context.Scope)
+    | action -> failwithf "expected scout, got %A" action
+
+    let scouted =
+        applyAutopilot 1
+            (observeAgent Autopilot.Scout "scout-a" "scout-session" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) None (Some "context-1") []) initial
+    let built =
+        applyAutopilot 2
+            (observeAgent Autopilot.Builder "builder-a" "build-session" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) None (Some "candidate-1") []) scouted
+    match Autopilot.nextAction built with
+    | Autopilot.ExecuteGate action ->
+        Assert.Equal("gate-tests", action.Gate.Id)
+        Assert.Equal("candidate-1", action.CandidateDigest)
+    | action -> failwithf "expected gate, got %A" action
+
+    let gated =
+        applyAutopilot 3
+            (Autopilot.GateObserved
+                { GateId = "gate-tests"; ValidatorId = "dotnet-test-oracle"
+                  CandidateDigest = "candidate-1"; Passed = true; ExitCode = 0
+                  EvidenceDigest = "evidence-1"; DurationMilliseconds = 30L; Detail = "green" }) built
+    let critiqued =
+        applyAutopilot 4
+            (observeAgent Autopilot.Critic "critic-b" "critic-session" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) (Some "candidate-1") None []) gated
+    let reviewed =
+        applyAutopilot 5
+            (observeAgent Autopilot.Reviewer "reviewer-c" "review-session" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) (Some "candidate-1") None []) critiqued
+    let completed =
+        applyAutopilot 6
+            (Autopilot.CheckpointObserved
+                { SliceId = "slice-1"; CandidateDigest = "candidate-1"; Succeeded = true
+                  CommitHash = "abc123"; CleanWorktree = true; Detail = "checkpointed" }) reviewed
+
+    Assert.Equal(Autopilot.Completed, completed.Status)
+    Assert.True(Autopilot.verifyLedger completed.Ledger)
+    let evaluation = Autopilot.evaluate completed
+    Assert.True(evaluation.FullSolve)
+    Assert.Equal(1, evaluation.CompletedSlices)
+    Assert.Equal(4, evaluation.AgentTurns)
+    Assert.Equal(1, evaluation.GateRuns)
+
+[<Fact; Trait("spot", "spec-full-agentic-sdlc-controller-test-2")>]
+let ``autopilot resumes premature stops then starts fresh and finally blocks`` () =
+    let policy : Autopilot.RecoveryPolicy =
+        { MaxSameSessionResumes = 1; MaxFreshStarts = 2; MaxRepairCycles = 1 }
+    let initial = createAutopilot policy
+    let interrupted session mode (run: Autopilot.RunState) =
+        applyAutopilot (run.Ledger.Length + 1)
+            (observeAgent Autopilot.Scout "scout-a" session mode None None None []) run
+
+    let first = interrupted "session-1" Autopilot.FreshSession initial
+    match Autopilot.nextAction first with
+    | Autopilot.DispatchAgent action -> Assert.Equal(Autopilot.ResumeSession "session-1", action.Mode)
+    | action -> failwithf "expected resume, got %A" action
+    let resumed = interrupted "session-1" (Autopilot.ResumeSession "session-1") first
+    match Autopilot.nextAction resumed with
+    | Autopilot.DispatchAgent action -> Assert.Equal(Autopilot.FreshSession, action.Mode)
+    | action -> failwithf "expected fresh recovery, got %A" action
+    let fresh = interrupted "session-2" Autopilot.FreshSession resumed
+    let blocked = interrupted "session-2" (Autopilot.ResumeSession "session-2") fresh
+
+    Assert.Equal(Autopilot.Blocked, blocked.Status)
+    Assert.Equal(4, blocked.Metrics.PrematureStops)
+    Assert.Equal(2, blocked.Metrics.SameSessionResumes)
+    Assert.Equal(2, blocked.Metrics.FreshStarts)
+    match Autopilot.nextAction blocked with
+    | Autopilot.Escalate reasons -> Assert.Contains(reasons, fun reason -> reason.Contains("recovery budget"))
+    | action -> failwithf "expected escalation, got %A" action
+
+[<Fact; Trait("spot", "spec-full-agentic-sdlc-controller-test-3")>]
+let ``autopilot fails closed on correlated roles and repairs failed gates`` () =
+    let policy : Autopilot.RecoveryPolicy =
+        { MaxSameSessionResumes = 1; MaxFreshStarts = 2; MaxRepairCycles = 1 }
+    let invalid =
+        let plan = autopilotPlan policy
+        { plan with
+            Workers =
+                plan.Workers
+                |> List.map (fun worker ->
+                    if worker.Role = Autopilot.Reviewer then
+                        { worker with Id = "builder-a"; ReadOnly = false }
+                    else worker) }
+    let errors = Autopilot.validatePlan invalid
+    Assert.Contains(errors, fun error -> error.Contains("Duplicate worker"))
+    Assert.Contains(errors, fun error -> error.Contains("read-only"))
+    Assert.Contains(errors, fun error -> error.Contains("identities"))
+
+    let initial = createAutopilot policy
+    let scouted =
+        applyAutopilot 1
+            (observeAgent Autopilot.Scout "scout-a" "s" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) None (Some "context") []) initial
+    let built =
+        applyAutopilot 2
+            (observeAgent Autopilot.Builder "builder-a" "b" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) None (Some "candidate-old") []) scouted
+    let repairing =
+        applyAutopilot 3
+            (Autopilot.GateObserved
+                { GateId = "gate-tests"; ValidatorId = "dotnet-test-oracle"
+                  CandidateDigest = "candidate-old"; Passed = false; ExitCode = 1
+                  EvidenceDigest = "red-evidence"; DurationMilliseconds = 20L; Detail = "test failed" }) built
+    match Autopilot.nextAction repairing with
+    | Autopilot.DispatchAgent action ->
+        Assert.Equal(Autopilot.Builder, action.Worker.Role)
+        Assert.Contains("test failed", action.Context.OpenFindings)
+    | action -> failwithf "expected repair, got %A" action
+    let repaired =
+        applyAutopilot 4
+            (observeAgent Autopilot.Builder "builder-a" "repair" Autopilot.FreshSession
+                (Some Autopilot.WorkCompleted) None (Some "candidate-new") []) repairing
+    let stale =
+        Autopilot.applyObservation (autopilotTime.AddSeconds 5.0)
+            (Autopilot.GateObserved
+                { GateId = "gate-tests"; ValidatorId = "dotnet-test-oracle"
+                  CandidateDigest = "candidate-old"; Passed = true; ExitCode = 0
+                  EvidenceDigest = "stale"; DurationMilliseconds = 1L; Detail = "" }) repaired
+    match stale with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("stale"))
+    | Ok _ -> failwith "stale evidence must not mutate the run"
+
+[<Fact; Trait("spot", "spec-full-agentic-sdlc-controller-test-4")>]
+let ``autopilot state is persisted atomically and exposes reproducible evaluation`` () =
+    let directory = Path.Combine(Path.GetTempPath(), "cdd-autopilot-test-" + Guid.NewGuid().ToString("N"))
+    try
+        let policy : Autopilot.RecoveryPolicy =
+            { MaxSameSessionResumes = 1; MaxFreshStarts = 2; MaxRepairCycles = 1 }
+        match Autopilot.initialize directory autopilotTime (autopilotPlan policy) with
+        | Error errors -> failwith (String.concat " | " errors)
+        | Ok(runDirectory, created) ->
+            Assert.True(File.Exists(Path.Combine(runDirectory, "state.json")))
+            Assert.True(File.Exists(Path.Combine(runDirectory, "run.json")))
+            match Autopilot.load runDirectory with
+            | Error errors -> failwith (String.concat " | " errors)
+            | Ok loaded ->
+                Assert.Equal(created.RunId, loaded.RunId)
+                Assert.Equal(Autopilot.nextAction created, Autopilot.nextAction loaded)
+                Assert.Equal(Autopilot.evaluate created, Autopilot.evaluate loaded)
+    finally
+        if Directory.Exists directory then Directory.Delete(directory, true)

@@ -1,0 +1,25 @@
+{
+  "Id": "term-work-slice",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Work Slice",
+        "Definition": "Kleinste einzeln pr\u00FCf- und checkpointbare \u00C4nderungseinheit mit Scope, Akzeptanzkriterien und ben\u00F6tigten Gates",
+        "Synonyms": [
+          "Implementation Slice",
+          "Task Slice"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-autopilot-run"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -216,7 +216,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**161 Knoten im Selbstmodell** · 4 aktive Invarianten · 44/47 abgeleitete Tests automatisiert
+**170 Knoten im Selbstmodell** · 4 aktive Invarianten · 48/51 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -249,6 +249,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ### In Arbeit / geplant (Pending)
 
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
+- 🔜 **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion

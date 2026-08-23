@@ -51,6 +51,8 @@ let entries =
       term "term-research-studio" "Research Studio" "Read-only Briefing-Projektion des öffentlichen SPOT für Claims, Evidenz, Lücken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback" [ "Research Cockpit"; "Forschungsbriefing" ] [ RelatesTo(EntityId "term-spot") ]
       term "term-control-plane" "Semantic Control Plane" "Anbieterunabhängige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, während ersetzbare Adapter die Arbeit ausführen" [ "CDD Control Plane"; "Steuerungsebene" ] [ RelatesTo(EntityId "term-spot"); RelatesTo(EntityId "term-doctrine") ]
       term "term-assurance-portfolio" "Assurance-Portfolio" "Risikoadaptive Kombination unabhängiger Typ-, Test-, Modell-, Beweis-, Policy-, Provenienz-, Runtime- und menschlicher Nachweise für eine Mission" [ "Assurance Stack"; "Nachweisportfolio" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-promotion-gate") ]
+      term "term-autopilot-run" "Autopilot Run" "Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints" [ "Agentic SDLC Run"; "Durable Run" ] [ PartOf(EntityId "term-control-plane"); RelatesTo(EntityId "term-mission-order") ]
+      term "term-work-slice" "Work Slice" "Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates" [ "Implementation Slice"; "Task Slice" ] [ PartOf(EntityId "term-autopilot-run") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Kein Python — nie." "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
@@ -89,6 +91,10 @@ let entries =
         "Editoren, Diagrammwerkzeuge, Agent-Harnesses, Workflow-Engines, Forges und Observability-Systeme decken einzelne SDLC-Schichten ab und müssen austauschbar bleiben"
         "CDD baut den typisierten semantischen Kern, Doctrine, Evidence-Promotion und Projektionen; Ausführung, Editoren, Diagramme, Telemetrie, Policy und Artefaktspeicher werden über offene Standards und Ports adaptiert"
         "SPOT bleibt Domänenwahrheit; Theia, GLSP, LSP, MCP, OSLC, CDEvents, OTLP, OCI/in-toto und Workflow-Engines können unabhängig ersetzt oder schrittweise eingeführt werden"
+      decision "adr-009-deterministic-autopilot-controller" "Deterministischer Controller über austauschbaren Agent-Harnesses"
+        "Langlaufende Coding-Agenten können vorzeitig enden, ihren eigenen Erfolg überschätzen oder bei großen Aufträgen Kontext und Fortschritt verlieren"
+        "CDD hält den langlebigen Run-Zustand, wählt die nächste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses führen die Aktionen aus"
+        "Agenten bleiben austauschbar und dürfen nicht selbst promoten; CDD benötigt dafür explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle"
 
       // ── Risiken ────────────────────────────────────────────────────────
       risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
@@ -107,6 +113,8 @@ let entries =
         "Validatorversionen binden, Generator/Validator trennen, unveränderliche Ankerfälle und externe Audits verwenden"
       risk "risk-public-runtime-exposure" "Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Fähigkeiten unbeabsichtigt offen" Medium Critical
         "App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests"
+      risk "risk-agent-premature-stop" "Ein Worker beendet einen Turn ohne belastbaren Abschluss, während die Mission fälschlich als erledigt erscheint" High High
+        "Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -200,6 +208,24 @@ let entries =
                 { Given = "ein verbundener Workspace und das offene Assurance-Portfolio"
                   When = "die Control-Plane-Oberfläche im Browser geöffnet wird"
                   Then = "sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben" } ] } }
+
+      { Id = EntityId "spec-full-agentic-sdlc-controller"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Persistente Full-Agentic-SDLC-Kette"
+            Intent = "CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop"
+            Criteria =
+              [ { Given = "eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen"
+                  When = "der Autopilot die nächste Aktion bestimmt"
+                  Then = "durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge" }
+                { Given = "ein Agenten-Turn ohne erwarteten Terminalmarker"
+                  When = "die Beobachtung im Run protokolliert wird"
+                  Then = "wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei erschöpftem Budget fail-closed blockiert" }
+                { Given = "fehlende oder rote Gates, korrelierte Rollen oder offene Review-Befunde"
+                  When = "der Controller Promotion oder den nächsten Slice bewertet"
+                  Then = "wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt" }
+                { Given = "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen"
+                  When = "Status oder Evaluation abgefragt werden"
+                  Then = "werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert" } ] } }
 
       { Id = EntityId "spec-research-studio"; Convergence = Pending
         Payload = SpecNode

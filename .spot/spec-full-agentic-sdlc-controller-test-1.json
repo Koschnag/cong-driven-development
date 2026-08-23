@@ -1,0 +1,14 @@
+{
+  "Id": "spec-full-agentic-sdlc-controller-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-full-agentic-sdlc-controller",
+        "Name": "Persistente Full-Agentic-SDLC-Kette \u2014 when der Autopilot die n\u00E4chste Aktion bestimmt then durchl\u00E4uft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabh\u00E4ngigen Reviewer und Checkpoint in einer typisierten Reihenfolge",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
