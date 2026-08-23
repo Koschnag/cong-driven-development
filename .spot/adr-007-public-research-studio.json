@@ -5,9 +5,9 @@
     "Fields": {
       "Item": {
         "Title": "Research Studio ist eine read-only SPOT-Projektion",
-        "Context": "Ein visuelles Forschungsportal kann schnell zu einer zweiten, handgepflegten Wahrheit oder zu einem unkontrollierten Agenten-Frontend werden.",
-        "Choice": "Dynamische Forschungsobjekte werden aus dem oeffentlichen SPOT-Snapshot gerendert; Feedback erzeugt nur einen vom Menschen zu pruefenden Issue-Entwurf.",
-        "Consequences": "Kuratiertes Storytelling bleibt moeglich, Status und Evidenz bleiben versioniert; Medien muessen bei wesentlichen Modellveraenderungen erneut geprueft werden.",
+        "Context": "Ein visuelles Forschungsportal kann schnell zu einer zweiten Wahrheit oder einem unkontrollierten Agenten-Frontend werden",
+        "Choice": "Dynamische Forschungsobjekte kommen aus dem \u00F6ffentlichen Snapshot; Feedback erzeugt nur einen vom Menschen zu pr\u00FCfenden Issue-Entwurf",
+        "Consequences": "Storytelling bleibt m\u00F6glich, Status und Evidenz versioniert; Medien brauchen bei Modell\u00E4nderungen erneute Pr\u00FCfung",
         "Supersedes": null
       }
     }

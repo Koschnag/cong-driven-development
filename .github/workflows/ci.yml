@@ -12,12 +12,12 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # public-data guard scans the complete reachable history
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 
@@ -93,14 +93,14 @@ jobs:
         id: token
         run: echo "present=${{ secrets.SONAR_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: steps.token.outputs.present == 'true'
         with:
           fetch-depth: 0  # Sonar braucht volle Historie für Blame/New-Code
 
       - name: Setup .NET
         if: steps.token.outputs.present == 'true'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 

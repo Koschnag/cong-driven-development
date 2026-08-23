@@ -1,0 +1,31 @@
+{
+  "Id": "term-control-plane",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Semantic Control Plane",
+        "Definition": "Anbieterunabh\u00E4ngige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, w\u00E4hrend ersetzbare Adapter die Arbeit ausf\u00FChren",
+        "Synonyms": [
+          "CDD Control Plane",
+          "Steuerungsebene"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-spot"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-doctrine"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

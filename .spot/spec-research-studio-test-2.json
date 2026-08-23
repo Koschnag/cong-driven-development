@@ -5,7 +5,7 @@
     "Fields": {
       "Item": {
         "SpecRef": "spec-research-studio",
-        "Name": "Feedback bleibt ein kontrollierter Issue-Entwurf",
+        "Name": "SPOT-projiziertes Research Studio \u2014 when die Nutzerin oder der Nutzer fortf\u00E4hrt then wird nur ein pr\u00FCfbarer GitHub-Issue-Entwurf ge\u00F6ffnet",
         "Derived": true
       }
     }

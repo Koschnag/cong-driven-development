@@ -5,7 +5,7 @@
     "Fields": {
       "Item": {
         "SpecRef": "spec-research-claim-ledger",
-        "Name": "Research-Claim-Ledger — Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen bleiben reproduzierbar erhalten",
+        "Name": "Sanitisiertes \u00F6ffentliches Research-Claim-Ledger \u2014 when sie als ResearchClaimNode serialisiert und validiert wird then bleiben epistemischer Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen reproduzierbar erhalten",
         "Derived": true
       }
     }

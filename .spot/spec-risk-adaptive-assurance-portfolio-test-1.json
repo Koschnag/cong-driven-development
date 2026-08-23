@@ -1,0 +1,14 @@
+{
+  "Id": "spec-risk-adaptive-assurance-portfolio-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-risk-adaptive-assurance-portfolio",
+        "Name": "Risikoadaptives Assurance-Portfolio \u2014 when Assurance Obligations abgeleitet werden then werden passende strukturelle, temporale, Policy-, Provenienz- und Runtime-Orakel kombiniert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

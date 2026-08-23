@@ -1,5 +1,14 @@
 {
   "Id": "spec-public-runtime-boundary-test-1",
-  "Payload": { "Case": "TestNode", "Fields": { "Item": { "SpecRef": "spec-public-runtime-boundary", "Name": "Nur read-only Projektionen sind ohne Opt-in erlaubt", "Derived": true } } },
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-public-runtime-boundary",
+        "Name": "Fail-closed public runtime boundary \u2014 when ein \u00F6ffentlicher oder privilegierter Pfad klassifiziert wird then sind nur read-only SPOT- und statische Projektionen erlaubt",
+        "Derived": true
+      }
+    }
+  },
   "Convergence": "Aligned"
 }

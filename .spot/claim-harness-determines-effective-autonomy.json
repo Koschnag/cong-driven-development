@@ -1,0 +1,16 @@
+{
+  "Id": "claim-harness-determines-effective-autonomy",
+  "Payload": { "Case": "ResearchClaimNode", "Fields": { "Item": {
+    "Statement": "Die praktisch erreichbare und verantwortbare Autonomie eines Software-Agenten wird mindestens ebenso durch Harness, lesbare Umgebung, unabhaengige Orakel und Betriebsgrenzen bestimmt wie durch das Basismodell.",
+    "Status": "Proposed",
+    "Scope": "Langlaufende agentische Softwareentwicklung",
+    "Provenance": {
+      "SourceRefs": ["kb-anthropic-trustworthy-agents", "kb-anthropic-autonomy-practice", "kb-openai-harness-engineering", "kb-openai-agent-governance", "kb-metr-time-horizons"],
+      "DerivedFrom": ["claim-gates-bound-autonomy", "spec-eidos-evidence-pack"],
+      "RecordedAt": "2026-08-23T00:00:00Z",
+      "Method": "Design-Science-Hypothese aus Industriebeobachtungen und CDD-Architektur"
+    },
+    "Rationale": "Muss in longitudinalen Riftward-Laeufen gegen mehrere Modelle und Harness-Baselines mit Interventionen, Kosten, Fehlpromotionen und Recovery gemessen werden."
+  } } },
+  "Convergence": "Pending"
+}
