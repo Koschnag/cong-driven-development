@@ -102,9 +102,57 @@
       "Fields": {
         "Item": {
           "Title": "Research Studio ist eine read-only SPOT-Projektion",
-          "Context": "Ein visuelles Forschungsportal kann schnell zu einer zweiten, handgepflegten Wahrheit oder zu einem unkontrollierten Agenten-Frontend werden.",
-          "Choice": "Dynamische Forschungsobjekte werden aus dem oeffentlichen SPOT-Snapshot gerendert; Feedback erzeugt nur einen vom Menschen zu pruefenden Issue-Entwurf.",
-          "Consequences": "Kuratiertes Storytelling bleibt moeglich, Status und Evidenz bleiben versioniert; Medien muessen bei wesentlichen Modellveraenderungen erneut geprueft werden.",
+          "Context": "Ein visuelles Forschungsportal kann schnell zu einer zweiten Wahrheit oder einem unkontrollierten Agenten-Frontend werden",
+          "Choice": "Dynamische Forschungsobjekte kommen aus dem öffentlichen Snapshot; Feedback erzeugt nur einen vom Menschen zu prüfenden Issue-Entwurf",
+          "Consequences": "Storytelling bleibt möglich, Status und Evidenz versioniert; Medien brauchen bei Modelländerungen erneute Prüfung",
+          "Supersedes": null
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "adr-008-open-semantic-control-plane",
+    "Payload": {
+      "Case": "DecisionNode",
+      "Fields": {
+        "Item": {
+          "Title": "CDD als offener semantischer Control Plane statt neuer Alles-Engine",
+          "Context": "Editoren, Diagrammwerkzeuge, Agent-Harnesses, Workflow-Engines, Forges und Observability-Systeme decken einzelne SDLC-Schichten ab und müssen austauschbar bleiben",
+          "Choice": "CDD baut den typisierten semantischen Kern, Doctrine, Evidence-Promotion und Projektionen; Ausführung, Editoren, Diagramme, Telemetrie, Policy und Artefaktspeicher werden über offene Standards und Ports adaptiert",
+          "Consequences": "SPOT bleibt Domänenwahrheit; Theia, GLSP, LSP, MCP, OSLC, CDEvents, OTLP, OCI/in-toto und Workflow-Engines können unabhängig ersetzt oder schrittweise eingeführt werden",
+          "Supersedes": null
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "adr-009-deterministic-autopilot-controller",
+    "Payload": {
+      "Case": "DecisionNode",
+      "Fields": {
+        "Item": {
+          "Title": "Deterministischer Controller über austauschbaren Agent-Harnesses",
+          "Context": "Langlaufende Coding-Agenten können vorzeitig enden, ihren eigenen Erfolg überschätzen oder bei großen Aufträgen Kontext und Fortschritt verlieren",
+          "Choice": "CDD hält den langlebigen Run-Zustand, wählt die nächste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses führen die Aktionen aus",
+          "Consequences": "Agenten bleiben austauschbar und dürfen nicht selbst promoten; CDD benötigt dafür explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle",
+          "Supersedes": null
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "adr-010-representative-evidence-fitness",
+    "Payload": {
+      "Case": "DecisionNode",
+      "Fields": {
+        "Item": {
+          "Title": "Evidence Fitness ist Teil der Promotion Policy",
+          "Context": "Builds, Unit-Tests und dokumentierte Budgets können grün sein, obwohl die behauptete Produkteigenschaft unter repräsentativer Last, Zielhardware oder realer Systemgrenze scheitert",
+          "Choice": "Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht",
+          "Consequences": "CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen",
           "Supersedes": null
         }
       }
@@ -136,6 +184,33 @@
     "Convergence": "Pending"
   },
   {
+    "Id": "claim-evidence-fitness-reduces-false-promotion",
+    "Payload": {
+      "Case": "ResearchClaimNode",
+      "Fields": {
+        "Item": {
+          "Statement": "Eine Promotion Policy, die Evidence Fitness explizit an Claim, Systemgrenze, Last und Umgebung bindet, reduziert Fehlpromotionen gegenüber Gates, die nur leicht verfügbare Proxy-Ergebnisse bewerten.",
+          "Status": "Proposed",
+          "Scope": "Runtime-, Performance-, Effizienz- und Outcome-Claims in agentischer Softwareentwicklung",
+          "Provenance": {
+            "SourceRefs": [
+              "kb-riftward-representative-frame",
+              "kb-who-grades-grader"
+            ],
+            "DerivedFrom": [
+              "claim-gates-bound-autonomy",
+              "spec-representative-evidence-fitness"
+            ],
+            "RecordedAt": "2026-08-24T00:00:00Z",
+            "Method": "Falsifizierbare Design-Science-Hypothese aus dem Riftward-Fall und dem CDD-Promotion-Modell"
+          },
+          "Rationale": "Der Claim bleibt Proposed, bis vergleichbare Missionsklassen mit und ohne Fitness-Bindung wiederholt ausgeführt und Fehlpromotion, Intervention, Kosten und Outcome gemessen wurden."
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
     "Id": "claim-gates-bound-autonomy",
     "Payload": {
       "Case": "ResearchClaimNode",
@@ -157,6 +232,36 @@
             "Method": "Architekturhypothese aus Verifikationsliteratur und CDD-Gate-Modell"
           },
           "Rationale": "Vergleichbare Kandidaten muessen gegen korrelierte Orakel und einen ungeregelten Agenten getestet werden."
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "claim-harness-determines-effective-autonomy",
+    "Payload": {
+      "Case": "ResearchClaimNode",
+      "Fields": {
+        "Item": {
+          "Statement": "Die praktisch erreichbare und verantwortbare Autonomie eines Software-Agenten wird mindestens ebenso durch Harness, lesbare Umgebung, unabhaengige Orakel und Betriebsgrenzen bestimmt wie durch das Basismodell.",
+          "Status": "Proposed",
+          "Scope": "Langlaufende agentische Softwareentwicklung",
+          "Provenance": {
+            "SourceRefs": [
+              "kb-anthropic-trustworthy-agents",
+              "kb-anthropic-autonomy-practice",
+              "kb-openai-harness-engineering",
+              "kb-openai-agent-governance",
+              "kb-metr-time-horizons"
+            ],
+            "DerivedFrom": [
+              "claim-gates-bound-autonomy",
+              "spec-eidos-evidence-pack"
+            ],
+            "RecordedAt": "2026-08-23T00:00:00Z",
+            "Method": "Design-Science-Hypothese aus Industriebeobachtungen und CDD-Architektur"
+          },
+          "Rationale": "Muss in longitudinalen Riftward-Laeufen gegen mehrere Modelle und Harness-Baselines mit Interventionen, Kosten, Fehlpromotionen und Recovery gemessen werden."
         }
       }
     },
@@ -321,6 +426,42 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "kb-anthropic-autonomy-practice",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "Anthropic — Measuring AI agent autonomy in practice",
+          "Source": "https://www.anthropic.com/research/measuring-agent-autonomy",
+          "MediaType": "empirical research",
+          "Takeaways": [
+            "Reale Autonomie muss aus vielen produktiven Sitzungen und Interventionen gemessen werden",
+            "Erfahrene Nutzer erlauben mehr Automatik und greifen zugleich weiterhin gezielt ein; Post-Deployment-Monitoring bleibt notwendig"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-anthropic-trustworthy-agents",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "Anthropic — Trustworthy agents in practice",
+          "Source": "https://www.anthropic.com/research/trustworthy-agents",
+          "MediaType": "research",
+          "Takeaways": [
+            "Agentenverhalten entsteht gemeinsam aus Modell, Harness, Werkzeugen und Umgebung",
+            "Zuverlaessige Agenten brauchen menschliche Kontrolle, Unsicherheitsbehandlung und geschichtete Abwehr"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "kb-brooks-no-silver-bullet",
     "Payload": {
       "Case": "KnowledgeNode",
@@ -466,6 +607,24 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "kb-lean4",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "Lean 4 Reference Manual",
+          "Source": "https://lean-lang.org/doc/reference/latest/",
+          "MediaType": "proof-assistant documentation",
+          "Takeaways": [
+            "Lean prueft Beweisterme in einem kleinen Kernel auf Basis abhaengiger Typentheorie",
+            "CDD reserviert deduktive Beweise fuer wenige tragende Invarianten statt alles formalisieren zu wollen"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "kb-llm-modulo",
     "Payload": {
       "Case": "KnowledgeNode",
@@ -477,6 +636,24 @@
           "Takeaways": [
             "LLMs und externe modellbasierte Verifizierer sollen bidirektional gekoppelt werden",
             "Der externe Verifizierer bleibt Quelle der belastbaren Garantie"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-metr-time-horizons",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "METR — Task-Completion Time Horizons",
+          "Source": "https://metr.org/time-horizons/",
+          "MediaType": "independent benchmark",
+          "Takeaways": [
+            "Time Horizon misst die menschliche Vergleichsdauer einer Aufgabe bei gegebener Erfolgswahrscheinlichkeit, nicht die reale Laufzeit eines Agenten",
+            "CDD muss Taskschwierigkeit, Zuverlaessigkeit, Harness und menschliche Intervention getrennt von bloesser Uptime messen"
           ]
         }
       }
@@ -521,6 +698,78 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "kb-openai-agent-governance",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "OpenAI — Practices for Governing Agentic AI Systems",
+          "Source": "https://openai.com/index/practices-for-governing-agentic-ai-systems/",
+          "MediaType": "white paper",
+          "Takeaways": [
+            "Agentische Systeme brauchen ueber ihren gesamten Lebenszyklus zugeordnete Verantwortlichkeiten, sichere Betriebsgrenzen und Rechenschaft",
+            "CDD Doctrine und Evidence-Promotion operationalisieren einen Teil dieser Governance fuer Softwareevolution"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-openai-codex-harness",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "OpenAI — Unrolling and embedding the Codex harness",
+          "Source": "https://openai.com/index/unlocking-the-codex-harness/",
+          "MediaType": "engineering report",
+          "Takeaways": [
+            "Ein stabiler App-Server trennt den Agent-Loop von CLI, IDE und anderen Clients",
+            "CDD soll Harnesses als ersetzbare Ausfuehrungsebene einbetten statt deren Agent-Loop erneut zu implementieren"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-openai-harness-engineering",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "OpenAI — Harness engineering in an agent-first world",
+          "Source": "https://openai.com/index/harness-engineering/",
+          "MediaType": "engineering report",
+          "Takeaways": [
+            "Agentenleistung steigt durch repository-lesbare Domaenen, harte Invarianten, isolierte Worktrees, E2E-Browserpruefung und beobachtbare Laufzeiten",
+            "Fehlschlaege werden als fehlende Systemfaehigkeit behandelt; einzelne Coding-Laeufe erreichen mehrere Stunden, nicht automatisch mehrere Tage"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-riftward-representative-frame",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "Project Riftward: Representative Frame as Evidence Boundary",
+          "Source": "https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md",
+          "MediaType": "longitudinal-case-study",
+          "Takeaways": [
+            "Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde",
+            "Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "kb-slsa-provenance",
     "Payload": {
       "Case": "KnowledgeNode",
@@ -552,6 +801,24 @@
             "KI reduziert Implementierungsmechanik, nicht automatisch essenzielle Komplexität",
             "Autonomie muss an maschinenpruefbare, risikoadaptive Gates gebunden sein",
             "Langfristige Grundlagen und explizite Modelle sind wichtiger als kurzfristiges Tool-Wissen"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-tla-plus",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "TLA+ Documentation",
+          "Source": "https://docs.tlapl.us/",
+          "MediaType": "formal-method documentation",
+          "Takeaways": [
+            "TLA+ beschreibt Zustandsmaschinen und prueft Safety sowie Liveness verteilter oder nebenlaeufiger Systeme",
+            "CDD nutzt TLA+ selektiv fuer langlebige Orchestrierung, Lease-, Retry-, Promotion- und Recovery-Protokolle"
           ]
         }
       }
@@ -657,8 +924,8 @@
       "Case": "PremiseNode",
       "Fields": {
         "Item": {
-          "Statement": "Kein Python — nie.",
-          "Rationale": "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
+          "Statement": "Python-freier Vertrauenskern, polyglotte Adapter.",
+          "Rationale": "CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden"
         }
       }
     },
@@ -698,6 +965,21 @@
         "Item": {
           "Statement": "Unknown bleibt unknown.",
           "Rationale": "Fehlende Evidenz ist weder Zustimmung noch der Nachweis, dass ein Bereich nicht betroffen ist"
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "risk-agent-premature-stop",
+    "Payload": {
+      "Case": "RiskNode",
+      "Fields": {
+        "Item": {
+          "Statement": "Ein Worker beendet einen Turn ohne belastbaren Abschluss, während die Mission fälschlich als erledigt erscheint",
+          "Likelihood": "High",
+          "Impact": "High",
+          "Mitigation": "Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation"
         }
       }
     },
@@ -794,6 +1076,21 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "risk-proxy-evidence",
+    "Payload": {
+      "Case": "RiskNode",
+      "Fields": {
+        "Item": {
+          "Statement": "Leicht verfügbare Proxy-Evidence ersetzt unbemerkt die repräsentative Prüfung des eigentlichen Claims",
+          "Likelihood": "High",
+          "Impact": "Critical",
+          "Mitigation": "Evidence Obligations binden Claim, Boundary, Szenario, Last, Umgebung und Metrik; Promotion vergleicht die geforderte mit der beobachteten Evidence Fitness und lässt Lücken unknown"
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "risk-public-data-leak",
     "Payload": {
       "Case": "RiskNode",
@@ -814,10 +1111,10 @@
       "Case": "RiskNode",
       "Fields": {
         "Item": {
-          "Statement": "Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Faehigkeiten unbeabsichtigt offen.",
+          "Statement": "Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Fähigkeiten unbeabsichtigt offen",
           "Likelihood": "Medium",
           "Impact": "Critical",
-          "Mitigation": "App-seitige fail-closed Capability-Grenze, getrennte explizite Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests."
+          "Mitigation": "App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests"
         }
       }
     },
@@ -837,6 +1134,20 @@
       }
     },
     "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-agent-interface-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-agent-interface",
+          "Name": "Agent-Interface — when der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt) then entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Pending"
   },
   {
     "Id": "spec-agent-interface",
@@ -859,18 +1170,18 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-agent-interface-test-1",
+    "Id": "spec-cockpit-shell-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-agent-interface",
-          "Name": "Agent-Interface — when der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt) then entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird",
+          "SpecRef": "spec-cockpit-shell",
+          "Name": "Chat-primaere Cockpit-Shell — when die Shell rendert then sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da",
           "Derived": true
         }
       }
     },
-    "Convergence": "Pending"
+    "Convergence": "Aligned"
   },
   {
     "Id": "spec-cockpit-shell",
@@ -893,13 +1204,13 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-cockpit-shell-test-1",
+    "Id": "spec-courseforge-gameplan-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-cockpit-shell",
-          "Name": "Chat-primaere Cockpit-Shell — when die Shell rendert then sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da",
+          "SpecRef": "spec-courseforge-gameplan",
+          "Name": "Course IR zu authoring-gegatem Spielplan — when der Spielplan mehrfach erzeugt wird then entstehen identische Missionen, die bis zur fachlichen Ratifikation NeedsAuthoring behalten",
           "Derived": true
         }
       }
@@ -919,45 +1230,6 @@
               "Given": "derselbe Course IR und Source Fingerprint",
               "When": "der Spielplan mehrfach erzeugt wird",
               "Then": "entstehen identische Missionen, die bis zur fachlichen Ratifikation NeedsAuthoring behalten"
-            }
-          ]
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-courseforge-gameplan-test-1",
-    "Payload": {
-      "Case": "TestNode",
-      "Fields": {
-        "Item": {
-          "SpecRef": "spec-courseforge-gameplan",
-          "Name": "Course IR zu authoring-gegatem Spielplan — when der Spielplan mehrfach erzeugt wird then entstehen identische Missionen, die bis zur fachlichen Ratifikation NeedsAuthoring behalten",
-          "Derived": true
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-courseforge-import",
-    "Payload": {
-      "Case": "SpecNode",
-      "Fields": {
-        "Item": {
-          "Title": "Datensparsamer Moodle-Folder-Import",
-          "Intent": "Ein generischer Course-IR-Adapter liest nur benoetigte Kursmetadaten und schliesst sensible Moodle-Daten aus.",
-          "Criteria": [
-            {
-              "Given": "ein synthetischer, extrahierter Moodle-Backup-Ordner",
-              "When": "CourseForge den Ordner importiert",
-              "Then": "entsteht ein deterministischer Course IR mit Kurs und Abschnitten"
-            },
-            {
-              "Given": "ein Ordner mit users.xml, fremden Dateien oder ueberschrittenen Quotas",
-              "When": "CourseForge den Import prueft",
-              "Then": "werden sensible Daten ausgeschlossen und harte Datei- sowie Groessenlimits fail-closed erzwungen"
             }
           ]
         }
@@ -994,18 +1266,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-derive-code",
+    "Id": "spec-courseforge-import",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Modell → Code (derive-code)",
-          "Intent": "Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker",
+          "Title": "Datensparsamer Moodle-Folder-Import",
+          "Intent": "Ein generischer Course-IR-Adapter liest nur benoetigte Kursmetadaten und schliesst sensible Moodle-Daten aus.",
           "Criteria": [
             {
-              "Given": "ein Test-Knoten ohne Marker im Test-Code",
-              "When": "cdd derive-code läuft",
-              "Then": "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden übersprungen"
+              "Given": "ein synthetischer, extrahierter Moodle-Backup-Ordner",
+              "When": "CourseForge den Ordner importiert",
+              "Then": "entsteht ein deterministischer Course IR mit Kurs und Abschnitten"
+            },
+            {
+              "Given": "ein Ordner mit users.xml, fremden Dateien oder ueberschrittenen Quotas",
+              "When": "CourseForge den Import prueft",
+              "Then": "werden sensible Daten ausgeschlossen und harte Datei- sowie Groessenlimits fail-closed erzwungen"
             }
           ]
         }
@@ -1028,23 +1305,18 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-derive-tests",
+    "Id": "spec-derive-code",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Spec→Test-Ableitung",
-          "Intent": "Tests sind Derivat der Spezifikation, nicht handgeschrieben",
+          "Title": "Modell → Code (derive-code)",
+          "Intent": "Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker",
           "Criteria": [
             {
-              "Given": "eine Spec mit n Akzeptanzkriterien",
-              "When": "cdd derive-tests --write läuft",
-              "Then": "existiert genau ein Test-Knoten pro Kriterium"
-            },
-            {
-              "Given": "bereits abgeleitete Tests",
-              "When": "derive-tests erneut läuft",
-              "Then": "entstehen keine Duplikate (Idempotenz)"
+              "Given": "ein Test-Knoten ohne Marker im Test-Code",
+              "When": "cdd derive-code läuft",
+              "Then": "entsteht ein xUnit-Skelett mit Trait(spot, id) und den Kriterien als Vorgabe; abgedeckte Knoten werden übersprungen"
             }
           ]
         }
@@ -1081,18 +1353,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-diagram-surface",
+    "Id": "spec-derive-tests",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Getypte Diagramm-Flaeche mit Toolbox",
-          "Intent": "Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.",
+          "Title": "Spec→Test-Ableitung",
+          "Intent": "Tests sind Derivat der Spezifikation, nicht handgeschrieben",
           "Criteria": [
             {
-              "Given": "das Cockpit ist geladen",
-              "When": "die Diagramm-Flaeche rendert",
-              "Then": "erscheinen die Diagramm-Sichten, ein Cytoscape-Canvas und die Toolbox mit den Knotenarten"
+              "Given": "eine Spec mit n Akzeptanzkriterien",
+              "When": "cdd derive-tests --write läuft",
+              "Then": "existiert genau ein Test-Knoten pro Kriterium"
+            },
+            {
+              "Given": "bereits abgeleitete Tests",
+              "When": "derive-tests erneut läuft",
+              "Then": "entstehen keine Duplikate (Idempotenz)"
             }
           ]
         }
@@ -1115,23 +1392,18 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-eidos-change-compiler",
+    "Id": "spec-diagram-surface",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Semantic Change Compiler",
-          "Intent": "Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort",
+          "Title": "Getypte Diagramm-Flaeche mit Toolbox",
+          "Intent": "Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.",
           "Criteria": [
             {
-              "Given": "ein Change Intent, ein versionierter System-Twin, Policies und aktuelle Evidenz",
-              "When": "der Change Compiler läuft",
-              "Then": "entstehen deterministische Candidate-Metadaten mit Semantic Delta, Artefakten, Obligations, Deployment und Recovery"
-            },
-            {
-              "Given": "mehrere zulässige Candidates",
-              "When": "Impact und Risiken bewertet werden",
-              "Then": "bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar"
+              "Given": "das Cockpit ist geladen",
+              "When": "die Diagramm-Flaeche rendert",
+              "Then": "erscheinen die Diagramm-Sichten, ein Cytoscape-Canvas und die Toolbox mit den Knotenarten"
             }
           ]
         }
@@ -1168,23 +1440,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-eidos-epistemic-claims",
+    "Id": "spec-eidos-change-compiler",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Epistemisch typisierte Claims",
-          "Intent": "Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet",
+          "Title": "Semantic Change Compiler",
+          "Intent": "Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort",
           "Criteria": [
             {
-              "Given": "ein Rohsignal und eine maschinelle Interpretation",
-              "When": "beide in den System-Twin projiziert werden",
-              "Then": "bleiben Originalsignal, Claim, Provenienz, Zeitpunkt, Scope und epistemischer Status getrennt erhalten"
+              "Given": "ein Change Intent, ein versionierter System-Twin, Policies und aktuelle Evidenz",
+              "When": "der Change Compiler läuft",
+              "Then": "entstehen deterministische Candidate-Metadaten mit Semantic Delta, Artefakten, Obligations, Deployment und Recovery"
             },
             {
-              "Given": "widersprüchliche Claims oder fehlende Evidenz",
-              "When": "ein Lagebild erzeugt wird",
-              "Then": "werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage geglättet"
+              "Given": "mehrere zulässige Candidates",
+              "When": "Impact und Risiken bewertet werden",
+              "Then": "bleiben Alternativen, Annahmen und verworfene Optionen im Event Ledger nachvollziehbar"
             }
           ]
         }
@@ -1221,23 +1493,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-eidos-evidence-pack",
+    "Id": "spec-eidos-epistemic-claims",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Evidence Packs und Promotion",
-          "Intent": "Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators",
+          "Title": "Epistemisch typisierte Claims",
+          "Intent": "Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet",
           "Criteria": [
             {
-              "Given": "ein Candidate mit risikoadaptiven Assurance Obligations",
-              "When": "Generator-unabhängige Gates laufen",
-              "Then": "bindet das Evidence Pack Ergebnis, Tool- und Policyversion, Umgebung, Zeitpunkt und Artefakt-Hash"
+              "Given": "ein Rohsignal und eine maschinelle Interpretation",
+              "When": "beide in den System-Twin projiziert werden",
+              "Then": "bleiben Originalsignal, Claim, Provenienz, Zeitpunkt, Scope und epistemischer Status getrennt erhalten"
             },
             {
-              "Given": "eine fehlende, veraltete oder rote Obligation",
-              "When": "Promotion bewertet wird",
-              "Then": "wird der Candidate nicht befördert und der konkrete Nachweisgrund bleibt auditierbar"
+              "Given": "widersprüchliche Claims oder fehlende Evidenz",
+              "When": "ein Lagebild erzeugt wird",
+              "Then": "werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage geglättet"
             }
           ]
         }
@@ -1274,23 +1546,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-eidos-mission-order",
+    "Id": "spec-eidos-evidence-pack",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Doctrine und Mission Orders",
-          "Intent": "Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen",
+          "Title": "Evidence Packs und Promotion",
+          "Intent": "Promotion ist eine reproduzierbare Policy-Entscheidung über Evidence statt eine Selbstbestätigung des Generators",
           "Criteria": [
             {
-              "Given": "ein klassifiziertes Change Intent und eine versionierte Doctrine",
-              "When": "eine Mission disponiert wird",
-              "Then": "entsteht eine Mission Order mit Lage, Ziel, Scope, Einheit, Constraints, Erfolg und Abbruch"
+              "Given": "ein Candidate mit risikoadaptiven Assurance Obligations",
+              "When": "Generator-unabhängige Gates laufen",
+              "Then": "bindet das Evidence Pack Ergebnis, Tool- und Policyversion, Umgebung, Zeitpunkt und Artefakt-Hash"
             },
             {
-              "Given": "eine Mission mit überschrittenem Budget, fehlender Capability oder verletzter Policy",
-              "When": "der Control Plane die Verletzung meldet",
-              "Then": "wird fail closed abgebrochen oder an eine zuständige Authority eskaliert"
+              "Given": "eine fehlende, veraltete oder rote Obligation",
+              "When": "Promotion bewertet wird",
+              "Then": "wird der Candidate nicht befördert und der konkrete Nachweisgrund bleibt auditierbar"
             }
           ]
         }
@@ -1327,23 +1599,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-eidos-zt2-opslab",
+    "Id": "spec-eidos-mission-order",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Zero-Touch-Sandbox im OpsLab",
-          "Intent": "Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt",
+          "Title": "Doctrine und Mission Orders",
+          "Intent": "Jede Agentenausführung erhält einen typisierten Auftrag mit Rechten, Budget, Obligations, Reporting und Abbruchbedingungen",
           "Criteria": [
             {
-              "Given": "eine synthetische versionierte Report-/Submission-Anwendung und eine Mission Order",
-              "When": "der EIDOS-Lauf auf ZT2 startet",
-              "Then": "erzeugt, prüft und deployt er den Candidate ausschließlich in der Sandbox ohne produktive Credentials"
+              "Given": "ein klassifiziertes Change Intent und eine versionierte Doctrine",
+              "When": "eine Mission disponiert wird",
+              "Then": "entsteht eine Mission Order mit Lage, Ziel, Scope, Einheit, Constraints, Erfolg und Abbruch"
             },
             {
-              "Given": "ein Gate-Fehler, Timeout oder verletztes Abbruchkriterium",
-              "When": "die Mission endet",
-              "Then": "bleibt das Zielsystem unverändert und Event Ledger, Evidence und Recovery-Ergebnis sind replaybar"
+              "Given": "eine Mission mit überschrittenem Budget, fehlender Capability oder verletzter Policy",
+              "When": "der Control Plane die Verletzung meldet",
+              "Then": "wird fail closed abgebrochen oder an eine zuständige Authority eskaliert"
             }
           ]
         }
@@ -1380,23 +1652,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-export-context",
+    "Id": "spec-eidos-zt2-opslab",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "LLM-Kontextexport",
-          "Intent": "Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut",
+          "Title": "Zero-Touch-Sandbox im OpsLab",
+          "Intent": "Ein klar definierter Change wird autonom bis zu einer isolierten, vollständig replaybaren Sandbox durchgeführt",
           "Criteria": [
             {
-              "Given": "ein gefüllter SPOT-Graph",
-              "When": "cdd export-context läuft",
-              "Then": "entsteht ein einzelnes Markdown-Bundle mit Ontologie, Prämissen, Entscheidungen, Specs und offenen Risiken"
+              "Given": "eine synthetische versionierte Report-/Submission-Anwendung und eine Mission Order",
+              "When": "der EIDOS-Lauf auf ZT2 startet",
+              "Then": "erzeugt, prüft und deployt er den Candidate ausschließlich in der Sandbox ohne produktive Credentials"
             },
             {
-              "Given": "das exportierte Bundle",
-              "When": "es einem LLM als Kontext übergeben wird",
-              "Then": "kann es Implementierungsaufgaben ohne Rückfragen zur Domänensprache bearbeiten"
+              "Given": "ein Gate-Fehler, Timeout oder verletztes Abbruchkriterium",
+              "When": "die Mission endet",
+              "Then": "bleibt das Zielsystem unverändert und Event Ledger, Evidence und Recovery-Ergebnis sind replaybar"
             }
           ]
         }
@@ -1433,6 +1705,59 @@
     "Convergence": "Pending"
   },
   {
+    "Id": "spec-export-context",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "LLM-Kontextexport",
+          "Intent": "Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut",
+          "Criteria": [
+            {
+              "Given": "ein gefüllter SPOT-Graph",
+              "When": "cdd export-context läuft",
+              "Then": "entsteht ein einzelnes Markdown-Bundle mit Ontologie, Prämissen, Entscheidungen, Specs und offenen Risiken"
+            },
+            {
+              "Given": "das exportierte Bundle",
+              "When": "es einem LLM als Kontext übergeben wird",
+              "Then": "kann es Implementierungsaufgaben ohne Rückfragen zur Domänensprache bearbeiten"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-feedback-evolution-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-feedback-evolution",
+          "Name": "Feedback zu kontrolliertem EIDOS Change Intent — when das Signal klassifiziert wird then entsteht ein ProposalOnly FeedbackChangeProposal und daraus ein risikotypisierter EIDOS Change Intent mit Assurance und menschlichem Promotion Gate",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-feedback-evolution-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-feedback-evolution",
+          "Name": "Feedback zu kontrolliertem EIDOS Change Intent — when das Signal klassifiziert wird then wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "spec-feedback-evolution",
     "Payload": {
       "Case": "SpecNode",
@@ -1450,59 +1775,6 @@
               "Given": "ein Signal mit personenbezogenen Daten oder Security-Bezug",
               "When": "das Signal klassifiziert wird",
               "Then": "wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate"
-            }
-          ]
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-feedback-evolution-test-1",
-    "Payload": {
-      "Case": "TestNode",
-      "Fields": {
-        "Item": {
-          "SpecRef": "spec-feedback-evolution",
-          "Name": "Feedback zu kontrolliertem Change Intent — when das Signal klassifiziert wird then entsteht ein ProposalOnly Change Intent mit Assurance und menschlichem Promotion Gate",
-          "Derived": true
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-feedback-evolution-test-2",
-    "Payload": {
-      "Case": "TestNode",
-      "Fields": {
-        "Item": {
-          "SpecRef": "spec-feedback-evolution",
-          "Name": "Feedback zu kontrolliertem Change Intent — when das Signal klassifiziert wird then wird es verworfen oder in einen getrennten Security-Prozess eskaliert und erzeugt keinen autonomen Candidate",
-          "Derived": true
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-fehlerliste",
-    "Payload": {
-      "Case": "SpecNode",
-      "Fields": {
-        "Item": {
-          "Title": "Fehlerliste & Widerspruchs-Erkennung",
-          "Intent": "Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio",
-          "Criteria": [
-            {
-              "Given": "eine zyklische IsA/PartOf-Begriffshierarchie",
-              "When": "validiert wird",
-              "Then": "erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten"
-            },
-            {
-              "Given": "zwei Begriffe mit gleichem Namen",
-              "When": "validiert wird",
-              "Then": "wird Mehrdeutigkeit als Warnung gemeldet"
             }
           ]
         }
@@ -1539,6 +1811,45 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "spec-fehlerliste",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Fehlerliste & Widerspruchs-Erkennung",
+          "Intent": "Inkonsistenzen, Widersprüche und Regelverstöße sind eine klickbare Liste wie in Visual Studio",
+          "Criteria": [
+            {
+              "Given": "eine zyklische IsA/PartOf-Begriffshierarchie",
+              "When": "validiert wird",
+              "Then": "erscheint ein Widerspruchs-Fehler in der Fehlerliste; Klick springt zum Knoten"
+            },
+            {
+              "Given": "zwei Begriffe mit gleichem Namen",
+              "When": "validiert wird",
+              "Then": "wird Mehrdeutigkeit als Warnung gemeldet"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-formal-view-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-formal-view",
+          "Name": "Formale code-behind-Sicht — when auf eine Formal-Sicht gewechselt wird then rendert sie das Modell in formaler Notation mit KaTeX",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "spec-formal-view",
     "Payload": {
       "Case": "SpecNode",
@@ -1559,13 +1870,104 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-formal-view-test-1",
+    "Id": "spec-full-agentic-sdlc-controller-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-formal-view",
-          "Name": "Formale code-behind-Sicht — when auf eine Formal-Sicht gewechselt wird then rendert sie das Modell in formaler Notation mit KaTeX",
+          "SpecRef": "spec-full-agentic-sdlc-controller",
+          "Name": "Persistente Full-Agentic-SDLC-Kette — when der Autopilot die nächste Aktion bestimmt then durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-full-agentic-sdlc-controller-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-full-agentic-sdlc-controller",
+          "Name": "Persistente Full-Agentic-SDLC-Kette — when die Beobachtung im Run protokolliert wird then wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei erschöpftem Budget fail-closed blockiert",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-full-agentic-sdlc-controller-test-3",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-full-agentic-sdlc-controller",
+          "Name": "Persistente Full-Agentic-SDLC-Kette — when der Controller Promotion oder den nächsten Slice bewertet then wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-full-agentic-sdlc-controller-test-4",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-full-agentic-sdlc-controller",
+          "Name": "Persistente Full-Agentic-SDLC-Kette — when Status oder Evaluation abgefragt werden then werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-full-agentic-sdlc-controller",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Persistente Full-Agentic-SDLC-Kette",
+          "Intent": "CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop",
+          "Criteria": [
+            {
+              "Given": "eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen",
+              "When": "der Autopilot die nächste Aktion bestimmt",
+              "Then": "durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge"
+            },
+            {
+              "Given": "ein Agenten-Turn ohne erwarteten Terminalmarker",
+              "When": "die Beobachtung im Run protokolliert wird",
+              "Then": "wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei erschöpftem Budget fail-closed blockiert"
+            },
+            {
+              "Given": "fehlende oder rote Gates, korrelierte Rollen oder offene Review-Befunde",
+              "When": "der Controller Promotion oder den nächsten Slice bewertet",
+              "Then": "wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt"
+            },
+            {
+              "Given": "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen",
+              "When": "Status oder Evaluation abgefragt werden",
+              "Then": "werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-gate-selbst-hart-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-gate-selbst-hart",
+          "Name": "Gate-Selbsthärtung — when die reflexive Invariante über das eigene Modell geprüft wird then hat jeder als Aligned markierte Test-Knoten einen echten Trait-spot-Marker im Testcode, also kein Aligned ohne Test",
           "Derived": true
         }
       }
@@ -1593,13 +1995,13 @@
     "Convergence": "Pending"
   },
   {
-    "Id": "spec-gate-selbst-hart-test-1",
+    "Id": "spec-governance-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-gate-selbst-hart",
-          "Name": "Gate-Selbsthärtung — when die reflexive Invariante über das eigene Modell geprüft wird then hat jeder als Aligned markierte Test-Knoten einen echten Trait-spot-Marker im Testcode, also kein Aligned ohne Test",
+          "SpecRef": "spec-governance",
+          "Name": "Governance by Invariance — when cdd validate läuft then werden Verstöße als Fehler am verletzenden Knoten gemeldet",
           "Derived": true
         }
       }
@@ -1627,18 +2029,18 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-governance-test-1",
+    "Id": "spec-mcp-server-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-governance",
-          "Name": "Governance by Invariance — when cdd validate läuft then werden Verstöße als Fehler am verletzenden Knoten gemeldet",
+          "SpecRef": "spec-mcp-server",
+          "Name": "MCP-Server — when spot_upsert oder spot_delete aufgerufen wird then wird die Änderung gespeichert und die Validierung (inkl. Invarianten) zurückgemeldet",
           "Derived": true
         }
       }
     },
-    "Convergence": "Aligned"
+    "Convergence": "Pending"
   },
   {
     "Id": "spec-mcp-server",
@@ -1661,52 +2063,13 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-mcp-server-test-1",
-    "Payload": {
-      "Case": "TestNode",
-      "Fields": {
-        "Item": {
-          "SpecRef": "spec-mcp-server",
-          "Name": "MCP-Server — when spot_upsert oder spot_delete aufgerufen wird then wird die Änderung gespeichert und die Validierung (inkl. Invarianten) zurückgemeldet",
-          "Derived": true
-        }
-      }
-    },
-    "Convergence": "Pending"
-  },
-  {
-    "Id": "spec-public-runtime-boundary",
-    "Payload": {
-      "Case": "SpecNode",
-      "Fields": {
-        "Item": {
-          "Title": "Fail-closed public runtime boundary",
-          "Intent": "Eine oeffentliche CDD-Auslieferung darf ohne explizite Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen.",
-          "Criteria": [
-            {
-              "Given": "keine Capability-Umgebungsvariable gesetzt ist",
-              "When": "ein oeffentlicher oder privilegierter Pfad klassifiziert wird",
-              "Then": "nur read-only SPOT- und statische Projektionen sind erlaubt"
-            },
-            {
-              "Given": "Memory geschrieben werden soll",
-              "When": "nur eine der Freigaben Memory oder Mutation gesetzt ist",
-              "Then": "die Operation bleibt gesperrt"
-            }
-          ]
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
     "Id": "spec-public-runtime-boundary-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
           "SpecRef": "spec-public-runtime-boundary",
-          "Name": "Nur read-only Projektionen sind ohne Opt-in erlaubt",
+          "Name": "Fail-closed public runtime boundary — when ein öffentlicher oder privilegierter Pfad klassifiziert wird then sind nur read-only SPOT- und statische Projektionen erlaubt",
           "Derived": true
         }
       }
@@ -1720,7 +2083,151 @@
       "Fields": {
         "Item": {
           "SpecRef": "spec-public-runtime-boundary",
-          "Name": "Memory-Schreiben benoetigt Memory- und Mutationsfreigabe",
+          "Name": "Fail-closed public runtime boundary — when nur eine der Freigaben Memory oder Mutation gesetzt ist then bleibt die Operation gesperrt",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-public-runtime-boundary-test-3",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-public-runtime-boundary",
+          "Name": "Fail-closed public runtime boundary — when keine explizite Workspace-Capability gesetzt ist then bleibt die Live-Projektion unabhängig von öffentlichen Metadaten gesperrt",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-public-runtime-boundary",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Fail-closed public runtime boundary",
+          "Intent": "Eine öffentliche CDD-Auslieferung darf ohne Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen",
+          "Criteria": [
+            {
+              "Given": "keine Capability-Umgebungsvariable gesetzt ist",
+              "When": "ein öffentlicher oder privilegierter Pfad klassifiziert wird",
+              "Then": "sind nur read-only SPOT- und statische Projektionen erlaubt"
+            },
+            {
+              "Given": "Memory geschrieben werden soll",
+              "When": "nur eine der Freigaben Memory oder Mutation gesetzt ist",
+              "Then": "bleibt die Operation gesperrt"
+            },
+            {
+              "Given": "lokale Workspace-Zustände beobachtet werden sollen",
+              "When": "keine explizite Workspace-Capability gesetzt ist",
+              "Then": "bleibt die Live-Projektion unabhängig von öffentlichen Metadaten gesperrt"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-representative-evidence-fitness-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-representative-evidence-fitness",
+          "Name": "Repräsentative Evidence Fitness — when Assurance Obligations kompiliert werden then benennt jede Obligation Claim, Systemgrenze, repräsentatives Szenario, Last, Umgebung, Metrik, Akzeptanzbereich und zulässige Proxys",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-representative-evidence-fitness-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-representative-evidence-fitness",
+          "Name": "Repräsentative Evidence Fitness — when Promotion bewertet wird then bleibt die repräsentative Obligation unvollständig und der Claim unknown",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-representative-evidence-fitness-test-3",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-representative-evidence-fitness",
+          "Name": "Repräsentative Evidence Fitness — when das Evidence Pack erzeugt wird then bindet es Candidate, Commit, Szene oder Workload, Seed, Konfiguration, Hardware oder Umgebung, Rohmetriken, Quantile und bekannte Abweichungen",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-representative-evidence-fitness",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Repräsentative Evidence Fitness",
+          "Intent": "CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence",
+          "Criteria": [
+            {
+              "Given": "eine Mission mit Produkt-, Laufzeit-, Performance- oder Effizienzclaim",
+              "When": "Assurance Obligations kompiliert werden",
+              "Then": "benennt jede Obligation Claim, Systemgrenze, repräsentatives Szenario, Last, Umgebung, Metrik, Akzeptanzbereich und zulässige Proxys"
+            },
+            {
+              "Given": "nur Build-, Unit-Test- oder Budget-Evidence für einen Runtime- oder Outcome-Claim",
+              "When": "Promotion bewertet wird",
+              "Then": "bleibt die repräsentative Obligation unvollständig und der Claim unknown"
+            },
+            {
+              "Given": "eine repräsentative Messung",
+              "When": "das Evidence Pack erzeugt wird",
+              "Then": "bindet es Candidate, Commit, Szene oder Workload, Seed, Konfiguration, Hardware oder Umgebung, Rohmetriken, Quantile und bekannte Abweichungen"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-research-claim-ledger-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-research-claim-ledger",
+          "Name": "Sanitisiertes öffentliches Research-Claim-Ledger — when sie als ResearchClaimNode serialisiert und validiert wird then bleiben epistemischer Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen reproduzierbar erhalten",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-research-claim-ledger-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-research-claim-ledger",
+          "Name": "Sanitisiertes öffentliches Research-Claim-Ledger — when öffentliche Evidenz oder gültige Provenienz fehlt then schlägt die Validierung fail-closed fehl",
           "Derived": true
         }
       }
@@ -1753,27 +2260,13 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-research-claim-ledger-test-1",
+    "Id": "spec-research-snapshots-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-research-claim-ledger",
-          "Name": "Research-Claim-Ledger — Status, Scope, Zeitpunkt, Methode, Quellen und Ableitungen bleiben reproduzierbar erhalten",
-          "Derived": true
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-research-claim-ledger-test-2",
-    "Payload": {
-      "Case": "TestNode",
-      "Fields": {
-        "Item": {
-          "SpecRef": "spec-research-claim-ledger",
-          "Name": "Research-Claim-Ledger — Verified ohne öffentliche Evidenz oder gültige Provenienz wird abgelehnt",
+          "SpecRef": "spec-research-snapshots",
+          "Name": "Reproduzierbare Research Snapshots — when der Research-Snapshot-Workflow laeuft then entsteht ein pruefbares Bundle und bei manueller Freigabe ein Draft-Release statt einer ungeprueften Veroeffentlichung",
           "Derived": true
         }
       }
@@ -1801,52 +2294,13 @@
     "Convergence": "Pending"
   },
   {
-    "Id": "spec-research-snapshots-test-1",
-    "Payload": {
-      "Case": "TestNode",
-      "Fields": {
-        "Item": {
-          "SpecRef": "spec-research-snapshots",
-          "Name": "Reproduzierbare Research Snapshots — when der Research-Snapshot-Workflow laeuft then entsteht ein pruefbares Bundle und bei manueller Freigabe ein Draft-Release statt einer ungeprueften Veroeffentlichung",
-          "Derived": true
-        }
-      }
-    },
-    "Convergence": "Aligned"
-  },
-  {
-    "Id": "spec-research-studio",
-    "Payload": {
-      "Case": "SpecNode",
-      "Fields": {
-        "Item": {
-          "Title": "SPOT-projiziertes Research Studio",
-          "Intent": "Eine review-orientierte Oberflaeche zeigt Forschungsstand, Luecken, Grenzen, Medien und Teilprojekte, ohne eine zweite Wahrheit oder automatische Promotion zu erzeugen.",
-          "Criteria": [
-            {
-              "Given": "der versionierte SPOT-Snapshot geladen ist",
-              "When": "das Research Studio geoeffnet wird",
-              "Then": "Claims, Quellen, Risiken, Praemissen, Entscheidungen und Kennzahlen werden daraus projiziert"
-            },
-            {
-              "Given": "Feedback formuliert wurde",
-              "When": "die Nutzerin oder der Nutzer fortfaehrt",
-              "Then": "nur ein pruefbarer GitHub-Issue-Entwurf wird geoeffnet und nichts automatisch gesendet oder promotet"
-            }
-          ]
-        }
-      }
-    },
-    "Convergence": "Pending"
-  },
-  {
     "Id": "spec-research-studio-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
           "SpecRef": "spec-research-studio",
-          "Name": "Research Studio projiziert den SPOT-Snapshot",
+          "Name": "SPOT-projiziertes Research Studio — when das Research Studio geöffnet wird then werden Claims, Quellen, Risiken, Prämissen, Entscheidungen und Kennzahlen daraus projiziert",
           "Derived": true
         }
       }
@@ -1860,7 +2314,99 @@
       "Fields": {
         "Item": {
           "SpecRef": "spec-research-studio",
-          "Name": "Feedback bleibt ein kontrollierter Issue-Entwurf",
+          "Name": "SPOT-projiziertes Research Studio — when die Nutzerin oder der Nutzer fortfährt then wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-research-studio",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "SPOT-projiziertes Research Studio",
+          "Intent": "Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion",
+          "Criteria": [
+            {
+              "Given": "der versionierte SPOT-Snapshot geladen ist",
+              "When": "das Research Studio geöffnet wird",
+              "Then": "werden Claims, Quellen, Risiken, Prämissen, Entscheidungen und Kennzahlen daraus projiziert"
+            },
+            {
+              "Given": "Feedback formuliert wurde",
+              "When": "die Nutzerin oder der Nutzer fortfährt",
+              "Then": "wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-risk-adaptive-assurance-portfolio-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-risk-adaptive-assurance-portfolio",
+          "Name": "Risikoadaptives Assurance-Portfolio — when Assurance Obligations abgeleitet werden then werden passende strukturelle, temporale, Policy-, Provenienz- und Runtime-Orakel kombiniert",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-risk-adaptive-assurance-portfolio-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-risk-adaptive-assurance-portfolio",
+          "Name": "Risikoadaptives Assurance-Portfolio — when Assurance Obligations abgeleitet werden then bleibt benannte menschliche Autorität erhalten ohne unpassende Formalismen zu erzwingen",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-risk-adaptive-assurance-portfolio",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Risikoadaptives Assurance-Portfolio",
+          "Intent": "CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen",
+          "Criteria": [
+            {
+              "Given": "eine hochintegre, verteilte oder produktive Mission",
+              "When": "Assurance Obligations abgeleitet werden",
+              "Then": "werden passende strukturelle, temporale, Policy-, Provenienz- und Runtime-Orakel kombiniert"
+            },
+            {
+              "Given": "eine kreative oder normative Mission ohne formale Risikomerkmale",
+              "When": "Assurance Obligations abgeleitet werden",
+              "Then": "bleibt benannte menschliche Autorität erhalten ohne unpassende Formalismen zu erzwingen"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-roundtrip-sync-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-roundtrip-sync",
+          "Name": "Round-Trip: Code → Modell — when cdd sync-code läuft then wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert",
           "Derived": true
         }
       }
@@ -1888,13 +2434,13 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-roundtrip-sync-test-1",
+    "Id": "spec-studio-workspace-control-plane-test-1",
     "Payload": {
       "Case": "TestNode",
       "Fields": {
         "Item": {
-          "SpecRef": "spec-roundtrip-sync",
-          "Name": "Round-Trip: Code → Modell — when cdd sync-code läuft then wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert",
+          "SpecRef": "spec-studio-workspace-control-plane",
+          "Name": "Offene Workspace-Control-Plane-Projektion — when der CDD-Kern den Workspace projiziert then werden Lifecycle, aktive Mission, Evidenzstand und Aufmerksamkeit deterministisch abgeleitet",
           "Derived": true
         }
       }
@@ -1902,23 +2448,37 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-sync-docs",
+    "Id": "spec-studio-workspace-control-plane-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-studio-workspace-control-plane",
+          "Name": "Offene Workspace-Control-Plane-Projektion — when die Control-Plane-Oberfläche im Browser geöffnet wird then sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-studio-workspace-control-plane",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Doku-Konvergenz",
-          "Intent": "Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler",
+          "Title": "Offene Workspace-Control-Plane-Projektion",
+          "Intent": "CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen",
           "Criteria": [
             {
-              "Given": "ein veralteter README-Status",
-              "When": "cdd sync-docs --check in der CI läuft",
-              "Then": "schlägt der Build fehl, bis sync-docs den Status neu generiert hat"
+              "Given": "Git-, Work-Item- und Run-Beobachtungen eines Projekts",
+              "When": "der CDD-Kern den Workspace projiziert",
+              "Then": "werden Lifecycle, aktive Mission, Evidenzstand und Aufmerksamkeit deterministisch abgeleitet"
             },
             {
-              "Given": "Prämissen, Entscheidungen und Invarianten im Modell",
-              "When": "cdd sync-docs läuft",
-              "Then": "wird docs/decisions.md vollständig daraus generiert"
+              "Given": "ein verbundener Workspace und das offene Assurance-Portfolio",
+              "When": "die Control-Plane-Oberfläche im Browser geöffnet wird",
+              "Then": "sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben"
             }
           ]
         }
@@ -1955,18 +2515,23 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-sync-tests",
+    "Id": "spec-sync-docs",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Test-Konvergenz messen",
-          "Intent": "Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet",
+          "Title": "Doku-Konvergenz",
+          "Intent": "Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler",
           "Criteria": [
             {
-              "Given": "ein Test-Knoten und ein Test mit Trait(\"spot\", id) oder [spot: id]-Marker",
-              "When": "cdd sync-tests läuft",
-              "Then": "wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI"
+              "Given": "ein veralteter README-Status",
+              "When": "cdd sync-docs --check in der CI läuft",
+              "Then": "schlägt der Build fehl, bis sync-docs den Status neu generiert hat"
+            },
+            {
+              "Given": "Prämissen, Entscheidungen und Invarianten im Modell",
+              "When": "cdd sync-docs läuft",
+              "Then": "wird docs/decisions.md vollständig daraus generiert"
             }
           ]
         }
@@ -1989,23 +2554,18 @@
     "Convergence": "Aligned"
   },
   {
-    "Id": "spec-validate",
+    "Id": "spec-sync-tests",
     "Payload": {
       "Case": "SpecNode",
       "Fields": {
         "Item": {
-          "Title": "Modell-Validierung",
-          "Intent": "Der SPOT-Graph ist jederzeit strukturell konsistent",
+          "Title": "Test-Konvergenz messen",
+          "Intent": "Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet",
           "Criteria": [
             {
-              "Given": "ein Knoten mit Referenz auf eine nicht existierende Id",
-              "When": "cdd validate läuft",
-              "Then": "wird ein Fehler mit Knoten-Id und Ziel gemeldet"
-            },
-            {
-              "Given": "Komponenten mit zyklischen Abhängigkeiten",
-              "When": "cdd validate läuft",
-              "Then": "werden alle Zyklus-Teilnehmer als Fehler markiert"
+              "Given": "ein Test-Knoten und ein Test mit Trait(\"spot\", id) oder [spot: id]-Marker",
+              "When": "cdd sync-tests läuft",
+              "Then": "wird der Knoten Aligned; ohne Marker bleibt er Pending, Abweichung bricht CI"
             }
           ]
         }
@@ -2042,6 +2602,31 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "spec-validate",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Modell-Validierung",
+          "Intent": "Der SPOT-Graph ist jederzeit strukturell konsistent",
+          "Criteria": [
+            {
+              "Given": "ein Knoten mit Referenz auf eine nicht existierende Id",
+              "When": "cdd validate läuft",
+              "Then": "wird ein Fehler mit Knoten-Id und Ziel gemeldet"
+            },
+            {
+              "Given": "Komponenten mit zyklischen Abhängigkeiten",
+              "When": "cdd validate läuft",
+              "Then": "werden alle Zyklus-Teilnehmer als Fehler markiert"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "term-agent",
     "Payload": {
       "Case": "TermNode",
@@ -2057,6 +2642,68 @@
               "Case": "RelatesTo",
               "Fields": {
                 "Item": "term-spot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "term-assurance-portfolio",
+    "Payload": {
+      "Case": "TermNode",
+      "Fields": {
+        "Item": {
+          "Name": "Assurance-Portfolio",
+          "Definition": "Risikoadaptive Kombination unabhängiger Typ-, Test-, Modell-, Beweis-, Policy-, Provenienz-, Runtime- und menschlicher Nachweise für eine Mission",
+          "Synonyms": [
+            "Assurance Stack",
+            "Nachweisportfolio"
+          ],
+          "Relations": [
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-evidence-pack"
+              }
+            },
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-promotion-gate"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "term-autopilot-run",
+    "Payload": {
+      "Case": "TermNode",
+      "Fields": {
+        "Item": {
+          "Name": "Autopilot Run",
+          "Definition": "Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints",
+          "Synonyms": [
+            "Agentic SDLC Run",
+            "Durable Run"
+          ],
+          "Relations": [
+            {
+              "Case": "PartOf",
+              "Fields": {
+                "Item": "term-control-plane"
+              }
+            },
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-mission-order"
               }
             }
           ]
@@ -2129,6 +2776,37 @@
               "Case": "RelatesTo",
               "Fields": {
                 "Item": "term-spot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "term-control-plane",
+    "Payload": {
+      "Case": "TermNode",
+      "Fields": {
+        "Item": {
+          "Name": "Semantic Control Plane",
+          "Definition": "Anbieterunabhängige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, während ersetzbare Adapter die Arbeit ausführen",
+          "Synonyms": [
+            "CDD Control Plane",
+            "Steuerungsebene"
+          ],
+          "Relations": [
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-spot"
+              }
+            },
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-doctrine"
               }
             }
           ]
@@ -2223,6 +2901,37 @@
               "Case": "RelatesTo",
               "Fields": {
                 "Item": "term-spot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "term-evidence-fitness",
+    "Payload": {
+      "Case": "TermNode",
+      "Fields": {
+        "Item": {
+          "Name": "Evidence Fitness",
+          "Definition": "Grad, zu dem ein Nachweis dieselbe Behauptung, Last, Systemgrenze, Umgebung und Fehlermöglichkeit prüft, für die er eine Promotion begründen soll",
+          "Synonyms": [
+            "Representative Evidence",
+            "Nachweispassung"
+          ],
+          "Relations": [
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-evidence-pack"
+              }
+            },
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-assurance-portfolio"
               }
             }
           ]
@@ -2387,12 +3096,19 @@
       "Fields": {
         "Item": {
           "Name": "Research Studio",
-          "Definition": "Read-only Briefing-Projektion des oeffentlichen SPOT fuer Claims, Evidenz, Luecken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback.",
+          "Definition": "Read-only Briefing-Projektion des öffentlichen SPOT für Claims, Evidenz, Lücken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback",
           "Synonyms": [
             "Research Cockpit",
             "Forschungsbriefing"
           ],
-          "Relations": []
+          "Relations": [
+            {
+              "Case": "RelatesTo",
+              "Fields": {
+                "Item": "term-spot"
+              }
+            }
+          ]
         }
       }
     },
@@ -2503,6 +3219,31 @@
               "Case": "RelatesTo",
               "Fields": {
                 "Item": "term-ontologie"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "term-work-slice",
+    "Payload": {
+      "Case": "TermNode",
+      "Fields": {
+        "Item": {
+          "Name": "Work Slice",
+          "Definition": "Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates",
+          "Synonyms": [
+            "Implementation Slice",
+            "Task Slice"
+          ],
+          "Relations": [
+            {
+              "Case": "PartOf",
+              "Fields": {
+                "Item": "term-autopilot-run"
               }
             }
           ]

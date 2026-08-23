@@ -61,6 +61,9 @@ jobs:
       - name: Doku-Konvergenz prüfen (README ↔ Modell)
         run: dotnet run -c Release --no-build --project src/Cdd.Cli -- sync-docs --check
 
+      - name: Oeffentliche SPOT-Projektion pruefen
+        run: bash scripts/sync-public-spot.sh --check
+
       - name: Öffentliche Daten- und Pfadgrenze prüfen
         run: bash scripts/check-public-data.sh
 
