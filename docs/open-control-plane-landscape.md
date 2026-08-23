@@ -178,7 +178,7 @@ Claim und Evidence explizit machen:
 | Abweichung | Proxy-Anteil, fehlende Dimensionen und verbleibendes `unknown` |
 
 Das Spielprojekt liefert dafür den ersten konkreten Forschungsfall: Sein
-[repräsentativer Frame](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md)
+[repräsentativer Frame und seine Budgets](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/PERFORMANCE_BUDGET.md)
 verbindet sichtbare und simulierte Einheiten, Animation, Pfadfindung,
 Landschaft, Effekte und Ressourcenmetriken auf derselben Zielhardware. Bis
 diese Messung existiert, bleiben die Performancebudgets eine gut strukturierte

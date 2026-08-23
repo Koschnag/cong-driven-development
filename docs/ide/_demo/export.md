@@ -392,7 +392,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **OpenAI — Harness engineering in an agent-first world** (engineering report, https://openai.com/index/harness-engineering/)
   - Agentenleistung steigt durch repository-lesbare Domaenen, harte Invarianten, isolierte Worktrees, E2E-Browserpruefung und beobachtbare Laufzeiten
   - Fehlschlaege werden als fehlende Systemfaehigkeit behandelt; einzelne Coding-Laeufe erreichen mehrere Stunden, nicht automatisch mehrere Tage
-- **Project Riftward: Representative Frame as Evidence Boundary** (longitudinal-case-study, https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md)
+- **Project Riftward: Representative Frame as Evidence Boundary** (longitudinal-case-study, https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/PERFORMANCE_BUDGET.md)
   - Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde
   - Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame
 - **SLSA Provenance** (standard, https://slsa.dev/spec/v1.2/)
