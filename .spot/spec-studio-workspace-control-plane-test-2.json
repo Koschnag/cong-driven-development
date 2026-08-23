@@ -1,0 +1,14 @@
+{
+  "Id": "spec-studio-workspace-control-plane-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-studio-workspace-control-plane",
+        "Name": "Offene Workspace-Control-Plane-Projektion \u2014 when die Control-Plane-Oberfl\u00E4che im Browser ge\u00F6ffnet wird then sind Mission, Runs, Quellen und austauschbare Vertr\u00E4ge responsiv sichtbar ohne den lokalen Projektpfad auszugeben",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,31 @@
+{
+  "Id": "term-assurance-portfolio",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Assurance-Portfolio",
+        "Definition": "Risikoadaptive Kombination unabh\u00E4ngiger Typ-, Test-, Modell-, Beweis-, Policy-, Provenienz-, Runtime- und menschlicher Nachweise f\u00FCr eine Mission",
+        "Synonyms": [
+          "Assurance Stack",
+          "Nachweisportfolio"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-evidence-pack"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-promotion-gate"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

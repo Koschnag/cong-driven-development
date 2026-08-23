@@ -66,6 +66,8 @@ Schreibende und betriebsnahe Funktionen sind zusätzlich **default-deny**:
   Engine und Konvergenz-Loop;
 - `CDD_ENABLE_MEMORY=true` aktiviert den optionalen, sanitisierten Knowledge Store;
 - `CDD_ENABLE_INFRA=true` legt lokale Host-, Metrik- und Container-Metadaten offen.
+- `CDD_ENABLE_WORKSPACES=true` aktiviert read-only Git-/SPOT-/`.ai`-Projektionen
+  für explizit per `--workspace` verbundene Repositories; Hostpfade bleiben verborgen.
 
 Diese Flags nur in einer authentifizierten, privaten Operator-Instanz setzen. Die
 öffentliche Forschungsdarstellung unter `docs/` ist statisch und benötigt keinen

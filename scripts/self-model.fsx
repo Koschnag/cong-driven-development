@@ -49,6 +49,8 @@ let entries =
       term "term-evidence-pack" "Evidence Pack" "Versions-, zeit- und umgebungsgebündelter Nachweis für einen Kandidaten und seine Assurance Obligations" [ "Evidence-Carrying Change" ] [ PartOf(EntityId "term-eidos") ]
       term "term-system-twin" "System Twin" "Zeitbezogene, provenienzbehaftete Projektion des bekannten Systems einschließlich Unsicherheit und Widerspruch" [ "Semantic System Twin" ] [ RelatesTo(EntityId "term-spot") ]
       term "term-research-studio" "Research Studio" "Read-only Briefing-Projektion des öffentlichen SPOT für Claims, Evidenz, Lücken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback" [ "Research Cockpit"; "Forschungsbriefing" ] [ RelatesTo(EntityId "term-spot") ]
+      term "term-control-plane" "Semantic Control Plane" "Anbieterunabhängige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, während ersetzbare Adapter die Arbeit ausführen" [ "CDD Control Plane"; "Steuerungsebene" ] [ RelatesTo(EntityId "term-spot"); RelatesTo(EntityId "term-doctrine") ]
+      term "term-assurance-portfolio" "Assurance-Portfolio" "Risikoadaptive Kombination unabhängiger Typ-, Test-, Modell-, Beweis-, Policy-, Provenienz-, Runtime- und menschlicher Nachweise für eine Mission" [ "Assurance Stack"; "Nachweisportfolio" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-promotion-gate") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Kein Python — nie." "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
@@ -83,6 +85,10 @@ let entries =
         "Ein visuelles Forschungsportal kann schnell zu einer zweiten Wahrheit oder einem unkontrollierten Agenten-Frontend werden"
         "Dynamische Forschungsobjekte kommen aus dem öffentlichen Snapshot; Feedback erzeugt nur einen vom Menschen zu prüfenden Issue-Entwurf"
         "Storytelling bleibt möglich, Status und Evidenz versioniert; Medien brauchen bei Modelländerungen erneute Prüfung"
+      decision "adr-008-open-semantic-control-plane" "CDD als offener semantischer Control Plane statt neuer Alles-Engine"
+        "Editoren, Diagrammwerkzeuge, Agent-Harnesses, Workflow-Engines, Forges und Observability-Systeme decken einzelne SDLC-Schichten ab und müssen austauschbar bleiben"
+        "CDD baut den typisierten semantischen Kern, Doctrine, Evidence-Promotion und Projektionen; Ausführung, Editoren, Diagramme, Telemetrie, Policy und Artefaktspeicher werden über offene Standards und Ports adaptiert"
+        "SPOT bleibt Domänenwahrheit; Theia, GLSP, LSP, MCP, OSLC, CDEvents, OTLP, OCI/in-toto und Workflow-Engines können unabhängig ersetzt oder schrittweise eingeführt werden"
 
       // ── Risiken ────────────────────────────────────────────────────────
       risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
@@ -166,7 +172,34 @@ let entries =
                   Then = "sind nur read-only SPOT- und statische Projektionen erlaubt" }
                 { Given = "Memory geschrieben werden soll"
                   When = "nur eine der Freigaben Memory oder Mutation gesetzt ist"
-                  Then = "bleibt die Operation gesperrt" } ] } }
+                  Then = "bleibt die Operation gesperrt" }
+                { Given = "lokale Workspace-Zustände beobachtet werden sollen"
+                  When = "keine explizite Workspace-Capability gesetzt ist"
+                  Then = "bleibt die Live-Projektion unabhängig von öffentlichen Metadaten gesperrt" } ] } }
+
+      { Id = EntityId "spec-risk-adaptive-assurance-portfolio"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Risikoadaptives Assurance-Portfolio"
+            Intent = "CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen"
+            Criteria =
+              [ { Given = "eine hochintegre, verteilte oder produktive Mission"
+                  When = "Assurance Obligations abgeleitet werden"
+                  Then = "werden passende strukturelle, temporale, Policy-, Provenienz- und Runtime-Orakel kombiniert" }
+                { Given = "eine kreative oder normative Mission ohne formale Risikomerkmale"
+                  When = "Assurance Obligations abgeleitet werden"
+                  Then = "bleibt benannte menschliche Autorität erhalten ohne unpassende Formalismen zu erzwingen" } ] } }
+
+      { Id = EntityId "spec-studio-workspace-control-plane"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Offene Workspace-Control-Plane-Projektion"
+            Intent = "CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen"
+            Criteria =
+              [ { Given = "Git-, Work-Item- und Run-Beobachtungen eines Projekts"
+                  When = "der CDD-Kern den Workspace projiziert"
+                  Then = "werden Lifecycle, aktive Mission, Evidenzstand und Aufmerksamkeit deterministisch abgeleitet" }
+                { Given = "ein verbundener Workspace und das offene Assurance-Portfolio"
+                  When = "die Control-Plane-Oberfläche im Browser geöffnet wird"
+                  Then = "sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben" } ] } }
 
       { Id = EntityId "spec-research-studio"; Convergence = Pending
         Payload = SpecNode
