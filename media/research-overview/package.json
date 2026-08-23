@@ -6,7 +6,7 @@
   "license": "MPL-2.0",
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.500",
+    "@remotion/cli": "4.0.514",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.500"
@@ -14,7 +14,7 @@
   "devDependencies": {
     "@types/react": "19.2.7",
     "@types/web": "0.0.166",
-    "prettier": "3.8.1",
+    "prettier": "3.9.6",
     "typescript": "5.9.3"
   },
   "scripts": {
