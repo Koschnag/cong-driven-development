@@ -325,6 +325,7 @@ let ``decisionsMarkdown documents premises decisions and invariants`` () =
     Assert.Contains("### F# · `adr-x`", md)
     Assert.Contains("Geltende Invarianten", md)
     Assert.Contains("Specs getestet", md)
+    Assert.False(md.EndsWith(Environment.NewLine + Environment.NewLine, StringComparison.Ordinal))
 
 [<Fact; Trait("spot", "spec-sync-docs-test-1")>]
 let ``statusMarkdown reflects aligned and pending specs`` () =
@@ -740,8 +741,9 @@ let ``Gate-Property: ein nicht-gruener Lauf macht einen Test-Knoten NIE Aligned`
     let prop (passed: int) (failed: int) (covered: bool) =
         let trx : Gate.TrxResult = { Passed = abs passed; Failed = abs failed; Skipped = 0 }
         let cov = if covered then Set.singleton "spec-x-test-1" else Set.empty
-        (not (Gate.istGruen trx)) ==>
-            ((Gate.setzeAlignedWennGruen trx cov node).Convergence <> Aligned)
+        FsCheck.Fluent.Prop.Implies(
+            not (Gate.istGruen trx),
+            (Gate.setzeAlignedWennGruen trx cov node).Convergence <> Aligned)
     Check.QuickThrowOnFailure prop
 
 [<Fact>]

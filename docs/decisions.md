@@ -78,4 +78,3 @@
 - 🛡️ **Kritische Risiken brauchen eine Mitigation** — kritische Risiken brauchen eine Mitigation · `inv-kritische-risiken`
 - 🛡️ **Jede Spec hat mindestens einen Test** — jede Spec braucht mindestens einen Test · `inv-specs-getestet`
 - 🛡️ **Begriffe heißen term-*** — Ids der Art 'term' beginnen mit 'term-' · `inv-term-praefix`
-

@@ -372,4 +372,4 @@ module Export =
                     | IdPrefix(k, pre) -> sprintf "Ids der Art '%s' beginnen mit '%s'" k pre
                 line (sprintf "- 🛡️ **%s** — %s · `%s`" i.Description rule (idValue e.Id))
             line ""
-        sb.ToString()
+        sb.ToString().TrimEnd() + System.Environment.NewLine
