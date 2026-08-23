@@ -13,3 +13,15 @@ dem Absenden prüft. Ein Issue besitzt keine Promotion-Autorität.
 Medien unter `docs/media/` und das browsernative Deck `docs/research/briefing.html` sind
 ebenfalls Projektionen. Bei Änderungen am Kernmodell sind Snapshot, Präsentation und
 Video vor einem Release neu zu prüfen.
+
+## Projektion aktualisieren
+
+```bash
+dotnet build -c Release -warnaserror
+bash scripts/sync-public-spot.sh
+bash scripts/sync-public-spot.sh --check
+```
+
+Das Skript erzeugt `spot.json`, den nach Konvergenz gruppierten `diff.json` und
+das Markdown-Kontextpaket deterministisch aus `.spot/`. Die CI scheitert, wenn
+die öffentliche Projektion hinter dem versionierten SPOT zurückbleibt.

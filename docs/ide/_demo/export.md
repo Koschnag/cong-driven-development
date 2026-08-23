@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 133 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 179 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 125 · Pending 8 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 162 · Pending 17 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -10,12 +10,21 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - **Agent** *(auch: AI-Agent)* — LLM-gestützter Worker, der aus dem SPOT Implementierung, Tests und Doku ableitet
   - bezieht sich auf `term-spot`
+- **Assurance-Portfolio** *(auch: Assurance Stack, Nachweisportfolio)* — Risikoadaptive Kombination unabhängiger Typ-, Test-, Modell-, Beweis-, Policy-, Provenienz-, Runtime- und menschlicher Nachweise für eine Mission
+  - bezieht sich auf `term-evidence-pack`
+  - bezieht sich auf `term-promotion-gate`
+- **Autopilot Run** *(auch: Agentic SDLC Run, Durable Run)* — Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints
+  - Teil von `term-control-plane`
+  - bezieht sich auf `term-mission-order`
 - **Change Compiler** *(auch: Semantic Change Compiler)* — Transformiert Intent, System-Twin, Policies und Evidenz in prüfbare Änderungskandidaten samt Obligations und Recovery
   - Teil von `term-eidos`
 - **Claim** *(auch: Forschungsclaim)* — Epistemisch typisierte, provenienzbehaftete Aussage: operativ als EIDOS Claim, oeffentlich nur als explizit sanitizierte ResearchClaimNode-Projektion; ihr Status bleibt von Implementierungs- und Marketingreife getrennt
   - ist ein `term-knoten`
 - **Cockpit** *(auch: IDE)* — Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift
   - bezieht sich auf `term-spot`
+- **Semantic Control Plane** *(auch: CDD Control Plane, Steuerungsebene)* — Anbieterunabhängige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, während ersetzbare Adapter die Arbeit ausführen
+  - bezieht sich auf `term-spot`
+  - bezieht sich auf `term-doctrine`
 - **Course IR** *(auch: Course Intermediate Representation)* — Technologieunabhaengige, datensparsame Zwischenrepraesentation eines Kurses als Quelle fuer validierbare Lernspiel-Artefakte
   - bezieht sich auf `term-system-twin`
 - **Doctrine** *(auch: Operational Doctrine)* — Versionierte, maschinenlesbare Regeln für Dispatch, Rechte, Assurance, Eskalation, Promotion und Abbruch
@@ -24,6 +33,9 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - bezieht sich auf `term-konvergenz`
 - **EIDOS** *(auch: EIDOS Framework)* — Doctrine-getriebene, epistemisch typisierte und evidenzgesteuerte Softwareevolution; v0 implementiert den falsifizierbaren Kernel bis zur isolierten ZT2-Sandbox
   - bezieht sich auf `term-spot`
+- **Evidence Fitness** *(auch: Representative Evidence, Nachweispassung)* — Grad, zu dem ein Nachweis dieselbe Behauptung, Last, Systemgrenze, Umgebung und Fehlermöglichkeit prüft, für die er eine Promotion begründen soll
+  - bezieht sich auf `term-evidence-pack`
+  - bezieht sich auf `term-assurance-portfolio`
 - **Evidence Pack** *(auch: Evidence-Carrying Change)* — Versions-, zeit- und umgebungsgebündelter Nachweis für einen Kandidaten und seine Assurance Obligations
   - Teil von `term-eidos`
 - **Knoten** *(auch: Entry, Node)* — Eintrag im SPOT-Graphen mit Identität, Nutzlast und Konvergenz-Status
@@ -37,6 +49,8 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Promotion Gate** *(auch: Freigabe-Gate)* — Explizite Authority- und Policy-Entscheidung, die einen geprueften Candidate in einen freigegebenen Zustand ueberfuehrt
   - Teil von `term-eidos`
   - bezieht sich auf `term-evidence-pack`
+- **Research Studio** *(auch: Research Cockpit, Forschungsbriefing)* — Read-only Briefing-Projektion des öffentlichen SPOT für Claims, Evidenz, Lücken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback
+  - bezieht sich auf `term-spot`
 - **Signal** *(auch: Raw Event)* — Unverändertes Rohereignis aus Feedback, Runtime, Entwicklung, Betrieb, Simulation oder Analyse
   - Teil von `term-eidos`
 - **Spec** *(auch: Spezifikation)* — Maschinenlesbarer Vertrag: Intent plus Akzeptanzkriterien in Given/When/Then
@@ -46,6 +60,8 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - bezieht sich auf `term-spot`
 - **Ubiquitäre Sprache** *(auch: Ubiquitous Language)* — Gemeinsames Vokabular von Fachseite, Technik und AI-Agents — definiert in der Ontologie
   - bezieht sich auf `term-ontologie`
+- **Work Slice** *(auch: Implementation Slice, Task Slice)* — Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates
+  - Teil von `term-autopilot-run`
 
 ## Invarianten (Governance — werden bei jeder Validierung erzwungen)
 
@@ -59,7 +75,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Eine Agentenkette ist ein Plan, nicht die Architektur.** — Doctrine, Lage, Risiko und verfügbare Capabilities erzeugen pro Mission einen begrenzten Ausführungsplan
 - **Cloud-first: nichts muss lokal laufen.** — Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) trägt alles
 - **Evidence vor Promotion.** — Ein Candidate wird nur befördert, wenn alle risikoadaptiven Obligations mit benannter, reproduzierbarer Evidenz erfüllt sind
-- **Kein Python — nie.** — Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig
+- **Python-freier Vertrauenskern, polyglotte Adapter.** — CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden
 - **Oeffentliche Artefakte sind generisch, synthetisch und vor Veroeffentlichung sanitisiert.** — Forschung muss reproduzierbar sein, ohne personenbezogene Kurs-, Nutzer-, Infrastruktur- oder Betriebsdaten offenzulegen.
 - **Typsicherheit vor Flexibilität.** — Illegale SPOT-Zustände sollen nicht repräsentierbar sein — das Typsystem ist das Schema
 - **Unknown bleibt unknown.** — Fehlende Evidenz ist weder Zustimmung noch der Nachweis, dass ein Bereich nicht betroffen ist
@@ -95,6 +111,26 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Kontext:** Paper, Framework, Studio und Referenzprojekt muessen bis Version 1.0 auf denselben versionierten Forschungsstand zeigen.
 - **Entscheidung:** Research Track, CDD-Kernel, CourseForge-Referenzprojekt und Studio bleiben bis Version 1.0 in einem oeffentlichen, sanitisierten Monorepo.
 - **Konsequenzen:** Releases koennen Code, Claims, Protokolle und Evidenz gemeinsam pinnen; spaetere Distributionen duerfen getrennt paketiert werden.
+
+### Research Studio ist eine read-only SPOT-Projektion (`adr-007-public-research-studio`)
+- **Kontext:** Ein visuelles Forschungsportal kann schnell zu einer zweiten Wahrheit oder einem unkontrollierten Agenten-Frontend werden
+- **Entscheidung:** Dynamische Forschungsobjekte kommen aus dem öffentlichen Snapshot; Feedback erzeugt nur einen vom Menschen zu prüfenden Issue-Entwurf
+- **Konsequenzen:** Storytelling bleibt möglich, Status und Evidenz versioniert; Medien brauchen bei Modelländerungen erneute Prüfung
+
+### CDD als offener semantischer Control Plane statt neuer Alles-Engine (`adr-008-open-semantic-control-plane`)
+- **Kontext:** Editoren, Diagrammwerkzeuge, Agent-Harnesses, Workflow-Engines, Forges und Observability-Systeme decken einzelne SDLC-Schichten ab und müssen austauschbar bleiben
+- **Entscheidung:** CDD baut den typisierten semantischen Kern, Doctrine, Evidence-Promotion und Projektionen; Ausführung, Editoren, Diagramme, Telemetrie, Policy und Artefaktspeicher werden über offene Standards und Ports adaptiert
+- **Konsequenzen:** SPOT bleibt Domänenwahrheit; Theia, GLSP, LSP, MCP, OSLC, CDEvents, OTLP, OCI/in-toto und Workflow-Engines können unabhängig ersetzt oder schrittweise eingeführt werden
+
+### Deterministischer Controller über austauschbaren Agent-Harnesses (`adr-009-deterministic-autopilot-controller`)
+- **Kontext:** Langlaufende Coding-Agenten können vorzeitig enden, ihren eigenen Erfolg überschätzen oder bei großen Aufträgen Kontext und Fortschritt verlieren
+- **Entscheidung:** CDD hält den langlebigen Run-Zustand, wählt die nächste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses führen die Aktionen aus
+- **Konsequenzen:** Agenten bleiben austauschbar und dürfen nicht selbst promoten; CDD benötigt dafür explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle
+
+### Evidence Fitness ist Teil der Promotion Policy (`adr-010-representative-evidence-fitness`)
+- **Kontext:** Builds, Unit-Tests und dokumentierte Budgets können grün sein, obwohl die behauptete Produkteigenschaft unter repräsentativer Last, Zielhardware oder realer Systemgrenze scheitert
+- **Entscheidung:** Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht
+- **Konsequenzen:** CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen
 
 ## Spezifikationen
 
@@ -188,6 +224,14 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN die Diagramm-Flaeche WHEN auf eine Formal-Sicht gewechselt wird THEN rendert sie das Modell in formaler Notation mit KaTeX
 
+### Persistente Full-Agentic-SDLC-Kette (`spec-full-agentic-sdlc-controller`, Pending)
+**Intent:** CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
+
+- GIVEN eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen WHEN der Autopilot die nächste Aktion bestimmt THEN durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge
+- GIVEN ein Agenten-Turn ohne erwarteten Terminalmarker WHEN die Beobachtung im Run protokolliert wird THEN wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei erschöpftem Budget fail-closed blockiert
+- GIVEN fehlende oder rote Gates, korrelierte Rollen oder offene Review-Befunde WHEN der Controller Promotion oder den nächsten Slice bewertet THEN wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt
+- GIVEN ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen WHEN Status oder Evaluation abgefragt werden THEN werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert
+
 ### Gate-Selbsthärtung (`spec-gate-selbst-hart`, Pending)
 **Intent:** Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
 
@@ -203,6 +247,20 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN ein verbundener MCP-Client WHEN spot_upsert oder spot_delete aufgerufen wird THEN wird die Änderung gespeichert und die Validierung (inkl. Invarianten) zurückgemeldet
 
+### Fail-closed public runtime boundary (`spec-public-runtime-boundary`, Aligned)
+**Intent:** Eine öffentliche CDD-Auslieferung darf ohne Betreiberfreigabe weder mutieren noch Memory- oder Runtime-Daten lesen
+
+- GIVEN keine Capability-Umgebungsvariable gesetzt ist WHEN ein öffentlicher oder privilegierter Pfad klassifiziert wird THEN sind nur read-only SPOT- und statische Projektionen erlaubt
+- GIVEN Memory geschrieben werden soll WHEN nur eine der Freigaben Memory oder Mutation gesetzt ist THEN bleibt die Operation gesperrt
+- GIVEN lokale Workspace-Zustände beobachtet werden sollen WHEN keine explizite Workspace-Capability gesetzt ist THEN bleibt die Live-Projektion unabhängig von öffentlichen Metadaten gesperrt
+
+### Repräsentative Evidence Fitness (`spec-representative-evidence-fitness`, Pending)
+**Intent:** CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence
+
+- GIVEN eine Mission mit Produkt-, Laufzeit-, Performance- oder Effizienzclaim WHEN Assurance Obligations kompiliert werden THEN benennt jede Obligation Claim, Systemgrenze, repräsentatives Szenario, Last, Umgebung, Metrik, Akzeptanzbereich und zulässige Proxys
+- GIVEN nur Build-, Unit-Test- oder Budget-Evidence für einen Runtime- oder Outcome-Claim WHEN Promotion bewertet wird THEN bleibt die repräsentative Obligation unvollständig und der Claim unknown
+- GIVEN eine repräsentative Messung WHEN das Evidence Pack erzeugt wird THEN bindet es Candidate, Commit, Szene oder Workload, Seed, Konfiguration, Hardware oder Umgebung, Rohmetriken, Quantile und bekannte Abweichungen
+
 ### Sanitisiertes öffentliches Research-Claim-Ledger (`spec-research-claim-ledger`, Aligned)
 **Intent:** Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
 
@@ -214,10 +272,28 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN ein gruener, sanitizierter Stand auf main oder ein manueller Snapshot-Auftrag WHEN der Research-Snapshot-Workflow laeuft THEN entsteht ein pruefbares Bundle und bei manueller Freigabe ein Draft-Release statt einer ungeprueften Veroeffentlichung
 
+### SPOT-projiziertes Research Studio (`spec-research-studio`, Pending)
+**Intent:** Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
+
+- GIVEN der versionierte SPOT-Snapshot geladen ist WHEN das Research Studio geöffnet wird THEN werden Claims, Quellen, Risiken, Prämissen, Entscheidungen und Kennzahlen daraus projiziert
+- GIVEN Feedback formuliert wurde WHEN die Nutzerin oder der Nutzer fortfährt THEN wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet
+
+### Risikoadaptives Assurance-Portfolio (`spec-risk-adaptive-assurance-portfolio`, Pending)
+**Intent:** CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
+
+- GIVEN eine hochintegre, verteilte oder produktive Mission WHEN Assurance Obligations abgeleitet werden THEN werden passende strukturelle, temporale, Policy-, Provenienz- und Runtime-Orakel kombiniert
+- GIVEN eine kreative oder normative Mission ohne formale Risikomerkmale WHEN Assurance Obligations abgeleitet werden THEN bleibt benannte menschliche Autorität erhalten ohne unpassende Formalismen zu erzwingen
+
 ### Round-Trip: Code → Modell (`spec-roundtrip-sync`, Aligned)
 **Intent:** Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 
 - GIVEN src/*.fsproj und Component-Knoten WHEN cdd sync-code läuft THEN wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert
+
+### Offene Workspace-Control-Plane-Projektion (`spec-studio-workspace-control-plane`, Aligned)
+**Intent:** CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen
+
+- GIVEN Git-, Work-Item- und Run-Beobachtungen eines Projekts WHEN der CDD-Kern den Workspace projiziert THEN werden Lifecycle, aktive Mission, Evidenzstand und Aufmerksamkeit deterministisch abgeleitet
+- GIVEN ein verbundener Workspace und das offene Assurance-Portfolio WHEN die Control-Plane-Oberfläche im Browser geöffnet wird THEN sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben
 
 ### Doku-Konvergenz (`spec-sync-docs`, Aligned)
 **Intent:** Der README-Status wird aus dem Selbstmodell generiert — Doku-Drift ist ein CI-Fehler
@@ -238,13 +314,16 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 ## Risiken
 
+- **Ein Worker beendet einen Turn ohne belastbaren Abschluss, während die Mission fälschlich als erledigt erscheint** (Likelihood High, Impact High) — Mitigation: Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation
 - **Autonome Änderungen überschreiten den freigegebenen Scope oder erreichen produktive Systeme** (Likelihood Medium, Impact Critical) — Mitigation: Capability-Allowlists, kleinste Rechte, ZT2 als erstes Ziel, keine Produktiv-Credentials, harte Budgets und Fail-Closed-Abbruch
 - **Ein lernendes oder vom Generator abhängiges Orakel driftet und belohnt Scheinerfolg** (Likelihood High, Impact Critical) — Mitigation: Validatorversionen binden, Generator/Validator trennen, unveränderliche Ankerfälle und externe Audits verwenden
 - **Generator und Validator teilen denselben systematischen Fehler und erzeugen Scheinevidenz** (Likelihood High, Impact Critical) — Mitigation: Kritische Orakel dekorrelieren, unabhängige Harnesses verwenden und Provenienz sowie Validatorversion im Evidence Pack binden
 - **Modell und Code driften auseinander (der MDA-Friedhof)** (Likelihood Medium, Impact Critical) — Mitigation: Konvergenz-Status je Knoten + Round-Trip (Code→Modell) auf der Roadmap
 - **Das Evolutionary Memory speichert Korrelation als Ursache und verstärkt eine falsche Strategie** (Likelihood High, Impact High) — Mitigation: Intervention, Störfaktoren und Konfidenz getrennt speichern; Strategy-Änderungen nur nach reproduzierbaren Outcome-Vergleichen
 - **SPOT-Pflege wird teurer als der Code, den er erzeugt** (Likelihood Medium, Impact High) — Mitigation: Alles Ableitbare wird abgeleitet (Tests, Diagramme), nie handgepflegt
+- **Leicht verfügbare Proxy-Evidence ersetzt unbemerkt die repräsentative Prüfung des eigentlichen Claims** (Likelihood High, Impact Critical) — Mitigation: Evidence Obligations binden Claim, Boundary, Szenario, Last, Umgebung und Metrik; Promotion vergleicht die geforderte mit der beobachteten Evidence Fitness und lässt Lücken unknown
 - **Personenbezogene Kurs-, Feedback-, Infrastruktur- oder Forschungsdaten gelangen in das oeffentliche Showcase-Repository.** (Likelihood Medium, Impact Critical) — Mitigation: Nur synthetische Fixtures; Metadaten-Allowlist; Secret-Scan; PII-Checkliste; private Security-Meldungen; menschliches Release-Gate.
+- **Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Fähigkeiten unbeabsichtigt offen** (Likelihood Medium, Impact Critical) — Mitigation: App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests
 - **Spec-Vollständigkeits-Falle: die Spec wird so komplex wie Code** (Likelihood Medium, Impact High) — Mitigation: Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents füllen Lücken, Validierung fängt Drift
 
 ## Komponenten
@@ -257,6 +336,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 ## Wissensquellen
 
+- **Anthropic — Measuring AI agent autonomy in practice** (empirical research, https://www.anthropic.com/research/measuring-agent-autonomy)
+  - Reale Autonomie muss aus vielen produktiven Sitzungen und Interventionen gemessen werden
+  - Erfahrene Nutzer erlauben mehr Automatik und greifen zugleich weiterhin gezielt ein; Post-Deployment-Monitoring bleibt notwendig
+- **Anthropic — Trustworthy agents in practice** (research, https://www.anthropic.com/research/trustworthy-agents)
+  - Agentenverhalten entsteht gemeinsam aus Modell, Harness, Werkzeugen und Umgebung
+  - Zuverlaessige Agenten brauchen menschliche Kontrolle, Unsicherheitsbehandlung und geschichtete Abwehr
 - **No Silver Bullet: Essence and Accidents of Software Engineering** (paper, http://www.cs.unc.edu/techreports/86-020.pdf)
   - Software besitzt essenzielle und akzidentelle Schwierigkeiten
   - Werkzeuge koennen akzidentelle Arbeit reduzieren, ohne die konzeptuelle Essenz aufzuheben
@@ -282,9 +367,15 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Intent Formalization — Grand Challenge** (paper, https://arxiv.org/abs/2603.17150)
   - Die Lücke zwischen natürlichem Intent und prüfbarem Verhalten ist der zentrale Engpass
   - Spezifikationsqualität braucht eigene Metriken und Interaktion
+- **Lean 4 Reference Manual** (proof-assistant documentation, https://lean-lang.org/doc/reference/latest/)
+  - Lean prueft Beweisterme in einem kleinen Kernel auf Basis abhaengiger Typentheorie
+  - CDD reserviert deduktive Beweise fuer wenige tragende Invarianten statt alles formalisieren zu wollen
 - **LLM-Modulo Frameworks** (paper, https://arxiv.org/abs/2402.01817)
   - LLMs und externe modellbasierte Verifizierer sollen bidirektional gekoppelt werden
   - Der externe Verifizierer bleibt Quelle der belastbaren Garantie
+- **METR — Task-Completion Time Horizons** (independent benchmark, https://metr.org/time-horizons/)
+  - Time Horizon misst die menschliche Vergleichsdauer einer Aufgabe bei gegebener Erfolgswahrscheinlichkeit, nicht die reale Laufzeit eines Agenten
+  - CDD muss Taskschwierigkeit, Zuverlaessigkeit, Harness und menschliche Intervention getrennt von bloesser Uptime messen
 - **Moodle Course Backup** (documentation, https://docs.moodle.org/500/en/Course_backup)
   - Moodle-Kursbackups verwenden die Endung .mbz
   - Backups koennen Nutzer-, Rollen-, Datei-, Kommentar-, Abschluss-, Log- und Bewertungsdaten enthalten
@@ -292,6 +383,18 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **NIST SP 800-218 Secure Software Development Framework** (standard, https://csrc.nist.gov/pubs/sp/800/218/final)
   - Security-Praktiken werden risikoorientiert in bestehende Entwicklungsmodelle integriert
   - Provenienz, Security-Anforderungen, Risiken und Designentscheidungen sollen verfolgt werden
+- **OpenAI — Practices for Governing Agentic AI Systems** (white paper, https://openai.com/index/practices-for-governing-agentic-ai-systems/)
+  - Agentische Systeme brauchen ueber ihren gesamten Lebenszyklus zugeordnete Verantwortlichkeiten, sichere Betriebsgrenzen und Rechenschaft
+  - CDD Doctrine und Evidence-Promotion operationalisieren einen Teil dieser Governance fuer Softwareevolution
+- **OpenAI — Unrolling and embedding the Codex harness** (engineering report, https://openai.com/index/unlocking-the-codex-harness/)
+  - Ein stabiler App-Server trennt den Agent-Loop von CLI, IDE und anderen Clients
+  - CDD soll Harnesses als ersetzbare Ausfuehrungsebene einbetten statt deren Agent-Loop erneut zu implementieren
+- **OpenAI — Harness engineering in an agent-first world** (engineering report, https://openai.com/index/harness-engineering/)
+  - Agentenleistung steigt durch repository-lesbare Domaenen, harte Invarianten, isolierte Worktrees, E2E-Browserpruefung und beobachtbare Laufzeiten
+  - Fehlschlaege werden als fehlende Systemfaehigkeit behandelt; einzelne Coding-Laeufe erreichen mehrere Stunden, nicht automatisch mehrere Tage
+- **Project Riftward: Representative Frame as Evidence Boundary** (longitudinal-case-study, https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md)
+  - Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde
+  - Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame
 - **SLSA Provenance** (standard, https://slsa.dev/spec/v1.2/)
   - Artefakte werden an Builderidentität, Inputs, Zeit und Digests gebunden
   - Evidence Packs übernehmen diese Bindungsprinzipien über Builds hinaus
@@ -300,6 +403,9 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - KI reduziert Implementierungsmechanik, nicht automatisch essenzielle Komplexität
   - Autonomie muss an maschinenpruefbare, risikoadaptive Gates gebunden sein
   - Langfristige Grundlagen und explizite Modelle sind wichtiger als kurzfristiges Tool-Wissen
+- **TLA+ Documentation** (formal-method documentation, https://docs.tlapl.us/)
+  - TLA+ beschreibt Zustandsmaschinen und prueft Safety sowie Liveness verteilter oder nebenlaeufiger Systeme
+  - CDD nutzt TLA+ selektiv fuer langlebige Orchestrierung, Lease-, Retry-, Promotion- und Recovery-Protokolle
 - **VeriAct — Beyond Verifiability** (paper, https://arxiv.org/abs/2604.00280)
   - Verifier-Akzeptanz allein garantiert keine korrekte oder vollständige Spezifikation
   - Ein unabhängiges Spec-Harness macht Über- und Unterbeschränkung messbar
@@ -322,6 +428,15 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - **Quellen:** `kb-brooks-no-silver-bullet`, `kb-software-engineering-ki-gegenthese`
 - **Begründung:** Muss empirisch gegen geeignete Entwicklungsbaselines operationalisiert werden.
 
+### Proposed (`claim-evidence-fitness-reduces-false-promotion`)
+- **Aussage:** Eine Promotion Policy, die Evidence Fitness explizit an Claim, Systemgrenze, Last und Umgebung bindet, reduziert Fehlpromotionen gegenüber Gates, die nur leicht verfügbare Proxy-Ergebnisse bewerten.
+- **Scope:** Runtime-, Performance-, Effizienz- und Outcome-Claims in agentischer Softwareentwicklung
+- **Methode:** Falsifizierbare Design-Science-Hypothese aus dem Riftward-Fall und dem CDD-Promotion-Modell
+- **Erfasst:** 2026-08-24T00:00:00Z
+- **Quellen:** `kb-riftward-representative-frame`, `kb-who-grades-grader`
+- **Abgeleitet aus:** `claim-gates-bound-autonomy`, `spec-representative-evidence-fitness`
+- **Begründung:** Der Claim bleibt Proposed, bis vergleichbare Missionsklassen mit und ohne Fitness-Bindung wiederholt ausgeführt und Fehlpromotion, Intervention, Kosten und Outcome gemessen wurden.
+
 ### Proposed (`claim-gates-bound-autonomy`)
 - **Aussage:** Der zulaessige Autonomiegrad eines Software-Agenten sollte durch unabhaengige, maschinenpruefbare und risikoadaptive Gates begrenzt werden.
 - **Scope:** Agentische Softwareevolution
@@ -330,6 +445,15 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - **Quellen:** `kb-software-engineering-ki-gegenthese`, `kb-llm-modulo`, `kb-veriact`
 - **Abgeleitet aus:** `claim-essential-complexity-remains`
 - **Begründung:** Vergleichbare Kandidaten muessen gegen korrelierte Orakel und einen ungeregelten Agenten getestet werden.
+
+### Proposed (`claim-harness-determines-effective-autonomy`)
+- **Aussage:** Die praktisch erreichbare und verantwortbare Autonomie eines Software-Agenten wird mindestens ebenso durch Harness, lesbare Umgebung, unabhaengige Orakel und Betriebsgrenzen bestimmt wie durch das Basismodell.
+- **Scope:** Langlaufende agentische Softwareentwicklung
+- **Methode:** Design-Science-Hypothese aus Industriebeobachtungen und CDD-Architektur
+- **Erfasst:** 2026-08-23T00:00:00Z
+- **Quellen:** `kb-anthropic-trustworthy-agents`, `kb-anthropic-autonomy-practice`, `kb-openai-harness-engineering`, `kb-openai-agent-governance`, `kb-metr-time-horizons`
+- **Abgeleitet aus:** `claim-gates-bound-autonomy`, `spec-eidos-evidence-pack`
+- **Begründung:** Muss in longitudinalen Riftward-Laeufen gegen mehrere Modelle und Harness-Baselines mit Interventionen, Kosten, Fehlpromotionen und Recovery gemessen werden.
 
 ### Proposed (`claim-spot-traceability`)
 - **Aussage:** Ein typisierter Single Point of Truth kann die Nachverfolgbarkeit von Intent zu Code, Test, Evidenz und Outcome verbessern.
@@ -348,11 +472,20 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 ## Offene Arbeit (nicht Aligned)
 
 - `claim-essential-complexity-remains` (claim, Pending)
+- `claim-evidence-fitness-reduces-false-promotion` (claim, Pending)
 - `claim-gates-bound-autonomy` (claim, Pending)
+- `claim-harness-determines-effective-autonomy` (claim, Pending)
 - `claim-spot-traceability` (claim, Pending)
 - `spec-agent-interface-test-1` (test, Pending)
 - `spec-export-context-test-2` (test, Pending)
+- `spec-full-agentic-sdlc-controller` (spec, Pending)
 - `spec-gate-selbst-hart` (spec, Pending)
 - `spec-mcp-server-test-1` (test, Pending)
+- `spec-representative-evidence-fitness-test-1` (test, Pending)
+- `spec-representative-evidence-fitness-test-2` (test, Pending)
+- `spec-representative-evidence-fitness-test-3` (test, Pending)
+- `spec-representative-evidence-fitness` (spec, Pending)
 - `spec-research-snapshots` (spec, Pending)
+- `spec-research-studio` (spec, Pending)
+- `spec-risk-adaptive-assurance-portfolio` (spec, Pending)
 
