@@ -1,0 +1,14 @@
+{
+  "Id": "spec-representative-evidence-fitness-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-representative-evidence-fitness",
+        "Name": "Repr\u00E4sentative Evidence Fitness \u2014 when Assurance Obligations kompiliert werden then benennt jede Obligation Claim, Systemgrenze, repr\u00E4sentatives Szenario, Last, Umgebung, Metrik, Akzeptanzbereich und zul\u00E4ssige Proxys",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

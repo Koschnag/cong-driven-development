@@ -123,7 +123,11 @@ tests/Cdd.Tests/      — Spec→Test-Generation, Round-Trip-Tests
 - **Lean 4** später für Beweise (wenn Theoreme entstehen)
 - **MPL-2.0** Lizenz
 
-Kein Python. Nie.
+Der CDD-Vertrauenskern bleibt bewusst **Python-frei**: Domain, Persistenz,
+Promotion und das Monorepo verwenden F#/.NET. Polyglotte Werkzeuge – etwa ein
+Blender-Python-Adapter oder ein Rust-Validator – dürfen außerhalb des Kerns
+über offene, typisierte Ports angebunden werden. Damit bleibt die
+Vertrauenskette klein, ohne die Toolchain an eine Sprache zu fesseln.
 
 ## Usage
 
@@ -216,7 +220,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**170 Knoten im Selbstmodell** · 4 aktive Invarianten · 48/51 abgeleitete Tests automatisiert
+**179 Knoten im Selbstmodell** · 4 aktive Invarianten · 48/54 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -251,6 +255,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
 - 🔜 **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
+- 🔜 **Repräsentative Evidence Fitness** — CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
 

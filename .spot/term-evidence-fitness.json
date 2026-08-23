@@ -1,0 +1,31 @@
+{
+  "Id": "term-evidence-fitness",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Evidence Fitness",
+        "Definition": "Grad, zu dem ein Nachweis dieselbe Behauptung, Last, Systemgrenze, Umgebung und Fehlerm\u00F6glichkeit pr\u00FCft, f\u00FCr die er eine Promotion begr\u00FCnden soll",
+        "Synonyms": [
+          "Representative Evidence",
+          "Nachweispassung"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-evidence-pack"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-assurance-portfolio"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

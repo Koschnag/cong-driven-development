@@ -1,0 +1,27 @@
+{
+  "Id": "claim-evidence-fitness-reduces-false-promotion",
+  "Payload": {
+    "Case": "ResearchClaimNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Eine Promotion Policy, die Evidence Fitness explizit an Claim, Systemgrenze, Last und Umgebung bindet, reduziert Fehlpromotionen gegenüber Gates, die nur leicht verfügbare Proxy-Ergebnisse bewerten.",
+        "Status": "Proposed",
+        "Scope": "Runtime-, Performance-, Effizienz- und Outcome-Claims in agentischer Softwareentwicklung",
+        "Provenance": {
+          "SourceRefs": [
+            "kb-riftward-representative-frame",
+            "kb-who-grades-grader"
+          ],
+          "DerivedFrom": [
+            "claim-gates-bound-autonomy",
+            "spec-representative-evidence-fitness"
+          ],
+          "RecordedAt": "2026-08-24T00:00:00Z",
+          "Method": "Falsifizierbare Design-Science-Hypothese aus dem Riftward-Fall und dem CDD-Promotion-Modell"
+        },
+        "Rationale": "Der Claim bleibt Proposed, bis vergleichbare Missionsklassen mit und ohne Fitness-Bindung wiederholt ausgeführt und Fehlpromotion, Intervention, Kosten und Outcome gemessen wurden."
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

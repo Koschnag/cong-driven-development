@@ -1,0 +1,14 @@
+{
+  "Id": "spec-representative-evidence-fitness-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-representative-evidence-fitness",
+        "Name": "Repr\u00E4sentative Evidence Fitness \u2014 when das Evidence Pack erzeugt wird then bindet es Candidate, Commit, Szene oder Workload, Seed, Konfiguration, Hardware oder Umgebung, Rohmetriken, Quantile und bekannte Abweichungen",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

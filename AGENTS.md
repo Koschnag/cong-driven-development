@@ -25,7 +25,11 @@ in einem Temp-Verzeichnis ausführen.
 ## Regeln
 
 - **F# für Domain-Logik** (`Cdd.Core`): DUs, Records, Module — keine Klassenhierarchien.
-- **Kein Python**, keine Python-Tooling-Abhängigkeiten.
+- **Kein Python im CDD-Vertrauenskern oder Monorepo**, keine
+  Python-Tooling-Abhängigkeiten. Externe, austauschbare Tooladapter dürfen ihre
+  native Sprache verwenden; sie liefern nur typisierte Beobachtungen oder
+  Artefakte über offene Ports und werden nie Teil von Domain, Promotion oder
+  Persistenz.
 - Neue Compile-Files in der `.fsproj` registrieren (F# ist reihenfolgesensitiv:
   Abhängigkeiten zuerst).
 - JSON-Serialisierung ausschließlich über `Cdd.Core.Json` (FSharp.SystemTextJson).
