@@ -5,7 +5,7 @@
 
 {$CDD_DOMAIN:localhost} {
 	basic_auth {
-		{$CDD_USER:cong} {$CDD_PASS_HASH}
+		{$CDD_USER:admin} {$CDD_PASS_HASH}
 	}
 	reverse_proxy cdd:8080
 }

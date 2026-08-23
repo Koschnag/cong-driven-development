@@ -1,0 +1,24 @@
+{
+  "Id": "claim-essential-complexity-remains",
+  "Payload": {
+    "Case": "ResearchClaimNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Generative KI reduziert vor allem akzidentelle Implementierungsarbeit; Spezifikation, Design und Verifikation bleiben essenzielle Aufgaben.",
+        "Status": "Proposed",
+        "Scope": "AI-gestuetzte Softwareentwicklung",
+        "Provenance": {
+          "SourceRefs": [
+            "kb-brooks-no-silver-bullet",
+            "kb-software-engineering-ki-gegenthese"
+          ],
+          "DerivedFrom": [],
+          "RecordedAt": "2026-07-27T00:00:00Z",
+          "Method": "Konzeptionelle Synthese aus Primaertext und oeffentlicher Gegenthese"
+        },
+        "Rationale": "Muss empirisch gegen geeignete Entwicklungsbaselines operationalisiert werden."
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

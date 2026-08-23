@@ -1,0 +1,25 @@
+{
+  "Id": "spec-eidos-evidence-pack",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Evidence Packs und Promotion",
+        "Intent": "Promotion ist eine reproduzierbare Policy-Entscheidung \u00FCber Evidence statt eine Selbstbest\u00E4tigung des Generators",
+        "Criteria": [
+          {
+            "Given": "ein Candidate mit risikoadaptiven Assurance Obligations",
+            "When": "Generator-unabh\u00E4ngige Gates laufen",
+            "Then": "bindet das Evidence Pack Ergebnis, Tool- und Policyversion, Umgebung, Zeitpunkt und Artefakt-Hash"
+          },
+          {
+            "Given": "eine fehlende, veraltete oder rote Obligation",
+            "When": "Promotion bewertet wird",
+            "Then": "wird der Candidate nicht bef\u00F6rdert und der konkrete Nachweisgrund bleibt auditierbar"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

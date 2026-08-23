@@ -1,0 +1,15 @@
+{
+  "Id": "comp-courseforge",
+  "Payload": {
+    "Case": "ComponentNode",
+    "Fields": {
+      "Item": {
+        "Name": "CourseForge.Core",
+        "DependsOn": [
+          "comp-core"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

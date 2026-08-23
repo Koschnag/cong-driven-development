@@ -1,0 +1,19 @@
+{
+  "Id": "kb-moodle-course-backup",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Moodle Course Backup",
+        "Source": "https://docs.moodle.org/500/en/Course_backup",
+        "MediaType": "documentation",
+        "Takeaways": [
+          "Moodle-Kursbackups verwenden die Endung .mbz",
+          "Backups koennen Nutzer-, Rollen-, Datei-, Kommentar-, Abschluss-, Log- und Bewertungsdaten enthalten",
+          "Ein generischer Importer muss Metadaten und personenbezogene Inhalte strikt trennen"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

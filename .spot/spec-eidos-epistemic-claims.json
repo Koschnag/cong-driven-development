@@ -1,0 +1,25 @@
+{
+  "Id": "spec-eidos-epistemic-claims",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Epistemisch typisierte Claims",
+        "Intent": "Beobachtung, Aussage, Ableitung, Vorschlag, Ratifikation und Verifikation bleiben unterscheidbar und provenienzbehaftet",
+        "Criteria": [
+          {
+            "Given": "ein Rohsignal und eine maschinelle Interpretation",
+            "When": "beide in den System-Twin projiziert werden",
+            "Then": "bleiben Originalsignal, Claim, Provenienz, Zeitpunkt, Scope und epistemischer Status getrennt erhalten"
+          },
+          {
+            "Given": "widerspr\u00FCchliche Claims oder fehlende Evidenz",
+            "When": "ein Lagebild erzeugt wird",
+            "Then": "werden Contested und Unknown explizit dargestellt statt zu einer scheinbar sicheren Aussage gegl\u00E4ttet"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

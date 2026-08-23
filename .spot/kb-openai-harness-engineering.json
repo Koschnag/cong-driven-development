@@ -1,0 +1,13 @@
+{
+  "Id": "kb-openai-harness-engineering",
+  "Payload": { "Case": "KnowledgeNode", "Fields": { "Item": {
+    "Title": "OpenAI — Harness engineering in an agent-first world",
+    "Source": "https://openai.com/index/harness-engineering/",
+    "MediaType": "engineering report",
+    "Takeaways": [
+      "Agentenleistung steigt durch repository-lesbare Domaenen, harte Invarianten, isolierte Worktrees, E2E-Browserpruefung und beobachtbare Laufzeiten",
+      "Fehlschlaege werden als fehlende Systemfaehigkeit behandelt; einzelne Coding-Laeufe erreichen mehrere Stunden, nicht automatisch mehrere Tage"
+    ]
+  } } },
+  "Convergence": "Aligned"
+}

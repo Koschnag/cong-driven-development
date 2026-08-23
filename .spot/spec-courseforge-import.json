@@ -1,0 +1,25 @@
+{
+  "Id": "spec-courseforge-import",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Datensparsamer Moodle-Folder-Import",
+        "Intent": "Ein generischer Course-IR-Adapter liest nur benoetigte Kursmetadaten und schliesst sensible Moodle-Daten aus.",
+        "Criteria": [
+          {
+            "Given": "ein synthetischer, extrahierter Moodle-Backup-Ordner",
+            "When": "CourseForge den Ordner importiert",
+            "Then": "entsteht ein deterministischer Course IR mit Kurs und Abschnitten"
+          },
+          {
+            "Given": "ein Ordner mit users.xml, fremden Dateien oder ueberschrittenen Quotas",
+            "When": "CourseForge den Import prueft",
+            "Then": "werden sensible Daten ausgeschlossen und harte Datei- sowie Groessenlimits fail-closed erzwungen"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,14 @@
+{
+  "Id": "spec-risk-adaptive-assurance-portfolio-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-risk-adaptive-assurance-portfolio",
+        "Name": "Risikoadaptives Assurance-Portfolio \u2014 when Assurance Obligations abgeleitet werden then bleibt benannte menschliche Autorit\u00E4t erhalten ohne unpassende Formalismen zu erzwingen",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

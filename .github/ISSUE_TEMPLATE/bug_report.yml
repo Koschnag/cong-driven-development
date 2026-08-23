@@ -1,7 +1,13 @@
 name: 🐛 Bug Report
 description: Etwas funktioniert nicht wie dokumentiert
-labels: [bug]
+labels: [bug, needs-triage]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Ein öffentliches Issue ist weltweit sichtbar. Keine echten Moodle-Dateien,
+        personenbezogenen Daten, Tokens, internen Routen oder privaten Logs einfügen.
+        Security-/Privacy-Probleme bitte ausschließlich privat melden.
   - type: textarea
     id: what
     attributes:
@@ -30,4 +36,11 @@ body:
     id: context
     attributes:
       label: Kontext / Logs
-      description: Relevante `.spot/`-Inhalte, Stacktraces, etc.
+      description: Nur minimierte, synthetische Reproduktion. Keine `.spot/`-Knoten oder Logs aus privaten Systemen.
+  - type: checkboxes
+    id: public_safe
+    attributes:
+      label: Veröffentlichungsprüfung
+      options:
+        - label: Ich habe personenbezogene Daten, Credentials und private Infrastrukturangaben entfernt.
+          required: true

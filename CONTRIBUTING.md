@@ -29,6 +29,10 @@ dotnet run --project src/Cdd.Cli -- list
 4. **PR** gegen `main` — das Template führt dich durch. CI (Build, Tests,
    Smoke-Test, Sonar) muss grün sein, gemergt wird per Squash.
 
+Öffentliche Beiträge müssen die [Public Research & Data Policy](PUBLICATION_POLICY.md)
+einhalten. Insbesondere niemals echte Moodle-Exporte, Nutzer-/Bewertungsdaten,
+private Logs, CC10-Routen oder Credentials in Issues und PRs hochladen.
+
 Details zur Git- und Release-Strategie: [docs/devops.md](docs/devops.md).
 
 ## Code-Richtlinien

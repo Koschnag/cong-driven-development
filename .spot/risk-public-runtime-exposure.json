@@ -1,0 +1,15 @@
+{
+  "Id": "risk-public-runtime-exposure",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-F\u00E4higkeiten unbeabsichtigt offen",
+        "Likelihood": "Medium",
+        "Impact": "Critical",
+        "Mitigation": "App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -1,0 +1,15 @@
+{
+  "Id": "risk-public-data-leak",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Personenbezogene Kurs-, Feedback-, Infrastruktur- oder Forschungsdaten gelangen in das oeffentliche Showcase-Repository.",
+        "Likelihood": "Medium",
+        "Impact": "Critical",
+        "Mitigation": "Nur synthetische Fixtures; Metadaten-Allowlist; Secret-Scan; PII-Checkliste; private Security-Meldungen; menschliches Release-Gate."
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

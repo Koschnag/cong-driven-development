@@ -1,0 +1,13 @@
+{
+  "Id": "premise-public-sanitized",
+  "Payload": {
+    "Case": "PremiseNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Oeffentliche Artefakte sind generisch, synthetisch und vor Veroeffentlichung sanitisiert.",
+        "Rationale": "Forschung muss reproduzierbar sein, ohne personenbezogene Kurs-, Nutzer-, Infrastruktur- oder Betriebsdaten offenzulegen."
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

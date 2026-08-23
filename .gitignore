@@ -7,6 +7,7 @@ obj/
 
 # IDE
 .idea/
+.playwright-cli/
 .vscode/
 
 # OS
@@ -38,6 +39,16 @@ TestResults/
 
 # Logs
 *.log
+
+# Reproducible Remotion bundle output
+media/research-overview/build/
+
+# Local browser QA artefacts
+output/playwright/
+.playwright-cli/
+
+# Local EIDOS mission ledgers and ZT2 sandboxes
+.eidos/
 
 # Homelab-Secrets
 .env
