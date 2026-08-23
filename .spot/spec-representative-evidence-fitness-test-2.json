@@ -1,0 +1,14 @@
+{
+  "Id": "spec-representative-evidence-fitness-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-representative-evidence-fitness",
+        "Name": "Repr\u00E4sentative Evidence Fitness \u2014 when Promotion bewertet wird then bleibt die repr\u00E4sentative Obligation unvollst\u00E4ndig und der Claim unknown",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

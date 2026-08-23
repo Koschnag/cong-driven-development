@@ -13,8 +13,8 @@
 ### Evidence vor Promotion.
 *Ein Candidate wird nur befördert, wenn alle risikoadaptiven Obligations mit benannter, reproduzierbarer Evidenz erfüllt sind* · `premise-evidence-before-promotion`
 
-### Kein Python — nie.
-*Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig* · `premise-kein-python`
+### Python-freier Vertrauenskern, polyglotte Adapter.
+*CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden* · `premise-kein-python`
 
 ### Oeffentliche Artefakte sind generisch, synthetisch und vor Veroeffentlichung sanitisiert.
 *Forschung muss reproduzierbar sein, ohne personenbezogene Kurs-, Nutzer-, Infrastruktur- oder Betriebsdaten offenzulegen.* · `premise-public-sanitized`
@@ -71,6 +71,11 @@
 - **Kontext:** Langlaufende Coding-Agenten können vorzeitig enden, ihren eigenen Erfolg überschätzen oder bei großen Aufträgen Kontext und Fortschritt verlieren
 - **Entscheidung:** CDD hält den langlebigen Run-Zustand, wählt die nächste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses führen die Aktionen aus
 - **Konsequenzen:** Agenten bleiben austauschbar und dürfen nicht selbst promoten; CDD benötigt dafür explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle
+
+### Evidence Fitness ist Teil der Promotion Policy · `adr-010-representative-evidence-fitness`
+- **Kontext:** Builds, Unit-Tests und dokumentierte Budgets können grün sein, obwohl die behauptete Produkteigenschaft unter repräsentativer Last, Zielhardware oder realer Systemgrenze scheitert
+- **Entscheidung:** Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht
+- **Konsequenzen:** CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen
 
 ## Geltende Invarianten (Governance)
 

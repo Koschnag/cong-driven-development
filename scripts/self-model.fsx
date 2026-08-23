@@ -51,11 +51,12 @@ let entries =
       term "term-research-studio" "Research Studio" "Read-only Briefing-Projektion des öffentlichen SPOT für Claims, Evidenz, Lücken, Grenzen, Teilprojekte, Medien und kontrolliertes Feedback" [ "Research Cockpit"; "Forschungsbriefing" ] [ RelatesTo(EntityId "term-spot") ]
       term "term-control-plane" "Semantic Control Plane" "Anbieterunabhängige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, während ersetzbare Adapter die Arbeit ausführen" [ "CDD Control Plane"; "Steuerungsebene" ] [ RelatesTo(EntityId "term-spot"); RelatesTo(EntityId "term-doctrine") ]
       term "term-assurance-portfolio" "Assurance-Portfolio" "Risikoadaptive Kombination unabhängiger Typ-, Test-, Modell-, Beweis-, Policy-, Provenienz-, Runtime- und menschlicher Nachweise für eine Mission" [ "Assurance Stack"; "Nachweisportfolio" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-promotion-gate") ]
+      term "term-evidence-fitness" "Evidence Fitness" "Grad, zu dem ein Nachweis dieselbe Behauptung, Last, Systemgrenze, Umgebung und Fehlermöglichkeit prüft, für die er eine Promotion begründen soll" [ "Representative Evidence"; "Nachweispassung" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-assurance-portfolio") ]
       term "term-autopilot-run" "Autopilot Run" "Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints" [ "Agentic SDLC Run"; "Durable Run" ] [ PartOf(EntityId "term-control-plane"); RelatesTo(EntityId "term-mission-order") ]
       term "term-work-slice" "Work Slice" "Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates" [ "Implementation Slice"; "Task Slice" ] [ PartOf(EntityId "term-autopilot-run") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
-      premise "premise-kein-python" "Kein Python — nie." "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchgängig"
+      premise "premise-kein-python" "Python-freier Vertrauenskern, polyglotte Adapter." "CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden"
       premise "premise-cloud-first" "Cloud-first: nichts muss lokal laufen." "Thin Clients als Terminals; GitHub (Pages, Codespaces, GHCR, Releases) trägt alles"
       premise "premise-typsicherheit" "Typsicherheit vor Flexibilität." "Illegale SPOT-Zustände sollen nicht repräsentierbar sein — das Typsystem ist das Schema"
       premise "premise-evidence-before-promotion" "Evidence vor Promotion." "Ein Candidate wird nur befördert, wenn alle risikoadaptiven Obligations mit benannter, reproduzierbarer Evidenz erfüllt sind"
@@ -95,6 +96,10 @@ let entries =
         "Langlaufende Coding-Agenten können vorzeitig enden, ihren eigenen Erfolg überschätzen oder bei großen Aufträgen Kontext und Fortschritt verlieren"
         "CDD hält den langlebigen Run-Zustand, wählt die nächste typisierte Aktion deterministisch und akzeptiert Agentenausgaben nur als Beobachtung; Provider-Harnesses führen die Aktionen aus"
         "Agenten bleiben austauschbar und dürfen nicht selbst promoten; CDD benötigt dafür explizite Slice-, Recovery-, Gate-, Review- und Checkpoint-Protokolle"
+      decision "adr-010-representative-evidence-fitness" "Evidence Fitness ist Teil der Promotion Policy"
+        "Builds, Unit-Tests und dokumentierte Budgets können grün sein, obwohl die behauptete Produkteigenschaft unter repräsentativer Last, Zielhardware oder realer Systemgrenze scheitert"
+        "Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht"
+        "CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen"
 
       // ── Risiken ────────────────────────────────────────────────────────
       risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
@@ -115,6 +120,8 @@ let entries =
         "App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests"
       risk "risk-agent-premature-stop" "Ein Worker beendet einen Turn ohne belastbaren Abschluss, während die Mission fälschlich als erledigt erscheint" High High
         "Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation"
+      risk "risk-proxy-evidence" "Leicht verfügbare Proxy-Evidence ersetzt unbemerkt die repräsentative Prüfung des eigentlichen Claims" High Critical
+        "Evidence Obligations binden Claim, Boundary, Szenario, Last, Umgebung und Metrik; Promotion vergleicht die geforderte mit der beobachteten Evidence Fitness und lässt Lücken unknown"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -196,6 +203,21 @@ let entries =
                 { Given = "eine kreative oder normative Mission ohne formale Risikomerkmale"
                   When = "Assurance Obligations abgeleitet werden"
                   Then = "bleibt benannte menschliche Autorität erhalten ohne unpassende Formalismen zu erzwingen" } ] } }
+
+      { Id = EntityId "spec-representative-evidence-fitness"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Repräsentative Evidence Fitness"
+            Intent = "CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence"
+            Criteria =
+              [ { Given = "eine Mission mit Produkt-, Laufzeit-, Performance- oder Effizienzclaim"
+                  When = "Assurance Obligations kompiliert werden"
+                  Then = "benennt jede Obligation Claim, Systemgrenze, repräsentatives Szenario, Last, Umgebung, Metrik, Akzeptanzbereich und zulässige Proxys" }
+                { Given = "nur Build-, Unit-Test- oder Budget-Evidence für einen Runtime- oder Outcome-Claim"
+                  When = "Promotion bewertet wird"
+                  Then = "bleibt die repräsentative Obligation unvollständig und der Claim unknown" }
+                { Given = "eine repräsentative Messung"
+                  When = "das Evidence Pack erzeugt wird"
+                  Then = "bindet es Candidate, Commit, Szene oder Workload, Seed, Konfiguration, Hardware oder Umgebung, Rohmetriken, Quantile und bekannte Abweichungen" } ] } }
 
       { Id = EntityId "spec-studio-workspace-control-plane"; Convergence = Aligned
         Payload = SpecNode
@@ -457,6 +479,12 @@ let entries =
             MediaType = "standard"
             Takeaways = [ "Security-Praktiken werden risikoorientiert in bestehende Entwicklungsmodelle integriert"
                           "Provenienz, Security-Anforderungen, Risiken und Designentscheidungen sollen verfolgt werden" ] } }
+      { Id = EntityId "kb-riftward-representative-frame"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Project Riftward: Representative Frame as Evidence Boundary"; Source = "https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md"
+            MediaType = "longitudinal-case-study"
+            Takeaways = [ "Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde"
+                          "Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame" ] } }
 
       // ── Tools: Capabilities für Agents ────────────────────────────────
       { Id = EntityId "tool-mermaid"; Convergence = Aligned

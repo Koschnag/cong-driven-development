@@ -4,8 +4,8 @@
     "Case": "PremiseNode",
     "Fields": {
       "Item": {
-        "Statement": "Kein Python \u2014 nie.",
-        "Rationale": "Ein Stack (.NET/F#), keine Toolchain-Fragmentierung; Typsicherheit durchg\u00E4ngig"
+        "Statement": "Python-freier Vertrauenskern, polyglotte Adapter.",
+        "Rationale": "CDD-Dom\u00E4ne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter d\u00FCrfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abh\u00E4ngigkeit zu werden"
       }
     }
   },

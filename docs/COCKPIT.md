@@ -2,7 +2,8 @@
 
 > Eine souveräne, **chat-primäre** Kommandozentrale über einem getypten Modell.
 > Eine Eingabe treibt einen Agenten über mehrere *Wahrheiten*; jedes Ergebnis ist eine
-> Projektion desselben **Single Point of Truth** (SPOT). F#/C#/.NET, kein Python,
+> Projektion desselben **Single Point of Truth** (SPOT). F#/C#/.NET im
+> Vertrauenskern, keine Python-Abhängigkeit im Monorepo,
 > MPL-2.0; optionale Provider und Betriebsadapter bleiben explizit konfiguriert.
 
 Cong OS ist die GUI von [CDD](../README.md): ein Browser-bedienbares Cockpit, das im

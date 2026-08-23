@@ -1,0 +1,30 @@
+{
+  "Id": "spec-representative-evidence-fitness",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Repr\u00E4sentative Evidence Fitness",
+        "Intent": "CDD verhindert Promotion durch gr\u00FCne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence",
+        "Criteria": [
+          {
+            "Given": "eine Mission mit Produkt-, Laufzeit-, Performance- oder Effizienzclaim",
+            "When": "Assurance Obligations kompiliert werden",
+            "Then": "benennt jede Obligation Claim, Systemgrenze, repr\u00E4sentatives Szenario, Last, Umgebung, Metrik, Akzeptanzbereich und zul\u00E4ssige Proxys"
+          },
+          {
+            "Given": "nur Build-, Unit-Test- oder Budget-Evidence f\u00FCr einen Runtime- oder Outcome-Claim",
+            "When": "Promotion bewertet wird",
+            "Then": "bleibt die repr\u00E4sentative Obligation unvollst\u00E4ndig und der Claim unknown"
+          },
+          {
+            "Given": "eine repr\u00E4sentative Messung",
+            "When": "das Evidence Pack erzeugt wird",
+            "Then": "bindet es Candidate, Commit, Szene oder Workload, Seed, Konfiguration, Hardware oder Umgebung, Rohmetriken, Quantile und bekannte Abweichungen"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

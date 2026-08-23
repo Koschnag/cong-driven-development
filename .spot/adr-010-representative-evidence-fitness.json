@@ -1,0 +1,16 @@
+{
+  "Id": "adr-010-representative-evidence-fitness",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "Evidence Fitness ist Teil der Promotion Policy",
+        "Context": "Builds, Unit-Tests und dokumentierte Budgets k\u00F6nnen gr\u00FCn sein, obwohl die behauptete Produkteigenschaft unter repr\u00E4sentativer Last, Zielhardware oder realer Systemgrenze scheitert",
+        "Choice": "Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zul\u00E4ssige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht",
+        "Consequences": "CDD muss fehlende repr\u00E4sentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

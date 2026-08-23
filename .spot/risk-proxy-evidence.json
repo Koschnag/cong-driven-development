@@ -1,0 +1,15 @@
+{
+  "Id": "risk-proxy-evidence",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Leicht verf\u00FCgbare Proxy-Evidence ersetzt unbemerkt die repr\u00E4sentative Pr\u00FCfung des eigentlichen Claims",
+        "Likelihood": "High",
+        "Impact": "Critical",
+        "Mitigation": "Evidence Obligations binden Claim, Boundary, Szenario, Last, Umgebung und Metrik; Promotion vergleicht die geforderte mit der beobachteten Evidence Fitness und l\u00E4sst L\u00FCcken unknown"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

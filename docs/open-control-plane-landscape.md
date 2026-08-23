@@ -158,6 +158,33 @@ Erfolgsbeweis. Jeder Run soll mindestens erfassen:
 - Recovery, Reproduzierbarkeit und Outcome nach Integration,
 - verworfene Kandidaten, Unsicherheit und negative Resultate.
 
+### Evidence Fitness statt Proxy-Erfolg
+
+Ein grüner Build beantwortet die Frage „baut es?“, nicht automatisch „erreicht
+es die behauptete Produkteigenschaft?“. Ein Unit-Test kann eine Regel prüfen,
+ohne den realen Datenweg, die Last oder die Hardwaregrenze zu treffen. Ein
+Budget dokumentiert eine Absicht, aber noch keine gemessene Einhaltung.
+
+CDD soll deshalb für jede tragende Assurance Obligation die Passung zwischen
+Claim und Evidence explizit machen:
+
+| Claim-Dimension | Im Evidence Pack zu binden |
+|---|---|
+| Gegenstand | exakter Claim und Candidate-/Commit-Digest |
+| Systemgrenze | betroffene Runtime, Adapter, Hardware und ausgeschlossene Schichten |
+| Szenario | repräsentativer Workload, Szene, Seed und Konfiguration |
+| Last | Menge, Konkurrenz, Dauer, Warm-up und Stichprobenumfang |
+| Messung | Rohwerte, p50/p95/p99, Unsicherheit und Abbruchkriterien |
+| Abweichung | Proxy-Anteil, fehlende Dimensionen und verbleibendes `unknown` |
+
+Das Spielprojekt liefert dafür den ersten konkreten Forschungsfall: Sein
+[repräsentativer Frame](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/entscheidungen/005-performancebeweis-sprachrollen-und-integration.md)
+verbindet sichtbare und simulierte Einheiten, Animation, Pfadfindung,
+Landschaft, Effekte und Ressourcenmetriken auf derselben Zielhardware. Bis
+diese Messung existiert, bleiben die Performancebudgets eine gut strukturierte
+Hypothese. Genau diese Trennung soll EIDOS später maschinenlesbar promoten oder
+fail-closed als `unknown` erhalten.
+
 ### Vergleichsdesign
 
 1. Eine repräsentative Taskmenge vorab versionieren.
