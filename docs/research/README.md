@@ -25,3 +25,15 @@ bash scripts/sync-public-spot.sh --check
 Das Skript erzeugt `spot.json`, den nach Konvergenz gruppierten `diff.json` und
 das Markdown-Kontextpaket deterministisch aus `.spot/`. Die CI scheitert, wenn
 die öffentliche Projektion hinter dem versionierten SPOT zurückbleibt.
+
+## Riftward als öffentliche Fallstudie
+
+Die begleitende Dokumentation beschreibt eine vorsichtige Systemhypothese und
+longitudinale Fallstudie zu kontinuierlicher agentischer Softwareentwicklung.
+Sie ist kein Beweis von Neuheit, allgemeiner Überlegenheit oder autonomer
+Abnahme. Siehe [PROTOCOL.md](PROTOCOL.md), [CCD_MAPPING.md](CCD_MAPPING.md)
+und [CASE_STUDY_LOG.md](CASE_STUDY_LOG.md).
+
+Die Showcase-Seite bleibt read-only: `main` steht für geprüfte Wahrheit,
+`live-wip` dokumentiert Kontinuität, aber keine Abnahme. Nicht exportierte oder
+nicht gemessene Werte bleiben `unknown`.
