@@ -36,9 +36,15 @@ then
 fi
 
 # Commit identities are public metadata but are outside git-grep and ordinary
-# secret scanners. Permit only GitHub's noreply domains in every reachable
-# author and committer address; never print a rejected address.
-if git log --all --format='%ae%n%ce' |
+# secret scanners. Existing public history may contain legitimate contributor
+# identities, so this check is scoped to commits introduced by the PR. The
+# content/path scan above intentionally remains reachable-history wide.
+identity_base=''
+if git rev-parse --verify --quiet origin/main^{commit} >/dev/null
+then
+  identity_base="$(git merge-base HEAD origin/main)"
+fi
+if [[ -n "$identity_base" ]] && git log "$identity_base..HEAD" --format='%ae%n%ce' |
   perl -ne '
     BEGIN { $invalid = 0 }
     chomp;
