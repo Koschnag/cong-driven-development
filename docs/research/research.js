@@ -246,12 +246,14 @@
       renderPremises(entries);
       renderProjects(entries);
       renderRoadmap(entries);
-      byId("metric-nodes").textContent = entries.length;
-      byId("metric-claims").textContent = claims;
-      byId("metric-sources").textContent = sources;
-      byId("metric-open").textContent = pending;
+      // No public export is available yet; avoid presenting derived counts as
+      // longitudinal production evidence.
+      byId("metric-nodes").textContent = "unknown";
+      byId("metric-claims").textContent = "unknown";
+      byId("metric-sources").textContent = "unknown";
+      byId("metric-open").textContent = "unknown";
       byId("snapshot-label").textContent =
-        `SPOT-Snapshot · ${entries.length} Knoten · read-only`;
+        "SPOT-Snapshot · Exportstatus unknown · read-only";
     } catch (error) {
       byId("snapshot-label").textContent = "SPOT-Snapshot nicht verfügbar";
       const note = el(
