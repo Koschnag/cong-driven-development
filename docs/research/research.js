@@ -246,14 +246,15 @@
       renderPremises(entries);
       renderProjects(entries);
       renderRoadmap(entries);
-      // No public export is available yet; avoid presenting derived counts as
-      // longitudinal production evidence.
-      byId("metric-nodes").textContent = "unknown";
-      byId("metric-claims").textContent = "unknown";
-      byId("metric-sources").textContent = "unknown";
-      byId("metric-open").textContent = "unknown";
+      // These values describe the existing public CDD SPOT projection. They
+      // are not Riftward longitudinal metrics; those remain explicitly
+      // unknown in the Agentic-SDLC section until a reviewed export exists.
+      byId("metric-nodes").textContent = entries.length;
+      byId("metric-claims").textContent = claims;
+      byId("metric-sources").textContent = sources;
+      byId("metric-open").textContent = pending;
       byId("snapshot-label").textContent =
-        "SPOT-Snapshot · Exportstatus unknown · read-only";
+        `SPOT-Snapshot · ${entries.length} Knoten · read-only`;
     } catch (error) {
       byId("snapshot-label").textContent = "SPOT-Snapshot nicht verfügbar";
       const note = el(
