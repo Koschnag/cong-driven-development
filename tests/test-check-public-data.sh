@@ -41,6 +41,20 @@ run_case() {
   rm -f "$output"
 }
 
+expect_baseline_failure() {
+  local output
+  output="$(mktemp)"
+  if bash scripts/check-public-data.sh >"$output" 2>&1; then
+    echo "unsafe identity baseline unexpectedly passed" >&2
+    return 1
+  fi
+  if grep -Eq '(@|refs/|[0-9a-f]{7,})' "$output"; then
+    echo "baseline diagnostic leaked repository details" >&2
+    return 1
+  fi
+  rm -f "$output"
+}
+
 # Exercise newest, middle, and oldest entries in a long identity stream.
 run_case 120
 run_case 60
@@ -51,4 +65,19 @@ for ((i=0; i<121; i++)); do
   git commit --allow-empty -qm "allowed candidate $i"
 done
 bash scripts/check-public-data.sh >/dev/null
+
+# Missing, non-commit, and unrelated remote baselines fail closed.
+git update-ref -d refs/remotes/origin/main
+expect_baseline_failure
+git update-ref refs/remotes/origin/main "$(git rev-parse HEAD^{tree})"
+expect_baseline_failure
+unrelated="$(printf 'unrelated\n' | git commit-tree "$(git rev-parse HEAD^{tree})")"
+git update-ref refs/remotes/origin/main "$unrelated"
+expect_baseline_failure
+
+# A shorthand-shadowing branch must not affect the exact remote-tracking ref.
+git update-ref refs/remotes/origin/main "$base"
+git update-ref refs/heads/origin/main "$unrelated"
+bash scripts/check-public-data.sh >/dev/null
+
 echo "check-public-data identity-range tests passed"

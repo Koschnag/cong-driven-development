@@ -39,12 +39,18 @@ fi
 # secret scanners. Existing public history may contain legitimate contributor
 # identities, so this check is scoped to commits introduced by the PR. The
 # content/path scan above intentionally remains reachable-history wide.
+identity_ref='refs/remotes/origin/main'
 identity_base=''
-if git rev-parse --verify --quiet origin/main^{commit} >/dev/null
+if ! git show-ref --verify --quiet "$identity_ref" 2>/dev/null ||
+  ! identity_base="$(git rev-parse --verify --quiet "$identity_ref^{commit}" 2>/dev/null)" ||
+  [[ -z "$identity_base" ]] ||
+  ! identity_base="$(git merge-base HEAD "$identity_base" 2>/dev/null)" ||
+  [[ -z "$identity_base" ]]
 then
-  identity_base="$(git merge-base HEAD origin/main)"
+  echo "Unable to establish a safe public identity baseline; refusing to continue." >&2
+  exit 1
 fi
-if [[ -n "$identity_base" ]] && git log "$identity_base..HEAD" --format='%ae%n%ce' |
+if git log "$identity_base..HEAD" --format='%ae%n%ce' |
   perl -ne '
     BEGIN { $invalid = 0 }
     chomp;
