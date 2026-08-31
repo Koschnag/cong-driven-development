@@ -69,7 +69,15 @@ removed_paths=(
 )
 for path in "${removed_paths[@]}"
 do
-  if git log --all --format='%H' -- "$path" | grep -q .
+  # Capture the complete stream before deciding. A short-circuiting grep can
+  # make git exit with SIGPIPE under pipefail and accidentally pass.
+  path_history=''
+  if ! path_history="$(git log --all --format='%H' -- "$path" 2>/dev/null)"
+  then
+    echo "Unable to inspect prohibited historical paths; refusing to continue." >&2
+    exit 1
+  fi
+  if [[ -n "$path_history" ]]
   then
     echo "A prohibited historical publication artifact is still reachable." >&2
     exit 1
