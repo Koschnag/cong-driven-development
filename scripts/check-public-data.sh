@@ -30,6 +30,16 @@ then
   exit 1
 fi
 
+# Commit identities are public metadata but are outside git-grep and ordinary
+# secret scanners. Permit only GitHub's noreply domains in every reachable
+# author and committer address; never print a rejected address.
+if git log --all --format='%ae%n%ce' |
+  grep -Evq '^([^@[:space:]]+@users\.noreply\.github\.com|noreply@github\.com)$'
+then
+  echo "Potential personal e-mail found in reachable Git identity metadata; matching content is intentionally suppressed." >&2
+  exit 1
+fi
+
 removed_paths=(
   docs/redesign.md
   docs/SESSION-HANDOFF.md
