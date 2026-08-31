@@ -2,7 +2,18 @@
 set -euo pipefail
 
 repo="$(mktemp -d "${TMPDIR:-/tmp}/check-public-data.XXXXXX")"
-trap 'rm -rf "$repo"' EXIT
+cleanup() {
+  local status=$?
+  trap - EXIT INT TERM
+  # Process substitutions and Git's optional maintenance helpers may outlive
+  # the foreground command by a few milliseconds. Reap shell children and
+  # leave the working directory before removing the fixture repository.
+  wait || true
+  cd /
+  rm -rf -- "$repo" || true
+  exit "$status"
+}
+trap cleanup EXIT INT TERM
 mkdir -p "$repo/scripts"
 cp scripts/check-public-data.sh "$repo/scripts/"
 chmod +x "$repo/scripts/check-public-data.sh"
@@ -11,6 +22,7 @@ git init -q
 git config user.name "Public Test"
 git config user.email "12345+public-test@users.noreply.github.com"
 git config gc.auto 0
+git config maintenance.auto false
 git add scripts/check-public-data.sh
 # A historical contributor address is deliberately outside the new PR range.
 GIT_AUTHOR_EMAIL=legacy@example.invalid GIT_COMMITTER_EMAIL=legacy@example.invalid \

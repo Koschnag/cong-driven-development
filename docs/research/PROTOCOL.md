@@ -61,8 +61,22 @@ Ganzes:
 7. [MemGPT (2023)](https://arxiv.org/abs/2310.08560) untersucht hierarchisches Gedächtnis über Sitzungen, nicht automatisch Provenienz oder Promotion.
 8. [RepoCoder (2023)](https://arxiv.org/abs/2303.12570) verbindet iterative Repository-Retrieval- und Generationsschritte.
 9. [Ralph loop](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/commands/ralph-loop.md) dokumentiert wiederholte frische Iterationen mit Zustand in Dateien/Git; eine Schleife ist keine unabhängige Abnahme.
+10. [TheAgentCompany (2024/2025)](https://arxiv.org/abs/2412.14161) evaluiert digitale Arbeit in einer simulierten Softwarefirma; es ist ein kontrollierter Aufgabenbenchmark, keine über Wochen gewachsene Produktgeschichte.
+11. [SWE-Milestone (2026)](https://arxiv.org/abs/2603.13428) ist der engste Vergleich für kontinuierliche Software-Evolution: abhängige Milestones werden in einer fortlaufenden Sequenz bearbeitet und Fehlerakkumulation wird messbar.
+12. [SlopCodeBench (2026)](https://arxiv.org/abs/2603.24755) misst strukturelle Erosion und Redundanz über wiederholte Erweiterungen. Das motiviert Riftwards Architekturtrends zusätzlich zu grünen Tests.
+13. [GameDevBench (2026)](https://arxiv.org/abs/2602.11103) prüft multimodale Agenten an abgegrenzten Game-Development-Aufgaben; visuelles Feedback hilft, ersetzt aber keine longitudinale Produktkohärenz.
+14. [OpenGame (2026)](https://arxiv.org/abs/2604.18394) kombiniert einen spezialisierten Game-Coding-Stack mit Build-, visueller Usability- und Intent-Evaluation für erzeugte Webspiele.
+15. [GameEngineBench (2026)](https://arxiv.org/abs/2607.03525) untersucht abgegrenzte C++-Änderungen in realen Unreal-Projekten und ist damit ein relevanter Gegenpol zu Riftwards eigenem Runtimepfad.
 
 Riftward kombiniert diese bekannten Muster mit expliziten Zuständen für
 geprüftes `main`, Kontinuitäts-`live-wip`, unabhängige Assurance, begrenzte
 Recovery und menschliche Promotion. Das sind zu prüfende Designentscheidungen,
 kein belegter Neuheits- oder Überlegenheitsanspruch.
+
+Der vorsichtige mögliche Beitrag liegt deshalb nicht in „KI schreibt ein
+Spiel“, sondern in einer naturalistischen, öffentlich nachvollziehbaren
+Langzeit-Fallstudie: dieselbe wachsende Codebasis, reale Betriebsunterbrechungen,
+Governance- und Recovery-Grenzen sowie prospektiv gemessene Kosten,
+Interventionen und Defekte. Ob diese Kombination besser konvergiert als
+einfachere Agentenschleifen, ist eine offene Hypothese und muss durch die
+vorregistrierten Metriken und spätere isolierte Ablationen entschieden werden.
