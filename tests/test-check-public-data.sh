@@ -84,28 +84,41 @@ run_path_case() {
 }
 
 run_long_path_case() {
-  local path="$1" count=2401 i output old_status parent tree_with tree_without
+  local path="$1" count=2401 i output old_status parent tree_a tree_b tree_without history_count
   git reset -q --hard "$base"
   git checkout -q -f -B candidate "$base"
   mkdir -p "$(dirname "$path")"
-  printf 'long historical fixture\n' >"$path"
+  printf 'long historical fixture A\n' >"$path"
   git add "$path"
-  tree_with="$(git write-tree)"
+  tree_a="$(git write-tree)"
+  printf 'long historical fixture B\n' >"$path"
+  git add "$path"
+  tree_b="$(git write-tree)"
   git reset -q HEAD -- "$path"
   rm -f "$path"
   tree_without="$(git write-tree)"
-  # commit-tree creates the same 2401-commit history without spending minutes
-  # rewriting the index for every fixture commit.
+  # Alternate two blobs so every commit is a real path change. commit-tree
+  # creates the long history without spending minutes rewriting the index.
   parent="$base"
   for ((i=0; i<count; i++)); do
-    parent="$(printf 'long historical path %s\n' "$i" | git commit-tree "$tree_with" -p "$parent")"
+    if ((i % 2 == 0)); then
+      parent="$(printf 'long historical path A %s\n' "$i" | git commit-tree "$tree_a" -p "$parent")"
+    else
+      parent="$(printf 'long historical path B %s\n' "$i" | git commit-tree "$tree_b" -p "$parent")"
+    fi
   done
   parent="$(printf 'remove long historical path\n' | git commit-tree "$tree_without" -p "$parent")"
   git update-ref refs/heads/candidate "$parent"
   git reset -q --hard "$parent"
 
+  history_count="$(git log --all --format='%H' -- "$path" | wc -l | tr -d ' ')"
+  if [[ "$history_count" != "2402" ]]; then
+    echo "long historical path count mismatch: $path" >&2
+    return 1
+  fi
+
   # The former short-circuiting pipeline must demonstrably hit SIGPIPE once
-  # the history exceeds the pipe buffer; this is the regression fixture.
+  # the genuine path history exceeds the pipe buffer.
   set +e
   git log --all --format='%H' -- "$path" | grep -q .
   old_status=$?
