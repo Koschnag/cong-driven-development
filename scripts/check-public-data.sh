@@ -24,7 +24,12 @@ then
   exit 1
 fi
 
-if git log --all --format='%B' | grep -qP "$pattern"
+if git log --all --format='%B' |
+  PUBLIC_PATTERN="$pattern" perl -ne '
+    BEGIN { $match = qr/$ENV{PUBLIC_PATTERN}/; $found = 0 }
+    if ($_ =~ $match) { $found = 1; last }
+    END { exit($found ? 0 : 1) }
+  '
 then
   echo "Potential private data found in Git commit messages; matching content is intentionally suppressed." >&2
   exit 1
