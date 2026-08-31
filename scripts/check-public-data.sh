@@ -27,7 +27,7 @@ fi
 if git log --all --format='%B' |
   PUBLIC_PATTERN="$pattern" perl -ne '
     BEGIN { $match = qr/$ENV{PUBLIC_PATTERN}/; $found = 0 }
-    if ($_ =~ $match) { $found = 1; last }
+    $found = 1 if $_ =~ $match;
     END { exit($found ? 0 : 1) }
   '
 then
@@ -39,7 +39,12 @@ fi
 # secret scanners. Permit only GitHub's noreply domains in every reachable
 # author and committer address; never print a rejected address.
 if git log --all --format='%ae%n%ce' |
-  grep -Evq '^([^@[:space:]]+@users\.noreply\.github\.com|noreply@github\.com)$'
+  perl -ne '
+    BEGIN { $invalid = 0 }
+    chomp;
+    $invalid = 1 unless /^([^@\s]+\@users\.noreply\.github\.com|noreply\@github\.com)$/;
+    END { exit($invalid ? 0 : 1) }
+  '
 then
   echo "Potential personal e-mail found in reachable Git identity metadata; matching content is intentionally suppressed." >&2
   exit 1
