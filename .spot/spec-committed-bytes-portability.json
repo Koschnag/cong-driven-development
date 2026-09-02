@@ -1,0 +1,35 @@
+{
+  "Id": "spec-committed-bytes-portability",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Typisierte Committed-Bytes-Portabilit\u00E4ts-Evidence",
+        "Intent": "CDD klassifiziert Portabilit\u00E4tsnachweise \u00FCber die tats\u00E4chlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausf\u00FChrung bleiben getrennte n\u00E4chste Schritte",
+        "Criteria": [
+          {
+            "Given": "eine lebende candidate-gebundene Slice-Lease und eine Obligation mit exaktem Candidate-, Tree-, Tool- und Check-Satz",
+            "When": "ein Adapter einen vollst\u00E4ndig gr\u00FCnen Prozess samt Log-Bindung meldet",
+            "Then": "roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabh\u00E4ngig hergeleitete Succeeded-Evidence f\u00FCr exakt dieselben abstrakten Identit\u00E4ten"
+          },
+          {
+            "Given": "ein exakt gebundener Portabilit\u00E4tslauf endet rot oder die Ausf\u00FChrungsinfrastruktur f\u00E4llt aus",
+            "When": "CDD die typisierten Prozess- und Check-Fakten klassifiziert",
+            "Then": "f\u00FChrt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschlie\u00DFlich zum Infrastruktur-Retry"
+          },
+          {
+            "Given": "ein Adapter behauptet ein anderes Ergebnis, beantwortet eine andere Obligation oder liefert Candidate-, Tree- oder Tool-Evidence f\u00FCr einen alten Stand",
+            "When": "der \u00E4u\u00DFere Controller-Austausch validiert wird",
+            "Then": "werden gef\u00E4lschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt"
+          },
+          {
+            "Given": "ein abgeschlossener Bericht l\u00E4sst Checks aus, widerspricht seinem Exitcode, enth\u00E4lt pfadartige Adapter-Identit\u00E4ten oder erreicht den seriellen Controller unaufgefordert",
+            "When": "CDD den Portabilit\u00E4tsvertrag pr\u00FCft",
+            "Then": "schl\u00E4gt die Beobachtung fail-closed fehl und ver\u00E4ndert keinen Run-Zustand"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

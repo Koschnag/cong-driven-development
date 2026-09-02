@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 189 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 196 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 172 · Pending 17 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 178 · Pending 18 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -22,6 +22,10 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - ist ein `term-knoten`
 - **Cockpit** *(auch: IDE)* — Web-GUI, die den SPOT multidimensional zeigt: Graph, UML, Validierung, Drift
   - bezieht sich auf `term-spot`
+- **Committed-Bytes-Portabilität** *(auch: Fresh-Checkout Evidence, Portability Evidence)* — Nachweis, dass exakt gebundene, versionierte Candidate-Bytes mit einem benannten Tool und reproduzierbaren Checks ohne unbeobachtete Worktree-Abhängigkeiten geprüft wurden
+  - bezieht sich auf `term-evidence-pack`
+  - bezieht sich auf `term-slice-lease`
+  - bezieht sich auf `term-evidence-fitness`
 - **Semantic Control Plane** *(auch: CDD Control Plane, Steuerungsebene)* — Anbieterunabhängige CDD-Schicht, die Intent, Systemzustand, Policies, Nachweise, Promotion und Evolution typisiert steuert, während ersetzbare Adapter die Arbeit ausführen
   - bezieht sich auf `term-spot`
   - bezieht sich auf `term-doctrine`
@@ -146,6 +150,14 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 **Intent:** Das Cockpit ist chat-primaer: eine Omnibar als einzige Tuer, eine Menueleiste, die Rail mit Flaechen, der Faden und eine Statuszeile.
 
 - GIVEN das Cockpit ist gegen das Selbstmodell geladen WHEN die Shell rendert THEN sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da
+
+### Typisierte Committed-Bytes-Portabilitäts-Evidence (`spec-committed-bytes-portability`, Pending)
+**Intent:** CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte
+
+- GIVEN eine lebende candidate-gebundene Slice-Lease und eine Obligation mit exaktem Candidate-, Tree-, Tool- und Check-Satz WHEN ein Adapter einen vollständig grünen Prozess samt Log-Bindung meldet THEN roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabhängig hergeleitete Succeeded-Evidence für exakt dieselben abstrakten Identitäten
+- GIVEN ein exakt gebundener Portabilitätslauf endet rot oder die Ausführungsinfrastruktur fällt aus WHEN CDD die typisierten Prozess- und Check-Fakten klassifiziert THEN führt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschließlich zum Infrastruktur-Retry
+- GIVEN ein Adapter behauptet ein anderes Ergebnis, beantwortet eine andere Obligation oder liefert Candidate-, Tree- oder Tool-Evidence für einen alten Stand WHEN der äußere Controller-Austausch validiert wird THEN werden gefälschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt
+- GIVEN ein abgeschlossener Bericht lässt Checks aus, widerspricht seinem Exitcode, enthält pfadartige Adapter-Identitäten oder erreicht den seriellen Controller unaufgefordert WHEN CDD den Portabilitätsvertrag prüft THEN schlägt die Beobachtung fail-closed fehl und verändert keinen Run-Zustand
 
 ### Course IR zu authoring-gegatem Spielplan (`spec-courseforge-gameplan`, Aligned)
 **Intent:** Ein importierter Kurs erzeugt reproduzierbare Lernmissions-Skelette, ohne fachliche Richtigkeit vorzutaueschen.
@@ -343,6 +355,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Personenbezogene Kurs-, Feedback-, Infrastruktur- oder Forschungsdaten gelangen in das oeffentliche Showcase-Repository.** (Likelihood Medium, Impact Critical) — Mitigation: Nur synthetische Fixtures; Metadaten-Allowlist; Secret-Scan; PII-Checkliste; private Security-Meldungen; menschliches Release-Gate.
 - **Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Fähigkeiten unbeabsichtigt offen** (Likelihood Medium, Impact Critical) — Mitigation: App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests
 - **Spec-Vollständigkeits-Falle: die Spec wird so komplex wie Code** (Likelihood Medium, Impact High) — Mitigation: Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents füllen Lücken, Validierung fängt Drift
+- **Ein lokal grüner Nachweis hängt unbemerkt von ignorierten oder nicht versionierten Worktree-Bytes ab** (Likelihood High, Impact High) — Mitigation: Portabilitäts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollständige und widersprüchliche Beobachtungen fail-closed ablehnen
 
 ## Komponenten
 
@@ -495,6 +508,7 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - `claim-harness-determines-effective-autonomy` (claim, Pending)
 - `claim-spot-traceability` (claim, Pending)
 - `spec-agent-interface-test-1` (test, Pending)
+- `spec-committed-bytes-portability` (spec, Pending)
 - `spec-export-context-test-2` (test, Pending)
 - `spec-gate-selbst-hart` (spec, Pending)
 - `spec-mcp-server-test-1` (test, Pending)

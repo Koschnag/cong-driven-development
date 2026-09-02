@@ -1617,6 +1617,185 @@ let ``outer lease seam rejects an invalid current lease even when its subject ma
     assertRejected
         (Autopilot.BindLeaseCandidate(invalid, exactSubject, "candidate-one"))
 
+let private committedBytesPortabilityRequest () : Autopilot.CommittedBytesPortabilityRequest =
+    let acquired =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 10.0)
+        |> acquireLease autopilotTime []
+    let bound =
+        Autopilot.bindSliceLeaseCandidate
+            (autopilotTime.AddMinutes 1.0)
+            (leaseSubject acquired)
+            "candidate-one"
+            acquired
+        |> function
+            | Ok lease -> lease
+            | Error errors -> failwith (String.concat " | " errors)
+    { Lease = bound
+      Subject = leaseSubject bound
+      CandidateDigest = "candidate-one"
+      TreeDigest = "tree-one"
+      ToolDigest = "toolchain-one"
+      RequiredCheckIds = [ "fresh-checkout"; "asset-calibration" ] }
+
+let private portabilityBinding candidate tree log : Autopilot.CommittedBytesPortabilityBinding =
+    { CandidateDigest = candidate
+      TreeDigest = tree
+      ToolDigest = "toolchain-one"
+      LogDigest = log }
+
+let private successfulPortabilityReport () : Autopilot.CommittedBytesPortabilityReport =
+    { Binding = portabilityBinding "candidate-one" "tree-one" "log-success"
+      Checks =
+        [ { CheckId = "fresh-checkout"; Passed = true }
+          { CheckId = "asset-calibration"; Passed = true } ]
+      Execution = Autopilot.ProcessExited 0 }
+
+[<Fact; Trait("spot", "spec-committed-bytes-portability-test-1")>]
+let ``committed bytes portability roundtrips exact candidate tree tool and log evidence`` () =
+    let request = committedBytesPortabilityRequest ()
+    let action = Autopilot.EvaluateCommittedBytesPortability request
+    let report = successfulPortabilityReport ()
+    let observation =
+        Autopilot.CommittedBytesPortabilityObserved
+            { Request = request
+              Report = report
+              ClaimedOutcome = Autopilot.Succeeded }
+
+    Assert.Equal(
+        action,
+        Json.deserialize<Autopilot.ControllerAction> (Json.serialize action))
+    Assert.Equal(
+        observation,
+        Json.deserialize<Autopilot.RunObservation> (Json.serialize observation))
+
+    match Autopilot.validateCommittedBytesPortabilityControllerExchange
+              (autopilotTime.AddMinutes 2.0)
+              action
+              observation with
+    | Error errors -> failwith (String.concat " | " errors)
+    | Ok evidence ->
+        Assert.Equal(Autopilot.Succeeded, evidence.Outcome)
+        Assert.Equal(report.Binding, evidence.Binding)
+        Assert.Equal<string list>([], evidence.FailedCheckIds)
+        Assert.Equal(None, evidence.FailureCode)
+        Assert.Equal(
+            Ok Autopilot.AcceptPortabilityEvidence,
+            Autopilot.portabilityDisposition evidence)
+
+[<Fact; Trait("spot", "spec-committed-bytes-portability-test-2")>]
+let ``product failure repairs candidate while infrastructure failure retries adapter lane`` () =
+    let request = committedBytesPortabilityRequest ()
+    let productReport : Autopilot.CommittedBytesPortabilityReport =
+        { Binding = portabilityBinding "candidate-one" "tree-one" "log-product-failure"
+          Checks =
+            [ { CheckId = "fresh-checkout"; Passed = false }
+              { CheckId = "asset-calibration"; Passed = true } ]
+          Execution = Autopilot.ProcessExited 1 }
+    let infrastructureReport : Autopilot.CommittedBytesPortabilityReport =
+        { Binding = portabilityBinding "candidate-one" "tree-one" "log-infrastructure-failure"
+          Checks = []
+          Execution = Autopilot.AdapterFailed "adapter-timeout" }
+    let decide report =
+        match Autopilot.decideCommittedBytesPortability
+                  (autopilotTime.AddMinutes 2.0)
+                  request
+                  report with
+        | Ok evidence -> evidence
+        | Error errors -> failwith (String.concat " | " errors)
+
+    let product = decide productReport
+    Assert.Equal(Autopilot.ProductFailure, product.Outcome)
+    Assert.Equal<string list>([ "fresh-checkout" ], product.FailedCheckIds)
+    Assert.Equal(None, product.FailureCode)
+    Assert.Equal(
+        Ok Autopilot.RepairProductCandidate,
+        Autopilot.portabilityDisposition product)
+
+    let infrastructure = decide infrastructureReport
+    Assert.Equal(Autopilot.InfrastructureFailure, infrastructure.Outcome)
+    Assert.Equal<string list>([], infrastructure.FailedCheckIds)
+    Assert.Equal(Some "adapter-timeout", infrastructure.FailureCode)
+    Assert.Equal(
+        Ok Autopilot.RetryPortabilityInfrastructure,
+        Autopilot.portabilityDisposition infrastructure)
+
+[<Fact; Trait("spot", "spec-committed-bytes-portability-test-3")>]
+let ``portability seam rejects forged outcomes other requests and stale committed bytes`` () =
+    let request = committedBytesPortabilityRequest ()
+    let action = Autopilot.EvaluateCommittedBytesPortability request
+    let successReport = successfulPortabilityReport ()
+    let validate report claimed echoedRequest =
+        Autopilot.validateCommittedBytesPortabilityControllerExchange
+            (autopilotTime.AddMinutes 2.0)
+            action
+            (Autopilot.CommittedBytesPortabilityObserved
+                { Request = echoedRequest
+                  Report = report
+                  ClaimedOutcome = claimed })
+
+    match validate successReport Autopilot.ProductFailure request with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("does not match the CDD decision"))
+    | Ok _ -> failwith "an adapter must not forge a portability outcome"
+
+    let otherRequest = { request with TreeDigest = "tree-two" }
+    match validate successReport Autopilot.Succeeded otherRequest with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("does not match the requested obligation"))
+    | Ok _ -> failwith "an observation for another portability request must be rejected"
+
+    let staleReport =
+        { successReport with
+            Binding = portabilityBinding "candidate-old" "tree-old" "log-stale" }
+    match validate staleReport Autopilot.Stale request with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("targets stale"))
+    | Ok _ -> failwith "stale committed bytes must not become accepted evidence"
+
+[<Fact; Trait("spot", "spec-committed-bytes-portability-test-4")>]
+let ``portability reports fail closed on incomplete contradictory or unsolicited evidence`` () =
+    let request = committedBytesPortabilityRequest ()
+    let incomplete =
+        { successfulPortabilityReport () with
+            Checks = [ { CheckId = "fresh-checkout"; Passed = true } ] }
+    match Autopilot.decideCommittedBytesPortability
+              (autopilotTime.AddMinutes 2.0)
+              request
+              incomplete with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("every required check"))
+    | Ok _ -> failwith "completed evidence may not omit a required check"
+
+    let contradictory =
+        { successfulPortabilityReport () with
+            Checks =
+                [ { CheckId = "fresh-checkout"; Passed = false }
+                  { CheckId = "asset-calibration"; Passed = true } ] }
+    match Autopilot.decideCommittedBytesPortability
+              (autopilotTime.AddMinutes 2.0)
+              request
+              contradictory with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("zero portability exit code"))
+    | Ok _ -> failwith "a zero exit code may not contradict a failed check"
+
+    let pathLikeRequest = { request with ToolDigest = "tools/local/adapter" }
+    match Autopilot.decideCommittedBytesPortability
+              (autopilotTime.AddMinutes 2.0)
+              pathLikeRequest
+              (successfulPortabilityReport ()) with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("not a path"))
+    | Ok _ -> failwith "the semantic contract must not accept adapter-local paths"
+
+    let run =
+        createAutopilot
+            { MaxSameSessionResumes = 1
+              MaxFreshStarts = 2
+              MaxRepairCycles = 1 }
+    let unsolicited =
+        Autopilot.CommittedBytesPortabilityObserved
+            { Request = request
+              Report = successfulPortabilityReport ()
+              ClaimedOutcome = Autopilot.Succeeded }
+    match Autopilot.applyObservation autopilotTime unsolicited run with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("not scheduled"))
+    | Ok _ -> failwith "the serial controller must reject unsolicited portability evidence"
+
 // ===== Longitudinal Riftward evidence: sanitized records and baselines =====
 
 let private riftwardPolicy : Autopilot.RecoveryPolicy =

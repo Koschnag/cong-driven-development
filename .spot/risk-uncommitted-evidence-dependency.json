@@ -1,0 +1,15 @@
+{
+  "Id": "risk-uncommitted-evidence-dependency",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Ein lokal gr\u00FCner Nachweis h\u00E4ngt unbemerkt von ignorierten oder nicht versionierten Worktree-Bytes ab",
+        "Likelihood": "High",
+        "Impact": "High",
+        "Mitigation": "Portabilit\u00E4ts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollst\u00E4ndige und widerspr\u00FCchliche Beobachtungen fail-closed ablehnen"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

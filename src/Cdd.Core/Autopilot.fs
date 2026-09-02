@@ -260,11 +260,72 @@ module Autopilot =
         { Transition : SliceLeaseTransition
           Outcome : Result<SliceLease, string list> }
 
+    /// Content-addressed identity of a portability execution. All values are
+    /// opaque identifiers: host paths and adapter-local handles stay outside
+    /// the CDD domain boundary.
+    type CommittedBytesPortabilityBinding =
+        { CandidateDigest : string
+          TreeDigest : string
+          ToolDigest : string
+          LogDigest : string }
+
+    /// Exact portability obligation for the committed candidate bytes owned by
+    /// one live slice lease. Required checks are semantic ids, not commands or
+    /// host paths; an adapter remains replaceable behind this contract.
+    type CommittedBytesPortabilityRequest =
+        { Lease : SliceLease
+          Subject : SliceLeaseSubject
+          CandidateDigest : string
+          TreeDigest : string
+          ToolDigest : string
+          RequiredCheckIds : string list }
+
+    type PortabilityCheckObservation =
+        { CheckId : string
+          Passed : bool }
+
+    /// Process completion is evidence about the product candidate. Adapter
+    /// failure is evidence about the execution infrastructure and must never be
+    /// translated into a product-repair request.
+    type PortabilityExecutionState =
+        | ProcessExited of exitCode: int
+        | AdapterFailed of failureCode: string
+
+    type CommittedBytesPortabilityReport =
+        { Binding : CommittedBytesPortabilityBinding
+          Checks : PortabilityCheckObservation list
+          Execution : PortabilityExecutionState }
+
+    type CommittedBytesPortabilityOutcome =
+        | Succeeded
+        | ProductFailure
+        | Stale
+        | InfrastructureFailure
+
+    type CommittedBytesPortabilityEvidence =
+        { Binding : CommittedBytesPortabilityBinding
+          Outcome : CommittedBytesPortabilityOutcome
+          FailedCheckIds : string list
+          FailureCode : string option }
+
+    /// The adapter echoes the exact request, reports typed execution facts and
+    /// states its claimed outcome. CDD derives the outcome independently.
+    type CommittedBytesPortabilityObservation =
+        { Request : CommittedBytesPortabilityRequest
+          Report : CommittedBytesPortabilityReport
+          ClaimedOutcome : CommittedBytesPortabilityOutcome }
+
+    type PortabilityDisposition =
+        | AcceptPortabilityEvidence
+        | RepairProductCandidate
+        | RetryPortabilityInfrastructure
+
     type ControllerAction =
         | DispatchAgent of AgentDispatch
         | ExecuteGate of GateExecution
         | CreateCheckpoint of CheckpointRequest
         | DecideSliceLease of SliceLeaseTransition
+        | EvaluateCommittedBytesPortability of CommittedBytesPortabilityRequest
         | MissionComplete of Evaluation
         | Escalate of reasons: string list
 
@@ -273,6 +334,7 @@ module Autopilot =
         | GateObserved of GateObservation
         | CheckpointObserved of CheckpointObservation
         | SliceLeaseTransitionObserved of SliceLeaseTransitionObservation
+        | CommittedBytesPortabilityObserved of CommittedBytesPortabilityObservation
         | HumanInterventionObserved of reason: string
 
     type LedgerEntry =
@@ -643,6 +705,130 @@ module Autopilot =
             Error [ "Slice lease observation was not requested by the expected controller action." ]
         | _ ->
             Error [ "Controller exchange does not contain a slice lease action and observation." ]
+
+    let private validateOpaqueIdentifier label (value: string) =
+        [ if blank value then
+              yield sprintf "%s is required." label
+          elif value.Length > 256
+               || value <> value.Trim()
+               || value.Contains('/')
+               || value.Contains('\\')
+               || value |> Seq.exists (fun character -> Char.IsControl character || Char.IsWhiteSpace character) then
+              yield sprintf "%s must be a bounded opaque identifier, not a path or free text." label ]
+
+    let private validateCommittedBytesPortabilityRequest at request =
+        let candidateBindingErrors =
+            match request.Lease.CandidateDigest with
+            | None -> [ "Portability evidence requires a candidate-bound lease." ]
+            | Some digest when digest <> request.CandidateDigest ->
+                [ "Portability request targets a stale candidate digest." ]
+            | Some _ -> []
+        let checkIds = request.RequiredCheckIds
+        [ yield! verifySliceLease at request.Subject request.Lease
+          yield! candidateBindingErrors
+          yield! validateOpaqueIdentifier "Portability candidate digest" request.CandidateDigest
+          yield! validateOpaqueIdentifier "Portability tree digest" request.TreeDigest
+          yield! validateOpaqueIdentifier "Portability tool digest" request.ToolDigest
+          if checkIds.IsEmpty then
+              yield "Portability evidence requires at least one check id."
+          for checkId in checkIds do
+              yield! validateOpaqueIdentifier "Portability check id" checkId
+          for duplicate in duplicates checkIds do
+              yield sprintf "Duplicate portability check id: %s" duplicate ]
+
+    let private validateCommittedBytesPortabilityReport request report =
+        let reportedCheckIds = report.Checks |> List.map (fun check -> check.CheckId)
+        [ yield! validateOpaqueIdentifier "Observed portability candidate digest" report.Binding.CandidateDigest
+          yield! validateOpaqueIdentifier "Observed portability tree digest" report.Binding.TreeDigest
+          yield! validateOpaqueIdentifier "Observed portability tool digest" report.Binding.ToolDigest
+          yield! validateOpaqueIdentifier "Portability log digest" report.Binding.LogDigest
+          for checkId in reportedCheckIds do
+              yield! validateOpaqueIdentifier "Observed portability check id" checkId
+          for duplicate in duplicates reportedCheckIds do
+              yield sprintf "Duplicate observed portability check id: %s" duplicate
+          for unknown in reportedCheckIds |> List.filter (fun id -> not (List.contains id request.RequiredCheckIds)) do
+              yield sprintf "Observed unknown portability check id: %s" unknown
+          match report.Execution with
+          | ProcessExited _ -> ()
+          | AdapterFailed failureCode ->
+              yield! validateOpaqueIdentifier "Portability infrastructure failure code" failureCode ]
+
+    /// Classify a typed adapter report against the exact live lease, candidate,
+    /// tree and tool obligation. A report for other committed bytes is marked
+    /// stale so the outer exchange can reject it without confusing that race
+    /// with either a product defect or an infrastructure outage.
+    let decideCommittedBytesPortability at request report =
+        let errors =
+            validateCommittedBytesPortabilityRequest at request
+            @ validateCommittedBytesPortabilityReport request report
+        if not errors.IsEmpty then Error errors
+        else
+            let exactSubject =
+                report.Binding.CandidateDigest = request.CandidateDigest
+                && report.Binding.TreeDigest = request.TreeDigest
+                && report.Binding.ToolDigest = request.ToolDigest
+            let evidence outcome failedCheckIds failureCode =
+                { Binding = report.Binding
+                  Outcome = outcome
+                  FailedCheckIds = failedCheckIds
+                  FailureCode = failureCode }
+            if not exactSubject then
+                Ok(evidence Stale [] None)
+            else
+                match report.Execution with
+                | AdapterFailed failureCode ->
+                    Ok(evidence InfrastructureFailure [] (Some failureCode))
+                | ProcessExited exitCode ->
+                    let reportedCheckIds = report.Checks |> List.map (fun check -> check.CheckId) |> List.sort
+                    let requiredCheckIds = request.RequiredCheckIds |> List.sort
+                    let failedCheckIds =
+                        report.Checks
+                        |> List.filter (fun check -> not check.Passed)
+                        |> List.map (fun check -> check.CheckId)
+                        |> List.sort
+                    let completionErrors =
+                        [ if reportedCheckIds <> requiredCheckIds then
+                              yield "A completed portability process must report every required check exactly once."
+                          if exitCode = 0 && not failedCheckIds.IsEmpty then
+                              yield "A zero portability exit code conflicts with failed checks."
+                          if exitCode <> 0 && failedCheckIds.IsEmpty then
+                              yield "A non-zero portability exit code requires a failed product check." ]
+                    if not completionErrors.IsEmpty then Error completionErrors
+                    elif exitCode = 0 then Ok(evidence Succeeded [] None)
+                    else Ok(evidence ProductFailure failedCheckIds None)
+
+    /// Map accepted evidence to controller intent. Infrastructure failure is a
+    /// retry of the adapter lane, never a repair instruction for product bytes.
+    let portabilityDisposition evidence =
+        match evidence.Outcome with
+        | Succeeded -> Ok AcceptPortabilityEvidence
+        | ProductFailure -> Ok RepairProductCandidate
+        | InfrastructureFailure -> Ok RetryPortabilityInfrastructure
+        | Stale -> Error [ "Stale portability evidence has no executable disposition." ]
+
+    /// Validate the complete Action/Observation exchange. The adapter cannot
+    /// forge success, answer another request or submit evidence for superseded
+    /// committed bytes; only CDD's recomputed non-stale evidence is accepted.
+    let validateCommittedBytesPortabilityControllerExchange at expectedAction observation =
+        match expectedAction, observation with
+        | EvaluateCommittedBytesPortability request,
+          CommittedBytesPortabilityObserved portabilityObservation ->
+            if portabilityObservation.Request <> request then
+                Error [ "Committed-bytes portability observation does not match the requested obligation." ]
+            else
+                match decideCommittedBytesPortability at request portabilityObservation.Report with
+                | Error errors -> Error errors
+                | Ok evidence when evidence.Outcome <> portabilityObservation.ClaimedOutcome ->
+                    Error [ "Committed-bytes portability outcome does not match the CDD decision." ]
+                | Ok evidence when evidence.Outcome = Stale ->
+                    Error [ "Committed-bytes portability observation targets stale candidate, tree or tool identity." ]
+                | Ok evidence -> Ok evidence
+        | EvaluateCommittedBytesPortability _, _ ->
+            Error [ "Run observation does not answer the expected committed-bytes portability action." ]
+        | _, CommittedBytesPortabilityObserved _ ->
+            Error [ "Committed-bytes portability observation was not requested by the expected controller action." ]
+        | _ ->
+            Error [ "Controller exchange does not contain a committed-bytes portability action and observation." ]
 
     /// Validate the whole execution contract before any worker receives work.
     let validatePlan (plan: RunPlan) : string list =
@@ -1089,6 +1275,8 @@ module Autopilot =
                 | CheckpointObserved checkpoint -> applyCheckpoint at checkpoint run
                 | SliceLeaseTransitionObserved _ ->
                     Error [ "Slice lease transitions are not scheduled by the current serial controller." ]
+                | CommittedBytesPortabilityObserved _ ->
+                    Error [ "Committed-bytes portability is not scheduled by the current serial controller." ]
                 | HumanInterventionObserved reason ->
                     if blank reason then Error [ "Human intervention requires a reason." ]
                     else

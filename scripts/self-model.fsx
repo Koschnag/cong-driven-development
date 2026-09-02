@@ -55,6 +55,7 @@ let entries =
       term "term-autopilot-run" "Autopilot Run" "Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints" [ "Agentic SDLC Run"; "Durable Run" ] [ PartOf(EntityId "term-control-plane"); RelatesTo(EntityId "term-mission-order") ]
       term "term-work-slice" "Work Slice" "Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates" [ "Implementation Slice"; "Task Slice" ] [ PartOf(EntityId "term-autopilot-run") ]
       term "term-slice-lease" "Slice Lease" "Zeitlich begrenzte, versuchsnummerierte Eigentumsbindung eines Work Slices an genau einen Owner und isolierten Worktree samt Base-, Candidate- und Scope-Bindung" [ "Worktree Lease"; "Ownership Lease" ] [ PartOf(EntityId "term-autopilot-run"); RelatesTo(EntityId "term-work-slice") ]
+      term "term-committed-bytes-portability" "Committed-Bytes-Portabilität" "Nachweis, dass exakt gebundene, versionierte Candidate-Bytes mit einem benannten Tool und reproduzierbaren Checks ohne unbeobachtete Worktree-Abhängigkeiten geprüft wurden" [ "Fresh-Checkout Evidence"; "Portability Evidence" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-slice-lease"); RelatesTo(EntityId "term-evidence-fitness") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Python-freier Vertrauenskern, polyglotte Adapter." "CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden"
@@ -123,6 +124,8 @@ let entries =
         "Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation"
       risk "risk-proxy-evidence" "Leicht verfügbare Proxy-Evidence ersetzt unbemerkt die repräsentative Prüfung des eigentlichen Claims" High Critical
         "Evidence Obligations binden Claim, Boundary, Szenario, Last, Umgebung und Metrik; Promotion vergleicht die geforderte mit der beobachteten Evidence Fitness und lässt Lücken unknown"
+      risk "risk-uncommitted-evidence-dependency" "Ein lokal grüner Nachweis hängt unbemerkt von ignorierten oder nicht versionierten Worktree-Bytes ab" High High
+        "Portabilitäts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollständige und widersprüchliche Beobachtungen fail-closed ablehnen"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -267,6 +270,24 @@ let entries =
                 { Given = "eine typisierte Lease-Transition als ControllerAction und die behauptete Antwort eines Adapters"
                   When = "Action und RunObservation über Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden"
                   Then = "roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gefälschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab" } ] } }
+
+      { Id = EntityId "spec-committed-bytes-portability"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Typisierte Committed-Bytes-Portabilitäts-Evidence"
+            Intent = "CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte"
+            Criteria =
+              [ { Given = "eine lebende candidate-gebundene Slice-Lease und eine Obligation mit exaktem Candidate-, Tree-, Tool- und Check-Satz"
+                  When = "ein Adapter einen vollständig grünen Prozess samt Log-Bindung meldet"
+                  Then = "roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabhängig hergeleitete Succeeded-Evidence für exakt dieselben abstrakten Identitäten" }
+                { Given = "ein exakt gebundener Portabilitätslauf endet rot oder die Ausführungsinfrastruktur fällt aus"
+                  When = "CDD die typisierten Prozess- und Check-Fakten klassifiziert"
+                  Then = "führt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschließlich zum Infrastruktur-Retry" }
+                { Given = "ein Adapter behauptet ein anderes Ergebnis, beantwortet eine andere Obligation oder liefert Candidate-, Tree- oder Tool-Evidence für einen alten Stand"
+                  When = "der äußere Controller-Austausch validiert wird"
+                  Then = "werden gefälschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt" }
+                { Given = "ein abgeschlossener Bericht lässt Checks aus, widerspricht seinem Exitcode, enthält pfadartige Adapter-Identitäten oder erreicht den seriellen Controller unaufgefordert"
+                  When = "CDD den Portabilitätsvertrag prüft"
+                  Then = "schlägt die Beobachtung fail-closed fehl und verändert keinen Run-Zustand" } ] } }
 
       { Id = EntityId "spec-riftward-longitudinal-baseline"; Convergence = Aligned
         Payload = SpecNode

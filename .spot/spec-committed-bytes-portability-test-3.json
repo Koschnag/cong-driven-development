@@ -1,0 +1,14 @@
+{
+  "Id": "spec-committed-bytes-portability-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-committed-bytes-portability",
+        "Name": "Typisierte Committed-Bytes-Portabilit\u00E4ts-Evidence \u2014 when der \u00E4u\u00DFere Controller-Austausch validiert wird then werden gef\u00E4lschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -379,6 +379,7 @@ module Studio =
             | Autopilot.ExecuteGate _ -> "ExecuteGate", None
             | Autopilot.CreateCheckpoint _ -> "CreateCheckpoint", None
             | Autopilot.DecideSliceLease _ -> "DecideSliceLease", None
+            | Autopilot.EvaluateCommittedBytesPortability _ -> "EvaluateCommittedBytesPortability", None
             | Autopilot.MissionComplete _ -> "MissionComplete", None
             | Autopilot.Escalate _ -> "Escalate", None
         { Id = run.RunId

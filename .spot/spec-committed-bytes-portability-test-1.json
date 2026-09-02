@@ -1,0 +1,14 @@
+{
+  "Id": "spec-committed-bytes-portability-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-committed-bytes-portability",
+        "Name": "Typisierte Committed-Bytes-Portabilit\u00E4ts-Evidence \u2014 when ein Adapter einen vollst\u00E4ndig gr\u00FCnen Prozess samt Log-Bindung meldet then roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabh\u00E4ngig hergeleitete Succeeded-Evidence f\u00FCr exakt dieselben abstrakten Identit\u00E4ten",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

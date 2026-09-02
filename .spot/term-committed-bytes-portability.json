@@ -1,0 +1,37 @@
+{
+  "Id": "term-committed-bytes-portability",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Committed-Bytes-Portabilit\u00E4t",
+        "Definition": "Nachweis, dass exakt gebundene, versionierte Candidate-Bytes mit einem benannten Tool und reproduzierbaren Checks ohne unbeobachtete Worktree-Abh\u00E4ngigkeiten gepr\u00FCft wurden",
+        "Synonyms": [
+          "Fresh-Checkout Evidence",
+          "Portability Evidence"
+        ],
+        "Relations": [
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-evidence-pack"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-slice-lease"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-evidence-fitness"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -230,7 +230,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**189 Knoten im Selbstmodell** · 4 aktive Invarianten · 55/61 abgeleitete Tests automatisiert
+**196 Knoten im Selbstmodell** · 4 aktive Invarianten · 59/65 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -270,6 +270,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
 - 🔜 **Semantische Foundation für Slice-Leases** — CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich
+- 🔜 **Typisierte Committed-Bytes-Portabilitäts-Evidence** — CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

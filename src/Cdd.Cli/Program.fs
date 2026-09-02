@@ -517,6 +517,9 @@ let private cmdAutopilotDrive runDirectory adapter workingDirectory maxSteps =
                     | Autopilot.DecideSliceLease _ ->
                         eprintfn "Slice-Lease-Entscheidungen sind nur als semantische CDD-Naht verfügbar; eine atomare Registry ist nicht konfiguriert."
                         1
+                    | Autopilot.EvaluateCommittedBytesPortability _ ->
+                        eprintfn "Committed-Bytes-Portabilität ist nur als semantische CDD-Naht verfügbar; ein expliziter Portabilitätsadapter ist nicht konfiguriert."
+                        1
                     | Autopilot.DispatchAgent _ as action ->
                         try
                             let input = Json.serialize action

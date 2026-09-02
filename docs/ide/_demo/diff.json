@@ -1002,6 +1002,21 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "risk-uncommitted-evidence-dependency",
+      "Payload": {
+        "Case": "RiskNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Ein lokal grüner Nachweis hängt unbemerkt von ignorierten oder nicht versionierten Worktree-Bytes ab",
+            "Likelihood": "High",
+            "Impact": "High",
+            "Mitigation": "Portabilitäts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollständige und widersprüchliche Beobachtungen fail-closed ablehnen"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "spec-agent-interface",
       "Payload": {
         "Case": "SpecNode",
@@ -1050,6 +1065,62 @@
                 "Then": "sind Omnibar, Menueleiste, Rail-Flaechen, Faden und die Statuszeile mit Knotenzahl da"
               }
             ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-committed-bytes-portability-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-committed-bytes-portability",
+            "Name": "Typisierte Committed-Bytes-Portabilitäts-Evidence — when ein Adapter einen vollständig grünen Prozess samt Log-Bindung meldet then roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabhängig hergeleitete Succeeded-Evidence für exakt dieselben abstrakten Identitäten",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-committed-bytes-portability-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-committed-bytes-portability",
+            "Name": "Typisierte Committed-Bytes-Portabilitäts-Evidence — when CDD die typisierten Prozess- und Check-Fakten klassifiziert then führt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschließlich zum Infrastruktur-Retry",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-committed-bytes-portability-test-3",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-committed-bytes-portability",
+            "Name": "Typisierte Committed-Bytes-Portabilitäts-Evidence — when der äußere Controller-Austausch validiert wird then werden gefälschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-committed-bytes-portability-test-4",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-committed-bytes-portability",
+            "Name": "Typisierte Committed-Bytes-Portabilitäts-Evidence — when CDD den Portabilitätsvertrag prüft then schlägt die Beobachtung fail-closed fehl und verändert keinen Run-Zustand",
+            "Derived": true
           }
         }
       },
@@ -2575,6 +2646,43 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "term-committed-bytes-portability",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Committed-Bytes-Portabilität",
+            "Definition": "Nachweis, dass exakt gebundene, versionierte Candidate-Bytes mit einem benannten Tool und reproduzierbaren Checks ohne unbeobachtete Worktree-Abhängigkeiten geprüft wurden",
+            "Synonyms": [
+              "Fresh-Checkout Evidence",
+              "Portability Evidence"
+            ],
+            "Relations": [
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-evidence-pack"
+                }
+              },
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-slice-lease"
+                }
+              },
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-evidence-fitness"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "term-control-plane",
       "Payload": {
         "Case": "TermNode",
@@ -3247,6 +3355,41 @@
             "SpecRef": "spec-agent-interface",
             "Name": "Agent-Interface — when der Agent ausgeführt wird (Claude direkt oder via kopiertem Prompt) then entsteht ein prüfbarer Änderungsvorschlag (upsert/delete), der erst nach Bestätigung angewendet wird",
             "Derived": true
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
+    {
+      "Id": "spec-committed-bytes-portability",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Typisierte Committed-Bytes-Portabilitäts-Evidence",
+            "Intent": "CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte",
+            "Criteria": [
+              {
+                "Given": "eine lebende candidate-gebundene Slice-Lease und eine Obligation mit exaktem Candidate-, Tree-, Tool- und Check-Satz",
+                "When": "ein Adapter einen vollständig grünen Prozess samt Log-Bindung meldet",
+                "Then": "roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabhängig hergeleitete Succeeded-Evidence für exakt dieselben abstrakten Identitäten"
+              },
+              {
+                "Given": "ein exakt gebundener Portabilitätslauf endet rot oder die Ausführungsinfrastruktur fällt aus",
+                "When": "CDD die typisierten Prozess- und Check-Fakten klassifiziert",
+                "Then": "führt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschließlich zum Infrastruktur-Retry"
+              },
+              {
+                "Given": "ein Adapter behauptet ein anderes Ergebnis, beantwortet eine andere Obligation oder liefert Candidate-, Tree- oder Tool-Evidence für einen alten Stand",
+                "When": "der äußere Controller-Austausch validiert wird",
+                "Then": "werden gefälschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt"
+              },
+              {
+                "Given": "ein abgeschlossener Bericht lässt Checks aus, widerspricht seinem Exitcode, enthält pfadartige Adapter-Identitäten oder erreicht den seriellen Controller unaufgefordert",
+                "When": "CDD den Portabilitätsvertrag prüft",
+                "Then": "schlägt die Beobachtung fail-closed fehl und verändert keinen Run-Zustand"
+              }
+            ]
           }
         }
       },
