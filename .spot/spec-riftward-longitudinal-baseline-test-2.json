@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-longitudinal-baseline-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-longitudinal-baseline",
+        "Name": "Sanitisierte longitudinale Riftward-Baseline \u2014 when die Baseline-Aggregation l\u00E4uft then werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widerspr\u00FCchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

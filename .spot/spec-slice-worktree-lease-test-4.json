@@ -1,0 +1,14 @@
+{
+  "Id": "spec-slice-worktree-lease-test-4",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-slice-worktree-lease",
+        "Name": "Semantische Foundation f\u00FCr Slice-Leases \u2014 when Action und RunObservation \u00FCber Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden then roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gef\u00E4lschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

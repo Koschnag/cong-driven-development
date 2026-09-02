@@ -514,6 +514,9 @@ let private cmdAutopilotDrive runDirectory adapter workingDirectory maxSteps =
                         match Autopilot.load runDirectory with
                         | Ok updated when updated.Ledger.Length > before -> drive (step + 1)
                         | _ -> 1
+                    | Autopilot.DecideSliceLease _ ->
+                        eprintfn "Slice-Lease-Entscheidungen sind nur als semantische CDD-Naht verfügbar; eine atomare Registry ist nicht konfiguriert."
+                        1
                     | Autopilot.DispatchAgent _ as action ->
                         try
                             let input = Json.serialize action

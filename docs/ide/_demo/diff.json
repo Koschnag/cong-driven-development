@@ -1764,6 +1764,41 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "spec-full-agentic-sdlc-controller",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Persistente Full-Agentic-SDLC-Kette",
+            "Intent": "CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop",
+            "Criteria": [
+              {
+                "Given": "eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen",
+                "When": "der Autopilot die nächste Aktion bestimmt",
+                "Then": "durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge"
+              },
+              {
+                "Given": "ein Agenten-Turn ohne erwarteten Terminalmarker",
+                "When": "die Beobachtung im Run protokolliert wird",
+                "Then": "wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei erschöpftem Budget fail-closed blockiert"
+              },
+              {
+                "Given": "fehlende oder rote Gates, korrelierte Rollen oder offene Review-Befunde",
+                "When": "der Controller Promotion oder den nächsten Slice bewertet",
+                "Then": "wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt"
+              },
+              {
+                "Given": "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen",
+                "When": "Status oder Evaluation abgefragt werden",
+                "Then": "werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "spec-gate-selbst-hart-test-1",
       "Payload": {
         "Case": "TestNode",
@@ -1999,6 +2034,78 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "spec-riftward-longitudinal-baseline-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-longitudinal-baseline",
+            "Name": "Sanitisierte longitudinale Riftward-Baseline — when ein Forschungs-Record projiziert wird then trägt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatzähler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-longitudinal-baseline-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-longitudinal-baseline",
+            "Name": "Sanitisierte longitudinale Riftward-Baseline — when die Baseline-Aggregation läuft then werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widersprüchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-longitudinal-baseline-test-3",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-longitudinal-baseline",
+            "Name": "Sanitisierte longitudinale Riftward-Baseline — when ihre Repetitions-Fitness bewertet wird then gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-longitudinal-baseline",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Sanitisierte longitudinale Riftward-Baseline",
+            "Intent": "Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben",
+            "Criteria": [
+              {
+                "Given": "ein terminierter Autopilot-Run mit rollenseparierten Worker-Profilen",
+                "When": "ein Forschungs-Record projiziert wird",
+                "Then": "trägt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatzähler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal"
+              },
+              {
+                "Given": "mehrere terminierte Runs aus mehreren deklarierten Konfigurationen",
+                "When": "die Baseline-Aggregation läuft",
+                "Then": "werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widersprüchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl"
+              },
+              {
+                "Given": "eine Baseline unterhalb des benannten Wiederholungsminimums",
+                "When": "ihre Repetitions-Fitness bewertet wird",
+                "Then": "gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "spec-risk-adaptive-assurance-portfolio-test-1",
       "Payload": {
         "Case": "TestNode",
@@ -2055,6 +2162,62 @@
                 "Then": "wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert"
               }
             ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-slice-worktree-lease-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-slice-worktree-lease",
+            "Name": "Semantische Foundation für Slice-Leases — when der Autopilot sie gegen die vollständige Lease-Historie prüft then werden nur vollständig gültige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der nächste Attempt ohne Überlappung zu einer lebenden Lease akzeptiert",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-slice-worktree-lease-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-slice-worktree-lease",
+            "Name": "Semantische Foundation für Slice-Leases — when ein Heartbeat ihre Laufzeit verlängern soll then müssen Identität, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-slice-worktree-lease-test-3",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-slice-worktree-lease",
+            "Name": "Semantische Foundation für Slice-Leases — when der Candidate an die Slice-Lease gebunden wird then akzeptiert CDD die Bindung nur für den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-slice-worktree-lease-test-4",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-slice-worktree-lease",
+            "Name": "Semantische Foundation für Slice-Leases — when Action und RunObservation über Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden then roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gefälschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab",
+            "Derived": true
           }
         }
       },
@@ -2766,6 +2929,37 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "term-slice-lease",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Slice Lease",
+            "Definition": "Zeitlich begrenzte, versuchsnummerierte Eigentumsbindung eines Work Slices an genau einen Owner und isolierten Worktree samt Base-, Candidate- und Scope-Bindung",
+            "Synonyms": [
+              "Worktree Lease",
+              "Ownership Lease"
+            ],
+            "Relations": [
+              {
+                "Case": "PartOf",
+                "Fields": {
+                  "Item": "term-autopilot-run"
+                }
+              },
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-work-slice"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "term-spec",
       "Payload": {
         "Case": "TermNode",
@@ -3073,41 +3267,6 @@
       "Convergence": "Pending"
     },
     {
-      "Id": "spec-full-agentic-sdlc-controller",
-      "Payload": {
-        "Case": "SpecNode",
-        "Fields": {
-          "Item": {
-            "Title": "Persistente Full-Agentic-SDLC-Kette",
-            "Intent": "CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop",
-            "Criteria": [
-              {
-                "Given": "eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen",
-                "When": "der Autopilot die nächste Aktion bestimmt",
-                "Then": "durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge"
-              },
-              {
-                "Given": "ein Agenten-Turn ohne erwarteten Terminalmarker",
-                "When": "die Beobachtung im Run protokolliert wird",
-                "Then": "wird dieselbe Session begrenzt fortgesetzt, danach aus dem letzten Checkpoint frisch gestartet und bei erschöpftem Budget fail-closed blockiert"
-              },
-              {
-                "Given": "fehlende oder rote Gates, korrelierte Rollen oder offene Review-Befunde",
-                "When": "der Controller Promotion oder den nächsten Slice bewertet",
-                "Then": "wird keine Fertigstellung akzeptiert und eine begrenzte Repair- oder Eskalationsaktion erzeugt"
-              },
-              {
-                "Given": "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen",
-                "When": "Status oder Evaluation abgefragt werden",
-                "Then": "werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert"
-              }
-            ]
-          }
-        }
-      },
-      "Convergence": "Pending"
-    },
-    {
       "Id": "spec-gate-selbst-hart",
       "Payload": {
         "Case": "SpecNode",
@@ -3276,6 +3435,41 @@
                 "Given": "eine kreative oder normative Mission ohne formale Risikomerkmale",
                 "When": "Assurance Obligations abgeleitet werden",
                 "Then": "bleibt benannte menschliche Autorität erhalten ohne unpassende Formalismen zu erzwingen"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
+    {
+      "Id": "spec-slice-worktree-lease",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Semantische Foundation für Slice-Leases",
+            "Intent": "CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich",
+            "Criteria": [
+              {
+                "Given": "eine Lease-Anforderung mit Attempt, Owner, Worktree, Base-Digest, Candidate-Digest, Scope und Ablaufzeit",
+                "When": "der Autopilot sie gegen die vollständige Lease-Historie prüft",
+                "Then": "werden nur vollständig gültige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der nächste Attempt ohne Überlappung zu einer lebenden Lease akzeptiert"
+              },
+              {
+                "Given": "eine lebende Slice-Lease",
+                "When": "ein Heartbeat ihre Laufzeit verlängern soll",
+                "Then": "müssen Identität, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt"
+              },
+              {
+                "Given": "ein Builder erzeugt einen neuen Candidate",
+                "When": "der Candidate an die Slice-Lease gebunden wird",
+                "Then": "akzeptiert CDD die Bindung nur für den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab"
+              },
+              {
+                "Given": "eine typisierte Lease-Transition als ControllerAction und die behauptete Antwort eines Adapters",
+                "When": "Action und RunObservation über Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden",
+                "Then": "roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gefälschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab"
               }
             ]
           }

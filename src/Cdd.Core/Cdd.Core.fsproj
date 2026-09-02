@@ -11,6 +11,7 @@
     <Compile Include="PublicRuntimeBoundary.fs" />
     <Compile Include="Eidos.fs" />
     <Compile Include="Autopilot.fs" />
+    <Compile Include="Riftward.fs" />
     <Compile Include="Studio.fs" />
     <Compile Include="Store.fs" />
     <Compile Include="History.fs" />

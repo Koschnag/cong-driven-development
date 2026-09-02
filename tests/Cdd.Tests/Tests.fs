@@ -1300,3 +1300,628 @@ let ``Studio projects agentic progress without exposing slice scope or prompts``
     let publicJson = Json.serialize projection
     Assert.DoesNotContain("src/Feature.fs", publicJson)
     Assert.DoesNotContain("Inspect only the declared scope", publicJson)
+
+let private leaseIdentity attempt owner worktree : Autopilot.SliceLeaseIdentity =
+    { RunId = "run-swarm"
+      MissionId = "mission-swarm"
+      SliceId = "slice-core"
+      Attempt = attempt
+      OwnerId = owner
+      WorktreeId = worktree }
+
+let private leaseRequest attempt owner worktree scope expires : Autopilot.SliceLeaseRequest =
+    { Identity = leaseIdentity attempt owner worktree
+      BaseDigest = "base-abc"
+      CandidateDigest = None
+      Scope = scope
+      ExpiresAtUtc = expires }
+
+let private leaseSubject (lease: Autopilot.SliceLease) : Autopilot.SliceLeaseSubject =
+    { Identity = lease.Identity
+      BaseDigest = lease.BaseDigest
+      CandidateDigest = lease.CandidateDigest
+      Scope = lease.Scope }
+
+let private acquireLease at history request =
+    match Autopilot.acquireSliceLease at history request with
+    | Ok lease -> lease
+    | Error errors -> failwith (String.concat " | " errors)
+
+[<Fact; Trait("spot", "spec-slice-worktree-lease-test-1")>]
+let ``slice leases reject overlapping live ownership and require monotonic attempts`` () =
+    let first =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature" ] (autopilotTime.AddMinutes 10.0)
+        |> acquireLease autopilotTime []
+    Assert.Equal<string list>([ "src/Feature" ], first.Scope)
+    let replayed =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature" ] (autopilotTime.AddMinutes 10.0)
+        |> acquireLease (autopilotTime.AddMinutes 1.0) [ first ]
+    Assert.Equal(first, replayed)
+
+    let conflict =
+        leaseRequest 1 "builder-b" "worktree-b" [ "src/Feature/File.fs" ] (autopilotTime.AddMinutes 10.0)
+        |> Autopilot.acquireSliceLease (autopilotTime.AddMinutes 1.0) [ first ]
+    match conflict with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("conflicts with live attempt"))
+    | Ok _ -> failwith "overlapping live scope must not acquire a second lease"
+
+    let disjointScopeSameSlice =
+        leaseRequest 2 "builder-b" "worktree-b" [ "tests/FeatureTests.fs" ] (autopilotTime.AddMinutes 10.0)
+        |> Autopilot.acquireSliceLease (autopilotTime.AddMinutes 1.0) [ first ]
+    match disjointScopeSameSlice with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("already has a live lease"))
+    | Ok _ -> failwith "one slice must never have two simultaneous owners"
+
+    let staleAttempt =
+        leaseRequest 1 "builder-b" "worktree-b" [ "src/Feature" ] (autopilotTime.AddMinutes 30.0)
+        |> Autopilot.acquireSliceLease (autopilotTime.AddMinutes 11.0) [ first ]
+    match staleAttempt with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("Expected lease attempt 2"))
+    | Ok _ -> failwith "an expired attempt must not be silently revived"
+
+    let second =
+        leaseRequest 2 "builder-b" "worktree-b" [ "src/Feature" ] (autopilotTime.AddMinutes 30.0)
+        |> acquireLease (autopilotTime.AddMinutes 11.0) [ first ]
+    Assert.Equal(2, second.Identity.Attempt)
+    Assert.Equal("builder-b", second.Identity.OwnerId)
+
+[<Fact; Trait("spot", "spec-slice-worktree-lease-test-2")>]
+let ``slice lease heartbeat extends only the exact live subject`` () =
+    let lease =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 10.0)
+        |> acquireLease autopilotTime []
+    let renewed =
+        match Autopilot.heartbeatSliceLease
+                  (autopilotTime.AddMinutes 5.0)
+                  (autopilotTime.AddMinutes 20.0)
+                  (leaseSubject lease)
+                  lease with
+        | Ok value -> value
+        | Error errors -> failwith (String.concat " | " errors)
+    Assert.Equal(autopilotTime.AddMinutes 5.0, renewed.HeartbeatAtUtc)
+    Assert.Equal(autopilotTime.AddMinutes 20.0, renewed.ExpiresAtUtc)
+
+    match Autopilot.heartbeatSliceLease
+              renewed.HeartbeatAtUtc
+              (autopilotTime.AddMinutes 30.0)
+              (leaseSubject renewed)
+              renewed with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("advance monotonically"))
+    | Ok _ -> failwith "heartbeat timestamps must strictly advance"
+
+    let conflictingSubject =
+        { (leaseSubject renewed) with
+            Identity = { renewed.Identity with OwnerId = "builder-b" } }
+    match Autopilot.heartbeatSliceLease
+              (autopilotTime.AddMinutes 6.0)
+              (autopilotTime.AddMinutes 30.0)
+              conflictingSubject
+              renewed with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("identity is stale"))
+    | Ok _ -> failwith "a different owner must not renew the lease"
+
+    match Autopilot.heartbeatSliceLease
+              (autopilotTime.AddMinutes 21.0)
+              (autopilotTime.AddMinutes 30.0)
+              (leaseSubject renewed)
+              renewed with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("expired"))
+    | Ok _ -> failwith "an expired lease must not be revived by heartbeat"
+
+[<Fact; Trait("spot", "spec-slice-worktree-lease-test-3")>]
+let ``candidate binding rejects stale digests scope drift and unsafe scope paths`` () =
+    let lease =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 10.0)
+        |> acquireLease autopilotTime []
+    let bound =
+        match Autopilot.bindSliceLeaseCandidate
+                  (autopilotTime.AddMinutes 1.0)
+                  (leaseSubject lease)
+                  "candidate-one"
+                  lease with
+        | Ok value -> value
+        | Error errors -> failwith (String.concat " | " errors)
+    Assert.Equal(Some "candidate-one", bound.CandidateDigest)
+    let roundtrip = Json.deserialize<Autopilot.SliceLease> (Json.serialize bound)
+    Assert.Equal(bound, roundtrip)
+
+    match Autopilot.bindSliceLeaseCandidate
+              (autopilotTime.AddMinutes 2.0)
+              (leaseSubject bound)
+              "candidate-one"
+              bound with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("advance to a new value"))
+    | Ok _ -> failwith "rebinding the same candidate must not create an invalid history version"
+
+    match Autopilot.verifySliceLease
+              (autopilotTime.AddMinutes 2.0)
+              (leaseSubject lease)
+              bound with
+    | errors when errors |> List.exists (fun error -> error.Contains("candidate digest is stale")) -> ()
+    | errors -> failwithf "expected stale candidate rejection, got %A" errors
+
+    let drifted = { (leaseSubject bound) with Scope = [ "tests/FeatureTests.fs" ] }
+    Assert.Contains(
+        Autopilot.verifySliceLease (autopilotTime.AddMinutes 2.0) drifted bound,
+        fun error -> error.Contains("scope is stale"))
+
+    let unsafeRequest =
+        leaseRequest 1 "builder-a" "worktree-a" [ "../outside" ] (autopilotTime.AddMinutes 10.0)
+    match Autopilot.acquireSliceLease autopilotTime [] unsafeRequest with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("not canonical"))
+    | Ok _ -> failwith "parent traversal must not enter a lease scope"
+
+    for unsafeScope in
+        [ "src/Feature/"; " src/Feature"; "src/Feature "; "src\\Feature"
+          "C:\\repo\\Feature"; "\\\\server\\share"; "src/Feature\u0001" ] do
+        match Autopilot.acquireSliceLease autopilotTime []
+                  (leaseRequest 1 "builder-a" "worktree-a" [ unsafeScope ] (autopilotTime.AddMinutes 10.0)) with
+        | Error _ -> ()
+        | Ok _ -> failwithf "non-canonical lease scope was accepted: %A" unsafeScope
+
+    let futureHistory =
+        { lease with HeartbeatAtUtc = autopilotTime.AddMinutes 2.0 }
+    match Autopilot.acquireSliceLease (autopilotTime.AddMinutes 1.0) [ futureHistory ]
+              (leaseRequest 2 "builder-b" "worktree-b" [ "tests/Feature.fs" ] (autopilotTime.AddMinutes 10.0)) with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("newer than the acquisition observation"))
+    | Ok _ -> failwith "controller time must not move behind retained history"
+
+    let contradictory =
+        { lease with
+            Identity = { lease.Identity with OwnerId = "builder-b"; WorktreeId = "worktree-b" } }
+    match Autopilot.acquireSliceLease (autopilotTime.AddMinutes 1.0) [ lease; contradictory ]
+              (leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 10.0)) with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("conflicting ownership"))
+    | Ok _ -> failwith "idempotent replay must not hide contradictory history"
+
+[<Fact>]
+let ``slice lease history rejects candidate rollback and shrinking expiry`` () =
+    let acquired =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 10.0)
+        |> acquireLease autopilotTime []
+    let bound =
+        Autopilot.bindSliceLeaseCandidate
+            (autopilotTime.AddMinutes 1.0)
+            (leaseSubject acquired)
+            "candidate-one"
+            acquired
+        |> function
+            | Ok lease -> lease
+            | Error errors -> failwith (String.concat " | " errors)
+    let nextRequest =
+        leaseRequest 2 "builder-b" "worktree-b" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 20.0)
+    let rollback =
+        { bound with CandidateDigest = None; HeartbeatAtUtc = autopilotTime.AddMinutes 2.0 }
+    match Autopilot.acquireSliceLease (autopilotTime.AddMinutes 11.0) [ acquired; bound; rollback ] nextRequest with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("rolls back the candidate"))
+    | Ok _ -> failwith "candidate rollback in retained history must fail closed"
+
+    let shrinkingExpiry =
+        { bound with
+            HeartbeatAtUtc = autopilotTime.AddMinutes 2.0
+            ExpiresAtUtc = autopilotTime.AddMinutes 9.0 }
+    match Autopilot.acquireSliceLease (autopilotTime.AddMinutes 11.0) [ acquired; bound; shrinkingExpiry ] nextRequest with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("monotonically extend expiry"))
+    | Ok _ -> failwith "shrinking expiry in retained history must fail closed"
+
+[<Fact; Trait("spot", "spec-slice-worktree-lease-test-4")>]
+let ``outer lease seam roundtrips all transitions and rejects forged or unsolicited observations`` () =
+    let request =
+        leaseRequest 1 "builder-a" "worktree-a" [ "src/Feature.fs" ] (autopilotTime.AddMinutes 10.0)
+    let acquireTransition = Autopilot.AcquireLease([], request)
+    let lease =
+        match Autopilot.decideSliceLeaseTransition autopilotTime acquireTransition with
+        | Ok value -> value
+        | Error errors -> failwith (String.concat " | " errors)
+    let subject = leaseSubject lease
+    let transitions =
+        [ acquireTransition
+          Autopilot.VerifyLease(lease, subject)
+          Autopilot.HeartbeatLease(
+              lease,
+              subject,
+              autopilotTime.AddMinutes 20.0)
+          Autopilot.BindLeaseCandidate(lease, subject, "candidate-one") ]
+
+    for transition in transitions do
+        let action = Autopilot.DecideSliceLease transition
+        let actionRoundtrip =
+            Json.deserialize<Autopilot.ControllerAction> (Json.serialize action)
+        Assert.Equal(action, actionRoundtrip)
+
+        let outcome =
+            Autopilot.decideSliceLeaseTransition (autopilotTime.AddMinutes 1.0) transition
+        match outcome with
+        | Ok _ -> ()
+        | Error errors -> failwithf "expected valid typed lease transition, got %A" errors
+        let observation : Autopilot.SliceLeaseTransitionObservation =
+            { Transition = transition; Outcome = outcome }
+        let runObservation = Autopilot.SliceLeaseTransitionObserved observation
+        let observationRoundtrip =
+            Json.deserialize<Autopilot.RunObservation> (Json.serialize runObservation)
+        Assert.Equal(runObservation, observationRoundtrip)
+        Assert.Equal(
+            outcome,
+            Autopilot.validateSliceLeaseControllerExchange
+                (autopilotTime.AddMinutes 1.0)
+                action
+                runObservation)
+
+    let forgedObservation : Autopilot.SliceLeaseTransitionObservation =
+        { Transition = acquireTransition
+          Outcome = Error [ "adapter claims rejection" ] }
+    match Autopilot.validateSliceLeaseControllerExchange
+              autopilotTime
+              (Autopilot.DecideSliceLease acquireTransition)
+              (Autopilot.SliceLeaseTransitionObserved forgedObservation) with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("does not match the CDD decision"))
+    | Ok _ -> failwith "an adapter must not forge a lease decision"
+
+    let staleTransition =
+        Autopilot.AcquireLease(
+            [],
+            leaseRequest 1 "builder-b" "worktree-b" [ "tests/Feature.fs" ] (autopilotTime.AddMinutes 10.0))
+    let staleObservation : Autopilot.SliceLeaseTransitionObservation =
+        { Transition = staleTransition
+          Outcome = Autopilot.decideSliceLeaseTransition autopilotTime staleTransition }
+    match Autopilot.validateSliceLeaseControllerExchange
+              autopilotTime
+              (Autopilot.DecideSliceLease acquireTransition)
+              (Autopilot.SliceLeaseTransitionObserved staleObservation) with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("does not match the requested transition"))
+    | Ok _ -> failwith "a response for another transition must not be accepted"
+
+    match Autopilot.validateSliceLeaseControllerExchange
+              autopilotTime
+              (Autopilot.DecideSliceLease acquireTransition)
+              (Autopilot.HumanInterventionObserved "unrelated") with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("does not answer"))
+    | Ok _ -> failwith "another observation case must not answer a lease action"
+
+    let policy : Autopilot.RecoveryPolicy =
+        { MaxSameSessionResumes = 1; MaxFreshStarts = 2; MaxRepairCycles = 1 }
+    let run = createAutopilot policy
+    match Autopilot.applyObservation
+              autopilotTime
+              (Autopilot.SliceLeaseTransitionObserved
+                  { Transition = acquireTransition
+                    Outcome = Autopilot.decideSliceLeaseTransition autopilotTime acquireTransition })
+              run with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("not scheduled"))
+    | Ok _ -> failwith "the serial controller must reject unsolicited lease observations"
+
+[<Fact>]
+let ``outer lease seam rejects an invalid current lease even when its subject matches`` () =
+    let invalid : Autopilot.SliceLease =
+        { Identity =
+            { RunId = ""; MissionId = ""; SliceId = ""; Attempt = 0
+              OwnerId = ""; WorktreeId = "" }
+          BaseDigest = ""
+          CandidateDigest = Some ""
+          Scope = [ "src/Feature.fs" ]
+          AcquiredAtUtc = autopilotTime.AddHours(-48.0)
+          HeartbeatAtUtc = autopilotTime.AddMinutes(-1.0)
+          ExpiresAtUtc = autopilotTime.AddHours(48.0) }
+    let exactSubject = leaseSubject invalid
+    let assertRejected transition =
+        match Autopilot.decideSliceLeaseTransition autopilotTime transition with
+        | Error errors ->
+            Assert.Contains(errors, fun error -> error.Contains("attempt must be positive"))
+            Assert.Contains(errors, fun error -> error.Contains("no base digest"))
+            Assert.Contains(errors, fun error -> error.Contains("blank candidate digest"))
+            Assert.Contains(errors, fun error -> error.Contains("24-hour"))
+        | Ok _ -> failwith "an invalid current lease must never gain authority"
+    assertRejected (Autopilot.VerifyLease(invalid, exactSubject))
+    assertRejected
+        (Autopilot.HeartbeatLease(invalid, exactSubject, autopilotTime.AddHours 12.0))
+    assertRejected
+        (Autopilot.BindLeaseCandidate(invalid, exactSubject, "candidate-one"))
+
+// ===== Longitudinal Riftward evidence: sanitized records and baselines =====
+
+let private riftwardPolicy : Autopilot.RecoveryPolicy =
+    { MaxSameSessionResumes = 1; MaxFreshStarts = 2; MaxRepairCycles = 1 }
+
+/// A run whose whole declared configuration is uniform across all roles.
+let private riftwardRun missionId provider model harness =
+    let basePlan = autopilotPlan riftwardPolicy
+    let plan =
+        { basePlan with
+            MissionId = missionId
+            Workers =
+                basePlan.Workers
+                |> List.map (fun worker ->
+                    { worker with Provider = provider; Model = model; Harness = harness }) }
+    match Autopilot.create autopilotTime plan with
+    | Ok run -> run
+    | Error errors -> failwith (String.concat " | " errors)
+
+let private completeRiftwardRun run =
+    run
+    |> applyAutopilot 1
+        (observeAgent Autopilot.Scout "scout-a" "scout-session" Autopilot.FreshSession
+            (Some Autopilot.WorkCompleted) None (Some "context-1") [])
+    |> applyAutopilot 2
+        (observeAgent Autopilot.Builder "builder-a" "build-session" Autopilot.FreshSession
+            (Some Autopilot.WorkCompleted) None (Some "candidate-1") [])
+    |> applyAutopilot 3
+        (Autopilot.GateObserved
+            { GateId = "gate-tests"; ValidatorId = "dotnet-test-oracle"
+              CandidateDigest = "candidate-1"; Passed = true; ExitCode = 0
+              EvidenceDigest = "evidence-1"; DurationMilliseconds = 30L; Detail = "green" })
+    |> applyAutopilot 4
+        (observeAgent Autopilot.Critic "critic-b" "critic-session" Autopilot.FreshSession
+            (Some Autopilot.WorkCompleted) (Some "candidate-1") None [])
+    |> applyAutopilot 5
+        (observeAgent Autopilot.Reviewer "reviewer-c" "review-session" Autopilot.FreshSession
+            (Some Autopilot.WorkCompleted) (Some "candidate-1") None [])
+    |> applyAutopilot 6
+        (Autopilot.CheckpointObserved
+            { SliceId = "slice-1"; CandidateDigest = "candidate-1"; Succeeded = true
+              CommitHash = "abc123"; CleanWorktree = true; Detail = "checkpointed" })
+
+let private blockRiftwardRun (run: Autopilot.RunState) =
+    let interrupt session mode (current: Autopilot.RunState) =
+        applyAutopilot (current.Ledger.Length + 1)
+            (observeAgent Autopilot.Scout "scout-a" session mode None None None []) current
+    run
+    |> interrupt "session-1" Autopilot.FreshSession
+    |> interrupt "session-1" (Autopilot.ResumeSession "session-1")
+    |> interrupt "session-2" Autopilot.FreshSession
+    |> interrupt "session-2" (Autopilot.ResumeSession "session-2")
+
+let private riftwardProtocol = "sha256:evaluation-protocol-v1"
+
+let private observeOrFail run =
+    match Riftward.observeRun riftwardProtocol run with
+    | Ok record -> record
+    | Error errors -> failwith (String.concat " | " errors)
+
+let private aggregateOrFail records =
+    match Riftward.aggregate records with
+    | Ok aggregates -> aggregates
+    | Error errors -> failwith (String.concat " | " errors)
+
+[<Fact; Trait("spot", "spec-riftward-longitudinal-baseline-test-1")>]
+let ``riftward records strip sessions scopes prompts and artifacts from terminal runs`` () =
+    let running = riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+    match Riftward.observeRun " " (running |> blockRiftwardRun) with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("protocol digest"))
+    | Ok _ -> failwith "a baseline without an evaluation protocol is not comparable"
+    match Riftward.observeRun riftwardProtocol running with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("terminal"))
+    | Ok _ -> failwith "a running snapshot has no stable outcome"
+
+    let record = running |> blockRiftwardRun |> observeOrFail
+    Assert.Equal(Autopilot.Blocked, record.Status)
+    Assert.Equal("mission-riftward", record.MissionId)
+    Assert.Equal("model-a", record.Configuration.Builder.Model)
+    Assert.Equal(riftwardProtocol, record.Configuration.EvaluationProtocolDigest)
+    Assert.Equal(4, record.Evaluation.PrematureStops)
+
+    let published = Json.serialize record
+    Assert.DoesNotContain("session-1", published)
+    Assert.DoesNotContain("session-2", published)
+    Assert.DoesNotContain("scout-session", published)
+    Assert.DoesNotContain("src/Feature.fs", published)
+    Assert.DoesNotContain("test observation", published)
+    Assert.DoesNotContain("candidate-1", published)
+    Assert.DoesNotContain("context-1", published)
+    Assert.DoesNotContain("abc123", published)
+
+[<Fact; Trait("spot", "spec-riftward-longitudinal-baseline-test-2")>]
+let ``riftward aggregates baselines deterministically per declared configuration`` () =
+    let completedA runId =
+        riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+        |> completeRiftwardRun |> observeOrFail
+        |> fun record -> { record with RunId = runId }
+    let records =
+        [ completedA "run-a-1"
+          completedA "run-a-2"
+          riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+          |> blockRiftwardRun |> observeOrFail |> fun record -> { record with RunId = "run-a-3" }
+          riftwardRun "mission-other" "provider-b" "model-b" "harness-b"
+          |> completeRiftwardRun |> observeOrFail |> fun record -> { record with RunId = "run-b-1" } ]
+
+    let firstPass = aggregateOrFail records
+    let secondPass = aggregateOrFail (List.rev records)
+    Assert.Equal<Riftward.BaselineAggregate list>(firstPass, secondPass)
+    Assert.Equal(2, firstPass.Length)
+
+    let baselineA = firstPass |> List.find (fun item -> item.Configuration.Builder.Model = "model-a")
+    let baselineB = firstPass |> List.find (fun item -> item.Configuration.Builder.Model = "model-b")
+    Assert.Equal("mission-other", (List.head firstPass).MissionId)
+    Assert.Equal(3, baselineA.Runs)
+    Assert.Equal(1, baselineA.Missions)
+    Assert.Equal(2, baselineA.FullSolves)
+    Assert.Equal(1, baselineA.BlockedRuns)
+    Assert.Equal(3, baselineA.AttemptedSlices)
+    Assert.Equal(2, baselineA.CompletedSlices)
+    Assert.Equal(4, baselineA.PrematureStops)
+    Assert.Equal(2, baselineA.GateRuns)
+    Assert.Equal(240L, baselineA.InputTokens)
+    Assert.Equal(60L, baselineA.OutputTokens)
+    Assert.Equal(70L, baselineA.MedianDurationMilliseconds)
+    Assert.Equal(1, baselineB.Runs)
+    Assert.Equal(1, baselineB.Missions)
+    Assert.Equal(1, baselineB.FullSolves)
+
+[<Fact; Trait("spot", "spec-riftward-longitudinal-baseline-test-3")>]
+let ``riftward separates mixed configurations and classifies repetition fitness honestly`` () =
+    let single =
+        riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+        |> completeRiftwardRun |> observeOrFail
+    let aggregate = aggregateOrFail [ single ] |> List.exactlyOne
+    Assert.Equal(Ok Riftward.Anecdotal, Riftward.classify 3 aggregate)
+    Assert.Equal(Ok Riftward.Repeated, Riftward.classify 1 aggregate)
+
+    // A differing critic profile must never be merged into the uniform
+    // baseline even when the builder model matches.
+    let mixedPlan =
+        let basePlan = autopilotPlan riftwardPolicy
+        { basePlan with MissionId = "mission-riftward"
+                        Workers =
+                            basePlan.Workers
+                            |> List.map (fun worker ->
+                                if worker.Role = Autopilot.Critic
+                                then { worker with Provider = "provider-c"; Model = "model-c"; Harness = "harness-c" }
+                                else { worker with Provider = "provider-a"; Model = "model-a"; Harness = "harness-a" }) }
+    let mixed =
+        match Autopilot.create autopilotTime mixedPlan with
+        | Ok run -> run |> completeRiftwardRun |> observeOrFail
+        | Error errors -> failwith (String.concat " | " errors)
+    let aggregates = aggregateOrFail [ single; { mixed with RunId = "mixed-run" } ]
+    Assert.Equal(2, aggregates.Length)
+    Assert.Contains(aggregates, fun item -> item.Configuration.Critic.Provider <> item.Configuration.Scout.Provider)
+
+    let deduplicated = aggregateOrFail [ single; single ] |> List.exactlyOne
+    Assert.Equal(1, deduplicated.Runs)
+    Assert.Equal(Ok Riftward.Anecdotal, Riftward.classify 2 deduplicated)
+
+    let contradictory = { single with Status = Autopilot.Blocked }
+    match Riftward.aggregate [ single; contradictory ] with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("contradictory"))
+    | Ok _ -> failwith "one RunId must not contribute contradictory records"
+
+    let anotherMission = { single with RunId = "other-mission-run"; MissionId = "mission-other" }
+    Assert.Equal(2, aggregateOrFail [ single; anotherMission ] |> List.length)
+
+    let anotherProtocol =
+        { single with
+            RunId = "other-protocol-run"
+            Configuration =
+                { single.Configuration with EvaluationProtocolDigest = "sha256:evaluation-protocol-v2" } }
+    Assert.Equal(2, aggregateOrFail [ single; anotherProtocol ] |> List.length)
+
+[<Fact>]
+let ``riftward rejects untrusted records and malformed run provenance at publication boundary`` () =
+    let valid =
+        riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+        |> completeRiftwardRun
+        |> observeOrFail
+    let untrusted =
+        { valid with
+            Status = Autopilot.Running
+            InputTokens = -1L
+            OutputTokens = -1L
+            Configuration =
+                { valid.Configuration with
+                    Builder = { valid.Configuration.Builder with Provider = " " } }
+            Evaluation =
+                { valid.Evaluation with
+                    CompletedSlices = -1
+                    TotalSlices = -1
+                    GateRuns = 0
+                    GateFailures = 1
+                    DurationMilliseconds = -1L } }
+    match Riftward.aggregate [ untrusted ] with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("not terminal"))
+        Assert.Contains(errors, fun error -> error.Contains("Builder provider"))
+        Assert.Contains(errors, fun error -> error.Contains("negative CompletedSlices"))
+        Assert.Contains(errors, fun error -> error.Contains("at least one attempted slice"))
+        Assert.Contains(errors, fun error -> error.Contains("more gate failures"))
+        Assert.Contains(errors, fun error -> error.Contains("negative input tokens"))
+    | Ok _ -> failwith "untrusted records must not become a public baseline"
+
+    let terminal =
+        riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+        |> blockRiftwardRun
+    let malformedRun =
+        { terminal with
+            Plan =
+                { terminal.Plan with
+                    Workers =
+                        terminal.Plan.Workers
+                        |> List.map (fun worker ->
+                            if worker.Role = Autopilot.Builder then { worker with Harness = " " }
+                            else worker) }
+            Metrics = { terminal.Metrics with InputTokens = -1L } }
+    match Riftward.observeRun riftwardProtocol malformedRun with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("Builder harness"))
+        Assert.Contains(errors, fun error -> error.Contains("negative input tokens"))
+    | Ok _ -> failwith "malformed durable state must fail at the publication boundary"
+
+[<Fact>]
+let ``riftward aggregation and repetition classification fail closed at numeric boundaries`` () =
+    let valid =
+        riftwardRun "mission-riftward" "provider-a" "model-a" "harness-a"
+        |> completeRiftwardRun
+        |> observeOrFail
+    let boundaryRecord runId totalSlices duration inputTokens outputTokens =
+        { valid with
+            RunId = runId
+            Status = Autopilot.Blocked
+            Evaluation =
+                { valid.Evaluation with
+                    FullSolve = false
+                    CompletedSlices = 0
+                    TotalSlices = totalSlices
+                    DurationMilliseconds = duration }
+            InputTokens = inputTokens
+            OutputTokens = outputTokens }
+
+    match
+        Riftward.aggregate
+            [ boundaryRecord "int-a" Int32.MaxValue 0L 0L 0L
+              boundaryRecord "int-b" Int32.MaxValue 0L 0L 0L ]
+    with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("overflows AttemptedSlices"))
+    | Ok _ -> failwith "overflowing int aggregates must fail as typed errors"
+
+    match
+        Riftward.aggregate
+            [ boundaryRecord "token-a" 1 0L Int64.MaxValue Int64.MaxValue
+              boundaryRecord "token-b" 1 0L Int64.MaxValue Int64.MaxValue ]
+    with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("overflows InputTokens"))
+        Assert.Contains(errors, fun error -> error.Contains("overflows OutputTokens"))
+    | Ok _ -> failwith "overflowing token aggregates must fail as typed errors"
+
+    let maximumMedian =
+        aggregateOrFail
+            [ boundaryRecord "median-a" 1 Int64.MaxValue 0L 0L
+              boundaryRecord "median-b" 1 Int64.MaxValue 0L 0L ]
+        |> List.exactlyOne
+    Assert.Equal(Int64.MaxValue, maximumMedian.MedianDurationMilliseconds)
+
+    let baseline = aggregateOrFail [ valid ] |> List.exactlyOne
+    Assert.Equal(Ok Riftward.Repeated, Riftward.classify 1 baseline)
+    match Riftward.classify 0 baseline with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("minimum must be positive"))
+    | Ok _ -> failwith "an invalid repetition minimum must fail closed"
+
+    let forgedCounts = { baseline with RunIds = [ "a"; "b" ]; Runs = 0; Missions = 0 }
+    match Riftward.classify 2 forgedCounts with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("Runs must equal"))
+        Assert.Contains(errors, fun error -> error.Contains("exactly one mission"))
+    | Ok _ -> failwith "forged run counts must never become Repeated"
+
+    let forgedIds = { baseline with RunIds = [ ""; "" ]; Runs = 2 }
+    match Riftward.classify 1 forgedIds with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("blank values"))
+        Assert.Contains(errors, fun error -> error.Contains("duplicate RunId"))
+    | Ok _ -> failwith "blank or duplicate run ids must never become Repeated"
+
+    let invalidRelations =
+        { baseline with
+            FullSolves = 2
+            BlockedRuns = -1
+            AttemptedSlices = 0
+            CompletedSlices = 1
+            GateRuns = 0
+            GateFailures = 1
+            MedianDurationMilliseconds = -1L
+            InputTokens = -1L }
+    match Riftward.classify 1 invalidRelations with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("negative BlockedRuns"))
+        Assert.Contains(errors, fun error -> error.Contains("CompletedSlices cannot exceed"))
+        Assert.Contains(errors, fun error -> error.Contains("GateFailures cannot exceed"))
+        Assert.Contains(errors, fun error -> error.Contains("negative median duration"))
+        Assert.Contains(errors, fun error -> error.Contains("negative input tokens"))
+    | Ok _ -> failwith "inconsistent aggregate counters must fail closed"

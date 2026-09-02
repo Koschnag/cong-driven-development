@@ -131,13 +131,6 @@ module Autopilot =
           HumanInterventions : int
           DurationMilliseconds : int64 }
 
-    type ControllerAction =
-        | DispatchAgent of AgentDispatch
-        | ExecuteGate of GateExecution
-        | CreateCheckpoint of CheckpointRequest
-        | MissionComplete of Evaluation
-        | Escalate of reasons: string list
-
     type AgentTerminal =
         | WorkCompleted
         | ChangesRequested
@@ -179,12 +172,6 @@ module Autopilot =
           CleanWorktree : bool
           Detail : string }
 
-    type RunObservation =
-        | AgentTurnObserved of AgentTurnObservation
-        | GateObserved of GateObservation
-        | CheckpointObserved of CheckpointObservation
-        | HumanInterventionObserved of reason: string
-
     type RecoveryState =
         { Role : AgentRole
           SessionId : string
@@ -216,6 +203,78 @@ module Autopilot =
           InputTokens : int64
           OutputTokens : int64 }
 
+    /// Stable identity of one ownership attempt for a bounded slice. Attempt
+    /// numbers are monotonic per run, mission and slice; an expired attempt is retained
+    /// as history and is never silently revived.
+    type SliceLeaseIdentity =
+        { RunId : string
+          MissionId : string
+          SliceId : string
+          Attempt : int
+          OwnerId : string
+          WorktreeId : string }
+
+    /// Request emitted by an execution adapter before it creates or assigns an
+    /// isolated worktree. Paths are repository-relative scope identifiers, not
+    /// host paths. The controller owns the semantic decision; atomic storage is
+    /// deliberately an adapter responsibility.
+    type SliceLeaseRequest =
+        { Identity : SliceLeaseIdentity
+          BaseDigest : string
+          CandidateDigest : string option
+          Scope : string list
+          ExpiresAtUtc : DateTimeOffset }
+
+    /// Persistable ownership fact. CandidateDigest advances explicitly when a
+    /// builder produces a new candidate; heartbeat alone cannot change it.
+    type SliceLease =
+        { Identity : SliceLeaseIdentity
+          BaseDigest : string
+          CandidateDigest : string option
+          Scope : string list
+          AcquiredAtUtc : DateTimeOffset
+          HeartbeatAtUtc : DateTimeOffset
+          ExpiresAtUtc : DateTimeOffset }
+
+    /// Every mutation, heartbeat or candidate binding must present the exact
+    /// lease subject it observed. A mismatch is stale evidence, not recovery.
+    type SliceLeaseSubject =
+        { Identity : SliceLeaseIdentity
+          BaseDigest : string
+          CandidateDigest : string option
+          Scope : string list }
+
+    /// Pure lease transition requested at the outer controller boundary. The
+    /// values contain no host paths or registry handles; IO adapters may carry
+    /// them, but the CDD domain remains the decision authority.
+    type SliceLeaseTransition =
+        | AcquireLease of history: SliceLease list * request: SliceLeaseRequest
+        | VerifyLease of current: SliceLease * subject: SliceLeaseSubject
+        | HeartbeatLease of current: SliceLease * subject: SliceLeaseSubject * expiresAtUtc: DateTimeOffset
+        | BindLeaseCandidate of current: SliceLease * subject: SliceLeaseSubject * candidateDigest: string
+
+    /// An adapter observation must echo the exact transition and its claimed
+    /// outcome. CDD recomputes the outcome before accepting the observation;
+    /// an adapter cannot turn rejection into ownership by assertion.
+    type SliceLeaseTransitionObservation =
+        { Transition : SliceLeaseTransition
+          Outcome : Result<SliceLease, string list> }
+
+    type ControllerAction =
+        | DispatchAgent of AgentDispatch
+        | ExecuteGate of GateExecution
+        | CreateCheckpoint of CheckpointRequest
+        | DecideSliceLease of SliceLeaseTransition
+        | MissionComplete of Evaluation
+        | Escalate of reasons: string list
+
+    type RunObservation =
+        | AgentTurnObserved of AgentTurnObservation
+        | GateObserved of GateObservation
+        | CheckpointObserved of CheckpointObservation
+        | SliceLeaseTransitionObserved of SliceLeaseTransitionObservation
+        | HumanInterventionObserved of reason: string
+
     type LedgerEntry =
         { Sequence : int
           At : DateTimeOffset
@@ -243,6 +302,347 @@ module Autopilot =
         values
         |> List.countBy id
         |> List.choose (fun (value, count) -> if count > 1 then Some value else None)
+
+    let private maximumLeaseDuration = TimeSpan.FromHours 24.0
+
+    let private normalizeLeaseScope (value: string) =
+        if blank value then Error "Lease scope entries cannot be blank."
+        else
+            let segments = value.Split('/', StringSplitOptions.None)
+            let windowsDrive =
+                value.Length >= 2 && Char.IsLetter value.[0] && value.[1] = ':'
+            if value <> value.Trim() || value.Contains('\\') || value.EndsWith("/", StringComparison.Ordinal)
+               || value |> Seq.exists Char.IsControl then
+                Error(sprintf "Lease scope is not canonical: %s" value)
+            elif value.StartsWith("/", StringComparison.Ordinal) || windowsDrive then
+                Error(sprintf "Lease scope must be repository-relative: %s" value)
+            elif segments |> Array.exists (fun segment -> segment = "" || segment = "." || segment = "..") then
+                Error(sprintf "Lease scope is not canonical: %s" value)
+            else Ok value
+
+    let private normalizeLeaseScopes values =
+        let normalized, errors =
+            values
+            |> List.fold (fun (accepted, rejected) value ->
+                match normalizeLeaseScope value with
+                | Ok scope -> scope :: accepted, rejected
+                | Error error -> accepted, error :: rejected) ([], [])
+        let scopes = normalized |> List.rev
+        let duplicateErrors =
+            duplicates scopes |> List.map (sprintf "Duplicate lease scope: %s")
+        if values.IsEmpty then Error [ "A slice lease requires explicit scope." ]
+        elif not errors.IsEmpty || not duplicateErrors.IsEmpty then
+            Error(List.rev errors @ duplicateErrors)
+        else Ok scopes
+
+    let private scopesOverlap (left: string) (right: string) =
+        left = right
+        || left.StartsWith(right + "/", StringComparison.Ordinal)
+        || right.StartsWith(left + "/", StringComparison.Ordinal)
+
+    let private leaseIsLive (at: DateTimeOffset) (lease: SliceLease) = at < lease.ExpiresAtUtc
+
+    let private validateLeaseIdentity (identity: SliceLeaseIdentity) =
+        [ if blank identity.RunId then yield "Lease RunId is required."
+          if blank identity.MissionId then yield "Lease MissionId is required."
+          if blank identity.SliceId then yield "Lease SliceId is required."
+          if identity.Attempt < 1 then yield "Lease attempt must be positive."
+          if blank identity.OwnerId then yield "Lease owner is required."
+          if blank identity.WorktreeId then yield "Lease worktree id is required." ]
+
+    let private validateLeaseExpiry at expiresAt =
+        [ if expiresAt <= at then yield "Lease expiry must be in the future."
+          if expiresAt - at > maximumLeaseDuration then
+              yield "Lease duration exceeds the 24-hour controller limit." ]
+
+    let private validateLeaseRecord at index (lease: SliceLease) =
+        [ for error in validateLeaseIdentity lease.Identity do
+              yield sprintf "Lease history entry %d: %s" index error
+          if blank lease.BaseDigest then
+              yield sprintf "Lease history entry %d has no base digest." index
+          match lease.CandidateDigest with
+          | Some digest when blank digest ->
+              yield sprintf "Lease history entry %d has a blank candidate digest." index
+          | _ -> ()
+          match normalizeLeaseScopes lease.Scope with
+          | Error errors ->
+              for error in errors do yield sprintf "Lease history entry %d: %s" index error
+          | Ok scope when scope <> lease.Scope ->
+              yield sprintf "Lease history entry %d has non-canonical scope." index
+          | Ok _ -> ()
+          if lease.HeartbeatAtUtc < lease.AcquiredAtUtc then
+              yield sprintf "Lease history entry %d has a heartbeat before acquisition." index
+          if lease.ExpiresAtUtc <= lease.HeartbeatAtUtc then
+              yield sprintf "Lease history entry %d is not live after its heartbeat." index
+          if lease.ExpiresAtUtc - lease.HeartbeatAtUtc > maximumLeaseDuration then
+              yield sprintf "Lease history entry %d exceeds the 24-hour controller limit." index
+          if at < lease.AcquiredAtUtc || at < lease.HeartbeatAtUtc then
+              yield sprintf "Lease history entry %d is newer than the acquisition observation." index ]
+
+    let private currentLeaseHistory at (history: SliceLease list) =
+        let entryErrors =
+            history
+            |> List.mapi (validateLeaseRecord at)
+            |> List.concat
+        let identityErrors =
+            history
+            |> List.groupBy (fun lease ->
+                lease.Identity.RunId, lease.Identity.MissionId,
+                lease.Identity.SliceId, lease.Identity.Attempt)
+            |> List.collect (fun ((runId, missionId, sliceId, attempt), entries) ->
+                let identities = entries |> List.map (fun lease -> lease.Identity) |> List.distinct
+                if identities.Length > 1 then
+                    [ sprintf "Lease history has conflicting ownership for attempt %s/%s/%s/%d."
+                        runId missionId sliceId attempt ]
+                else [])
+        let timelineErrors =
+            history
+            |> List.groupBy (fun lease -> lease.Identity)
+            |> List.collect (fun (identity, entries) ->
+                let immutableSubjects =
+                    entries
+                    |> List.map (fun lease -> lease.BaseDigest, lease.Scope, lease.AcquiredAtUtc)
+                    |> List.distinct
+                let sameHeartbeatConflicts =
+                    entries
+                    |> List.groupBy (fun lease -> lease.HeartbeatAtUtc)
+                    |> List.exists (fun (_, versions) -> versions |> List.distinct |> List.length > 1)
+                let transitionErrors =
+                    entries
+                    |> List.distinct
+                    |> List.sortBy (fun lease -> lease.HeartbeatAtUtc)
+                    |> List.pairwise
+                    |> List.collect (fun (previous, next) ->
+                        [ if next.CandidateDigest = previous.CandidateDigest then
+                              if next.ExpiresAtUtc <= previous.ExpiresAtUtc then
+                                  yield sprintf "Lease history does not monotonically extend expiry for %s/%s/%d."
+                                      identity.RunId identity.SliceId identity.Attempt
+                          else
+                              match next.CandidateDigest with
+                              | None ->
+                                  yield sprintf "Lease history rolls back the candidate for %s/%s/%d."
+                                      identity.RunId identity.SliceId identity.Attempt
+                              | Some _ when next.ExpiresAtUtc <> previous.ExpiresAtUtc ->
+                                  yield sprintf "Lease history changes candidate and expiry in one transition for %s/%s/%d."
+                                      identity.RunId identity.SliceId identity.Attempt
+                              | Some _ -> () ])
+                [ if immutableSubjects.Length > 1 then
+                      yield sprintf "Lease history drifts immutable subject for %s/%s/%d."
+                          identity.RunId identity.SliceId identity.Attempt
+                  if sameHeartbeatConflicts then
+                      yield sprintf "Lease history has conflicting versions at one heartbeat for %s/%s/%d."
+                          identity.RunId identity.SliceId identity.Attempt
+                  yield! transitionErrors ])
+        let current =
+            history
+            |> List.groupBy (fun lease -> lease.Identity)
+            |> List.map (fun (_, entries) -> entries |> List.maxBy (fun lease -> lease.HeartbeatAtUtc))
+        let attemptErrors =
+            current
+            |> List.groupBy (fun lease ->
+                lease.Identity.RunId, lease.Identity.MissionId, lease.Identity.SliceId)
+            |> List.collect (fun ((runId, missionId, sliceId), entries) ->
+                let attempts = entries |> List.map (fun lease -> lease.Identity.Attempt) |> List.distinct |> List.sort
+                let expected = if attempts.IsEmpty then [] else [ 1 .. List.last attempts ]
+                if attempts <> expected then
+                    [ sprintf "Lease history attempts are not contiguous for %s/%s/%s." runId missionId sliceId ]
+                else [])
+        let historyConflictErrors =
+            current
+            |> List.mapi (fun index left ->
+                current
+                |> List.skip (index + 1)
+                |> List.collect (fun right ->
+                    let ownershipIntervalsOverlap =
+                        left.AcquiredAtUtc < right.ExpiresAtUtc
+                        && right.AcquiredAtUtc < left.ExpiresAtUtc
+                    [ if ownershipIntervalsOverlap
+                         && left.Identity.RunId = right.Identity.RunId
+                         && left.Identity.MissionId = right.Identity.MissionId
+                         && left.Identity.SliceId = right.Identity.SliceId then
+                          yield sprintf "Lease history has overlapping ownership for slice %s/%s/%s."
+                              left.Identity.RunId left.Identity.MissionId left.Identity.SliceId
+                      if ownershipIntervalsOverlap
+                         && left.Identity.WorktreeId = right.Identity.WorktreeId then
+                          yield sprintf "Lease history has overlapping ownership for worktree %s."
+                              left.Identity.WorktreeId
+                      if ownershipIntervalsOverlap
+                         && left.Scope |> List.exists (fun a -> right.Scope |> List.exists (scopesOverlap a)) then
+                          yield sprintf "Lease history has overlapping scope ownership for %s/%s/%d and %s/%s/%d."
+                              left.Identity.RunId left.Identity.SliceId left.Identity.Attempt
+                              right.Identity.RunId right.Identity.SliceId right.Identity.Attempt ]))
+            |> List.concat
+        let errors = entryErrors @ identityErrors @ timelineErrors @ attemptErrors @ historyConflictErrors
+        if errors.IsEmpty then Ok current else Error errors
+
+    /// Acquire a lease against the complete retained lease history. Conflicting
+    /// live scope/worktree ownership and non-monotonic attempts fail closed.
+    let acquireSliceLease
+        (at: DateTimeOffset)
+        (history: SliceLease list)
+        (request: SliceLeaseRequest)
+        : Result<SliceLease, string list> =
+        let normalizedScope = normalizeLeaseScopes request.Scope
+        let currentHistory = currentLeaseHistory at history
+        let idempotentReplay =
+            match normalizedScope, currentHistory with
+            | Ok requestedScope, Ok current ->
+                current
+                |> List.tryFind (fun lease ->
+                    lease.Identity = request.Identity
+                    && lease.BaseDigest = request.BaseDigest
+                    && lease.CandidateDigest = request.CandidateDigest
+                    && lease.Scope = requestedScope
+                    && lease.ExpiresAtUtc = request.ExpiresAtUtc
+                    && leaseIsLive at lease)
+            | _ -> None
+        let priorAttempts =
+            Result.defaultValue [] currentHistory
+            |> List.filter (fun lease ->
+                lease.Identity.RunId = request.Identity.RunId
+                && lease.Identity.MissionId = request.Identity.MissionId
+                && lease.Identity.SliceId = request.Identity.SliceId)
+        let expectedAttempt =
+            priorAttempts
+            |> List.map (fun lease -> lease.Identity.Attempt)
+            |> List.sortDescending
+            |> List.tryHead
+            |> Option.map ((+) 1)
+            |> Option.defaultValue 1
+        let live = Result.defaultValue [] currentHistory |> List.filter (leaseIsLive at)
+        let conflictErrors =
+            match normalizedScope with
+            | Error _ -> []
+            | Ok requestedScope ->
+                live
+                |> List.collect (fun lease ->
+                    [ if lease.Identity.RunId = request.Identity.RunId
+                         && lease.Identity.MissionId = request.Identity.MissionId
+                         && lease.Identity.SliceId = request.Identity.SliceId then
+                          yield sprintf "Slice %s/%s/%s already has a live lease."
+                              request.Identity.RunId request.Identity.MissionId request.Identity.SliceId
+                      if lease.Identity.WorktreeId = request.Identity.WorktreeId then
+                          yield sprintf "Worktree %s already has a live lease." request.Identity.WorktreeId
+                      if requestedScope
+                         |> List.exists (fun requested -> lease.Scope |> List.exists (scopesOverlap requested)) then
+                          yield sprintf "Lease scope conflicts with live attempt %s/%s/%d."
+                              lease.Identity.RunId lease.Identity.SliceId lease.Identity.Attempt ])
+        let errors =
+            [ yield! validateLeaseIdentity request.Identity
+              if blank request.BaseDigest then yield "Lease base digest is required."
+              match request.CandidateDigest with
+              | Some digest when blank digest -> yield "Lease candidate digest cannot be blank."
+              | _ -> ()
+              yield! validateLeaseExpiry at request.ExpiresAtUtc
+              match normalizedScope with
+              | Error scopeErrors -> yield! scopeErrors
+              | Ok _ -> ()
+              match currentHistory with
+              | Error historyErrors -> yield! historyErrors
+              | Ok _ -> ()
+              if idempotentReplay.IsNone then
+                  if request.Identity.Attempt <> expectedAttempt then
+                      yield sprintf "Expected lease attempt %d, observed %d." expectedAttempt request.Identity.Attempt
+                  yield! conflictErrors ]
+        match idempotentReplay, errors with
+        | Some lease, [] -> Ok lease
+        | None, [] ->
+            Ok
+                { Identity = request.Identity
+                  BaseDigest = request.BaseDigest
+                  CandidateDigest = request.CandidateDigest
+                  Scope = Result.defaultValue [] normalizedScope
+                  AcquiredAtUtc = at
+                  HeartbeatAtUtc = at
+                  ExpiresAtUtc = request.ExpiresAtUtc }
+        | _, errors -> Error errors
+
+    let private validateLeaseSubject (subject: SliceLeaseSubject) (lease: SliceLease) =
+        let normalizedScope = normalizeLeaseScopes subject.Scope
+        [ if subject.Identity <> lease.Identity then yield "Lease identity is stale or conflicts with current ownership."
+          if subject.BaseDigest <> lease.BaseDigest then yield "Lease base digest is stale."
+          if subject.CandidateDigest <> lease.CandidateDigest then yield "Lease candidate digest is stale."
+          match normalizedScope with
+          | Error errors -> yield! errors
+          | Ok scope when scope <> lease.Scope -> yield "Lease scope is stale or has drifted."
+          | Ok _ -> () ]
+
+    /// Validate current ownership without mutation. Expired leases never regain
+    /// authority through a late observation.
+    let verifySliceLease at subject lease =
+        [ yield! validateLeaseRecord at 0 lease
+          yield! validateLeaseSubject subject lease
+          if not (leaseIsLive at lease) then yield "Slice lease is expired."
+          if at < lease.HeartbeatAtUtc then yield "Lease observation predates the current heartbeat." ]
+
+    /// Advance liveness only for the exact current subject. A heartbeat cannot
+    /// rebind base, candidate, scope, owner, worktree or attempt.
+    let heartbeatSliceLease at expiresAt subject lease =
+        let errors =
+            [ yield! verifySliceLease at subject lease
+              if at <= lease.HeartbeatAtUtc then
+                  yield "Heartbeat time must advance monotonically."
+              yield! validateLeaseExpiry at expiresAt
+              if expiresAt <= lease.ExpiresAtUtc then
+                  yield "Heartbeat must extend the existing lease expiry." ]
+        if errors.IsEmpty then
+            Ok { lease with HeartbeatAtUtc = at; ExpiresAtUtc = expiresAt }
+        else Error errors
+
+    /// Bind a newly produced candidate to the exact live attempt. Callers must
+    /// retain the previous lease as ledger evidence before persisting this one.
+    let bindSliceLeaseCandidate at subject candidateDigest lease =
+        let errors =
+            [ yield! verifySliceLease at subject lease
+              if at <= lease.HeartbeatAtUtc then
+                  yield "Candidate binding time must advance monotonically."
+              if blank candidateDigest then yield "Candidate digest is required."
+              if lease.CandidateDigest = Some candidateDigest then
+                  yield "Candidate digest must advance to a new value." ]
+        if errors.IsEmpty then
+            Ok { lease with CandidateDigest = Some candidateDigest; HeartbeatAtUtc = at }
+        else Error errors
+
+    /// Evaluate the typed outer-contract seam with the same pure lease rules
+    /// used by direct domain callers. This does not persist a registry entry or
+    /// create a worktree.
+    let decideSliceLeaseTransition at transition =
+        match transition with
+        | AcquireLease(history, request) -> acquireSliceLease at history request
+        | VerifyLease(current, subject) ->
+            match verifySliceLease at subject current with
+            | [] -> Ok current
+            | errors -> Error errors
+        | HeartbeatLease(current, subject, expiresAtUtc) ->
+            heartbeatSliceLease at expiresAtUtc subject current
+        | BindLeaseCandidate(current, subject, candidateDigest) ->
+            bindSliceLeaseCandidate at subject candidateDigest current
+
+    /// Accept an adapter claim only when it echoes the exact requested
+    /// transition and exactly matches CDD's recomputed semantic outcome.
+    let private validateSliceLeaseTransitionObservation at expectedTransition observation =
+        if observation.Transition <> expectedTransition then
+            Error [ "Slice lease observation does not match the requested transition." ]
+        else
+            let expectedOutcome = decideSliceLeaseTransition at expectedTransition
+            if observation.Outcome <> expectedOutcome then
+                Error [ "Slice lease observation outcome does not match the CDD decision." ]
+            else
+                expectedOutcome
+
+    /// Validate the complete outer controller exchange, including both DU
+    /// cases. A lease observation cannot answer another action, and another
+    /// observation cannot answer a lease action.
+    let validateSliceLeaseControllerExchange at expectedAction observation =
+        match expectedAction, observation with
+        | DecideSliceLease transition, SliceLeaseTransitionObserved leaseObservation ->
+            validateSliceLeaseTransitionObservation at transition leaseObservation
+        | DecideSliceLease _, _ ->
+            Error [ "Run observation does not answer the expected slice lease action." ]
+        | _, SliceLeaseTransitionObserved _ ->
+            Error [ "Slice lease observation was not requested by the expected controller action." ]
+        | _ ->
+            Error [ "Controller exchange does not contain a slice lease action and observation." ]
 
     /// Validate the whole execution contract before any worker receives work.
     let validatePlan (plan: RunPlan) : string list =
@@ -687,6 +1087,8 @@ module Autopilot =
                 | AgentTurnObserved turn -> applyAgent at turn run
                 | GateObserved gate -> applyGate at gate run
                 | CheckpointObserved checkpoint -> applyCheckpoint at checkpoint run
+                | SliceLeaseTransitionObserved _ ->
+                    Error [ "Slice lease transitions are not scheduled by the current serial controller." ]
                 | HumanInterventionObserved reason ->
                     if blank reason then Error [ "Human intervention requires a reason." ]
                     else

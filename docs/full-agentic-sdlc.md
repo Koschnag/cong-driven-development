@@ -70,6 +70,7 @@ Der Controller gibt immer genau eine typisierte Aktion zurück:
 | `DispatchAgent` | Genannten Worker mit exakt dem Context Slice starten oder die benannte Session fortsetzen. |
 | `ExecuteGate` | Gate reproduzierbar im Ziel-Workspace ausführen und Evidence-Digest aufnehmen. |
 | `CreateCheckpoint` | Erst nach Gates und beiden Reviews einen sauberen Git-Stand bestätigen. |
+| `DecideSliceLease` | Serialisierbare semantische Lease-Entscheidung; vom heutigen seriellen Controller noch nicht eingeplant oder persistiert. |
 | `MissionComplete` | Full Solve mit Evaluation melden; keine weitere Mutation. |
 | `Escalate` | Run bleibt blockiert und braucht benannte äußere Autorität. |
 
@@ -169,6 +170,53 @@ oder Repair-Slices können ein stärkeres Profil erhalten. Wichtiger als ein
 global maximales Reasoning-Level sind getrennte Rollen, kleine Kontexte und ein
 unabhängiges Schlussorakel.
 
+## Isolierte Worktrees und Slice-Leases
+
+`Cdd.Core.Autopilot` enthält die deterministische P1-Foundation für externe
+Worktree-Adapter. Eine `SliceLease` beschreibt Run, Mission, Slice, monotonen
+Attempt, Owner und eine pfadfreie Worktree-ID an Base-Digest, optionalen
+Candidate-Digest, kanonischen repository-relativen Scope, Heartbeat und
+Ablaufzeit. Der Kern trifft die semantische Entscheidung; atomare Registry,
+Worktree-Erzeugung und Capability-Sandbox bleiben austauschbare IO-Aufgaben.
+
+Eine Akquisition validiert die vollständige erhaltene Lease-Historie und ihre
+Zeitordnung fail-closed. Jede Current-Lease wird vor Verify, Heartbeat oder
+Candidate-Bindung erneut vollständig gegen Identität, Digests, Scope und
+Zeitgrenzen geprüft. Historische Versionen dürfen Candidates nicht entfernen
+und müssen entweder nur die Expiry verlängern oder bei unveränderter Expiry
+einen Candidate binden; kombinierte oder rückläufige Übergänge schlagen fehl.
+Derselbe Slice darf erst nach Ablauf seines einzigen
+lebenden Attempts mit dem nächsten Attempt fortgesetzt werden; lebende Worktree-
+oder Scope-Überlappungen werden abgelehnt. Verzeichnis-Scope umfasst seine
+Unterpfade. Absolute Pfade, Parent-Traversal, nicht kanonische oder doppelte
+Scopes sind ungültig und werden nicht still normalisiert. Die identische
+Wiederholung einer noch lebenden Akquisition liefert idempotent dieselbe Lease.
+Abgelaufene Leases verlieren
+ihre Autorität und werden durch einen verspäteten Heartbeat niemals
+wiederbelebt.
+
+Heartbeat und Candidate-Bindung müssen das exakt beobachtete Lease-Subjekt
+vorlegen: Identität, Owner, Worktree, Base, Candidate und Scope. Jede Abweichung
+ist ein Konflikt oder eine stale Beobachtung und schlägt fail-closed fehl. Ein
+Heartbeat darf keinen Candidate wechseln; dafür existiert eine eigene,
+kandidatgebundene Transition.
+
+Die vier Domänentransitionen sind zusätzlich als `DecideSliceLease`-
+`ControllerAction` und `SliceLeaseTransitionObserved`-`RunObservation` im
+äußeren JSON-Vertrag typisiert. Die Beobachtung muss den exakten Auftrag und
+das behauptete Ergebnis zurücktragen; CDD berechnet dieses Ergebnis aus den
+Domänenregeln neu und lehnt Abweichungen fail-closed ab. Damit ist die Naht für
+einen späteren Registry-Adapter serialisierbar, ohne dessen Persistenz- oder
+Lock-Semantik in den CDD-Vertrauenskern zu ziehen.
+
+Noch offen sind Scheduling und Persistenz dieser Action im Run-Ledger sowie
+eine atomare lokale oder Temporal-basierte Registry. `nextAction` emittiert die
+Lease-Action heute nicht, `applyObservation` lehnt unaufgeforderte Lease-
+Beobachtungen ab, und der CLI-Drive erwirbt keine Lease oder erzeugt einen
+Worktree. Reale Worktree-Isolation, Capability-Sandbox und paralleler Dispatch
+sind deshalb weiterhin nicht aktiviert. Die Foundation bleibt bewusst
+`Pending`.
+
 ## Evaluation
 
 Jeder Run projiziert mindestens:
@@ -184,6 +232,36 @@ fixiert werden. Ein einzelner erfolgreicher Lauf oder lange Terminal-Uptime ist
 kein belastbarer Modellvergleich. CDD trennt Modellleistung, Harnessleistung und
 Aufgabenschwierigkeit im Run-Vertrag; statistische Wiederholungen und externe
 Validierung bleiben Teil des Forschungsprogramms.
+
+### Sanitisierte longitudinale Riftward-Baseline
+
+Für die öffentliche Forschung projiziert `Cdd.Core.Riftward` terminierte Runs in
+eine bewusst schmale Veröffentlichungsgrenze: Pro Run überleben nur Run- und
+Missions-ID, die deklarierte Rollen-Konfiguration (Provider, Modell, Harness je
+Rolle), einen expliziten Digest des fixierten Evaluationsprotokolls, Status und
+Ganzzahl-Aggregate der Evaluation sowie Token-
+Summen. Session-IDs, Dispatch-Modi, Scope-Pfade, Instructions, Befunde, interne
+Context-, Candidate- und Evidence-Digests, Commit-Hashes und Freitext-
+Zusammenfassungen verlassen den lokalen Run-Zustand nicht. Auch direkt
+eingelesene Records durchlaufen diese Grenze erneut: nichtterminale Status,
+leere deklarierte Provenienz, negative Zähler und widersprüchliche Status-/
+Evaluation-Kombinationen werden nicht aggregiert. Die Aggregation
+trennt Missionen und Evaluationsprotokolle, zählt jede
+Run-ID höchstens einmal und lehnt widersprüchliche Records derselben Run-ID ab.
+Gemischte Rollenprofile werden nie zu einer Uniform-Baseline verschmolzen; die
+Ausgabe liefert deterministisch sortierte Summen und Mediane.
+
+Die Wiederholungs-Fitness bleibt ehrlich klassifiziert: Unterhalb eines
+explizit benannten Minimums eindeutiger Run-IDs ist eine Baseline `Anecdotal`
+und darf nicht gegen andere Konfigurationen verglichen werden; ab dem Minimum
+ist sie `Repeated`. `classify` liefert diese Fitness als `Result`: unsortierte,
+leere oder doppelte Run-IDs, abweichende Run-Zahlen, negative Zähler und
+widersprüchliche Summen werden nicht still als anekdotisch oder wiederholt
+klassifiziert. Summenüberläufe werden bereits bei der Aggregation typisiert
+abgelehnt; auch der Ganzzahlmedian ist für `Int64.MaxValue` überlaufsicher.
+Beides beschreibt Beobachtungen, keine Kausalität, Produktwirkung oder
+Langzeitautonomie. Was weiterhin fehlt, sind kalibrierte, mehrfach ausgeführte
+Riftward-Läufe mit Baselines und negativen Resultaten.
 
 ### Modellherkunft und Black-Box-Fingerprinting
 

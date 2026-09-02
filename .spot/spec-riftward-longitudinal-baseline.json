@@ -1,0 +1,30 @@
+{
+  "Id": "spec-riftward-longitudinal-baseline",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Sanitisierte longitudinale Riftward-Baseline",
+        "Intent": "Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben",
+        "Criteria": [
+          {
+            "Given": "ein terminierter Autopilot-Run mit rollenseparierten Worker-Profilen",
+            "When": "ein Forschungs-Record projiziert wird",
+            "Then": "tr\u00E4gt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatz\u00E4hler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal"
+          },
+          {
+            "Given": "mehrere terminierte Runs aus mehreren deklarierten Konfigurationen",
+            "When": "die Baseline-Aggregation l\u00E4uft",
+            "Then": "werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widerspr\u00FCchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl"
+          },
+          {
+            "Given": "eine Baseline unterhalb des benannten Wiederholungsminimums",
+            "When": "ihre Repetitions-Fitness bewertet wird",
+            "Then": "gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

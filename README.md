@@ -230,7 +230,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**179 Knoten im Selbstmodell** · 4 aktive Invarianten · 48/54 abgeleitete Tests automatisiert
+**189 Knoten im Selbstmodell** · 4 aktive Invarianten · 55/61 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -255,6 +255,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Offene Workspace-Control-Plane-Projektion** — CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen
 - ✅ **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
+- ✅ **Sanitisierte longitudinale Riftward-Baseline** — Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben
 - ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
@@ -268,6 +269,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - 🔜 **Repräsentative Evidence Fitness** — CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
+- 🔜 **Semantische Foundation für Slice-Leases** — CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

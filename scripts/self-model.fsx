@@ -54,6 +54,7 @@ let entries =
       term "term-evidence-fitness" "Evidence Fitness" "Grad, zu dem ein Nachweis dieselbe Behauptung, Last, Systemgrenze, Umgebung und Fehlermöglichkeit prüft, für die er eine Promotion begründen soll" [ "Representative Evidence"; "Nachweispassung" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-assurance-portfolio") ]
       term "term-autopilot-run" "Autopilot Run" "Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints" [ "Agentic SDLC Run"; "Durable Run" ] [ PartOf(EntityId "term-control-plane"); RelatesTo(EntityId "term-mission-order") ]
       term "term-work-slice" "Work Slice" "Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates" [ "Implementation Slice"; "Task Slice" ] [ PartOf(EntityId "term-autopilot-run") ]
+      term "term-slice-lease" "Slice Lease" "Zeitlich begrenzte, versuchsnummerierte Eigentumsbindung eines Work Slices an genau einen Owner und isolierten Worktree samt Base-, Candidate- und Scope-Bindung" [ "Worktree Lease"; "Ownership Lease" ] [ PartOf(EntityId "term-autopilot-run"); RelatesTo(EntityId "term-work-slice") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Python-freier Vertrauenskern, polyglotte Adapter." "CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden"
@@ -248,6 +249,39 @@ let entries =
                 { Given = "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen"
                   When = "Status oder Evaluation abgefragt werden"
                   Then = "werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert" } ] } }
+
+      { Id = EntityId "spec-slice-worktree-lease"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Semantische Foundation für Slice-Leases"
+            Intent = "CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich"
+            Criteria =
+              [ { Given = "eine Lease-Anforderung mit Attempt, Owner, Worktree, Base-Digest, Candidate-Digest, Scope und Ablaufzeit"
+                  When = "der Autopilot sie gegen die vollständige Lease-Historie prüft"
+                  Then = "werden nur vollständig gültige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der nächste Attempt ohne Überlappung zu einer lebenden Lease akzeptiert" }
+                { Given = "eine lebende Slice-Lease"
+                  When = "ein Heartbeat ihre Laufzeit verlängern soll"
+                  Then = "müssen Identität, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt" }
+                { Given = "ein Builder erzeugt einen neuen Candidate"
+                  When = "der Candidate an die Slice-Lease gebunden wird"
+                  Then = "akzeptiert CDD die Bindung nur für den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab" }
+                { Given = "eine typisierte Lease-Transition als ControllerAction und die behauptete Antwort eines Adapters"
+                  When = "Action und RunObservation über Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden"
+                  Then = "roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gefälschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab" } ] } }
+
+      { Id = EntityId "spec-riftward-longitudinal-baseline"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Sanitisierte longitudinale Riftward-Baseline"
+            Intent = "Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben"
+            Criteria =
+              [ { Given = "ein terminierter Autopilot-Run mit rollenseparierten Worker-Profilen"
+                  When = "ein Forschungs-Record projiziert wird"
+                  Then = "trägt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatzähler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal" }
+                { Given = "mehrere terminierte Runs aus mehreren deklarierten Konfigurationen"
+                  When = "die Baseline-Aggregation läuft"
+                  Then = "werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widersprüchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl" }
+                { Given = "eine Baseline unterhalb des benannten Wiederholungsminimums"
+                  When = "ihre Repetitions-Fitness bewertet wird"
+                  Then = "gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl" } ] } }
 
       { Id = EntityId "spec-research-studio"; Convergence = Pending
         Payload = SpecNode

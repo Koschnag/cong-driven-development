@@ -20,11 +20,11 @@ Das überschneidet sich deutlich mit aktueller Frontier-Forschung:
 | Beobachtung der Frontier | Entsprechung in CDD | Ehrlicher Stand |
 |---|---|---|
 | Anthropic modelliert Vertrauen als Zusammenspiel aus **Modell, Harness, Tools und Umgebung**. | EIDOS trennt taktische Agent Unit, Mission Order, Capabilities, Doctrine und System Twin. | Domänenmodell und kleiner ZT2-Kernel vorhanden; keine Millionen produktiver Sessions. |
-| Anthropic misst reale Autonomie über Laufdauer, Genehmigungen, Unterbrechungen und Erfahrung der Nutzer. | CDD will Autonomie pro Mission über Risiko, Intervention, Evidence und Outcome messen. | Datenvertrag ist angelegt; longitudinale Riftward-Auswertung fehlt. |
+| Anthropic misst reale Autonomie über Laufdauer, Genehmigungen, Unterbrechungen und Erfahrung der Nutzer. | CDD will Autonomie pro Mission über Risiko, Intervention, Evidence und Outcome messen. | Sanitisierte Riftward-Baseline-Aggregation (`Cdd.Core.Riftward`) implementiert; reale longitudinale Riftward-Läufe fehlen weiterhin. |
 | OpenAI macht Repository, UI, Logs, Metriken und Architekturregeln für Agenten direkt les- und prüfbar. | SPOT, testbare Invarianten, Browser-Gates, Run-Ledger und Control-Plane-Projektionen. | Browser- und Kernel-Gates existieren; Laufzeit-Telemetrie und Multi-Repo-Daten sind erst ein Vertical Slice. |
 | OpenAI trennt den Codex-Harness über einen App-Server von CLI, IDE und weiteren Clients. | CDD behandelt Harness und Oberfläche als Adapter hinter offenen Verträgen. | CDD hat CLI, Web, REST und MCP; weitere Adapter sind Roadmap. |
 | OpenAI und Anthropic betonen valide Evals, Defense in Depth, Stopbedingungen und menschliche Kontrolle. | Evidence Packs, korrelationsarme Orakel, Promotion Gate, harte Abort-Kriterien und benannte Authority. | Synthetischer ZT2-Benchmark; externe Validität noch nicht gezeigt. |
-| METR misst einen Time Horizon über die menschliche Vergleichsdauer von Aufgaben bei definierter Erfolgswahrscheinlichkeit. | CDD soll Taskschwierigkeit, Zuverlässigkeit und Intervention statt bloßer Terminal-Uptime messen. | Noch keine kalibrierte Riftward-Task-Suite oder statistisch belastbare Wiederholung. |
+| METR misst einen Time Horizon über die menschliche Vergleichsdauer von Aufgaben bei definierter Erfolgswahrscheinlichkeit. | CDD soll Taskschwierigkeit, Zuverlässigkeit und Intervention statt bloßer Terminal-Uptime messen. | Duplikatsichere, missions- und protokollgetrennte Baseline-Aggregation vorhanden; noch keine kalibrierte Riftward-Task-Suite oder statistisch belastbare Wiederholung. |
 
 Primärquellen:
 

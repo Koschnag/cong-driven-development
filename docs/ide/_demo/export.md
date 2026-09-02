@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 179 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 189 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 162 · Pending 17 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 172 · Pending 17 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -53,6 +53,9 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - bezieht sich auf `term-spot`
 - **Signal** *(auch: Raw Event)* — Unverändertes Rohereignis aus Feedback, Runtime, Entwicklung, Betrieb, Simulation oder Analyse
   - Teil von `term-eidos`
+- **Slice Lease** *(auch: Worktree Lease, Ownership Lease)* — Zeitlich begrenzte, versuchsnummerierte Eigentumsbindung eines Work Slices an genau einen Owner und isolierten Worktree samt Base-, Candidate- und Scope-Bindung
+  - Teil von `term-autopilot-run`
+  - bezieht sich auf `term-work-slice`
 - **Spec** *(auch: Spezifikation)* — Maschinenlesbarer Vertrag: Intent plus Akzeptanzkriterien in Given/When/Then
   - ist ein `term-knoten`
 - **SPOT** *(auch: Single Point of Truth)* — Single Point of Truth — der eine Graph, in dem Modell, Spec, Tests, Risiken, Wissen und Infrastruktur leben
@@ -224,7 +227,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN die Diagramm-Flaeche WHEN auf eine Formal-Sicht gewechselt wird THEN rendert sie das Modell in formaler Notation mit KaTeX
 
-### Persistente Full-Agentic-SDLC-Kette (`spec-full-agentic-sdlc-controller`, Pending)
+### Persistente Full-Agentic-SDLC-Kette (`spec-full-agentic-sdlc-controller`, Aligned)
 **Intent:** CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 
 - GIVEN eine Mission mit mehreren begrenzten Work Slices und rollenbezogenen Worker-Profilen WHEN der Autopilot die nächste Aktion bestimmt THEN durchläuft jeder Slice Scout, Builder, deterministische Gates, read-only Critic, unabhängigen Reviewer und Checkpoint in einer typisierten Reihenfolge
@@ -278,6 +281,13 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - GIVEN der versionierte SPOT-Snapshot geladen ist WHEN das Research Studio geöffnet wird THEN werden Claims, Quellen, Risiken, Prämissen, Entscheidungen und Kennzahlen daraus projiziert
 - GIVEN Feedback formuliert wurde WHEN die Nutzerin oder der Nutzer fortfährt THEN wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet
 
+### Sanitisierte longitudinale Riftward-Baseline (`spec-riftward-longitudinal-baseline`, Aligned)
+**Intent:** Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben
+
+- GIVEN ein terminierter Autopilot-Run mit rollenseparierten Worker-Profilen WHEN ein Forschungs-Record projiziert wird THEN trägt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatzähler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal
+- GIVEN mehrere terminierte Runs aus mehreren deklarierten Konfigurationen WHEN die Baseline-Aggregation läuft THEN werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widersprüchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl
+- GIVEN eine Baseline unterhalb des benannten Wiederholungsminimums WHEN ihre Repetitions-Fitness bewertet wird THEN gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl
+
 ### Risikoadaptives Assurance-Portfolio (`spec-risk-adaptive-assurance-portfolio`, Pending)
 **Intent:** CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 
@@ -288,6 +298,14 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 **Intent:** Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 
 - GIVEN src/*.fsproj und Component-Knoten WHEN cdd sync-code läuft THEN wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert
+
+### Semantische Foundation für Slice-Leases (`spec-slice-worktree-lease`, Pending)
+**Intent:** CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich
+
+- GIVEN eine Lease-Anforderung mit Attempt, Owner, Worktree, Base-Digest, Candidate-Digest, Scope und Ablaufzeit WHEN der Autopilot sie gegen die vollständige Lease-Historie prüft THEN werden nur vollständig gültige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der nächste Attempt ohne Überlappung zu einer lebenden Lease akzeptiert
+- GIVEN eine lebende Slice-Lease WHEN ein Heartbeat ihre Laufzeit verlängern soll THEN müssen Identität, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt
+- GIVEN ein Builder erzeugt einen neuen Candidate WHEN der Candidate an die Slice-Lease gebunden wird THEN akzeptiert CDD die Bindung nur für den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab
+- GIVEN eine typisierte Lease-Transition als ControllerAction und die behauptete Antwort eines Adapters WHEN Action und RunObservation über Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden THEN roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gefälschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab
 
 ### Offene Workspace-Control-Plane-Projektion (`spec-studio-workspace-control-plane`, Aligned)
 **Intent:** CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen
@@ -478,7 +496,6 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - `claim-spot-traceability` (claim, Pending)
 - `spec-agent-interface-test-1` (test, Pending)
 - `spec-export-context-test-2` (test, Pending)
-- `spec-full-agentic-sdlc-controller` (spec, Pending)
 - `spec-gate-selbst-hart` (spec, Pending)
 - `spec-mcp-server-test-1` (test, Pending)
 - `spec-representative-evidence-fitness-test-1` (test, Pending)
@@ -488,4 +505,5 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - `spec-research-snapshots` (spec, Pending)
 - `spec-research-studio` (spec, Pending)
 - `spec-risk-adaptive-assurance-portfolio` (spec, Pending)
+- `spec-slice-worktree-lease` (spec, Pending)
 
