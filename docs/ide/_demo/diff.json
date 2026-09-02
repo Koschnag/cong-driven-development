@@ -161,6 +161,22 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "adr-011-cause-bound-loop-guards",
+      "Payload": {
+        "Case": "DecisionNode",
+        "Fields": {
+          "Item": {
+            "Title": "Loop-Recovery wird an Candidate, Stage und Fehlerursache gebunden",
+            "Context": "Globale Retry-Zähler und jeder beliebige Zwischenerfolg können einen persistenten Infrastruktur- oder Protokollfehler verdecken und Agenten ohne neue Information erneut dispatchen",
+            "Choice": "CDD trennt Produkt-, Infrastruktur- und Protokollfehler, bindet Budgets an Run, Slice, Candidate, Stage und Fehlercode und hält administrative Holds unabhängig von Ressourcen-Mutexen",
+            "Consequences": "Die deterministische Foundation ist implementiert; Scheduler-, Publisher- und Workflow-Adapter müssen den Vertrag noch durchgängig persistieren und ausführen",
+            "Supersedes": null
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "comp-cli",
       "Payload": {
         "Case": "ComponentNode",
@@ -303,6 +319,60 @@
             "Takeaways": [
               "Reale Autonomie muss aus vielen produktiven Sitzungen und Interventionen gemessen werden",
               "Erfahrene Nutzer erlauben mehr Automatik und greifen zugleich weiterhin gezielt ein; Post-Deployment-Monitoring bleibt notwendig"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-anthropic-long-running-apps",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Anthropic: Harness design for long-running apps",
+            "Source": "https://www.anthropic.com/engineering/harness-design-long-running-apps",
+            "MediaType": "engineering report",
+            "Takeaways": [
+              "Planner, Generator und Evaluator profitieren von kleinen inkrementellen Chunks und strukturiertem Handoff",
+              "Ablationen und vereinfachte Harness-Komponenten sind nötig, um Wirkung nicht nur der Gesamtschleife zuzuschreiben"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-anthropic-long-running-harness",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Anthropic: Effective harnesses for long-running agents",
+            "Source": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+            "MediaType": "engineering report",
+            "Takeaways": [
+              "Initializer und inkrementelle Sessions teilen langlebige Arbeit in überprüfbare Fortschrittsstücke",
+              "Strukturierte Fortschrittsartefakte, Git-Historie und ein sauber hinterlassener Zustand tragen den Handoff zwischen Kontextfenstern"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-anthropic-parallel-agent-swarm",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Anthropic: Building a C compiler with parallel agents",
+            "Source": "https://www.anthropic.com/engineering/building-c-compiler",
+            "MediaType": "engineering report",
+            "Takeaways": [
+              "Parallele Agenten arbeiteten in isolierten Containern und synchronisierten über versionierte Arbeitsstände und Tests",
+              "Der berichtete Ressourcenverbrauch macht harte Budgets und verwertbare Zwischenstände zu einem Teil der Architektur"
             ]
           }
         }
@@ -618,6 +688,42 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "kb-openhands-sdk",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "OpenHands Software Agent SDK",
+            "Source": "https://arxiv.org/abs/2511.03690",
+            "MediaType": "paper",
+            "Takeaways": [
+              "Komponierbare Agenten benötigen explizite Lifecycle-, Sandbox-, Security- und Modell-Routing-Verträge",
+              "CDD behandelt diese Ausführung als austauschbaren Adapter unter einem separaten semantischen Trust Core"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-ralph-loop",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Ralph: iterative agent loop",
+            "Source": "https://github.com/snarktank/ralph",
+            "MediaType": "reference implementation",
+            "Takeaways": [
+              "Jede Iteration startet mit frischem Modellkontext und liest Fortschritt aus versionierten Artefakten statt aus einer unbounded Conversation",
+              "Kleine Stories, deterministische Gates, Git-Checkpoints und ein Max-Iterations-Limit bilden den minimalen Loop"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "kb-riftward-representative-frame",
       "Payload": {
         "Case": "KnowledgeNode",
@@ -667,6 +773,42 @@
               "KI reduziert Implementierungsmechanik, nicht automatisch essenzielle Komplexität",
               "Autonomie muss an maschinenpruefbare, risikoadaptive Gates gebunden sein",
               "Langfristige Grundlagen und explizite Modelle sind wichtiger als kurzfristiges Tool-Wissen"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-swe-agent-aci",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+            "Source": "https://arxiv.org/abs/2405.15793",
+            "MediaType": "paper",
+            "Takeaways": [
+              "Die Gestaltung der Agent-Computer-Schnittstelle beeinflusst die praktische Coding-Leistung materiell",
+              "Harness-Vergleiche müssen Modell, Aufgaben, Budget und Interface kontrollieren"
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "kb-temporal-durable-execution",
+      "Payload": {
+        "Case": "KnowledgeNode",
+        "Fields": {
+          "Item": {
+            "Title": "Temporal: Durable workflow execution",
+            "Source": "https://github.com/temporalio/documentation/blob/main/docs/encyclopedia/workflow/workflow-execution/workflow-execution.mdx",
+            "MediaType": "official documentation",
+            "Takeaways": [
+              "Deterministische Workflow-Logik wird von nichtdeterministischen Activities getrennt und aus einer Event History replayt",
+              "Crash-Recovery und lange Wartezeiten gehören in eine durable Ausführungsschicht, nicht in Modellgedächtnis"
             ]
           }
         }
@@ -1011,6 +1153,21 @@
             "Likelihood": "High",
             "Impact": "High",
             "Mitigation": "Portabilitäts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollständige und widersprüchliche Beobachtungen fail-closed ablehnen"
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "risk-untyped-retry-loop",
+      "Payload": {
+        "Case": "RiskNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Ein langlaufender Agenten-Loop deutet Infrastruktur- oder Protokollfehler als neue Produktarbeit und verbraucht Budget ohne neue Evidenz",
+            "Likelihood": "High",
+            "Impact": "High",
+            "Mitigation": "Fehler nach Candidate, Stage und Cause isolieren; Infrastruktur modellfrei warten lassen, Protokoll-Recovery begrenzen und circuits unabhängig von Erfolgen anderer Stages erhalten"
           }
         }
       },
@@ -1918,6 +2075,97 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "spec-loop-engineering-guard-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-loop-engineering-guard",
+            "Name": "Kandidat- und ursachengebundene Loop Guards — when der Scheduler beliebig oft nach der nächsten Aktion fragt then entsteht kein Agenten-Turn, kein verbrauchter Retry und nur die exakt autorisierte Freigabe hebt den Hold auf",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-loop-engineering-guard-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-loop-engineering-guard",
+            "Name": "Kandidat- und ursachengebundene Loop Guards — when eine andere Stage wie Review erfolgreich endet then bleibt der Promotion-Counter erhalten und erzeugt ausschließlich modellfreies Backoff oder einen offenen Circuit",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-loop-engineering-guard-test-3",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-loop-engineering-guard",
+            "Name": "Kandidat- und ursachengebundene Loop Guards — when das jeweilige Budget erschöpft wird then Produktarbeit erhält nur begrenzte frische Versuche, Protokollverlust nur begrenzte Session-Resumes und danach öffnet der Circuit",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-loop-engineering-guard-test-4",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-loop-engineering-guard",
+            "Name": "Kandidat- und ursachengebundene Loop Guards — when Subject-Wechsel oder Replay erfolgt then werden alte Failure Counter invalidiert, administrative Autorität bleibt bestehen und dieselbe nächste Entscheidung wird reproduziert",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-loop-engineering-guard",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Kandidat- und ursachengebundene Loop Guards",
+            "Intent": "CDD stellt eine deterministisch getestete, serialisierbare Loop-Guard-Entscheidungsfoundation bereit; ihre Scheduler-, RunState-, CLI- und Publisher-Integration bleibt offen",
+            "Criteria": [
+              {
+                "Given": "ein expliziter administrativer Hold",
+                "When": "der Scheduler beliebig oft nach der nächsten Aktion fragt",
+                "Then": "entsteht kein Agenten-Turn, kein verbrauchter Retry und nur die exakt autorisierte Freigabe hebt den Hold auf"
+              },
+              {
+                "Given": "ein Promotion-Infrastrukturfehler für einen unveränderten Candidate",
+                "When": "eine andere Stage wie Review erfolgreich endet",
+                "Then": "bleibt der Promotion-Counter erhalten und erzeugt ausschließlich modellfreies Backoff oder einen offenen Circuit"
+              },
+              {
+                "Given": "wiederholte Produkt- oder Protokollfehler mit demselben Failure Key",
+                "When": "das jeweilige Budget erschöpft wird",
+                "Then": "Produktarbeit erhält nur begrenzte frische Versuche, Protokollverlust nur begrenzte Session-Resumes und danach öffnet der Circuit"
+              },
+              {
+                "Given": "ein neuer Candidate-Digest oder ein persistierter Loop-Guard-Zustand",
+                "When": "Subject-Wechsel oder Replay erfolgt",
+                "Then": "werden alte Failure Counter invalidiert, administrative Autorität bleibt bestehen und dieselbe nächste Entscheidung wird reproduziert"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "spec-mcp-server",
       "Payload": {
         "Case": "SpecNode",
@@ -2098,6 +2346,62 @@
           "Item": {
             "SpecRef": "spec-research-studio",
             "Name": "SPOT-projiziertes Research Studio — when die Nutzerin oder der Nutzer fortfährt then wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-baseline-comparison-test-1",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-baseline-comparison",
+            "Name": "Zulässige Vergleiche sanitierter Riftward-Baselines — when die Vergleichszulässigkeit geprüft wird then trägt die freigegebene Vergleichsprojektion Mission, Protokoll-Digest, Minimum und beide unveränderten Aggregate deterministisch ohne abgeleitete Rangfolge",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-baseline-comparison-test-2",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-baseline-comparison",
+            "Name": "Zulässige Vergleiche sanitierter Riftward-Baselines — when der Vergleich angefragt wird then schlägt er fail-closed fehl und liefert keine vergleichbare Projektion",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-baseline-comparison-test-3",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-baseline-comparison",
+            "Name": "Zulässige Vergleiche sanitierter Riftward-Baselines — when ein Vergleich angefragt wird then wird er typisiert abgelehnt, weil Scope, Evidenzniveau oder Kontrast fehlen",
+            "Derived": true
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
+      "Id": "spec-riftward-baseline-comparison-test-4",
+      "Payload": {
+        "Case": "TestNode",
+        "Fields": {
+          "Item": {
+            "SpecRef": "spec-riftward-baseline-comparison",
+            "Name": "Zulässige Vergleiche sanitierter Riftward-Baselines — when ein Vergleich angefragt wird then wird er abgelehnt, damit derselbe Lauf nicht auf beiden Seiten eines Kontrasts gezählt werden kann",
             "Derived": true
           }
         }
@@ -2910,6 +3214,37 @@
       "Convergence": "Aligned"
     },
     {
+      "Id": "term-loop-engineering",
+      "Payload": {
+        "Case": "TermNode",
+        "Fields": {
+          "Item": {
+            "Name": "Loop Engineering",
+            "Definition": "Entwurf langlebiger Agentenschleifen als deterministische Zustandsmaschine mit kleinen Iterationen, kandidatgebundener Evidenz, getrennten Fehlerklassen, harten Budgets und crash-sicherem Handoff",
+            "Synonyms": [
+              "Ralph Loop",
+              "Durable Agent Loop"
+            ],
+            "Relations": [
+              {
+                "Case": "PartOf",
+                "Fields": {
+                  "Item": "term-autopilot-run"
+                }
+              },
+              {
+                "Case": "RelatesTo",
+                "Fields": {
+                  "Item": "term-evidence-pack"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Aligned"
+    },
+    {
       "Id": "term-mission-order",
       "Payload": {
         "Case": "TermNode",
@@ -3211,6 +3546,36 @@
     }
   ],
   "Pending": [
+    {
+      "Id": "claim-cause-bound-loop-guards-reduce-waste",
+      "Payload": {
+        "Case": "ResearchClaimNode",
+        "Fields": {
+          "Item": {
+            "Statement": "Eine langlaufende Agentenschleife, die Recovery-Budgets an unveränderliche Candidates, Stages und maschinenlesbare Fehlerursachen bindet und Infrastrukturfehler modellfrei behandelt, reduziert verschwendete Agenten-Turns gegenüber einer statusglobalen Retry-Schleife, ohne die Promotion-Sicherheit zu schwächen.",
+            "Status": "Proposed",
+            "Scope": "Langlaufende agentische Softwareentwicklung mit externen Gates und Publishern",
+            "Provenance": {
+              "SourceRefs": [
+                "kb-ralph-loop",
+                "kb-anthropic-long-running-harness",
+                "kb-temporal-durable-execution",
+                "kb-swe-agent-aci",
+                "kb-openhands-sdk"
+              ],
+              "DerivedFrom": [
+                "claim-harness-determines-effective-autonomy",
+                "spec-loop-engineering-guard"
+              ],
+              "RecordedAt": "2026-08-27T00:00:00Z",
+              "Method": "Design-Science-Hypothese mit deterministischer Fault-Injection-Foundation und vorregistriertem Vergleichsprotokoll"
+            },
+            "Rationale": "Technische Tests belegen heute nur die Zustandsmaschinen-Invarianten. Die behauptete Effizienz- und Sicherheitswirkung bleibt Proposed, bis wiederholte kontrollierte Baselines nach dem öffentlichen Loop-Engineering-Protokoll vorliegen."
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
     {
       "Id": "claim-essential-complexity-remains",
       "Payload": {
@@ -3553,6 +3918,41 @@
                 "Given": "Feedback formuliert wurde",
                 "When": "die Nutzerin oder der Nutzer fortfährt",
                 "Then": "wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet"
+              }
+            ]
+          }
+        }
+      },
+      "Convergence": "Pending"
+    },
+    {
+      "Id": "spec-riftward-baseline-comparison",
+      "Payload": {
+        "Case": "SpecNode",
+        "Fields": {
+          "Item": {
+            "Title": "Zulässige Vergleiche sanitierter Riftward-Baselines",
+            "Intent": "CDD gibt zwei deklarierte Konfigurationen nur dann als vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und desselben Evaluationsprotokolls oberhalb des benannten Wiederholungsminimums sind und einen echten Kontrast bilden; Rangfolge, Kausalität oder Produktwirkung leitet der Kern daraus nicht ab",
+            "Criteria": [
+              {
+                "Given": "zwei valide Aggregate derselben Mission und desselben Evaluationsprotokolls, die das benannte Wiederholungsminimum erreichen und sich in der deklarierten Konfiguration unterscheiden",
+                "When": "die Vergleichszulässigkeit geprüft wird",
+                "Then": "trägt die freigegebene Vergleichsprojektion Mission, Protokoll-Digest, Minimum und beide unveränderten Aggregate deterministisch ohne abgeleitete Rangfolge"
+              },
+              {
+                "Given": "eine anekdotische Seite unterhalb des benannten Minimums oder ein gefälschtes, inkonsistentes Aggregate",
+                "When": "der Vergleich angefragt wird",
+                "Then": "schlägt er fail-closed fehl und liefert keine vergleichbare Projektion"
+              },
+              {
+                "Given": "zwei Baselines mit unterschiedlichen Missionen, unterschiedlichen Protokoll-Digests oder identischer Konfiguration",
+                "When": "ein Vergleich angefragt wird",
+                "Then": "wird er typisiert abgelehnt, weil Scope, Evidenzniveau oder Kontrast fehlen"
+              },
+              {
+                "Given": "zwei ansonsten valide Baselines verschiedener Konfigurationen mit mindestens einer gemeinsamen Run-ID",
+                "When": "ein Vergleich angefragt wird",
+                "Then": "wird er abgelehnt, damit derselbe Lauf nicht auf beiden Seiten eines Kontrasts gezählt werden kann"
               }
             ]
           }

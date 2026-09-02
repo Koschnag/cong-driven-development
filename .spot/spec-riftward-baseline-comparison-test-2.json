@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-baseline-comparison-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-baseline-comparison",
+        "Name": "Zul\u00E4ssige Vergleiche sanitierter Riftward-Baselines \u2014 when der Vergleich angefragt wird then schl\u00E4gt er fail-closed fehl und liefert keine vergleichbare Projektion",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

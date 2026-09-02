@@ -1,8 +1,9 @@
 # Full-Agentic SDLC mit CDD Autopilot
 
 > **Stand:** ausführbarer Vertical Slice. Der typisierte Controller, persistente
-> Runs, CLI-Harness, deterministische Gate-Ausführung und die read-only
-> Studio-Projektion sind implementiert. Ein dauerhaft betriebener Workflow-
+> Runs, CLI-Harness, deterministische Gate-Ausführung, kandidat- und
+> ursachengebundene Loop-Guard-Foundation und die read-only Studio-Projektion
+> sind implementiert. Ein dauerhaft betriebener Workflow-
 > Executor, produktive Promotion und selbstlernende Dispatch-Policies sind noch
 > nicht implementiert.
 
@@ -32,6 +33,10 @@ begrenzte Repair-Schleife; weder Builder noch Reviewer dürfen selbst promoten.
 
 Der aktuelle Scope endet am sauberen Git-Checkpoint. Das ist autonome
 Candidate-Entwicklung, nicht autonome Produktion.
+
+Die Ralph-artige Iterations- und Swarm-Architektur, implementierte Guard-
+Semantik sowie ehrliche Forschungsgrenze stehen separat in
+[`docs/loop-engineering.md`](loop-engineering.md).
 
 ## Die fünf CDD-Schichten
 
@@ -217,6 +222,27 @@ Worktree. Reale Worktree-Isolation, Capability-Sandbox und paralleler Dispatch
 sind deshalb weiterhin nicht aktiviert. Die Foundation bleibt bewusst
 `Pending`.
 
+## Loop Engineering und Circuit Breaker
+
+Die implementierte pure Foundation trennt `AgentProductFailure`,
+`HarnessInfrastructureFailure` und `AgentProtocolFailure`. Ihr Failure Key ist
+an Run, Slice, unveränderlichen Candidate, Stage und Fehlercode gebunden. Ein
+Review-Erfolg kann deshalb keinen Publisher-Fehler zurücksetzen;
+Infrastrukturfehler erzeugen nur `WaitWithoutModel`, Protokollverlust nur ein
+begrenztes Session-Resume und Produktbefunde begrenzte frische Repair-Turns.
+
+Administrative Holds sind eigene typisierte Autoritätsobjekte ohne
+Ablaufdatum. Sie sind kein Prozess-Mutex und bleiben auch bei Candidate-Wechsel
+aktiv, bis exakt dieselbe Authority sie freigibt. Der Guard-State ist
+serialisierbar und seine nächste Disposition replaybar getestet.
+
+Diese Foundation ist noch nicht Teil des versionierten `RunState`-Schemas und
+wird vom CLI-Driver noch nicht automatisch geplant. Die Dokumentation behauptet
+daher keinen fertigen produktiven Swarm. Architektur, Vergleich mit Ralph,
+Anthropic, Temporal, SWE-agent und OpenHands sowie das vorregistrierte
+Fault-Injection-Protokoll stehen in
+[`docs/loop-engineering.md`](loop-engineering.md).
+
 ## Evaluation
 
 Jeder Run projiziert mindestens:
@@ -259,9 +285,16 @@ leere oder doppelte Run-IDs, abweichende Run-Zahlen, negative Zähler und
 widersprüchliche Summen werden nicht still als anekdotisch oder wiederholt
 klassifiziert. Summenüberläufe werden bereits bei der Aggregation typisiert
 abgelehnt; auch der Ganzzahlmedian ist für `Int64.MaxValue` überlaufsicher.
-Beides beschreibt Beobachtungen, keine Kausalität, Produktwirkung oder
-Langzeitautonomie. Was weiterhin fehlt, sind kalibrierte, mehrfach ausgeführte
-Riftward-Läufe mit Baselines und negativen Resultaten.
+
+Diese Regel ist inzwischen auch als Vergleichs-Gate typisiert:
+`compareBaselines` gibt zwei deklarierte Konfigurationen nur dann als
+vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und
+desselben Evaluationsprotokolls sind, beide das vorab benannte
+Wiederholungsminimum erreichen und ein echter Kontrast besteht. Die
+freigegebene Projektion trägt beide Aggregate unverändert samt Mission,
+Protokoll-Digest und Minimum; Rangfolge, Kausalität oder Produktwirkung leitet
+der Kern daraus nicht ab. Was weiterhin fehlt, sind kalibrierte,
+mehrfach ausgeführte Riftward-Läufe mit Baselines und negativen Resultaten.
 
 ### Modellherkunft und Black-Box-Fingerprinting
 
@@ -290,8 +323,9 @@ solche Evidenz behauptet CDD keine Herkunft.
 
 ## Nächste belastbare Ausbaustufen
 
-1. Ein Temporal-Adapter für Leases, idempotente Activities, mehrtägige Timer und
-   Crash-Recovery; der deterministische CDD-Zustand bleibt Workflow-Payload.
+1. Loop-Guard, Lease, Portabilität und Publisher in ein versioniertes
+   `RunState`-Schema integrieren; anschließend Temporal-Adapter für idempotente
+   Activities, mehrtägige Timer und Crash-Recovery.
 2. OTLP-Export der Run-Metriken sowie OCI/in-toto-Attestations für Evidence und
    Checkpoints.
 3. Capability-Sandboxes pro Worker statt bloßer deklarierter Profile.

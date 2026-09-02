@@ -25,6 +25,7 @@ reproduzierbaren Forschungsstand aus vier miteinander verbundenen Artefakten:
 | **CDD Studio** | [öffentliche IDE-Demo](https://koschnag.github.io/cong-driven-development/ide/) · [`src/Cdd.Web/`](src/Cdd.Web/) | experimentelle Projektion desselben SPOT |
 | **Open Control Plane** | [`docs/open-control-plane-landscape.md`](docs/open-control-plane-landscape.md) · `/workspace.html` | reale Workspace-Projektion und Tool-/Forschungslandkarte (Pre-Alpha) |
 | **Full-Agentic SDLC** | [`docs/full-agentic-sdlc.md`](docs/full-agentic-sdlc.md) · `Cdd.Core.Autopilot` | persistenter Controller + CLI-Harness + Studio-Projektion |
+| **Loop Engineering** | [`docs/loop-engineering.md`](docs/loop-engineering.md) · [`research/protocols/loop-engineering-v1.md`](research/protocols/loop-engineering-v1.md) | getestete Guard-Foundation + vorregistrierte Ralph-Baseline |
 
 Der Claim-Ledger ist selbst Teil des SPOT: `Observed`, `Proposed`, `Verified`,
 `Contested` und `Unknown` bleiben unterscheidbar. Eine technisch implementierte
@@ -112,6 +113,17 @@ Scout/Builder/Critic/Reviewer-Rollen, Resume/Fresh-Start-Recovery,
 deterministische Gates, unabhängige Review und saubere Git-Checkpoints. Details
 und ein vollständiger Plan stehen in
 **[docs/full-agentic-sdlc.md](docs/full-agentic-sdlc.md)**.
+
+Die langlebige Ralph-artige Iteration wird in
+**[docs/loop-engineering.md](docs/loop-engineering.md)** konkretisiert: genau ein
+Mutator, kleine Candidate-gebundene Schritte, read-only Advisory-Lanes,
+unabhängige Review, getrennte Produkt-/Infrastruktur-/Protokollbudgets und
+modellfreie Circuit Breaker. Die Effizienzwirkung ist ein öffentlicher
+`Proposed`-Claim, kein bereits bestätigtes Forschungsergebnis.
+Implementiert ist derzeit die reine, serialisierbare Loop-Guard-
+Entscheidungsfoundation; ihre Einbindung in `RunState`, Scheduler, CLI und
+Publisher sowie die vollständige lokale Durchsetzung aller Betriebsbudgets
+sind offen.
 
 ## Architektur (Seed)
 
@@ -230,7 +242,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**196 Knoten im Selbstmodell** · 4 aktive Invarianten · 59/65 abgeleitete Tests automatisiert
+**217 Knoten im Selbstmodell** · 4 aktive Invarianten · 67/73 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -248,6 +260,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
 - ✅ **Getypte Diagramm-Flaeche mit Toolbox** — Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.
 - ✅ **Governance by Invariance** — Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal + CI) erzwungen
+- ✅ **Kandidat- und ursachengebundene Loop Guards** — CDD stellt eine deterministisch getestete, serialisierbare Loop-Guard-Entscheidungsfoundation bereit; ihre Scheduler-, RunState-, CLI- und Publisher-Integration bleibt offen
 - ✅ **LLM-Kontextexport** — Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut
 - ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
@@ -271,6 +284,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
 - 🔜 **Semantische Foundation für Slice-Leases** — CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich
 - 🔜 **Typisierte Committed-Bytes-Portabilitäts-Evidence** — CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte
+- 🔜 **Zulässige Vergleiche sanitierter Riftward-Baselines** — CDD gibt zwei deklarierte Konfigurationen nur dann als vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und desselben Evaluationsprotokolls oberhalb des benannten Wiederholungsminimums sind und einen echten Kontrast bilden; Rangfolge, Kausalität oder Produktwirkung leitet der Kern daraus nicht ab
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 196 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 217 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 178 · Pending 18 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 197 · Pending 20 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -46,6 +46,9 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - Teil von `term-spot`
 - **Konvergenz** — Grad der Übereinstimmung zwischen Modell-Knoten und Implementierung (Pending/Aligned/Diverged/Orphaned)
   - bezieht sich auf `term-knoten`
+- **Loop Engineering** *(auch: Ralph Loop, Durable Agent Loop)* — Entwurf langlebiger Agentenschleifen als deterministische Zustandsmaschine mit kleinen Iterationen, kandidatgebundener Evidenz, getrennten Fehlerklassen, harten Budgets und crash-sicherem Handoff
+  - Teil von `term-autopilot-run`
+  - bezieht sich auf `term-evidence-pack`
 - **Mission Order** *(auch: Einsatzauftrag)* — Typisierter Auftrag mit Lage, Intent, Scope, Einheit, Constraints, Obligations, Berichts- und Abbruchkriterien
   - Teil von `term-eidos`
 - **Ontologie** *(auch: Begriffsmodell)* — Begriffsnetz der Domäne: Begriffe mit Definition und typisierten Beziehungen
@@ -138,6 +141,11 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Kontext:** Builds, Unit-Tests und dokumentierte Budgets können grün sein, obwohl die behauptete Produkteigenschaft unter repräsentativer Last, Zielhardware oder realer Systemgrenze scheitert
 - **Entscheidung:** Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht
 - **Konsequenzen:** CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen
+
+### Loop-Recovery wird an Candidate, Stage und Fehlerursache gebunden (`adr-011-cause-bound-loop-guards`)
+- **Kontext:** Globale Retry-Zähler und jeder beliebige Zwischenerfolg können einen persistenten Infrastruktur- oder Protokollfehler verdecken und Agenten ohne neue Information erneut dispatchen
+- **Entscheidung:** CDD trennt Produkt-, Infrastruktur- und Protokollfehler, bindet Budgets an Run, Slice, Candidate, Stage und Fehlercode und hält administrative Holds unabhängig von Ressourcen-Mutexen
+- **Konsequenzen:** Die deterministische Foundation ist implementiert; Scheduler-, Publisher- und Workflow-Adapter müssen den Vertrag noch durchgängig persistieren und ausführen
 
 ## Spezifikationen
 
@@ -257,6 +265,14 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN eine Invariante im SPOT WHEN cdd validate läuft THEN werden Verstöße als Fehler am verletzenden Knoten gemeldet
 
+### Kandidat- und ursachengebundene Loop Guards (`spec-loop-engineering-guard`, Aligned)
+**Intent:** CDD stellt eine deterministisch getestete, serialisierbare Loop-Guard-Entscheidungsfoundation bereit; ihre Scheduler-, RunState-, CLI- und Publisher-Integration bleibt offen
+
+- GIVEN ein expliziter administrativer Hold WHEN der Scheduler beliebig oft nach der nächsten Aktion fragt THEN entsteht kein Agenten-Turn, kein verbrauchter Retry und nur die exakt autorisierte Freigabe hebt den Hold auf
+- GIVEN ein Promotion-Infrastrukturfehler für einen unveränderten Candidate WHEN eine andere Stage wie Review erfolgreich endet THEN bleibt der Promotion-Counter erhalten und erzeugt ausschließlich modellfreies Backoff oder einen offenen Circuit
+- GIVEN wiederholte Produkt- oder Protokollfehler mit demselben Failure Key WHEN das jeweilige Budget erschöpft wird THEN Produktarbeit erhält nur begrenzte frische Versuche, Protokollverlust nur begrenzte Session-Resumes und danach öffnet der Circuit
+- GIVEN ein neuer Candidate-Digest oder ein persistierter Loop-Guard-Zustand WHEN Subject-Wechsel oder Replay erfolgt THEN werden alte Failure Counter invalidiert, administrative Autorität bleibt bestehen und dieselbe nächste Entscheidung wird reproduziert
+
 ### MCP-Server (`spec-mcp-server`, Aligned)
 **Intent:** Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 
@@ -292,6 +308,14 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 
 - GIVEN der versionierte SPOT-Snapshot geladen ist WHEN das Research Studio geöffnet wird THEN werden Claims, Quellen, Risiken, Prämissen, Entscheidungen und Kennzahlen daraus projiziert
 - GIVEN Feedback formuliert wurde WHEN die Nutzerin oder der Nutzer fortfährt THEN wird nur ein prüfbarer GitHub-Issue-Entwurf geöffnet
+
+### Zulässige Vergleiche sanitierter Riftward-Baselines (`spec-riftward-baseline-comparison`, Pending)
+**Intent:** CDD gibt zwei deklarierte Konfigurationen nur dann als vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und desselben Evaluationsprotokolls oberhalb des benannten Wiederholungsminimums sind und einen echten Kontrast bilden; Rangfolge, Kausalität oder Produktwirkung leitet der Kern daraus nicht ab
+
+- GIVEN zwei valide Aggregate derselben Mission und desselben Evaluationsprotokolls, die das benannte Wiederholungsminimum erreichen und sich in der deklarierten Konfiguration unterscheiden WHEN die Vergleichszulässigkeit geprüft wird THEN trägt die freigegebene Vergleichsprojektion Mission, Protokoll-Digest, Minimum und beide unveränderten Aggregate deterministisch ohne abgeleitete Rangfolge
+- GIVEN eine anekdotische Seite unterhalb des benannten Minimums oder ein gefälschtes, inkonsistentes Aggregate WHEN der Vergleich angefragt wird THEN schlägt er fail-closed fehl und liefert keine vergleichbare Projektion
+- GIVEN zwei Baselines mit unterschiedlichen Missionen, unterschiedlichen Protokoll-Digests oder identischer Konfiguration WHEN ein Vergleich angefragt wird THEN wird er typisiert abgelehnt, weil Scope, Evidenzniveau oder Kontrast fehlen
+- GIVEN zwei ansonsten valide Baselines verschiedener Konfigurationen mit mindestens einer gemeinsamen Run-ID WHEN ein Vergleich angefragt wird THEN wird er abgelehnt, damit derselbe Lauf nicht auf beiden Seiten eines Kontrasts gezählt werden kann
 
 ### Sanitisierte longitudinale Riftward-Baseline (`spec-riftward-longitudinal-baseline`, Aligned)
 **Intent:** Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben
@@ -356,6 +380,7 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Eine Showcase-Auslieferung legt Schreib-, Memory- oder Runtime-Fähigkeiten unbeabsichtigt offen** (Likelihood Medium, Impact Critical) — Mitigation: App-seitige fail-closed Capability-Grenze, getrennte Opt-ins, generische Fehler, Security-Header und Browser-/Unit-Tests
 - **Spec-Vollständigkeits-Falle: die Spec wird so komplex wie Code** (Likelihood Medium, Impact High) — Mitigation: Specs bleiben auf Intent/Kriterien/Invarianten-Ebene; Agents füllen Lücken, Validierung fängt Drift
 - **Ein lokal grüner Nachweis hängt unbemerkt von ignorierten oder nicht versionierten Worktree-Bytes ab** (Likelihood High, Impact High) — Mitigation: Portabilitäts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollständige und widersprüchliche Beobachtungen fail-closed ablehnen
+- **Ein langlaufender Agenten-Loop deutet Infrastruktur- oder Protokollfehler als neue Produktarbeit und verbraucht Budget ohne neue Evidenz** (Likelihood High, Impact High) — Mitigation: Fehler nach Candidate, Stage und Cause isolieren; Infrastruktur modellfrei warten lassen, Protokoll-Recovery begrenzen und circuits unabhängig von Erfolgen anderer Stages erhalten
 
 ## Komponenten
 
@@ -370,6 +395,15 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **Anthropic — Measuring AI agent autonomy in practice** (empirical research, https://www.anthropic.com/research/measuring-agent-autonomy)
   - Reale Autonomie muss aus vielen produktiven Sitzungen und Interventionen gemessen werden
   - Erfahrene Nutzer erlauben mehr Automatik und greifen zugleich weiterhin gezielt ein; Post-Deployment-Monitoring bleibt notwendig
+- **Anthropic: Harness design for long-running apps** (engineering report, https://www.anthropic.com/engineering/harness-design-long-running-apps)
+  - Planner, Generator und Evaluator profitieren von kleinen inkrementellen Chunks und strukturiertem Handoff
+  - Ablationen und vereinfachte Harness-Komponenten sind nötig, um Wirkung nicht nur der Gesamtschleife zuzuschreiben
+- **Anthropic: Effective harnesses for long-running agents** (engineering report, https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+  - Initializer und inkrementelle Sessions teilen langlebige Arbeit in überprüfbare Fortschrittsstücke
+  - Strukturierte Fortschrittsartefakte, Git-Historie und ein sauber hinterlassener Zustand tragen den Handoff zwischen Kontextfenstern
+- **Anthropic: Building a C compiler with parallel agents** (engineering report, https://www.anthropic.com/engineering/building-c-compiler)
+  - Parallele Agenten arbeiteten in isolierten Containern und synchronisierten über versionierte Arbeitsstände und Tests
+  - Der berichtete Ressourcenverbrauch macht harte Budgets und verwertbare Zwischenstände zu einem Teil der Architektur
 - **Anthropic — Trustworthy agents in practice** (research, https://www.anthropic.com/research/trustworthy-agents)
   - Agentenverhalten entsteht gemeinsam aus Modell, Harness, Werkzeugen und Umgebung
   - Zuverlaessige Agenten brauchen menschliche Kontrolle, Unsicherheitsbehandlung und geschichtete Abwehr
@@ -423,6 +457,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **OpenAI — Harness engineering in an agent-first world** (engineering report, https://openai.com/index/harness-engineering/)
   - Agentenleistung steigt durch repository-lesbare Domaenen, harte Invarianten, isolierte Worktrees, E2E-Browserpruefung und beobachtbare Laufzeiten
   - Fehlschlaege werden als fehlende Systemfaehigkeit behandelt; einzelne Coding-Laeufe erreichen mehrere Stunden, nicht automatisch mehrere Tage
+- **OpenHands Software Agent SDK** (paper, https://arxiv.org/abs/2511.03690)
+  - Komponierbare Agenten benötigen explizite Lifecycle-, Sandbox-, Security- und Modell-Routing-Verträge
+  - CDD behandelt diese Ausführung als austauschbaren Adapter unter einem separaten semantischen Trust Core
+- **Ralph: iterative agent loop** (reference implementation, https://github.com/snarktank/ralph)
+  - Jede Iteration startet mit frischem Modellkontext und liest Fortschritt aus versionierten Artefakten statt aus einer unbounded Conversation
+  - Kleine Stories, deterministische Gates, Git-Checkpoints und ein Max-Iterations-Limit bilden den minimalen Loop
 - **Project Riftward: Representative Frame as Evidence Boundary** (longitudinal-case-study, https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/PERFORMANCE_BUDGET.md)
   - Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde
   - Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame
@@ -434,6 +474,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - KI reduziert Implementierungsmechanik, nicht automatisch essenzielle Komplexität
   - Autonomie muss an maschinenpruefbare, risikoadaptive Gates gebunden sein
   - Langfristige Grundlagen und explizite Modelle sind wichtiger als kurzfristiges Tool-Wissen
+- **SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering** (paper, https://arxiv.org/abs/2405.15793)
+  - Die Gestaltung der Agent-Computer-Schnittstelle beeinflusst die praktische Coding-Leistung materiell
+  - Harness-Vergleiche müssen Modell, Aufgaben, Budget und Interface kontrollieren
+- **Temporal: Durable workflow execution** (official documentation, https://github.com/temporalio/documentation/blob/main/docs/encyclopedia/workflow/workflow-execution/workflow-execution.mdx)
+  - Deterministische Workflow-Logik wird von nichtdeterministischen Activities getrennt und aus einer Event History replayt
+  - Crash-Recovery und lange Wartezeiten gehören in eine durable Ausführungsschicht, nicht in Modellgedächtnis
 - **TLA+ Documentation** (formal-method documentation, https://docs.tlapl.us/)
   - TLA+ beschreibt Zustandsmaschinen und prueft Safety sowie Liveness verteilter oder nebenlaeufiger Systeme
   - CDD nutzt TLA+ selektiv fuer langlebige Orchestrierung, Lease-, Retry-, Promotion- und Recovery-Protokolle
@@ -450,6 +496,15 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 ## Forschungsclaims
 
 Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementierungsstand.
+
+### Proposed (`claim-cause-bound-loop-guards-reduce-waste`)
+- **Aussage:** Eine langlaufende Agentenschleife, die Recovery-Budgets an unveränderliche Candidates, Stages und maschinenlesbare Fehlerursachen bindet und Infrastrukturfehler modellfrei behandelt, reduziert verschwendete Agenten-Turns gegenüber einer statusglobalen Retry-Schleife, ohne die Promotion-Sicherheit zu schwächen.
+- **Scope:** Langlaufende agentische Softwareentwicklung mit externen Gates und Publishern
+- **Methode:** Design-Science-Hypothese mit deterministischer Fault-Injection-Foundation und vorregistriertem Vergleichsprotokoll
+- **Erfasst:** 2026-08-27T00:00:00Z
+- **Quellen:** `kb-ralph-loop`, `kb-anthropic-long-running-harness`, `kb-temporal-durable-execution`, `kb-swe-agent-aci`, `kb-openhands-sdk`
+- **Abgeleitet aus:** `claim-harness-determines-effective-autonomy`, `spec-loop-engineering-guard`
+- **Begründung:** Technische Tests belegen heute nur die Zustandsmaschinen-Invarianten. Die behauptete Effizienz- und Sicherheitswirkung bleibt Proposed, bis wiederholte kontrollierte Baselines nach dem öffentlichen Loop-Engineering-Protokoll vorliegen.
 
 ### Proposed (`claim-essential-complexity-remains`)
 - **Aussage:** Generative KI reduziert vor allem akzidentelle Implementierungsarbeit; Spezifikation, Design und Verifikation bleiben essenzielle Aufgaben.
@@ -502,6 +557,7 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 
 ## Offene Arbeit (nicht Aligned)
 
+- `claim-cause-bound-loop-guards-reduce-waste` (claim, Pending)
 - `claim-essential-complexity-remains` (claim, Pending)
 - `claim-evidence-fitness-reduces-false-promotion` (claim, Pending)
 - `claim-gates-bound-autonomy` (claim, Pending)
@@ -518,6 +574,7 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - `spec-representative-evidence-fitness` (spec, Pending)
 - `spec-research-snapshots` (spec, Pending)
 - `spec-research-studio` (spec, Pending)
+- `spec-riftward-baseline-comparison` (spec, Pending)
 - `spec-risk-adaptive-assurance-portfolio` (spec, Pending)
 - `spec-slice-worktree-lease` (spec, Pending)
 

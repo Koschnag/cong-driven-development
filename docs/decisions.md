@@ -77,6 +77,11 @@
 - **Entscheidung:** Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht
 - **Konsequenzen:** CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen
 
+### Loop-Recovery wird an Candidate, Stage und Fehlerursache gebunden · `adr-011-cause-bound-loop-guards`
+- **Kontext:** Globale Retry-Zähler und jeder beliebige Zwischenerfolg können einen persistenten Infrastruktur- oder Protokollfehler verdecken und Agenten ohne neue Information erneut dispatchen
+- **Entscheidung:** CDD trennt Produkt-, Infrastruktur- und Protokollfehler, bindet Budgets an Run, Slice, Candidate, Stage und Fehlercode und hält administrative Holds unabhängig von Ressourcen-Mutexen
+- **Konsequenzen:** Die deterministische Foundation ist implementiert; Scheduler-, Publisher- und Workflow-Adapter müssen den Vertrag noch durchgängig persistieren und ausführen
+
 ## Geltende Invarianten (Governance)
 
 - 🛡️ **Jeder Begriff der ubiquitären Sprache ist definiert** — jeder Begriff braucht eine Definition · `inv-begriffe-definiert`

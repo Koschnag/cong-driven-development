@@ -18,6 +18,7 @@ Beispiele sind generisch und synthetisch.
 | Referenzprojekt | CourseForge: Course IR → Lernspielplan | `examples/CourseForge.Core/` |
 | Studio | Projektionen vom Claim bis zum Code | `src/Cdd.Web/`, `docs/ide/` |
 | Evidenz | Tests, Protokolle, Snapshots | `tests/`, `research/protocols/`, Releases |
+| Loop Engineering | Ralph-Baseline, Fault-Injection und Circuit-Breaker-Evaluation | `docs/loop-engineering.md`, `research/protocols/loop-engineering-v1.md` |
 
 ## Was ist Claim, was ist Ergebnis?
 
@@ -54,6 +55,9 @@ korrekt gespeichert (`Aligned`) und wissenschaftlich weiterhin nur `Proposed` se
    fachlich ratifizierbare Lernspielartefakte erzeugen?
 5. Verbessert der kontrollierte Übergang von Spielmechanik zu Transferaufgabe die
    Beherrschung neuer Aufgaben gegenüber konventioneller Übung?
+6. Reduzieren kandidat-, stage- und ursachengebundene Loop Guards verschwendete
+   Agentturns gegenüber statusglobalen Ralph-Retries bei gleicher
+   Promotionssicherheit?
 
 ## Offenheit und Grenzen
 

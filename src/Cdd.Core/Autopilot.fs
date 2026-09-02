@@ -320,6 +320,65 @@ module Autopilot =
         | RepairProductCandidate
         | RetryPortabilityInfrastructure
 
+    /// Stable stage identity for loop-engineering failure isolation. A success
+    /// in one stage cannot erase a failure budget in another stage.
+    type LoopStage =
+        | MutationStage
+        | GateStage
+        | AdvisoryStage
+        | ReviewStage
+        | PromotionStage
+        | PublicationStage
+
+    type LoopFailureClass =
+        | AgentProductFailure
+        | HarnessInfrastructureFailure
+        | AgentProtocolFailure
+
+    /// One retry budget belongs to one exact run, slice, immutable subject,
+    /// stage and machine-readable cause. Human prose is deliberately excluded.
+    type LoopFailureKey =
+        { RunId : string
+          SliceId : string
+          SubjectDigest : string
+          Stage : LoopStage
+          FailureCode : string }
+
+    type LoopGuardPolicy =
+        { MaxProductAttempts : int
+          MaxInfrastructureAttempts : int
+          MaxSameSessionResumes : int
+          InfrastructureBackoffSeconds : int }
+
+    type LoopFailureCounter =
+        { Key : LoopFailureKey
+          FailureClass : LoopFailureClass
+          Attempts : int }
+
+    /// Administrative authority is separate from a resource mutex. Holds have
+    /// no expiry field and therefore cannot silently release themselves.
+    type AdministrativeHold =
+        { HoldId : string
+          Authority : string
+          Reason : string
+          StartedAtUtc : DateTimeOffset }
+
+    type LoopGuardState =
+        { SubjectDigest : string
+          Failures : LoopFailureCounter list
+          AdministrativeHold : AdministrativeHold option }
+
+    type LoopWaitReason =
+        | AdministrativeHoldWait of holdId: string
+        | InfrastructureBackoff of key: LoopFailureKey * seconds: int
+
+    type LoopDisposition =
+        | Proceed
+        | RetryWithFreshAgent of key: LoopFailureKey * attempt: int
+        | ResumeBoundSession of key: LoopFailureKey * attempt: int
+        | WaitWithoutModel of LoopWaitReason
+        | CircuitOpen of key: LoopFailureKey * attempts: int
+
     type ControllerAction =
         | DispatchAgent of AgentDispatch
         | ExecuteGate of GateExecution
@@ -715,6 +774,227 @@ module Autopilot =
                || value.Contains('\\')
                || value |> Seq.exists (fun character -> Char.IsControl character || Char.IsWhiteSpace character) then
               yield sprintf "%s must be a bounded opaque identifier, not a path or free text." label ]
+
+    let private validateLoopGuardPolicy (policy: LoopGuardPolicy) =
+        [ if policy.MaxProductAttempts < 1 then
+              yield "Loop guard MaxProductAttempts must be at least one."
+          elif policy.MaxProductAttempts > 1000 then
+              yield "Loop guard MaxProductAttempts exceeds the hard safety bound."
+          if policy.MaxInfrastructureAttempts < 1 then
+              yield "Loop guard MaxInfrastructureAttempts must be at least one."
+          elif policy.MaxInfrastructureAttempts > 1000 then
+              yield "Loop guard MaxInfrastructureAttempts exceeds the hard safety bound."
+          if policy.MaxSameSessionResumes < 0 then
+              yield "Loop guard MaxSameSessionResumes cannot be negative."
+          elif policy.MaxSameSessionResumes > 1000 then
+              yield "Loop guard MaxSameSessionResumes exceeds the hard safety bound."
+          if policy.InfrastructureBackoffSeconds < 1 then
+              yield "Loop guard InfrastructureBackoffSeconds must be at least one."
+          elif bigint policy.MaxInfrastructureAttempts * bigint policy.InfrastructureBackoffSeconds > 86_400I then
+              yield "Loop guard infrastructure backoff exceeds the one-day hard safety bound." ]
+
+    let private validateLoopFailureKey (state: LoopGuardState) (key: LoopFailureKey) =
+        [ yield! validateOpaqueIdentifier "Loop run id" key.RunId
+          yield! validateOpaqueIdentifier "Loop slice id" key.SliceId
+          yield! validateOpaqueIdentifier "Loop subject digest" key.SubjectDigest
+          yield! validateOpaqueIdentifier "Loop failure code" key.FailureCode
+          if key.SubjectDigest <> state.SubjectDigest then
+              yield "Loop failure targets a stale subject digest." ]
+
+    let private validateAdministrativeHold (hold: AdministrativeHold) =
+        [ yield! validateOpaqueIdentifier "Administrative hold id" hold.HoldId
+          yield! validateOpaqueIdentifier "Administrative hold authority" hold.Authority
+          if blank hold.Reason then
+              yield "Administrative hold reason is required."
+          elif hold.Reason.Length > 500 || hold.Reason |> Seq.exists Char.IsControl then
+              yield "Administrative hold reason must be bounded text without control characters." ]
+
+    let private canonicalLoopFailures failures =
+        failures
+        |> List.sortBy (fun (item: LoopFailureCounter) ->
+            item.Key.RunId,
+            item.Key.SliceId,
+            item.Key.SubjectDigest,
+            item.Key.Stage,
+            item.Key.FailureCode)
+
+    /// Validate deserialized loop state before the scheduler derives any next
+    /// action. Duplicate, stale, zero or unbounded counters fail closed.
+    let validateLoopGuardState (state: LoopGuardState) =
+        let duplicateKeys =
+            state.Failures
+            |> List.map (fun counter -> counter.Key)
+            |> duplicates
+        [ yield! validateOpaqueIdentifier "Loop subject digest" state.SubjectDigest
+          match state.AdministrativeHold with
+          | Some hold -> yield! validateAdministrativeHold hold
+          | None -> ()
+          for counter in state.Failures do
+              yield! validateLoopFailureKey state counter.Key
+              if counter.Attempts < 1 then
+                  yield "Loop failure counters must contain at least one attempt."
+              elif counter.Attempts > 1001 then
+                  yield "Loop failure counter exceeds the hard persisted-state bound."
+          if state.Failures <> canonicalLoopFailures state.Failures then
+              yield "Loop failure counters must be in canonical order."
+          for key in duplicateKeys do
+              yield sprintf "Loop guard contains duplicate failure key %s/%A/%s." key.SubjectDigest key.Stage key.FailureCode ]
+
+    let private counterPolicyLimit policy failureClass =
+        match failureClass with
+        | AgentProductFailure -> policy.MaxProductAttempts
+        | HarnessInfrastructureFailure -> policy.MaxInfrastructureAttempts
+        | AgentProtocolFailure -> policy.MaxSameSessionResumes
+
+    let private validateLoopCountersAgainstPolicy policy state =
+        [ for counter in state.Failures do
+              let maximumPersisted = counterPolicyLimit policy counter.FailureClass + 1
+              if counter.Attempts > maximumPersisted then
+                  yield sprintf "Loop failure counter exceeds its policy bound for %s." counter.Key.FailureCode ]
+
+    let createLoopGuardState subjectDigest =
+        let errors = validateOpaqueIdentifier "Loop subject digest" subjectDigest
+        if errors.IsEmpty then
+            Ok
+                { SubjectDigest = subjectDigest
+                  Failures = []
+                  AdministrativeHold = None }
+        else Error errors
+
+    /// The scheduler asks this before every agent dispatch. Repeated ticks
+    /// under an administrative hold remain model-free and do not consume a
+    /// retry budget.
+    let nextLoopDisposition (policy: LoopGuardPolicy) (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardPolicy policy
+            @ validateLoopGuardState state
+            @ validateLoopCountersAgainstPolicy policy state
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | Some hold -> Ok(WaitWithoutModel(AdministrativeHoldWait hold.HoldId))
+            | None -> Ok Proceed
+
+    /// Recompute the exact next disposition for one persisted failure key.
+    /// This is the crash/replay seam; no model output participates.
+    let replayLoopDisposition (policy: LoopGuardPolicy) (key: LoopFailureKey) (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardPolicy policy
+            @ validateLoopGuardState state
+            @ validateLoopCountersAgainstPolicy policy state
+            @ validateLoopFailureKey state key
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | Some hold -> Ok(WaitWithoutModel(AdministrativeHoldWait hold.HoldId))
+            | None ->
+                match state.Failures |> List.tryFind (fun counter -> counter.Key = key) with
+                | None -> Ok Proceed
+                | Some counter ->
+                    let limit = counterPolicyLimit policy counter.FailureClass
+                    if counter.Attempts >= limit + 1 then
+                        Ok(CircuitOpen(key, counter.Attempts))
+                    else
+                        match counter.FailureClass with
+                        | AgentProductFailure -> Ok(RetryWithFreshAgent(key, counter.Attempts))
+                        | HarnessInfrastructureFailure ->
+                            Ok(
+                                WaitWithoutModel(
+                                    InfrastructureBackoff(
+                                        key,
+                                        policy.InfrastructureBackoffSeconds * counter.Attempts)))
+                        | AgentProtocolFailure -> Ok(ResumeBoundSession(key, counter.Attempts))
+
+    let placeAdministrativeHold (hold: AdministrativeHold) (state: LoopGuardState) =
+        let errors = validateLoopGuardState state @ validateAdministrativeHold hold
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | None -> Ok { state with AdministrativeHold = Some hold }
+            | Some current when current = hold -> Ok state
+            | Some _ -> Error [ "A different administrative hold is already active." ]
+
+    /// Release requires the exact typed authority. Time and resource-lock
+    /// state are intentionally irrelevant, so no timeout can auto-release it.
+    let releaseAdministrativeHold holdId authority (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardState state
+            @ validateOpaqueIdentifier "Administrative hold id" holdId
+            @ validateOpaqueIdentifier "Administrative hold authority" authority
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | None -> Error [ "No administrative hold is active." ]
+            | Some hold when hold.HoldId <> holdId ->
+                Error [ "Administrative hold id does not match the active hold." ]
+            | Some hold when hold.Authority <> authority ->
+                Error [ "Administrative hold authority does not match the active hold." ]
+            | Some _ -> Ok { state with AdministrativeHold = None }
+
+    /// New candidate bytes invalidate failure counters, while an explicit
+    /// administrative hold survives the subject change.
+    let advanceLoopSubject subjectDigest (state: LoopGuardState) =
+        let errors = validateLoopGuardState state @ validateOpaqueIdentifier "Loop subject digest" subjectDigest
+        if not errors.IsEmpty then Error errors
+        elif subjectDigest = state.SubjectDigest then Ok state
+        else
+            Ok
+                { state with
+                    SubjectDigest = subjectDigest
+                    Failures = [] }
+
+    /// Clear only the successful stage for the exact subject. This prevents a
+    /// reviewer success from hiding a persistent promotion failure.
+    let observeLoopStageSucceeded subjectDigest stage (state: LoopGuardState) =
+        let errors = validateLoopGuardState state @ validateOpaqueIdentifier "Loop subject digest" subjectDigest
+        if not errors.IsEmpty then Error errors
+        elif subjectDigest <> state.SubjectDigest then
+            Error [ "Loop stage success targets a stale subject digest." ]
+        else
+            Ok
+                { state with
+                    Failures =
+                        state.Failures
+                        |> List.filter (fun counter ->
+                            counter.Key.SubjectDigest <> subjectDigest || counter.Key.Stage <> stage) }
+
+    /// Record one cause-bound failure and derive the only permitted next
+    /// action. Product work may get a fresh attempt, protocol loss may resume
+    /// the bound session, and infrastructure always waits without a model.
+    let observeLoopFailure
+        (policy: LoopGuardPolicy)
+        (key: LoopFailureKey)
+        (failureClass: LoopFailureClass)
+        (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardPolicy policy
+            @ validateLoopGuardState state
+            @ validateLoopCountersAgainstPolicy policy state
+            @ validateLoopFailureKey state key
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | Some hold -> Ok(state, WaitWithoutModel(AdministrativeHoldWait hold.HoldId))
+            | None ->
+                let previous = state.Failures |> List.tryFind (fun counter -> counter.Key = key)
+                match previous with
+                | Some counter when counter.FailureClass <> failureClass ->
+                    Error [ "One loop failure key cannot change failure class." ]
+                | Some counter when counter.Attempts >= counterPolicyLimit policy failureClass + 1 ->
+                    Ok(state, CircuitOpen(key, counter.Attempts))
+                | _ ->
+                    let attempts = previous |> Option.map (fun counter -> counter.Attempts + 1) |> Option.defaultValue 1
+                    let counter =
+                        { Key = key
+                          FailureClass = failureClass
+                          Attempts = attempts }
+                    let failures =
+                        counter
+                        :: (state.Failures |> List.filter (fun item -> item.Key <> key))
+                        |> canonicalLoopFailures
+                    let next = { state with Failures = failures }
+                    replayLoopDisposition policy key next
+                    |> Result.map (fun disposition -> next, disposition)
 
     let private validateCommittedBytesPortabilityRequest at request =
         let candidateBindingErrors =

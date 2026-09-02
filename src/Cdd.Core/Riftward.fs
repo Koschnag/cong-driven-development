@@ -220,6 +220,60 @@ module Riftward =
         elif aggregate.RunIds.Length >= minimumRepetitions then Ok Repeated
         else Ok Anecdotal
 
+    /// A comparison CDD admits for research reporting. It carries both
+    /// validated aggregates unchanged; admitting a contrast derives no
+    /// ranking, causality, product effect or long-term autonomy from it.
+    type BaselineComparison =
+        { MissionId : string
+          EvaluationProtocolDigest : string
+          MinimumRepetitions : int
+          Left : BaselineAggregate
+          Right : BaselineAggregate }
+
+    /// Admit exactly one two-configuration contrast. Both sides must be valid
+    /// aggregates of one mission under one evaluation protocol, both must reach
+    /// the explicitly named repetition minimum, and the declared configurations
+    /// must genuinely differ. Anecdotal baselines stay incomparable.
+    let compareBaselines
+        (minimumRepetitions: int)
+        (left: BaselineAggregate)
+        (right: BaselineAggregate)
+        : Result<BaselineComparison, string list> =
+        let structuralErrors =
+            [ if minimumRepetitions < 1 then yield "The repetition minimum must be positive."
+              yield! validateAggregate left
+              yield! validateAggregate right ]
+        if not structuralErrors.IsEmpty then Error structuralErrors
+        else
+            let anecdotal side aggregate =
+                match classify minimumRepetitions aggregate with
+                | Error errors -> Some errors
+                | Ok Anecdotal ->
+                    Some [ sprintf "Riftward %s baseline is anecdotal below the named repetition minimum and may not be compared." side ]
+                | Ok Repeated -> None
+            let failures =
+                [ match anecdotal "left" left with Some errors -> yield! errors | None -> ()
+                  match anecdotal "right" right with Some errors -> yield! errors | None -> ()
+                  if left.MissionId <> right.MissionId then
+                      yield sprintf "Riftward baselines compare one mission; observed %s and %s." left.MissionId right.MissionId
+                  if left.Configuration.EvaluationProtocolDigest <> right.Configuration.EvaluationProtocolDigest then
+                      yield "Riftward baselines must share one evaluation protocol digest."
+                  if left.Configuration = right.Configuration then
+                      yield "A Riftward comparison requires two distinct declared configurations."
+                  let overlappingRunIds =
+                      Set.intersect (Set.ofList left.RunIds) (Set.ofList right.RunIds)
+                      |> Set.toList
+                  for runId in overlappingRunIds do
+                      yield sprintf "Riftward comparison reuses RunId %s across both configurations." runId ]
+            if not failures.IsEmpty then Error failures
+            else
+                Ok
+                    { MissionId = left.MissionId
+                      EvaluationProtocolDigest = left.Configuration.EvaluationProtocolDigest
+                      MinimumRepetitions = minimumRepetitions
+                      Left = left
+                      Right = right }
+
     let private median (values: int64 list) =
         let sorted = List.sort values
         let middle = sorted.Length / 2

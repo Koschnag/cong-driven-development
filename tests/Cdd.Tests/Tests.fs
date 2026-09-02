@@ -1065,6 +1065,174 @@ let ``workspace projection prioritizes live work and derives actual lifecycle st
 let private autopilotTime =
     DateTimeOffset(2026, 8, 23, 12, 0, 0, TimeSpan.Zero)
 
+let private loopGuardPolicy : Autopilot.LoopGuardPolicy =
+    { MaxProductAttempts = 2
+      MaxInfrastructureAttempts = 2
+      MaxSameSessionResumes = 1
+      InfrastructureBackoffSeconds = 30 }
+
+let private loopFailureKey subject stage code : Autopilot.LoopFailureKey =
+    { RunId = "run-loop"
+      SliceId = "slice-loop"
+      SubjectDigest = subject
+      Stage = stage
+      FailureCode = code }
+
+let private createLoopGuard subject =
+    match Autopilot.createLoopGuardState subject with
+    | Ok state -> state
+    | Error errors -> failwith (String.concat "; " errors)
+
+[<Fact; Trait("spot", "spec-loop-engineering-guard-test-1")>]
+let ``loop guard keeps administrative holds model free until exact release`` () =
+    let hold : Autopilot.AdministrativeHold =
+        { HoldId = "release-maintenance"
+          Authority = "release-owner"
+          Reason = "Guarded maintenance window"
+          StartedAtUtc = autopilotTime }
+    let initial = createLoopGuard "candidate-a"
+    let held =
+        match Autopilot.placeAdministrativeHold hold initial with
+        | Ok state -> state
+        | Error errors -> failwith (String.concat "; " errors)
+    let key = loopFailureKey "candidate-a" Autopilot.PromotionStage "resource-busy"
+    let afterTicks =
+        [ 1..100 ]
+        |> List.fold (fun state _ ->
+            match Autopilot.observeLoopFailure loopGuardPolicy key Autopilot.HarnessInfrastructureFailure state with
+            | Ok(next, Autopilot.WaitWithoutModel(Autopilot.AdministrativeHoldWait "release-maintenance")) ->
+                Assert.Equal(state, next)
+                next
+            | result -> failwithf "Unexpected held-loop result: %A" result) held
+    Assert.Empty afterTicks.Failures
+    Assert.True(Autopilot.releaseAdministrativeHold "release-maintenance" "wrong-owner" afterTicks |> Result.isError)
+    let released =
+        match Autopilot.releaseAdministrativeHold "release-maintenance" "release-owner" afterTicks with
+        | Ok state -> state
+        | Error errors -> failwith (String.concat "; " errors)
+    Assert.Equal(Ok Autopilot.Proceed, Autopilot.nextLoopDisposition loopGuardPolicy released)
+
+[<Fact; Trait("spot", "spec-loop-engineering-guard-test-2")>]
+let ``loop guard isolates promotion infrastructure failures from reviewer success`` () =
+    let key = loopFailureKey "candidate-a" Autopilot.PromotionStage "promotion-lock-busy"
+    let firstState =
+        match Autopilot.observeLoopFailure loopGuardPolicy key Autopilot.HarnessInfrastructureFailure (createLoopGuard "candidate-a") with
+        | Ok(state, Autopilot.WaitWithoutModel(Autopilot.InfrastructureBackoff(observed, 30))) ->
+            Assert.Equal(key, observed)
+            state
+        | result -> failwithf "Unexpected first infrastructure result: %A" result
+    let afterReview =
+        match Autopilot.observeLoopStageSucceeded "candidate-a" Autopilot.ReviewStage firstState with
+        | Ok state -> state
+        | Error errors -> failwith (String.concat "; " errors)
+    let secondState =
+        match Autopilot.observeLoopFailure loopGuardPolicy key Autopilot.HarnessInfrastructureFailure afterReview with
+        | Ok(state, Autopilot.WaitWithoutModel(Autopilot.InfrastructureBackoff(_, 60))) -> state
+        | result -> failwithf "Unexpected second infrastructure result: %A" result
+    Assert.Equal(2, secondState.Failures |> List.exactlyOne |> fun counter -> counter.Attempts)
+    match Autopilot.observeLoopFailure loopGuardPolicy key Autopilot.HarnessInfrastructureFailure secondState with
+    | Ok(_, Autopilot.CircuitOpen(observed, 3)) -> Assert.Equal(key, observed)
+    | result -> failwithf "Expected infrastructure circuit: %A" result
+
+[<Fact; Trait("spot", "spec-loop-engineering-guard-test-3")>]
+let ``loop guard bounds protocol and product recovery by exact cause`` () =
+    let protocol = loopFailureKey "candidate-a" Autopilot.ReviewStage "missing-terminal"
+    let product = loopFailureKey "candidate-a" Autopilot.MutationStage "test-failed"
+    let initial = createLoopGuard "candidate-a"
+    let protocolOnce =
+        match Autopilot.observeLoopFailure loopGuardPolicy protocol Autopilot.AgentProtocolFailure initial with
+        | Ok(state, Autopilot.ResumeBoundSession(_, 1)) -> state
+        | result -> failwithf "Expected one bound resume: %A" result
+    match Autopilot.observeLoopFailure loopGuardPolicy protocol Autopilot.AgentProtocolFailure protocolOnce with
+    | Ok(_, Autopilot.CircuitOpen(_, 2)) -> ()
+    | result -> failwithf "Expected protocol circuit: %A" result
+    let productOnce =
+        match Autopilot.observeLoopFailure loopGuardPolicy product Autopilot.AgentProductFailure initial with
+        | Ok(state, Autopilot.RetryWithFreshAgent(_, 1)) -> state
+        | result -> failwithf "Expected product retry: %A" result
+    let productTwice =
+        match Autopilot.observeLoopFailure loopGuardPolicy product Autopilot.AgentProductFailure productOnce with
+        | Ok(state, Autopilot.RetryWithFreshAgent(_, 2)) -> state
+        | result -> failwithf "Expected second product retry: %A" result
+    match Autopilot.observeLoopFailure loopGuardPolicy product Autopilot.AgentProductFailure productTwice with
+    | Ok(circuitState, Autopilot.CircuitOpen(_, 3)) ->
+        match Autopilot.observeLoopFailure loopGuardPolicy product Autopilot.AgentProductFailure circuitState with
+        | Ok(replayed, Autopilot.CircuitOpen(_, 3)) -> Assert.Equal(circuitState, replayed)
+        | result -> failwithf "Expected idempotent open product circuit: %A" result
+    | result -> failwithf "Expected product circuit: %A" result
+
+    let unboundedPolicy =
+        { loopGuardPolicy with
+            MaxInfrastructureAttempts = 1000
+            InfrastructureBackoffSeconds = Int32.MaxValue }
+    match Autopilot.observeLoopFailure unboundedPolicy product Autopilot.AgentProductFailure initial with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("one-day hard safety bound"))
+    | Ok _ -> failwith "unbounded backoff arithmetic must fail closed"
+
+    let forgedPersisted =
+        { initial with
+            Failures =
+              [ { Key = product
+                  FailureClass = Autopilot.AgentProductFailure
+                  Attempts = Int32.MaxValue } ] }
+    Assert.NotEmpty(Autopilot.validateLoopGuardState forgedPersisted)
+    Assert.True(Autopilot.nextLoopDisposition loopGuardPolicy forgedPersisted |> Result.isError)
+
+    let zeroCounter =
+        { initial with
+            Failures =
+              [ { Key = product
+                  FailureClass = Autopilot.AgentProductFailure
+                  Attempts = 0 } ] }
+    Assert.Contains(Autopilot.validateLoopGuardState zeroCounter, fun error -> error.Contains("at least one attempt"))
+    let duplicateCounter =
+        { productTwice with Failures = productTwice.Failures @ productTwice.Failures }
+    Assert.Contains(Autopilot.validateLoopGuardState duplicateCounter, fun error -> error.Contains("duplicate failure key"))
+
+    let nonCanonicalCounters =
+        { initial with
+            Failures =
+              [ { Key = loopFailureKey "candidate-a" Autopilot.MutationStage "z-failure"
+                  FailureClass = Autopilot.AgentProductFailure
+                  Attempts = 1 }
+                { Key = loopFailureKey "candidate-a" Autopilot.MutationStage "a-failure"
+                  FailureClass = Autopilot.AgentProductFailure
+                  Attempts = 1 } ] }
+    Assert.Contains(
+        Autopilot.validateLoopGuardState nonCanonicalCounters,
+        fun error -> error.Contains("canonical order"))
+
+[<Fact; Trait("spot", "spec-loop-engineering-guard-test-4")>]
+let ``loop guard subject advance is deterministic and keeps authority holds`` () =
+    let hold : Autopilot.AdministrativeHold =
+        { HoldId = "operator-hold"
+          Authority = "operator"
+          Reason = "Reviewing publication policy"
+          StartedAtUtc = autopilotTime }
+    let failed =
+        match Autopilot.observeLoopFailure
+                  loopGuardPolicy
+                  (loopFailureKey "candidate-a" Autopilot.PublicationStage "transport-error")
+                  Autopilot.HarnessInfrastructureFailure
+                  (createLoopGuard "candidate-a") with
+        | Ok(state, _) -> state
+        | Error errors -> failwith (String.concat "; " errors)
+    let held =
+        match Autopilot.placeAdministrativeHold hold failed with
+        | Ok state -> state
+        | Error errors -> failwith (String.concat "; " errors)
+    let advanced =
+        match Autopilot.advanceLoopSubject "candidate-b" held with
+        | Ok state -> state
+        | Error errors -> failwith (String.concat "; " errors)
+    Assert.Empty advanced.Failures
+    Assert.Equal(Some hold, advanced.AdministrativeHold)
+    let restored = advanced |> Json.serialize |> Json.deserialize<Autopilot.LoopGuardState>
+    Assert.Equal(advanced, restored)
+    Assert.Equal(
+        Autopilot.nextLoopDisposition loopGuardPolicy advanced,
+        Autopilot.nextLoopDisposition loopGuardPolicy restored)
+
 let private autopilotPlan recovery : Autopilot.RunPlan =
     let worker id role readOnly : Autopilot.WorkerProfile =
         { Id = id
@@ -2104,3 +2272,77 @@ let ``riftward aggregation and repetition classification fail closed at numeric 
         Assert.Contains(errors, fun error -> error.Contains("negative median duration"))
         Assert.Contains(errors, fun error -> error.Contains("negative input tokens"))
     | Ok _ -> failwith "inconsistent aggregate counters must fail closed"
+
+// ===== Admissible comparisons between sanitized Riftward baselines =====
+
+/// One baseline aggregate over `count` fully completed runs of one declared
+/// configuration; `label` keeps RunIds distinct across helper calls.
+let private riftwardAggregate label count missionId provider model harness =
+    [ for index in 1 .. count ->
+        riftwardRun missionId provider model harness
+        |> completeRiftwardRun
+        |> observeOrFail
+        |> fun record -> { record with RunId = sprintf "%s-%s-%d-%s" missionId provider index label } ]
+    |> aggregateOrFail
+    |> List.exactlyOne
+
+[<Fact; Trait("spot", "spec-riftward-baseline-comparison-test-1")>]
+let ``riftward admits repeated same-mission same-protocol contrasts deterministically`` () =
+    let left = riftwardAggregate "alpha" 3 "mission-riftward" "provider-a" "model-a" "harness-a"
+    let right = riftwardAggregate "beta" 2 "mission-riftward" "provider-b" "model-b" "harness-b"
+    let firstAdmission = Riftward.compareBaselines 2 left right
+    Assert.Equal(firstAdmission, Riftward.compareBaselines 2 left right)
+    match firstAdmission with
+    | Error errors -> failwith (String.concat " | " errors)
+    | Ok comparison ->
+        Assert.Equal("mission-riftward", comparison.MissionId)
+        Assert.Equal(riftwardProtocol, comparison.EvaluationProtocolDigest)
+        Assert.Equal(2, comparison.MinimumRepetitions)
+        Assert.Equal(left, comparison.Left)
+        Assert.Equal(right, comparison.Right)
+
+[<Fact; Trait("spot", "spec-riftward-baseline-comparison-test-2")>]
+let ``riftward refuses comparisons below the repetition minimum or over invalid aggregates`` () =
+    let repeated = riftwardAggregate "alpha" 3 "mission-riftward" "provider-a" "model-a" "harness-a"
+    let anecdotal = riftwardAggregate "beta" 1 "mission-riftward" "provider-b" "model-b" "harness-b"
+    match Riftward.compareBaselines 3 anecdotal repeated with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("left baseline is anecdotal"))
+    | Ok _ -> failwith "an anecdotal baseline must never be compared"
+    match Riftward.compareBaselines 3 repeated anecdotal with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("right baseline is anecdotal"))
+    | Ok _ -> failwith "an anecdotal baseline must never be compared"
+    let forged = { repeated with Runs = 0 }
+    match Riftward.compareBaselines 1 forged repeated with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("at least one run"))
+    | Ok _ -> failwith "a forged aggregate has no comparable voice"
+    match Riftward.compareBaselines 0 repeated anecdotal with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("minimum must be positive"))
+    | Ok _ -> failwith "a non-positive repetition minimum admits no comparison"
+
+[<Fact; Trait("spot", "spec-riftward-baseline-comparison-test-3")>]
+let ``riftward refuses cross-mission cross-protocol and contrast-free comparisons`` () =
+    let alpha = riftwardAggregate "alpha" 2 "mission-alpha" "provider-a" "model-a" "harness-a"
+    let otherMission = riftwardAggregate "beta" 2 "mission-beta" "provider-b" "model-b" "harness-b"
+    match Riftward.compareBaselines 1 alpha otherMission with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("compare one mission"))
+    | Ok _ -> failwith "baselines from different missions share no scope"
+    let otherProtocol =
+        { alpha with
+            Configuration =
+                { alpha.Configuration with EvaluationProtocolDigest = "sha256:evaluation-protocol-v2" } }
+    match Riftward.compareBaselines 1 alpha otherProtocol with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("evaluation protocol digest"))
+    | Ok _ -> failwith "baselines under different protocols share no evidence level"
+    let twin = riftwardAggregate "twin" 2 "mission-alpha" "provider-a" "model-a" "harness-a"
+    match Riftward.compareBaselines 1 alpha twin with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("distinct declared configurations"))
+    | Ok _ -> failwith "a configuration cannot contrast with itself"
+
+[<Fact; Trait("spot", "spec-riftward-baseline-comparison-test-4")>]
+let ``riftward refuses run ids reused across compared configurations`` () =
+    let alpha = riftwardAggregate "alpha" 2 "mission-alpha" "provider-a" "model-a" "harness-a"
+    let beta = riftwardAggregate "beta" 2 "mission-alpha" "provider-b" "model-b" "harness-b"
+    let reused = { beta with RunIds = alpha.RunIds }
+    match Riftward.compareBaselines 1 alpha reused with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("reuses RunId"))
+    | Ok _ -> failwith "one run must not count in both compared configurations"

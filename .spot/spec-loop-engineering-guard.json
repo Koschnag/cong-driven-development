@@ -1,0 +1,35 @@
+{
+  "Id": "spec-loop-engineering-guard",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Kandidat- und ursachengebundene Loop Guards",
+        "Intent": "CDD stellt eine deterministisch getestete, serialisierbare Loop-Guard-Entscheidungsfoundation bereit; ihre Scheduler-, RunState-, CLI- und Publisher-Integration bleibt offen",
+        "Criteria": [
+          {
+            "Given": "ein expliziter administrativer Hold",
+            "When": "der Scheduler beliebig oft nach der n\u00E4chsten Aktion fragt",
+            "Then": "entsteht kein Agenten-Turn, kein verbrauchter Retry und nur die exakt autorisierte Freigabe hebt den Hold auf"
+          },
+          {
+            "Given": "ein Promotion-Infrastrukturfehler f\u00FCr einen unver\u00E4nderten Candidate",
+            "When": "eine andere Stage wie Review erfolgreich endet",
+            "Then": "bleibt der Promotion-Counter erhalten und erzeugt ausschlie\u00DFlich modellfreies Backoff oder einen offenen Circuit"
+          },
+          {
+            "Given": "wiederholte Produkt- oder Protokollfehler mit demselben Failure Key",
+            "When": "das jeweilige Budget ersch\u00F6pft wird",
+            "Then": "Produktarbeit erh\u00E4lt nur begrenzte frische Versuche, Protokollverlust nur begrenzte Session-Resumes und danach \u00F6ffnet der Circuit"
+          },
+          {
+            "Given": "ein neuer Candidate-Digest oder ein persistierter Loop-Guard-Zustand",
+            "When": "Subject-Wechsel oder Replay erfolgt",
+            "Then": "werden alte Failure Counter invalidiert, administrative Autorit\u00E4t bleibt bestehen und dieselbe n\u00E4chste Entscheidung wird reproduziert"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
