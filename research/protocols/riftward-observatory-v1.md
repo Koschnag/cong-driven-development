@@ -4,6 +4,26 @@
 
 **Protokoll-ID:** `riftward-observatory-v1`
 
+## Gebundener operativer Upstream
+
+Dieser CDD-v1-Vertrag ist die sanitizierte Analyse- und
+Publikationsprojektion. Der authoritative operative Ereignis-, Metrik- und
+Reproduktionsvertrag ist Riftward
+`riftward-research-observability` 2.0.0 am Commit
+[`a8da858d9a25892a4671104c57f5edfe3c789a39`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/a8da858d9a25892a4671104c57f5edfe3c789a39),
+Protokollbundle-SHA-256
+`a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65`.
+Siehe [Protokoll](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PROTOCOL.md),
+[Datenwörterbuch](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/OBSERVABILITY_DATA_DICTIONARY.md),
+[Metriken](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/METRICS.md),
+[Reproduktion](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/REPRODUCIBILITY.md) und
+[Privacy/Publikation](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PRIVACY_AND_PUBLICATION.md).
+
+Diese Bindung beweist nur den eingefrorenen Vertrag. Sie beweist weder einen
+laufenden Collector noch `prospective-observed` Daten. Kompatibilität zwischen
+dem operativen Producer und `PublicObservationSnapshotV1` bleibt offen, bis
+ein sanitisiertes Producer-Fixture exakt validiert und roundtrippt.
+
 ## Zweck und Drei-Repository-Grenze
 
 Das Observatory veröffentlicht ausschließlich eine additive, sanitizierte

@@ -39,6 +39,30 @@ Git, Receipts und kuratierter Retrieval-Kontext können Verlauf bewahren; sie
 ersetzen weder unabhängige Prüfung noch menschliche Entscheidung. Ziel,
 Risikoakzeptanz und Veröffentlichung bleiben beim Menschen.
 
+## Protokollregister und Autorität
+
+Diese Datei ist die öffentliche CDD-Einordnung. Sie darf den operativen
+Riftward-Messvertrag weder ersetzen noch still erweitern. Für künftige
+Riftward-Ereignisse ist der vorregistrierte Vertrag am unveränderlichen Commit
+[`a8da858d9a25892a4671104c57f5edfe3c789a39`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/a8da858d9a25892a4671104c57f5edfe3c789a39)
+maßgeblich:
+
+| Feld | Gebundener Wert |
+| --- | --- |
+| Protokoll-ID / Version | `riftward-research-observability` / `2.0.0` |
+| Protokollbundle SHA-256 | `a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65` |
+| Operative Quelle | [PROTOCOL.md](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PROTOCOL.md) |
+| Datenvertrag | [OBSERVABILITY_DATA_DICTIONARY.md](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/OBSERVABILITY_DATA_DICTIONARY.md) |
+| Auswertung | [METRICS.md](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/METRICS.md) |
+| Reproduktion / Privacy | [REPRODUCIBILITY.md](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/REPRODUCIBILITY.md) / [PRIVACY_AND_PUBLICATION.md](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PRIVACY_AND_PUBLICATION.md) |
+
+Der CDD-Vertrag `riftward-observatory-v1` bleibt ein öffentlicher,
+sanitisierter Analyse- und Publikations-Gate-Draft. Er gilt nicht als
+Producer-Kompatibilitätsbeleg. Ein solches Gate schließt erst ein von der
+operativen Seite erzeugtes, sanitisiertes Fixture mit exaktem Roundtrip. Zum
+Zeitpunkt dieser Registry-Aktualisierung sind prospektive Ereignisse,
+Autonomiedauer, menschliche Minuten, Tokens und Kosten weiterhin `unknown`.
+
 ## Öffentlicher Export
 
 Künftig können pro Arbeitseinheit redigierte Metadaten exportiert werden:
@@ -60,7 +84,7 @@ Ganzes:
 6. [SWE-bench Verified (2024)](https://openai.com/index/introducing-swe-bench-verified/) zeigt, dass auch die Auswahl und menschliche Prüfung von Evaluationsaufgaben relevant ist.
 7. [MemGPT (2023)](https://arxiv.org/abs/2310.08560) untersucht hierarchisches Gedächtnis über Sitzungen, nicht automatisch Provenienz oder Promotion.
 8. [RepoCoder (2023)](https://arxiv.org/abs/2303.12570) verbindet iterative Repository-Retrieval- und Generationsschritte.
-9. [Ralph loop](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/commands/ralph-loop.md) dokumentiert wiederholte frische Iterationen mit Zustand in Dateien/Git; eine Schleife ist keine unabhängige Abnahme.
+9. [Ralph loop](https://github.com/anthropics/claude-code/blob/main/plugins/ralph-wiggum/README.md) dokumentiert wiederholte frische Iterationen mit Zustand in Dateien/Git; eine Schleife ist keine unabhängige Abnahme.
 10. [TheAgentCompany (2024/2025)](https://arxiv.org/abs/2412.14161) evaluiert digitale Arbeit in einer simulierten Softwarefirma; es ist ein kontrollierter Aufgabenbenchmark, keine über Wochen gewachsene Produktgeschichte.
 11. [SWE-Milestone (2026)](https://arxiv.org/abs/2603.13428) ist der engste Vergleich für kontinuierliche Software-Evolution: abhängige Milestones werden in einer fortlaufenden Sequenz bearbeitet und Fehlerakkumulation wird messbar.
 12. [SlopCodeBench (2026)](https://arxiv.org/abs/2603.24755) misst strukturelle Erosion und Redundanz über wiederholte Erweiterungen. Das motiviert Riftwards Architekturtrends zusätzlich zu grünen Tests.
