@@ -231,7 +231,7 @@ let entries =
                   When = "die Control-Plane-Oberfläche im Browser geöffnet wird"
                   Then = "sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben" } ] } }
 
-      { Id = EntityId "spec-full-agentic-sdlc-controller"; Convergence = Pending
+      { Id = EntityId "spec-full-agentic-sdlc-controller"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Persistente Full-Agentic-SDLC-Kette"
             Intent = "CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop"

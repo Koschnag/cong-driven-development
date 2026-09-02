@@ -1049,6 +1049,7 @@ let ``workspace projection prioritizes live work and derives actual lifecycle st
         { Id = "project"; Name = "Project"; Git = git
           WorkItems = [ item "T-3" "ready"; item "T-2" "blocked"; item "T-1" "running" ]
           Runs = [ run "2026-01" "succeeded" true; run "2026-02" "running" false ]
+          AgenticRuns = []
           SpotNodes = 42; Sources = [ "git"; "git"; ".ai/tasks/*.json" ]
           ObservedAt = DateTimeOffset.Parse "2026-08-23T00:00:00Z" }
     let snapshot = Studio.projectWorkspace observation
@@ -1225,6 +1226,11 @@ let ``autopilot fails closed on correlated roles and repairs failed gates`` () =
     Assert.Contains(errors, fun error -> error.Contains("Duplicate worker"))
     Assert.Contains(errors, fun error -> error.Contains("read-only"))
     Assert.Contains(errors, fun error -> error.Contains("identities"))
+    let timeoutErrors =
+        let plan = autopilotPlan policy
+        { plan with Gates = plan.Gates |> List.map (fun gate -> { gate with TimeoutSeconds = 86_401 }) }
+        |> Autopilot.validatePlan
+    Assert.Contains(timeoutErrors, fun error -> error.Contains("24-hour"))
 
     let initial = createAutopilot policy
     let scouted =
@@ -1279,3 +1285,18 @@ let ``autopilot state is persisted atomically and exposes reproducible evaluatio
                 Assert.Equal(Autopilot.evaluate created, Autopilot.evaluate loaded)
     finally
         if Directory.Exists directory then Directory.Delete(directory, true)
+
+[<Fact>]
+let ``Studio projects agentic progress without exposing slice scope or prompts`` () =
+    let policy : Autopilot.RecoveryPolicy =
+        { MaxSameSessionResumes = 1; MaxFreshStarts = 2; MaxRepairCycles = 1 }
+    let run = createAutopilot policy
+    let projection = Studio.projectAgenticRun run
+    Assert.Equal(run.RunId, projection.Id)
+    Assert.Equal("Scouting", projection.Phase)
+    Assert.Equal("DispatchAgent", projection.NextAction)
+    Assert.Equal(Some "Scout", projection.CurrentRole)
+    Assert.Equal(Some "test-model", projection.Model)
+    let publicJson = Json.serialize projection
+    Assert.DoesNotContain("src/Feature.fs", publicJson)
+    Assert.DoesNotContain("Inspect only the declared scope", publicJson)

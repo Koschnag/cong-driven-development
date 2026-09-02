@@ -27,8 +27,8 @@ Jeder Knoten trägt einen **Convergence**-Status gegen die Implementierung:
 
 | Projekt | Rolle |
 |---|---|
-| `Cdd.Core` (F#) | Domain: SPOT-Typen als Discriminated Union, JSON-Persistenz, Validierung, Drift-Report, Spec→Test-Ableitung |
-| `Cdd.Cli` (F#) | `cdd init\|list\|validate\|diff\|derive-tests` |
+| `Cdd.Core` (F#) | Domain: SPOT-Typen, EIDOS und persistenter Autopilot als Discriminated Unions; JSON, Validierung, Drift und Spec→Test-Ableitung |
+| `Cdd.Cli` (F#) | SPOT-Kommandos plus `eidos` und `autopilot init\|next\|record\|gate\|checkpoint\|drive\|status` |
 | `Cdd.Web` (F#) | Cockpit: REST-API + statisches Frontend (Editor, Mermaid-Graph, Panels); Demo-Modus ohne Backend via localStorage |
 | `Cdd.Tests` | xUnit: Round-Trips, Validierungsregeln, Ableitung, Store-Sicherheit |
 

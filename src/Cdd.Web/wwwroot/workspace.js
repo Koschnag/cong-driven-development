@@ -25,8 +25,8 @@ async function readJson(path) {
 function renderMetrics() {
   const workspaces = state.workspaces;
   $("#metric-workspaces").textContent = workspaces.length;
-  $("#metric-runs").textContent = workspaces.reduce((sum, item) => sum + item.Runs.Running, 0);
-  $("#metric-evidence").textContent = workspaces.reduce((sum, item) => sum + item.Runs.WithSummary, 0);
+  $("#metric-runs").textContent = workspaces.reduce((sum, item) => sum + (item.AgenticRuns?.Total || 0), 0);
+  $("#metric-evidence").textContent = workspaces.reduce((sum, item) => sum + (item.AgenticRuns?.FullSolves || 0), 0);
   $("#metric-contracts").textContent = state.portfolio.contracts.length;
 }
 
@@ -45,6 +45,34 @@ function renderWorkspaceList() {
 }
 
 const count = (value, title) => `<div class="count"><b>${value}</b><span>${title}</span></div>`;
+const agenticPhases = ["Scouting", "Building", "Gating", "Critiquing", "Repairing", "Reviewing", "Checkpointing", "SliceComplete"];
+
+function agenticRunCard(run) {
+  if (!run) return `<section class="detail-card autopilot-chain"><h3>Full-Agentic SDLC Chain</h3>
+    <p class="panel-intro">Noch kein persistenter Autopilot-Run. Ein Run entsteht mit <code>cdd autopilot init</code>.</p></section>`;
+  const metrics = run.Evaluation || {};
+  const phases = agenticPhases.map((phase) => `<div class="phase ${phase === run.Phase ? "active" : ""} ${phase === "SliceComplete" && metrics.FullSolve ? "done" : ""}">
+    <i></i><span>${escapeHtml(phase)}</span></div>`).join("");
+  const worker = run.CurrentRole
+    ? `${escapeHtml(run.CurrentRole)} · ${escapeHtml(run.Provider || "provider")} / ${escapeHtml(run.Model || "model")} · ${escapeHtml(run.Harness || "harness")}`
+    : "deterministischer Controller-Schritt";
+  return `<section class="detail-card autopilot-chain">
+    <div class="agentic-head"><div><h3>Full-Agentic SDLC Chain</h3><b>${escapeHtml(run.MissionId)} · ${escapeHtml(run.ActiveSliceId)}</b>
+      <p>${escapeHtml(run.ActiveSliceTitle)} · ${escapeHtml(run.LifecycleStage)}</p></div>
+      <span class="state-badge ${stateClass(run.Status)}">${escapeHtml(run.Status)}</span></div>
+    <div class="phase-chain">${phases}</div>
+    <div class="agentic-now"><span>Nächste Aktion</span><b>${escapeHtml(run.NextAction)}</b><small>${worker}</small></div>
+    <div class="agentic-metrics">
+      ${count(metrics.CompletedSlices || 0, `Slices / ${metrics.TotalSlices || 0}`)}
+      ${count(metrics.AgentTurns || 0, "Agent Turns")}
+      ${count(metrics.GateRuns || 0, "Gate Runs")}
+      ${count(metrics.PrematureStops || 0, "Premature Stops")}
+      ${count(metrics.RepairCycles || 0, "Repairs")}
+      ${count(metrics.HumanInterventions || 0, "Human Touches")}
+    </div>
+    ${run.BlockReasons?.length ? `<ul class="reason-list">${run.BlockReasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>` : ""}
+  </section>`;
+}
 
 function renderWorkspaceDetail() {
   const workspace = state.workspaces[state.selected];
@@ -55,6 +83,7 @@ function renderWorkspaceDetail() {
   }
   const mission = workspace.ActiveMission;
   const run = workspace.LatestRun;
+  const agenticRun = workspace.ActiveAgenticRun;
   const remote = workspace.Git.Remote && /^https?:\/\//.test(workspace.Git.Remote)
     ? `<a href="${escapeHtml(workspace.Git.Remote)}" target="_blank" rel="noreferrer">Repository öffnen ↗</a>` : "—";
   root.innerHTML = `
@@ -65,6 +94,7 @@ function renderWorkspaceDetail() {
       <span class="state-badge ${stateClass(workspace.State)}">${escapeHtml(workspace.State)}</span>
     </header>
     <div class="detail-grid">
+      ${agenticRunCard(agenticRun)}
       <section class="detail-card mission"><h3>Active Mission</h3>
         ${mission ? `<div class="mission-id">${escapeHtml(mission.Id)} · ${escapeHtml(mission.Status)}</div><h4>${escapeHtml(mission.Title)}</h4><p>${escapeHtml(mission.Objective)}</p><div class="gates">${mission.RequiredGates.map((gate) => `<span>${escapeHtml(gate)}</span>`).join("")}</div>`
           : '<p class="panel-intro">Keine aktive Mission im Adapterformat gefunden.</p>'}

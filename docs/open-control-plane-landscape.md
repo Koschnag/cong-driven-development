@@ -111,6 +111,14 @@ Diese generische Durability sollte CDD übernehmen. CDD selbst entscheidet
 weiterhin, **welche** Mission zulässig ist, **welche** Evidenz zählt und **ob**
 promoviert werden darf.
 
+Der lokale `Cdd.Core.Autopilot`-Vertical-Slice füllt bewusst die Schicht davor:
+Er persistiert den deterministischen Missionszustand, erzeugt genau eine nächste
+Harness-Aktion, begrenzt Resume/Fresh-Start/Repair und führt CLI-Gates aus. Das
+macht einen abgebrochenen Prozess fortsetzbar, ersetzt aber noch keine
+Workflow-Historie, Leases, Timer und idempotenten Activities über mehrere Hosts.
+Diese Grenze und der offene Adaptervertrag sind in
+[full-agentic-sdlc.md](full-agentic-sdlc.md) beschrieben.
+
 ## 3. Formale und mathematische Assurance
 
 Theoretische Informatik, Mathematik und Philosophie sind kein Schmuck. Sie

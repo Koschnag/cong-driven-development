@@ -24,6 +24,7 @@ reproduzierbaren Forschungsstand aus vier miteinander verbundenen Artefakten:
 | **Referenzprojekt CourseForge** | [`examples/CourseForge.Core/`](examples/CourseForge.Core/) | sicherer Metadata→Course-IR→Game-Plan Vertical Slice |
 | **CDD Studio** | [öffentliche IDE-Demo](https://koschnag.github.io/cong-driven-development/ide/) · [`src/Cdd.Web/`](src/Cdd.Web/) | experimentelle Projektion desselben SPOT |
 | **Open Control Plane** | [`docs/open-control-plane-landscape.md`](docs/open-control-plane-landscape.md) · `/workspace.html` | reale Workspace-Projektion und Tool-/Forschungslandkarte (Pre-Alpha) |
+| **Full-Agentic SDLC** | [`docs/full-agentic-sdlc.md`](docs/full-agentic-sdlc.md) · `Cdd.Core.Autopilot` | persistenter Controller + CLI-Harness + Studio-Projektion |
 
 Der Claim-Ledger ist selbst Teil des SPOT: `Observed`, `Proposed`, `Verified`,
 `Contested` und `Unknown` bleiben unterscheidbar. Eine technisch implementierte
@@ -105,6 +106,13 @@ auf Linux, Windows und macOS. Architektur, Forschungsstand und ehrliche Grenzen
 stehen in **[docs/eidos.md](docs/eidos.md)** und
 **[docs/eidos-research-report.md](docs/eidos-research-report.md)**.
 
+Der ausführbare **CDD Autopilot** ergänzt EIDOS um eine persistente,
+providerneutrale SDLC-Kette: begrenzte Work Slices, getrennte
+Scout/Builder/Critic/Reviewer-Rollen, Resume/Fresh-Start-Recovery,
+deterministische Gates, unabhängige Review und saubere Git-Checkpoints. Details
+und ein vollständiger Plan stehen in
+**[docs/full-agentic-sdlc.md](docs/full-agentic-sdlc.md)**.
+
 ## Architektur (Seed)
 
 ```
@@ -142,6 +150,8 @@ dotnet run --project src/Cdd.Cli -- export-context --out kontext.md  # SPOT als 
 dotnet run --project src/Cdd.Cli -- eidos run      # vollständiger synthetischer ZT2-Lauf
 dotnet run --project src/Cdd.Cli -- eidos replay <run-ordner>
 dotnet run --project src/Cdd.Cli -- eidos benchmark --out bench/eidos/results
+dotnet run --project src/Cdd.Cli -- autopilot init examples/autopilot/full-sdlc-plan.json --workspace /pfad/zum/projekt
+dotnet run --project src/Cdd.Cli -- autopilot next /pfad/zum/projekt/.ai/runtime/runs/<run-id>
 ```
 
 Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
@@ -243,6 +253,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
 - ✅ **Offene Workspace-Control-Plane-Projektion** — CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen
+- ✅ **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 - ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
@@ -253,7 +264,6 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ### In Arbeit / geplant (Pending)
 
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
-- 🔜 **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
 - 🔜 **Repräsentative Evidence Fitness** — CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen

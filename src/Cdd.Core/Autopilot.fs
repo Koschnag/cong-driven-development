@@ -279,6 +279,8 @@ module Autopilot =
                   yield sprintf "Gate '%s' is incomplete." gate.Id
               if gate.TimeoutSeconds <= 0 then
                   yield sprintf "Gate %s must have a positive timeout." gate.Id
+              if gate.TimeoutSeconds > 86_400 then
+                  yield sprintf "Gate %s timeout exceeds the 24-hour controller limit." gate.Id
               if Set.contains gate.ValidatorId builders then
                   yield sprintf "Gate %s validator must be independent from the builder." gate.Id
           for slice in plan.Slices do
