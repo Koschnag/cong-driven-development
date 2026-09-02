@@ -2346,3 +2346,274 @@ let ``riftward refuses run ids reused across compared configurations`` () =
     match Riftward.compareBaselines 1 alpha reused with
     | Error errors -> Assert.Contains(errors, fun error -> error.Contains("reuses RunId"))
     | Ok _ -> failwith "one run must not count in both compared configurations"
+
+// ===== Public scientific observatory: additive, read-only episode publication =====
+
+let private observed unit source value : Observatory.Measured<'value> =
+    { Quality = Observatory.Observed; Unit = unit; Value = Some value; Source = Some source; MissingReason = None }
+
+let private unavailable unit reason : Observatory.Measured<'value> =
+    { Quality = Observatory.Unavailable; Unit = unit; Value = None; Source = None; MissingReason = Some reason }
+
+let private lowerHex width character = String(character, width)
+
+let private sourceEvent eventId sequence hashCharacter : Observatory.SourceEventIdentity =
+    { PublicEventId = eventId
+      Sequence = sequence
+      HashAlgorithm = Observatory.ContentHashAlgorithm.Sha256
+      EventHash = lowerHex 64 hashCharacter }
+
+let private promotionCandidate eventId sequence hashCharacter promotionId taskId changeSetId candidateCharacter commitCharacter treeCharacter : Observatory.PromotionEvidenceCandidate =
+    { SourceEvent = sourceEvent eventId sequence hashCharacter
+      PublicPromotionId = promotionId
+      PublicTaskId = taskId
+      PublicChangeSetId = changeSetId
+      CandidateFingerprintAlgorithm = Observatory.ContentHashAlgorithm.Sha256
+      PublicCandidateFingerprint = lowerHex 64 candidateCharacter
+      GitObjectAlgorithm = Observatory.GitObjectAlgorithm.Sha1
+      PublicCommitId = lowerHex 40 commitCharacter
+      PublicTreeId = lowerHex 40 treeCharacter
+      PromotedAtUtc = DateTimeOffset.Parse "2026-08-29T00:00:00Z"
+      Authority = Observatory.RequiredGateReceipt }
+
+let private verified candidate =
+    Observatory.verifyPromotionEvidence candidate
+    |> Result.defaultWith (String.concat " | " >> failwith)
+
+let private observatoryEpisode outcome attempt epoch : Observatory.Episode =
+    { PublicTaskId = "task-public-1"
+      PublicChangeSetId = "change-set-public-1"
+      PublicAttemptId = attempt
+      PublicEpochId = epoch
+      Agent =
+        Observatory.MultiAgentConfiguration
+            ("sha256:configuration-public-1",
+             [ { Role = "scout"; Provider = "provider"; Model = "model"; Harness = "harness" }
+               { Role = "builder"; Provider = "provider"; Model = "model"; Harness = "harness" }
+               { Role = "critic"; Provider = "provider"; Model = "model"; Harness = "harness" }
+               { Role = "reviewer"; Provider = "provider"; Model = "model"; Harness = "harness" } ])
+      Outcome = outcome
+      StartedAtUtc = unavailable "utc" "not-published"
+      FinishedAtUtc = unavailable "utc" "not-published"
+      Metrics =
+        { DurationMilliseconds = observed "ms" Observatory.RiftwardRunRecord 100L
+          InputTokens = observed "tokens" Observatory.OpenCodeUsageExport 20L
+          OutputTokens = unavailable "tokens" "not-reported"
+          RepairCycles = observed "cycles" Observatory.RiftwardRunRecord 2
+          GateRuns = observed "runs" Observatory.GateReceipt 3
+          GateFailures = observed "runs" Observatory.GateReceipt 1
+          HumanInterventions = unavailable "interventions" "not-reported" }
+      Cost = { Status = Observatory.CostEstimated; Amount = Some 1.25M; Currency = Some "EUR"; Source = Some Observatory.DerivedAggregate; MissingReason = None } }
+
+let private promotionEvidence =
+    promotionCandidate "event-public-1" 1L 'a' "promotion-public-1" "task-public-1" "change-set-public-1" 'b' 'c' 'd'
+    |> verified
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-1")>]
+let ``scientific observatory keeps missingness and discarded work in deterministic aggregates`` () =
+    let accepted = observatoryEpisode (Observatory.Accepted promotionEvidence) "attempt-1" "epoch-shared"
+    let discarded = observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-2" "epoch-shared"
+    match Observatory.aggregate [ discarded; accepted ] with
+    | Error errors -> failwith (String.concat " | " errors)
+    | Ok aggregate ->
+        Assert.Equal(2, aggregate.Episodes)
+        Assert.Equal(1, aggregate.Accepted)
+        Assert.Equal(1, aggregate.Discarded)
+        Assert.Equal(200L, aggregate.DurationMilliseconds.ObservedTotal)
+        Assert.Equal(2, aggregate.OutputTokens.Completeness.Unavailable)
+        Assert.Equal(2.50M, aggregate.Cost.EstimatedTotal)
+        Assert.Equal(2, aggregate.Cost.Completeness.Estimated)
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-2")>]
+let ``scientific observatory verifies promotion structure and episode binding`` () =
+    let malformed =
+        { promotionCandidate "event-public-x" 2L 'a' "promotion-public-x" "task-public-1" "change-set-public-1" 'b' 'c' 'd' with
+            PublicCommitId = "ABCDEF" }
+    match Observatory.verifyPromotionEvidence malformed with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("40 lower-hex"))
+    | Ok _ -> failwith "uppercase or wrong-width git ids must not produce verified evidence"
+    let wrongBinding =
+        promotionCandidate "event-public-y" 3L 'e' "promotion-public-y" "task-other" "change-set-other" 'f' '1' '2'
+        |> verified
+    let finished = observed "utc" Observatory.RiftwardRunRecord (DateTimeOffset.Parse "2026-08-30T00:00:00Z")
+    let contradictory =
+        { observatoryEpisode (Observatory.Accepted wrongBinding) "attempt-binding" "epoch-binding" with
+            FinishedAtUtc = finished }
+    let bindingErrors = Observatory.validateEpisode contradictory
+    Assert.Contains(bindingErrors, fun error -> error.Contains("task id does not match"))
+    Assert.Contains(bindingErrors, fun error -> error.Contains("change-set id does not match"))
+    Assert.Contains(bindingErrors, fun error -> error.Contains("cannot precede the observed episode finish"))
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-2")>]
+let ``scientific observatory fails closed on invalid measured values`` () =
+    let observedWithoutSource =
+        { observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-2" "epoch-2" with
+            Metrics =
+                { (observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-2" "epoch-2").Metrics with
+                    InputTokens = { Quality = Observatory.Observed; Unit = "tokens"; Value = Some 1L; Source = None; MissingReason = None } } }
+    let negative =
+        { observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-3" "epoch-3" with
+            Metrics =
+                { (observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-3" "epoch-3").Metrics with
+                    GateFailures = observed "runs" Observatory.GateReceipt -1 } }
+    let unavailableWithoutReason =
+        { observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-4" "epoch-4" with
+            Metrics =
+                { (observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-4" "epoch-4").Metrics with
+                    OutputTokens = { Quality = Observatory.Unavailable; Unit = "tokens"; Value = None; Source = None; MissingReason = None } } }
+    let costWithoutReason =
+        { observatoryEpisode (Observatory.NotAccepted Observatory.Unresolved) "attempt-5" "epoch-5" with
+            Cost = { Status = Observatory.CostUnavailable; Amount = None; Currency = None; Source = None; MissingReason = None } }
+    match Observatory.aggregate [ observedWithoutSource; negative; unavailableWithoutReason; costWithoutReason ] with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("InputTokens is Observed but has no source"))
+        Assert.Contains(errors, fun error -> error.Contains("GateFailures cannot be negative"))
+        Assert.Contains(errors, fun error -> error.Contains("OutputTokens is Unavailable but has no missing reason"))
+        Assert.Contains(errors, fun error -> error.Contains("Cost is CostUnavailable but has no missing reason"))
+    | Ok _ -> failwith "invalid observatory records must fail closed"
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-3")>]
+let ``scientific observatory rejects duplicate attempts source events and complete bindings`` () =
+    let first = observatoryEpisode (Observatory.NotAccepted Observatory.Discarded) "attempt-duplicate" "epoch-1"
+    let duplicate = observatoryEpisode (Observatory.NotAccepted Observatory.Superseded) "attempt-duplicate" "epoch-2"
+    let reusedSource =
+        promotionCandidate "event-public-1" 1L 'a' "promotion-public-2" "task-public-1" "change-set-public-1" 'e' 'f' '1'
+        |> verified
+        |> fun evidence -> observatoryEpisode (Observatory.Accepted evidence) "attempt-source" "epoch-3"
+    match Observatory.aggregate [ first; duplicate; observatoryEpisode (Observatory.Accepted promotionEvidence) "attempt-original" "epoch-4"; reusedSource ] with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("Duplicate public attempt id"))
+        Assert.Contains(errors, fun error -> error.Contains("Duplicate authoritative source event"))
+    | Ok _ -> failwith "duplicate attempts and source events must fail closed"
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-1")>]
+let ``scientific observatory deduplicates complete promotion bindings not trees alone`` () =
+    let accepted = observatoryEpisode (Observatory.Accepted promotionEvidence) "attempt-accepted-1" "epoch-1"
+    let sameBinding =
+        promotionCandidate "event-public-2" 2L 'e' "promotion-public-2" "task-public-1" "change-set-public-1" 'b' 'c' 'd'
+        |> verified
+        |> fun evidence -> observatoryEpisode (Observatory.Accepted evidence) "attempt-accepted-2" "epoch-2"
+    let treeOnly =
+        promotionCandidate "event-public-3" 3L 'f' "promotion-public-3" "task-public-1" "change-set-public-1" '1' '2' 'd'
+        |> verified
+        |> fun evidence -> observatoryEpisode (Observatory.Accepted evidence) "attempt-accepted-3" "epoch-3"
+    match Observatory.aggregate [ accepted; sameBinding ] with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("Duplicate candidate/commit/tree binding"))
+    | Ok _ -> failwith "one complete accepted binding must not count as multiple promotions"
+    match Observatory.aggregate [ accepted; treeOnly ] with
+    | Ok aggregate -> Assert.Equal(2, aggregate.Accepted)
+    | Error errors -> failwith ("tree reuse alone is not a duplicate binding: " + String.concat " | " errors)
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-2")>]
+let ``riftward observatory provenance is multi-agent rather than builder-only`` () =
+    let configuration : Riftward.RunConfiguration =
+        { Scout = { Provider = "scout-provider"; Model = "scout-model"; Harness = "h" }
+          Builder = { Provider = "builder-provider"; Model = "builder-model"; Harness = "h" }
+          Critic = { Provider = "critic-provider"; Model = "critic-model"; Harness = "h" }
+          Reviewer = { Provider = "reviewer-provider"; Model = "reviewer-model"; Harness = "h" }
+          EvaluationProtocolDigest = "sha256:protocol" }
+    let record : Riftward.RunRecord =
+        { RunId = "run-public"; MissionId = "mission-public"; Configuration = configuration
+          Status = Autopilot.Completed
+          Evaluation = { CompletedSlices = 1; TotalSlices = 1; AgentTurns = 1; ToolCalls = 1; PrematureStops = 0; SameSessionResumes = 0; FreshStarts = 1; RepairCycles = 0; GateRuns = 1; GateFailures = 0; HumanInterventions = 0; DurationMilliseconds = 1L; FullSolve = true }
+          InputTokens = 1L; OutputTokens = 1L }
+    let episode =
+        Observatory.fromRiftwardRun "task" "change-set" "attempt" "epoch" { Status = Observatory.CostUnavailable; Amount = None; Currency = None; Source = None; MissingReason = Some "not-published" } record
+    Assert.Equal(Observatory.NotAccepted Observatory.Unresolved, episode.Outcome)
+    match episode.Agent with
+    | Observatory.MultiAgentConfiguration (_, roles) ->
+        Assert.Equal(4, roles.Length)
+        Assert.Contains(roles, fun role -> role.Role = "builder" && role.Provider = "builder-provider")
+        Assert.Contains(roles, fun role -> role.Role = "critic" && role.Provider = "critic-provider")
+    | _ -> failwith "Riftward provenance must be multi-agent or explicitly unavailable"
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-3")>]
+let ``draft public observation snapshot golden fixture round-trips without fabricating legacy task attribution`` () =
+    let fixture = Path.Combine(findRepoRoot (), "tests", "Cdd.Tests", "Fixtures", "public-observation-snapshot-v1.golden.json")
+    let json = File.ReadAllText fixture
+    match Observatory.parsePublicObservationSnapshotV1 json with
+    | Error errors -> failwith (String.concat " | " errors)
+    | Ok snapshot ->
+        Assert.Single snapshot.RunObservations |> ignore
+        Assert.Null(snapshot.RunObservations.Head.PublicTaskId |> Option.toObj)
+        Assert.Equal(Some "legacy-source-omitted-task", snapshot.RunObservations.Head.TaskAttributionMissingReason)
+        let emitted = Observatory.serializePublicObservationSnapshotV1 snapshot |> Result.defaultWith (String.concat " | " >> failwith)
+        Assert.Equal(json.TrimEnd(), emitted.TrimEnd())
+        match Observatory.deriveEpisodeProjections snapshot with
+        | Ok [ Observatory.LegacyRunWithoutTaskAttribution (runId, reason) ] ->
+            Assert.Equal("run-legacy-1", runId)
+            Assert.Equal("legacy-source-omitted-task", reason)
+        | Ok _ -> failwith "legacy task attribution must remain an explicit non-episode projection"
+        | Error errors -> failwith (String.concat " | " errors)
+
+[<Fact; Trait("spot", "spec-scientific-observatory-test-3")>]
+let ``draft snapshot structurally validates and derives accepted episode only by join`` () =
+    let run : Observatory.PublicRunObservationV1 =
+        { SourceEvent = sourceEvent "run-event-1" 1L '1'
+          PublicRunId = "run-public-1"
+          PublicTaskId = Some "task-public-1"
+          TaskAttributionMissingReason = None
+          PublicChangeSetId = Some "change-set-public-1"
+          PublicAttemptId = "attempt-public-1"
+          PublicEpochId = "epoch-public-1"
+          Agent = (observatoryEpisode (Observatory.NotAccepted Observatory.Unresolved) "unused" "unused").Agent
+          NonAcceptedDisposition = None
+          StartedAtUtc = unavailable "utc" "not-published"
+          FinishedAtUtc = unavailable "utc" "not-published"
+          Metrics = (observatoryEpisode (Observatory.NotAccepted Observatory.Unresolved) "unused" "unused").Metrics
+          Cost = (observatoryEpisode (Observatory.NotAccepted Observatory.Unresolved) "unused" "unused").Cost }
+    let promotion : Observatory.PublicPromotionObservationV1 =
+        { PublicAttemptId = run.PublicAttemptId
+          Evidence = promotionCandidate "promotion-event-1" 2L '2' "promotion-public-1" "task-public-1" "change-set-public-1" '3' '4' '5' }
+    let snapshot : Observatory.PublicObservationSnapshotV1 =
+        { Schema = Observatory.PublicObservationSnapshotV1Schema
+          RunObservations = [ run ]
+          PromotionObservations = [ promotion ]
+          InterventionObservations = []
+          TelemetryGaps = []
+          Coverage =
+            { WindowStartUtc = DateTimeOffset.Parse "2026-08-29T00:00:00Z"
+              WindowEndUtc = DateTimeOffset.Parse "2026-08-29T01:00:00Z"
+              Sources = [ { Source = Observatory.RiftwardRunRecord; Status = Observatory.Partial; MissingReason = Some "draft-fixture" } ] }
+          Integrity =
+            { PublicSnapshotId = "snapshot-public-1"
+              ManifestHashAlgorithm = Observatory.ContentHashAlgorithm.Sha256
+              ManifestHash = lowerHex 64 '6'
+              PreviousManifestHash = None
+              GeneratedAtUtc = DateTimeOffset.Parse "2026-08-29T01:00:00Z" } }
+    let serialized = Observatory.serializePublicObservationSnapshotV1 snapshot |> Result.defaultWith (String.concat " | " >> failwith)
+    Assert.Equal(snapshot, Observatory.parsePublicObservationSnapshotV1 serialized |> Result.defaultWith (String.concat " | " >> failwith))
+    match Observatory.deriveEpisodeProjections snapshot with
+    | Ok [ Observatory.JoinedEpisode episode ] ->
+        match episode.Outcome with
+        | Observatory.Accepted _ -> ()
+        | _ -> failwith "joined promotion must produce acceptance"
+    | Ok _ -> failwith "one attributed run and promotion must derive one joined episode"
+    | Error errors -> failwith (String.concat " | " errors)
+
+    let contradictory =
+        { snapshot with
+            RunObservations = [ { run with NonAcceptedDisposition = Some Observatory.Unresolved } ] }
+    match Observatory.validatePublicObservationSnapshotV1 contradictory with
+    | Error errors -> Assert.Contains(errors, fun error -> error.Contains("both promotion and terminal non-acceptance"))
+    | Ok _ -> failwith "a promoted run cannot also carry a non-accepted disposition"
+
+    let ambiguousRun =
+        { run with
+            SourceEvent = sourceEvent "run-event-2" 3L '7'
+            PublicRunId = "run-public-2" }
+    let orphanPromotion =
+        { promotion with
+            PublicAttemptId = "attempt-missing"
+            Evidence = promotionCandidate "promotion-event-2" 4L '8' "promotion-public-2" "task-public-1" "change-set-public-1" '9' 'a' 'b' }
+    let malformed =
+        { snapshot with
+            RunObservations = [ { run with SourceEvent = sourceEvent "run-event-zero" 0L 'c' }; ambiguousRun ]
+            PromotionObservations = [ orphanPromotion ] }
+    match Observatory.validatePublicObservationSnapshotV1 malformed with
+    | Error errors ->
+        Assert.Contains(errors, fun error -> error.Contains("sequence must be positive"))
+        Assert.Contains(errors, fun error -> error.Contains("Duplicate public run attempt id"))
+        Assert.Contains(errors, fun error -> error.Contains("references unknown attempt"))
+    | Ok _ -> failwith "ambiguous joins and non-positive source sequences must fail closed"

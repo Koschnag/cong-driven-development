@@ -19,6 +19,7 @@ Beispiele sind generisch und synthetisch.
 | Studio | Projektionen vom Claim bis zum Code | `src/Cdd.Web/`, `docs/ide/` |
 | Evidenz | Tests, Protokolle, Snapshots | `tests/`, `research/protocols/`, Releases |
 | Loop Engineering | Ralph-Baseline, Fault-Injection und Circuit-Breaker-Evaluation | `docs/loop-engineering.md`, `research/protocols/loop-engineering-v1.md` |
+| Scientific Observatory | Sanitized longitudinal analysis plus draft CDD-owned raw snapshot contract; publication remains gated on an Ops-produced fixture | `research/protocols/riftward-observatory-v1.md`, `Cdd.Core.Observatory` |
 
 ## Was ist Claim, was ist Ergebnis?
 

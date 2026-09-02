@@ -1,0 +1,119 @@
+{
+  "Schema": "cdd.agentic-sdlc-observatory.public-observation-snapshot.v1",
+  "RunObservations": [
+    {
+      "SourceEvent": {
+        "PublicEventId": "run-event-legacy-1",
+        "Sequence": 1,
+        "HashAlgorithm": "Sha256",
+        "EventHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "PublicRunId": "run-legacy-1",
+      "PublicTaskId": null,
+      "TaskAttributionMissingReason": "legacy-source-omitted-task",
+      "PublicChangeSetId": null,
+      "PublicAttemptId": "attempt-legacy-1",
+      "PublicEpochId": "epoch-legacy-1",
+      "Agent": {
+        "Case": "AgentProvenanceUnavailable",
+        "Fields": {
+          "MissingReason": "legacy-source-omitted-configuration"
+        }
+      },
+      "NonAcceptedDisposition": "Unresolved",
+      "StartedAtUtc": {
+        "Quality": "Unavailable",
+        "Unit": "utc",
+        "Value": null,
+        "Source": null,
+        "MissingReason": "legacy-source-omitted-start"
+      },
+      "FinishedAtUtc": {
+        "Quality": "Unavailable",
+        "Unit": "utc",
+        "Value": null,
+        "Source": null,
+        "MissingReason": "legacy-source-omitted-finish"
+      },
+      "Metrics": {
+        "DurationMilliseconds": {
+          "Quality": "Unavailable",
+          "Unit": "ms",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-duration"
+        },
+        "InputTokens": {
+          "Quality": "Unavailable",
+          "Unit": "tokens",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-input"
+        },
+        "OutputTokens": {
+          "Quality": "Unavailable",
+          "Unit": "tokens",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-output"
+        },
+        "RepairCycles": {
+          "Quality": "Unavailable",
+          "Unit": "cycles",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-repairs"
+        },
+        "GateRuns": {
+          "Quality": "Unavailable",
+          "Unit": "runs",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-gates"
+        },
+        "GateFailures": {
+          "Quality": "Unavailable",
+          "Unit": "runs",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-gate-failures"
+        },
+        "HumanInterventions": {
+          "Quality": "Unavailable",
+          "Unit": "interventions",
+          "Value": null,
+          "Source": null,
+          "MissingReason": "legacy-source-omitted-interventions"
+        }
+      },
+      "Cost": {
+        "Status": "CostUnavailable",
+        "Amount": null,
+        "Currency": null,
+        "Source": null,
+        "MissingReason": "legacy-source-omitted-cost"
+      }
+    }
+  ],
+  "PromotionObservations": [],
+  "InterventionObservations": [],
+  "TelemetryGaps": [],
+  "Coverage": {
+    "WindowStartUtc": "2026-08-29T00:00:00+00:00",
+    "WindowEndUtc": "2026-08-29T01:00:00+00:00",
+    "Sources": [
+      {
+        "Source": "RiftwardRunRecord",
+        "Status": "Partial",
+        "MissingReason": "legacy-source-omitted-task"
+      }
+    ]
+  },
+  "Integrity": {
+    "PublicSnapshotId": "snapshot-legacy-1",
+    "ManifestHashAlgorithm": "Sha256",
+    "ManifestHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "PreviousManifestHash": null,
+    "GeneratedAtUtc": "2026-08-29T01:00:00+00:00"
+  }
+}

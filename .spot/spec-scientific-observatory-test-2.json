@@ -1,0 +1,14 @@
+{
+  "Id": "spec-scientific-observatory-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-scientific-observatory",
+        "Name": "Scientific Observatory — opaque promotion verification, task/change-set binding and unresolved Riftward adaptation fail closed",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
