@@ -1,0 +1,18 @@
+{
+  "Id": "kb-swe-agent-aci",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+        "Source": "https://arxiv.org/abs/2405.15793",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Die Gestaltung der Agent-Computer-Schnittstelle beeinflusst die praktische Coding-Leistung materiell",
+          "Harness-Vergleiche m\u00FCssen Modell, Aufgaben, Budget und Interface kontrollieren"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

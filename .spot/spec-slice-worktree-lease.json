@@ -1,0 +1,35 @@
+{
+  "Id": "spec-slice-worktree-lease",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Semantische Foundation f\u00FCr Slice-Leases",
+        "Intent": "CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte \u00E4u\u00DFere Vertragsnaht f\u00FCr zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich",
+        "Criteria": [
+          {
+            "Given": "eine Lease-Anforderung mit Attempt, Owner, Worktree, Base-Digest, Candidate-Digest, Scope und Ablaufzeit",
+            "When": "der Autopilot sie gegen die vollst\u00E4ndige Lease-Historie pr\u00FCft",
+            "Then": "werden nur vollst\u00E4ndig g\u00FCltige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der n\u00E4chste Attempt ohne \u00DCberlappung zu einer lebenden Lease akzeptiert"
+          },
+          {
+            "Given": "eine lebende Slice-Lease",
+            "When": "ein Heartbeat ihre Laufzeit verl\u00E4ngern soll",
+            "Then": "m\u00FCssen Identit\u00E4t, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt"
+          },
+          {
+            "Given": "ein Builder erzeugt einen neuen Candidate",
+            "When": "der Candidate an die Slice-Lease gebunden wird",
+            "Then": "akzeptiert CDD die Bindung nur f\u00FCr den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab"
+          },
+          {
+            "Given": "eine typisierte Lease-Transition als ControllerAction und die behauptete Antwort eines Adapters",
+            "When": "Action und RunObservation \u00FCber Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden",
+            "Then": "roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gef\u00E4lschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

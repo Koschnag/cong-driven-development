@@ -1,0 +1,31 @@
+{
+  "Id": "term-loop-engineering",
+  "Payload": {
+    "Case": "TermNode",
+    "Fields": {
+      "Item": {
+        "Name": "Loop Engineering",
+        "Definition": "Entwurf langlebiger Agentenschleifen als deterministische Zustandsmaschine mit kleinen Iterationen, kandidatgebundener Evidenz, getrennten Fehlerklassen, harten Budgets und crash-sicherem Handoff",
+        "Synonyms": [
+          "Ralph Loop",
+          "Durable Agent Loop"
+        ],
+        "Relations": [
+          {
+            "Case": "PartOf",
+            "Fields": {
+              "Item": "term-autopilot-run"
+            }
+          },
+          {
+            "Case": "RelatesTo",
+            "Fields": {
+              "Item": "term-evidence-pack"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

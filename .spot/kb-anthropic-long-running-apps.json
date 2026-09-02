@@ -1,0 +1,18 @@
+{
+  "Id": "kb-anthropic-long-running-apps",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Anthropic: Harness design for long-running apps",
+        "Source": "https://www.anthropic.com/engineering/harness-design-long-running-apps",
+        "MediaType": "engineering report",
+        "Takeaways": [
+          "Planner, Generator und Evaluator profitieren von kleinen inkrementellen Chunks und strukturiertem Handoff",
+          "Ablationen und vereinfachte Harness-Komponenten sind n\u00F6tig, um Wirkung nicht nur der Gesamtschleife zuzuschreiben"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

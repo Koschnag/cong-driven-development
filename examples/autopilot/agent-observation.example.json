@@ -1,0 +1,22 @@
+{
+  "Case": "AgentTurnObserved",
+  "Fields": {
+    "Item": {
+      "WorkerId": "scout-primary",
+      "Role": "Scout",
+      "SessionId": "replace-with-provider-session-id",
+      "DispatchMode": "FreshSession",
+      "TerminalMarker": "WorkCompleted",
+      "Summary": "The bounded context was inspected and no blocking hazard was found.",
+      "SubjectDigest": null,
+      "OutputDigest": "replace-with-content-digest",
+      "Findings": [],
+      "Telemetry": {
+        "DurationMilliseconds": 0,
+        "ToolCalls": 0,
+        "InputTokens": 0,
+        "OutputTokens": 0
+      }
+    }
+  }
+}

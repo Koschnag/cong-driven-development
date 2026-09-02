@@ -1,0 +1,14 @@
+{
+  "Id": "spec-scientific-observatory-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-scientific-observatory",
+        "Name": "Scientific Observatory — raw draft snapshot golden roundtrip and legacy attribution remain explicit",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

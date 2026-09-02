@@ -1,0 +1,18 @@
+{
+  "Id": "kb-ralph-loop",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Ralph: iterative agent loop",
+        "Source": "https://github.com/snarktank/ralph",
+        "MediaType": "reference implementation",
+        "Takeaways": [
+          "Jede Iteration startet mit frischem Modellkontext und liest Fortschritt aus versionierten Artefakten statt aus einer unbounded Conversation",
+          "Kleine Stories, deterministische Gates, Git-Checkpoints und ein Max-Iterations-Limit bilden den minimalen Loop"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

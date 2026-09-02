@@ -24,6 +24,8 @@ reproduzierbaren Forschungsstand aus vier miteinander verbundenen Artefakten:
 | **Referenzprojekt CourseForge** | [`examples/CourseForge.Core/`](examples/CourseForge.Core/) | sicherer Metadata→Course-IR→Game-Plan Vertical Slice |
 | **CDD Studio** | [öffentliche IDE-Demo](https://koschnag.github.io/cong-driven-development/ide/) · [`src/Cdd.Web/`](src/Cdd.Web/) | experimentelle Projektion desselben SPOT |
 | **Open Control Plane** | [`docs/open-control-plane-landscape.md`](docs/open-control-plane-landscape.md) · `/workspace.html` | reale Workspace-Projektion und Tool-/Forschungslandkarte (Pre-Alpha) |
+| **Full-Agentic SDLC** | [`docs/full-agentic-sdlc.md`](docs/full-agentic-sdlc.md) · `Cdd.Core.Autopilot` | persistenter Controller + CLI-Harness + Studio-Projektion |
+| **Loop Engineering** | [`docs/loop-engineering.md`](docs/loop-engineering.md) · [`research/protocols/loop-engineering-v1.md`](research/protocols/loop-engineering-v1.md) | getestete Guard-Foundation + vorregistrierte Ralph-Baseline |
 
 Der Claim-Ledger ist selbst Teil des SPOT: `Observed`, `Proposed`, `Verified`,
 `Contested` und `Unknown` bleiben unterscheidbar. Eine technisch implementierte
@@ -105,6 +107,24 @@ auf Linux, Windows und macOS. Architektur, Forschungsstand und ehrliche Grenzen
 stehen in **[docs/eidos.md](docs/eidos.md)** und
 **[docs/eidos-research-report.md](docs/eidos-research-report.md)**.
 
+Der ausführbare **CDD Autopilot** ergänzt EIDOS um eine persistente,
+providerneutrale SDLC-Kette: begrenzte Work Slices, getrennte
+Scout/Builder/Critic/Reviewer-Rollen, Resume/Fresh-Start-Recovery,
+deterministische Gates, unabhängige Review und saubere Git-Checkpoints. Details
+und ein vollständiger Plan stehen in
+**[docs/full-agentic-sdlc.md](docs/full-agentic-sdlc.md)**.
+
+Die langlebige Ralph-artige Iteration wird in
+**[docs/loop-engineering.md](docs/loop-engineering.md)** konkretisiert: genau ein
+Mutator, kleine Candidate-gebundene Schritte, read-only Advisory-Lanes,
+unabhängige Review, getrennte Produkt-/Infrastruktur-/Protokollbudgets und
+modellfreie Circuit Breaker. Die Effizienzwirkung ist ein öffentlicher
+`Proposed`-Claim, kein bereits bestätigtes Forschungsergebnis.
+Implementiert ist derzeit die reine, serialisierbare Loop-Guard-
+Entscheidungsfoundation; ihre Einbindung in `RunState`, Scheduler, CLI und
+Publisher sowie die vollständige lokale Durchsetzung aller Betriebsbudgets
+sind offen.
+
 ## Architektur (Seed)
 
 ```
@@ -142,6 +162,8 @@ dotnet run --project src/Cdd.Cli -- export-context --out kontext.md  # SPOT als 
 dotnet run --project src/Cdd.Cli -- eidos run      # vollständiger synthetischer ZT2-Lauf
 dotnet run --project src/Cdd.Cli -- eidos replay <run-ordner>
 dotnet run --project src/Cdd.Cli -- eidos benchmark --out bench/eidos/results
+dotnet run --project src/Cdd.Cli -- autopilot init examples/autopilot/full-sdlc-plan.json --workspace /pfad/zum/projekt
+dotnet run --project src/Cdd.Cli -- autopilot next /pfad/zum/projekt/.ai/runtime/runs/<run-id>
 ```
 
 Der SPOT-Graph liegt als ein JSON-File pro Knoten unter `.spot/` — git-freundlich,
@@ -220,7 +242,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**179 Knoten im Selbstmodell** · 4 aktive Invarianten · 48/54 abgeleitete Tests automatisiert
+**221 Knoten im Selbstmodell** · 4 aktive Invarianten · 70/76 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -238,13 +260,17 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Formale code-behind-Sicht** — Dasselbe SPOT-Modell ist als formale Notation (Typen/Logik/Kategorien, KaTeX) darstellbar.
 - ✅ **Getypte Diagramm-Flaeche mit Toolbox** — Die Split-Mitte zeigt den getypten SPOT-Graphen als Cytoscape-Diagramm mit mehreren Sichten und der EA-Toolbox.
 - ✅ **Governance by Invariance** — Regeln sind Modell-Knoten und werden bei jeder Validierung (lokal + CI) erzwungen
+- ✅ **Kandidat- und ursachengebundene Loop Guards** — CDD stellt eine deterministisch getestete, serialisierbare Loop-Guard-Entscheidungsfoundation bereit; ihre Scheduler-, RunState-, CLI- und Publisher-Integration bleibt offen
 - ✅ **LLM-Kontextexport** — Der SPOT-Graph wird zur Vorlage, aus der ein Agent den Rest baut
 - ✅ **MCP-Server** — Jeder MCP-Client (Claude Code, Claude Desktop, …) kann den SPOT direkt lesen, validieren und mutieren
 - ✅ **Modell → Code (derive-code)** — Aus unabgedeckten Test-Knoten entstehen implementierbare Test-Skelette mit fertigem Mess-Marker
 - ✅ **Modell-Validierung** — Der SPOT-Graph ist jederzeit strukturell konsistent
 - ✅ **Offene Workspace-Control-Plane-Projektion** — CDD Studio projiziert reale Projekte, Missionen, Runs und Evidenz über ein offenes read-only Adaptermodell, ohne Hostpfade oder Anbieter als Domänenwahrheit offenzulegen
+- ✅ **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
+- ✅ **Sanitisierte longitudinale Riftward-Baseline** — Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben
 - ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
+- ✅ **Scientific Observatory** — CDD stellt als oeffentliche Methodik, Schema- und Analysegrenze eine additive, deterministische und sanitizierte Projektion wissenschaftlicher Autopilot-Episoden bereit; die private riftward-autopilot-ops Control Plane bleibt Raw-Collector und CDD ist keine Live-Runtime-Abhaengigkeit
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
@@ -253,11 +279,13 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ### In Arbeit / geplant (Pending)
 
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
-- 🔜 **Persistente Full-Agentic-SDLC-Kette** — CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
 - 🔜 **Repräsentative Evidence Fitness** — CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
+- 🔜 **Semantische Foundation für Slice-Leases** — CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich
+- 🔜 **Typisierte Committed-Bytes-Portabilitäts-Evidence** — CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte
+- 🔜 **Zulässige Vergleiche sanitierter Riftward-Baselines** — CDD gibt zwei deklarierte Konfigurationen nur dann als vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und desselben Evaluationsprotokolls oberhalb des benannten Wiederholungsminimums sind und einen echten Kontrast bilden; Rangfolge, Kausalität oder Produktwirkung leitet der Kern daraus nicht ab
 
 Prämissen, Entscheidungen (ADRs) und geltende Invarianten: [docs/decisions.md](docs/decisions.md)
 

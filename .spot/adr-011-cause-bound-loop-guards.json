@@ -1,0 +1,16 @@
+{
+  "Id": "adr-011-cause-bound-loop-guards",
+  "Payload": {
+    "Case": "DecisionNode",
+    "Fields": {
+      "Item": {
+        "Title": "Loop-Recovery wird an Candidate, Stage und Fehlerursache gebunden",
+        "Context": "Globale Retry-Z\u00E4hler und jeder beliebige Zwischenerfolg k\u00F6nnen einen persistenten Infrastruktur- oder Protokollfehler verdecken und Agenten ohne neue Information erneut dispatchen",
+        "Choice": "CDD trennt Produkt-, Infrastruktur- und Protokollfehler, bindet Budgets an Run, Slice, Candidate, Stage und Fehlercode und h\u00E4lt administrative Holds unabh\u00E4ngig von Ressourcen-Mutexen",
+        "Consequences": "Die deterministische Foundation ist implementiert; Scheduler-, Publisher- und Workflow-Adapter m\u00FCssen den Vertrag noch durchg\u00E4ngig persistieren und ausf\u00FChren",
+        "Supersedes": null
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

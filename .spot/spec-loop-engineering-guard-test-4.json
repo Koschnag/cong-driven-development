@@ -1,0 +1,14 @@
+{
+  "Id": "spec-loop-engineering-guard-test-4",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-loop-engineering-guard",
+        "Name": "Kandidat- und ursachengebundene Loop Guards \u2014 when Subject-Wechsel oder Replay erfolgt then werden alte Failure Counter invalidiert, administrative Autorit\u00E4t bleibt bestehen und dieselbe n\u00E4chste Entscheidung wird reproduziert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

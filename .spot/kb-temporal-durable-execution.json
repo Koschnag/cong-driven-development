@@ -1,0 +1,18 @@
+{
+  "Id": "kb-temporal-durable-execution",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Temporal: Durable workflow execution",
+        "Source": "https://github.com/temporalio/documentation/blob/main/docs/encyclopedia/workflow/workflow-execution/workflow-execution.mdx",
+        "MediaType": "official documentation",
+        "Takeaways": [
+          "Deterministische Workflow-Logik wird von nichtdeterministischen Activities getrennt und aus einer Event History replayt",
+          "Crash-Recovery und lange Wartezeiten geh\u00F6ren in eine durable Ausf\u00FChrungsschicht, nicht in Modellged\u00E4chtnis"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

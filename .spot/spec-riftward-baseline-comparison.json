@@ -1,0 +1,35 @@
+{
+  "Id": "spec-riftward-baseline-comparison",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Zul\u00E4ssige Vergleiche sanitierter Riftward-Baselines",
+        "Intent": "CDD gibt zwei deklarierte Konfigurationen nur dann als vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und desselben Evaluationsprotokolls oberhalb des benannten Wiederholungsminimums sind und einen echten Kontrast bilden; Rangfolge, Kausalit\u00E4t oder Produktwirkung leitet der Kern daraus nicht ab",
+        "Criteria": [
+          {
+            "Given": "zwei valide Aggregate derselben Mission und desselben Evaluationsprotokolls, die das benannte Wiederholungsminimum erreichen und sich in der deklarierten Konfiguration unterscheiden",
+            "When": "die Vergleichszul\u00E4ssigkeit gepr\u00FCft wird",
+            "Then": "tr\u00E4gt die freigegebene Vergleichsprojektion Mission, Protokoll-Digest, Minimum und beide unver\u00E4nderten Aggregate deterministisch ohne abgeleitete Rangfolge"
+          },
+          {
+            "Given": "eine anekdotische Seite unterhalb des benannten Minimums oder ein gef\u00E4lschtes, inkonsistentes Aggregate",
+            "When": "der Vergleich angefragt wird",
+            "Then": "schl\u00E4gt er fail-closed fehl und liefert keine vergleichbare Projektion"
+          },
+          {
+            "Given": "zwei Baselines mit unterschiedlichen Missionen, unterschiedlichen Protokoll-Digests oder identischer Konfiguration",
+            "When": "ein Vergleich angefragt wird",
+            "Then": "wird er typisiert abgelehnt, weil Scope, Evidenzniveau oder Kontrast fehlen"
+          },
+          {
+            "Given": "zwei ansonsten valide Baselines verschiedener Konfigurationen mit mindestens einer gemeinsamen Run-ID",
+            "When": "ein Vergleich angefragt wird",
+            "Then": "wird er abgelehnt, damit derselbe Lauf nicht auf beiden Seiten eines Kontrasts gez\u00E4hlt werden kann"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

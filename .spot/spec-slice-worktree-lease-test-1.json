@@ -1,0 +1,14 @@
+{
+  "Id": "spec-slice-worktree-lease-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-slice-worktree-lease",
+        "Name": "Semantische Foundation f\u00FCr Slice-Leases \u2014 when der Autopilot sie gegen die vollst\u00E4ndige Lease-Historie pr\u00FCft then werden nur vollst\u00E4ndig g\u00FCltige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der n\u00E4chste Attempt ohne \u00DCberlappung zu einer lebenden Lease akzeptiert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

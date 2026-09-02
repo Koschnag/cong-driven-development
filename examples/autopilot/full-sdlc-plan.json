@@ -1,0 +1,145 @@
+{
+  "MissionId": "mission-example-full-sdlc",
+  "Objective": "Deliver a bounded change with independent evidence and a clean checkpoint.",
+  "Slices": [
+    {
+      "Id": "slice-contract",
+      "Stage": "Specify",
+      "Title": "Fix the executable contract",
+      "Objective": "Translate the requested outcome into explicit acceptance criteria and test seams.",
+      "Scope": [
+        ".spot/spec-example.json",
+        "docs/feature-contract.md"
+      ],
+      "AcceptanceCriteria": [
+        "The intended behavior and non-goals are explicit.",
+        "Every criterion names a deterministic oracle."
+      ],
+      "RequiredGateIds": [
+        "gate-build",
+        "gate-tests"
+      ]
+    },
+    {
+      "Id": "slice-implementation",
+      "Stage": "Implement",
+      "Title": "Implement the smallest vertical slice",
+      "Objective": "Implement only the agreed behavior and its regression tests.",
+      "Scope": [
+        "src/Feature/",
+        "tests/Feature/"
+      ],
+      "AcceptanceCriteria": [
+        "The new behavior passes its acceptance tests.",
+        "Existing behavior remains green.",
+        "No unrelated path is changed."
+      ],
+      "RequiredGateIds": [
+        "gate-build",
+        "gate-tests"
+      ]
+    },
+    {
+      "Id": "slice-release-evidence",
+      "Stage": "Verify",
+      "Title": "Bind release evidence",
+      "Objective": "Verify documentation, replayability and the clean integration checkpoint.",
+      "Scope": [
+        "README.md",
+        "docs/",
+        ".spot/"
+      ],
+      "AcceptanceCriteria": [
+        "The evidence can be replayed from the checkpoint.",
+        "The public status matches the implemented state."
+      ],
+      "RequiredGateIds": [
+        "gate-build",
+        "gate-tests"
+      ]
+    }
+  ],
+  "Workers": [
+    {
+      "Id": "scout-primary",
+      "Role": "Scout",
+      "Provider": "provider-a",
+      "Model": "research-model",
+      "Harness": "agent-harness/v1",
+      "ReadOnly": true,
+      "Capabilities": [
+        "repo.read",
+        "spot.read"
+      ]
+    },
+    {
+      "Id": "builder-primary",
+      "Role": "Builder",
+      "Provider": "provider-a",
+      "Model": "coding-model",
+      "Harness": "agent-harness/v1",
+      "ReadOnly": false,
+      "Capabilities": [
+        "repo.read",
+        "artifact.write"
+      ]
+    },
+    {
+      "Id": "critic-independent",
+      "Role": "Critic",
+      "Provider": "provider-b",
+      "Model": "critic-model",
+      "Harness": "agent-harness/v1",
+      "ReadOnly": true,
+      "Capabilities": [
+        "repo.read",
+        "evidence.read"
+      ]
+    },
+    {
+      "Id": "reviewer-independent",
+      "Role": "Reviewer",
+      "Provider": "provider-c",
+      "Model": "review-model",
+      "Harness": "agent-harness/v1",
+      "ReadOnly": true,
+      "Capabilities": [
+        "repo.read",
+        "evidence.read"
+      ]
+    }
+  ],
+  "Gates": [
+    {
+      "Id": "gate-build",
+      "Name": "Release build",
+      "Program": "dotnet",
+      "Arguments": [
+        "build",
+        "-c",
+        "Release",
+        "-warnaserror"
+      ],
+      "ValidatorId": "dotnet-sdk-build",
+      "TimeoutSeconds": 600
+    },
+    {
+      "Id": "gate-tests",
+      "Name": "Regression suite",
+      "Program": "dotnet",
+      "Arguments": [
+        "test",
+        "-c",
+        "Release",
+        "--no-restore"
+      ],
+      "ValidatorId": "vstest-regression-oracle",
+      "TimeoutSeconds": 900
+    }
+  ],
+  "Recovery": {
+    "MaxSameSessionResumes": 2,
+    "MaxFreshStarts": 2,
+    "MaxRepairCycles": 3
+  }
+}

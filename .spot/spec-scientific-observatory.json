@@ -1,0 +1,30 @@
+{
+  "Id": "spec-scientific-observatory",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Scientific Observatory",
+        "Intent": "CDD stellt als oeffentliche Methodik, Schema- und Analysegrenze eine additive, deterministische und sanitizierte Projektion wissenschaftlicher Autopilot-Episoden bereit; die private riftward-autopilot-ops Control Plane bleibt Raw-Collector und CDD ist keine Live-Runtime-Abhaengigkeit",
+        "Criteria": [
+          {
+            "Given": "sanitisierte terminale Task-Episoden mit Messqualitaet und Disposition",
+            "When": "sie aggregiert werden",
+            "Then": "bleiben verworfene und fehlende Daten sichtbar; mehrere Episoden duerfen dieselbe Epoch teilen, ohne Wachstum als Produktivitaet zu deuten"
+          },
+          {
+            "Given": "eine akzeptierte Episode oder widerspruechliche Messwerte",
+            "When": "Validierung erfolgt",
+            "Then": "akzeptiert nur strukturell verifizierte opake RequiredGateReceipt-Evidenz mit passender Task- und Change-Set-Bindung, Source-Event, Zeitordnung und explizitem Git-Objektalgorithmus; verweigert doppelte Attempts, Source-Events und vollstaendige Candidate/Commit/Tree-Bindungen"
+          },
+          {
+            "Given": "einen zukuenftigen rohen PublicObservationSnapshotV1-Draft mit Legacy-Daten",
+            "When": "CDD ihn parst, serialisiert oder analytisch joined",
+            "Then": "validiert CDD Run-, Promotion-, Intervention-, Gap-, Coverage- und Integrity-Struktur ohne Aggregate, Summen oder Ratios, erfindet keine fehlende Task-Zuordnung und haelt Publikation bis zum exakten Roundtrip eines Ops-produzierten Fixtures gesperrt"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

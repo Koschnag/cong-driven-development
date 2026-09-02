@@ -1,0 +1,14 @@
+{
+  "Id": "spec-slice-worktree-lease-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-slice-worktree-lease",
+        "Name": "Semantische Foundation f\u00FCr Slice-Leases \u2014 when der Candidate an die Slice-Lease gebunden wird then akzeptiert CDD die Bindung nur f\u00FCr den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

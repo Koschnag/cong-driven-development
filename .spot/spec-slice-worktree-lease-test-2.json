@@ -1,0 +1,14 @@
+{
+  "Id": "spec-slice-worktree-lease-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-slice-worktree-lease",
+        "Name": "Semantische Foundation f\u00FCr Slice-Leases \u2014 when ein Heartbeat ihre Laufzeit verl\u00E4ngern soll then m\u00FCssen Identit\u00E4t, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}
