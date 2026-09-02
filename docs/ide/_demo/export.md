@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 217 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 221 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 197 · Pending 20 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 201 · Pending 20 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -334,6 +334,13 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 **Intent:** Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 
 - GIVEN src/*.fsproj und Component-Knoten WHEN cdd sync-code läuft THEN wird Aligned/Diverged/Orphaned/Pending je Komponente bestimmt und bei Drift Exit 1 geliefert
+
+### Scientific Observatory (`spec-scientific-observatory`, Aligned)
+**Intent:** CDD stellt als oeffentliche Methodik, Schema- und Analysegrenze eine additive, deterministische und sanitizierte Projektion wissenschaftlicher Autopilot-Episoden bereit; die private riftward-autopilot-ops Control Plane bleibt Raw-Collector und CDD ist keine Live-Runtime-Abhaengigkeit
+
+- GIVEN sanitisierte terminale Task-Episoden mit Messqualitaet und Disposition WHEN sie aggregiert werden THEN bleiben verworfene und fehlende Daten sichtbar; mehrere Episoden duerfen dieselbe Epoch teilen, ohne Wachstum als Produktivitaet zu deuten
+- GIVEN eine akzeptierte Episode oder widerspruechliche Messwerte WHEN Validierung erfolgt THEN akzeptiert nur strukturell verifizierte opake RequiredGateReceipt-Evidenz mit passender Task- und Change-Set-Bindung, Source-Event, Zeitordnung und explizitem Git-Objektalgorithmus; verweigert doppelte Attempts, Source-Events und vollstaendige Candidate/Commit/Tree-Bindungen
+- GIVEN einen zukuenftigen rohen PublicObservationSnapshotV1-Draft mit Legacy-Daten WHEN CDD ihn parst, serialisiert oder analytisch joined THEN validiert CDD Run-, Promotion-, Intervention-, Gap-, Coverage- und Integrity-Struktur ohne Aggregate, Summen oder Ratios, erfindet keine fehlende Task-Zuordnung und haelt Publikation bis zum exakten Roundtrip eines Ops-produzierten Fixtures gesperrt
 
 ### Semantische Foundation für Slice-Leases (`spec-slice-worktree-lease`, Pending)
 **Intent:** CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich

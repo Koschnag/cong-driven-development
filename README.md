@@ -242,7 +242,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**217 Knoten im Selbstmodell** · 4 aktive Invarianten · 67/73 abgeleitete Tests automatisiert
+**221 Knoten im Selbstmodell** · 4 aktive Invarianten · 70/76 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -270,6 +270,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - ✅ **Round-Trip: Code → Modell** — Komponenten-Konvergenz wird aus den echten Projekt-Referenzen abgeleitet, nicht behauptet
 - ✅ **Sanitisierte longitudinale Riftward-Baseline** — Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben
 - ✅ **Sanitisiertes öffentliches Research-Claim-Ledger** — Operative EIDOS-Claims werden nur als schmale, quellengebundene und öffentlich geprüfte Forschungsprojektion im SPOT veröffentlicht.
+- ✅ **Scientific Observatory** — CDD stellt als oeffentliche Methodik, Schema- und Analysegrenze eine additive, deterministische und sanitizierte Projektion wissenschaftlicher Autopilot-Episoden bereit; die private riftward-autopilot-ops Control Plane bleibt Raw-Collector und CDD ist keine Live-Runtime-Abhaengigkeit
 - ✅ **Semantic Change Compiler** — Intent, Twin, Policies und Evidenz erzeugen vergleichbare Candidates statt einer unprüfbaren Einzelantwort
 - ✅ **Spec→Test-Ableitung** — Tests sind Derivat der Spezifikation, nicht handgeschrieben
 - ✅ **Test-Konvergenz messen** — Abgeleitete Test-Knoten werden gegen echte automatisierte Tests gemessen statt behauptet
