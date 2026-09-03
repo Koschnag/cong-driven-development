@@ -9,7 +9,7 @@
   <script src="research.js" defer></script>
 </head>
 <body>
-  <a class="skip" href="#briefing">Zum Inhalt</a>
+  <a class="skip" href="#status">Zum Inhalt</a>
   <header class="topbar">
     <a class="brand" href="../"><span class="mark">C</span><span>CDD / Research Studio</span></a>
     <div class="snapshot"><span class="pulse"></span><span id="snapshot-label">SPOT wird geladen …</span></div>
@@ -19,16 +19,17 @@
   <div class="shell">
     <nav class="rail" aria-label="Research-Studio-Navigation">
       <p class="eyebrow">BRIEFING</p>
-      <a href="#briefing">01 Überblick</a>
-      <a href="#claims">02 Claims</a>
-      <a href="#evidence">03 Evidenz</a>
-      <a href="#gaps">04 Offene Flanken</a>
-      <a href="#premises">05 Prämissen &amp; Grenzen</a>
-      <a href="#architecture">06 Systembild</a>
-      <a href="#agentic-sdlc">07 Agentic SDLC</a>
-      <a href="#projects">08 Teilprojekte</a>
-      <a href="#media">09 Medien</a>
-      <a href="#roadmap">10 Ideen &amp; Roadmap</a>
+      <a href="#status">01 Status in 60 Sekunden</a>
+      <a href="#briefing">02 CDD im Überblick</a>
+      <a href="#claims">03 Claims</a>
+      <a href="#evidence">04 Evidenz</a>
+      <a href="#gaps">05 Offene Flanken</a>
+      <a href="#premises">06 Prämissen &amp; Grenzen</a>
+      <a href="#architecture">07 Systembild</a>
+      <a href="#agentic-sdlc">08 Riftward-Fallstudie</a>
+      <a href="#projects">09 Teilprojekte</a>
+      <a href="#media">10 Medien</a>
+      <a href="#roadmap">11 Ideen &amp; Roadmap</a>
       <p class="rail-note">Eine Projektion.<br>Ein SPOT.<br>Du gibst Feedback.</p>
     </nav>
 
@@ -39,7 +40,7 @@
           <h1>Vom Forschungsstand<br>zur nächsten Entscheidung.</h1>
           <p class="lede">CDD untersucht, wie KI-generierte Softwareänderungen durch explizite Absicht, unabhängige Evidenz und begrenzte Promotion kontrollierbar werden. Dieses Studio zeigt den versionierten Stand – einschließlich Lücken.</p>
           <div class="hero-actions">
-            <a class="button primary" href="#claims">Forschungsstand prüfen</a>
+            <a class="button primary" href="#status">Status zuerst lesen</a>
             <button class="button" type="button" data-feedback-ref="Gesamtprogramm">Einordnen / korrigieren</button>
           </div>
         </div>
@@ -55,11 +56,28 @@
         </div>
       </section>
 
-      <section class="metric-band" aria-label="Kennzahlen">
-        <article><strong id="metric-nodes">–</strong><span>SPOT-Knoten</span></article>
-        <article><strong id="metric-claims">–</strong><span>Forschungsclaims</span></article>
-        <article><strong id="metric-sources">–</strong><span>Referenzen</span></article>
-        <article><strong id="metric-open">–</strong><span>offene Knoten</span></article>
+      <section id="status" class="section status-section">
+        <div class="section-head"><div><p class="eyebrow">AKTUELLER ÖFFENTLICHER STAND</p><h2>Was diese Seite zeigt – und was nicht</h2></div><p>Statischer, versionierter Forschungsstand. Keine Live-Observability und kein Steuerkanal.</p></div>
+        <div class="status-grid">
+          <article class="status-card confirmed"><span class="eyebrow">CDD</span><h3>Ausführbare, begrenzte Basis</h3><p>SPOT-Kernel, Validierung, abgeleitete Tests und read-only Projektionen sind im Repository nachvollziehbar.</p><a href="https://github.com/Koschnag/cong-driven-development/tree/main/src">Code prüfen ↗</a></article>
+          <article class="status-card research"><span class="eyebrow">RIFTWARD</span><h3>Fallstudie, nicht Erfolgsbeweis</h3><p>Die Zuordnung von Rollen, Gates, Recovery und Promotion ist dokumentiert. WIP ist keine Abnahme.</p><a href="#agentic-sdlc">Grenze der Fallstudie lesen</a></article>
+          <article class="status-card unknown"><span class="eyebrow">UNKNOWN</span><h3>Keine erfundenen Laufdaten</h3><p>Autonomie, Kosten, Produktivität, Verfügbarkeit und Outcomes bleiben ohne redigierten, geprüften Export unbekannt.</p><a href="PROTOCOL.md">Evidenzklassen lesen</a></article>
+        </div>
+        <nav class="status-links" aria-label="Direkte Forschungsnachweise">
+          <a href="https://koschnag.github.io/ai-fantasy-rts-rpg/">Riftward-Cockpit ↗</a>
+          <a href="https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/main/.ai/tasks">Riftward-Registry ↗</a>
+          <a href="https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/research/PROTOCOL.md">Riftward-Protokoll ↗</a>
+          <a href="CDD_MAPPING.md">CDD↔Riftward-Mapping</a>
+          <a href="CASE_STUDY_LOG.md">öffentlicher Case-study log</a>
+          <a href="https://github.com/Koschnag/cong-driven-development/blob/main/PUBLICATION_POLICY.md">Publikationsgrenze ↗</a>
+        </nav>
+      </section>
+
+      <section class="metric-band" aria-label="Kennzahlen der öffentlichen CDD-SPOT-Projektion">
+        <article><strong id="metric-nodes">–</strong><span>CDD-SPOT-Knoten</span></article>
+        <article><strong id="metric-claims">–</strong><span>CDD-Forschungsclaims</span></article>
+        <article><strong id="metric-sources">–</strong><span>CDD-Referenzen</span></article>
+        <article><strong id="metric-open">–</strong><span>CDD-offene Knoten</span></article>
       </section>
 
       <section id="claims" class="section">
@@ -115,6 +133,7 @@
             <article class="mini-card"><span class="eyebrow">Evidenz</span><h3>unknown bleibt unknown</h3><p><code>retrospective-derived</code>, <code>prospective-observed</code>, <code>synthetic-test-only</code> und <code>unknown</code> werden getrennt ausgewiesen.</p></article>
             <article class="mini-card"><span class="eyebrow">Protokoll</span><h3>Methodik lesen</h3><p><a href="PROTOCOL.md">CDD-Einordnung</a> · <a href="CDD_MAPPING.md">CDD-Mapping</a> · <a href="CASE_STUDY_LOG.md">Case-study log</a> · <a href="https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/PROTOCOL.md">Riftward-Protokoll 2.0.1</a></p></article>
             <article class="mini-card" data-riftward-registry><span class="eyebrow">Registry · T-053</span><h3>Nächstes Gate bleibt gesperrt</h3><p>Ein extern bereitgestelltes, sanitisiertes Fixture muss exakt validieren und roundtrippen. Bis dahin: Raw-Export publikationsgesperrt; alle Laufmetriken <code>unknown</code>.</p></article>
+            <article class="mini-card"><span class="eyebrow">Direkte Belege</span><h3>Riftward öffentlich prüfen</h3><p><a href="https://koschnag.github.io/ai-fantasy-rts-rpg/">Cockpit ↗</a> · <a href="https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/main/.ai/tasks">Registry ↗</a> · <a href="https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/main/docs/research/PROTOCOL.md">Protokoll ↗</a></p></article>
           </div>
         </div>
       </section>

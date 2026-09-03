@@ -1,6 +1,6 @@
 # Cong-Driven Development (CDD)
 
-### Evidence-gated software evolution — vom Forschungsclaim bis zum überprüften Release
+### Evidence-gated software evolution — vom Forschungsclaim bis zur überprüften Entscheidung
 
 [![CI](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml/badge.svg)](https://github.com/Koschnag/cong-driven-development/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Koschnag/cong-driven-development)](https://github.com/Koschnag/cong-driven-development/releases/latest)
@@ -8,28 +8,45 @@
 [![Open in Codespaces](https://img.shields.io/badge/Codespaces-im%20Browser-24292e?logo=github)](https://codespaces.new/Koschnag/cong-driven-development)
 [![License: MPL-2.0](https://img.shields.io/badge/License-MPL--2.0-brightgreen.svg)](LICENSE)
 
-> **Vision:** Wenn KI Implementierung beschleunigt, werden Intent, Spezifikation,
-> Modellierung, Verifikation und Governance zum Engpass. CDD macht diese Arbeit in
-> einem typisierten **Single Point of Truth (SPOT)** explizit und überprüfbar.
+> **CDD in einem Satz:** Ein typisierter, versionierter **Single Point of Truth
+> (SPOT)** verbindet menschlichen Intent mit Kandidaten, unabhängiger Evidenz und
+> einer bewusst begrenzten Promotion-Entscheidung.
 
-## Öffentliches Forschungsprogramm
+## Stand in 60 Sekunden
 
-CDD ist nicht nur ein Tool-Repository. Es veröffentlicht regelmäßig einen
-reproduzierbaren Forschungsstand aus vier miteinander verbundenen Artefakten:
-
-| Ergebnis | Hier zu finden | Aktueller Stand |
+| Frage | Öffentliche, überprüfbare Antwort | Direkt prüfen |
 |---|---|---|
-| **Paper & Research Track** | [`research/`](research/) · [Paper](docs/paper-terminierungs-orakel.pdf) | Preprint und offene Hypothesen |
-| **Framework / Engine** | [`src/Cdd.Core/`](src/Cdd.Core/) · [`src/Cdd.Cli/`](src/Cdd.Cli/) | ausführbarer F#-Kernel |
-| **Referenzprojekt CourseForge** | [`examples/CourseForge.Core/`](examples/CourseForge.Core/) | sicherer Metadata→Course-IR→Game-Plan Vertical Slice |
-| **CDD Studio** | [öffentliche IDE-Demo](https://koschnag.github.io/cong-driven-development/ide/) · [`src/Cdd.Web/`](src/Cdd.Web/) | experimentelle Projektion desselben SPOT |
-| **Open Control Plane** | [`docs/open-control-plane-landscape.md`](docs/open-control-plane-landscape.md) · `/workspace.html` | reale Workspace-Projektion und Tool-/Forschungslandkarte (Pre-Alpha) |
-| **Full-Agentic SDLC** | [`docs/full-agentic-sdlc.md`](docs/full-agentic-sdlc.md) · `Cdd.Core.Autopilot` | persistenter Controller + CLI-Harness + Studio-Projektion |
-| **Loop Engineering** | [`docs/loop-engineering.md`](docs/loop-engineering.md) · [`research/protocols/loop-engineering-v1.md`](research/protocols/loop-engineering-v1.md) | getestete Guard-Foundation + vorregistrierte Ralph-Baseline |
+| Was ist CDD? | Ein F#-Kernel, CLI und read-only Studio für spezifikations- und evidenzgebundene Softwareentwicklung. | [Code](src/Cdd.Core/) · [CLI](src/Cdd.Cli/) · [CDD Studio](https://koschnag.github.io/cong-driven-development/ide/) |
+| Was ist praktisch belegt? | Das Repository enthält einen ausführbaren SPOT-Kernel, Validierung, abgeleitete Tests und einen begrenzten EIDOS-ZT2-Sandboxpfad. | [Status aus dem SPOT](#status) · [EIDOS-Grenzen](docs/eidos.md) |
+| Was untersucht Riftward? | Eine dokumentierte, langfristige Fallstudie zu Rollen, Gates, Recovery und menschlich autorisierter Promotion. | [Riftward-Cockpit](https://koschnag.github.io/ai-fantasy-rts-rpg/) · [öffentliche Registry](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/main/.ai/tasks) |
+| Was ist noch **nicht** belegt? | Keine allgemeine Überlegenheit, keine autonome Abnahme, keine 24/7-Autonomie und keine Kosten- oder Produktivitätsaussage. Nicht exportierte Messwerte bleiben `unknown`. | [CDD↔Riftward-Mapping](docs/research/CDD_MAPPING.md) · [Fallstudienprotokoll](docs/research/PROTOCOL.md) · [Log](docs/research/CASE_STUDY_LOG.md) |
+| Wo sind die Grenzen? | Öffentliche Artefakte sind read-only; private Betriebs-, Identitäts-, Memory- und Infrastrukturdaten gehören nicht in dieses Repository. | [Public Research & Data Policy](PUBLICATION_POLICY.md) |
 
-Der Claim-Ledger ist selbst Teil des SPOT: `Observed`, `Proposed`, `Verified`,
-`Contested` und `Unknown` bleiben unterscheidbar. Eine technisch implementierte
-Funktion ist dadurch nicht automatisch eine wissenschaftlich bestätigte Aussage.
+```text
+Menschlicher Intent → Candidate → unabhängige Assurance → Evidence Pack
+                  → menschliches Promotion Gate → Outcome
+```
+
+Ein grüner Build, ein Agentenlauf oder ein WIP-Branch ist dabei kein Outcome.
+`main` bezeichnet geprüfte Repository-Wahrheit; `live-wip` kann Kontinuität
+dokumentieren, aber keine Abnahme ersetzen.
+
+## Forschungsprogramm und Orientierung
+
+CDD verbindet ein ausführbares Werkzeug mit einem offenen Forschungsprogramm.
+Der Claim-Ledger unterscheidet `Observed`, `Proposed`, `Verified`, `Contested`
+und `Unknown`: Eine implementierte Funktion ist nicht automatisch ein
+wissenschaftlich bestätigter Claim.
+
+| Artefakt | Zweck | Statusgrenze |
+|---|---|---|
+| [Research Studio](docs/research/) · [Paper](docs/paper-terminierungs-orakel.pdf) | Claims, Evidenz, Gegenargumente und Quellen sichtbar machen | Preprint und offene Hypothesen |
+| [Framework / Engine](src/Cdd.Core/) · [CLI](src/Cdd.Cli/) | SPOT modellieren, validieren und projizieren | ausführbarer Kernel, keine automatische Produktionsautorität |
+| [CDD Studio](https://koschnag.github.io/cong-driven-development/ide/) · [Web-Code](src/Cdd.Web/) | denselben SPOT browserbasiert und read-only darstellen | experimentelle Projektion, kein Steuerkanal |
+| [CourseForge](examples/CourseForge.Core/) | generischer Metadata→Course-IR→Game-Plan Vertical Slice | Referenzprojekt, keine echten Kursdaten |
+| [Open Control Plane](docs/open-control-plane-landscape.md) | CDD im Verhältnis zu offenen Werkzeugen und SDLC-Ansätzen | Forschungslandkarte, keine Kompatibilitäts- oder Überlegenheitsbehauptung |
+| [Full-Agentic SDLC](docs/full-agentic-sdlc.md) · `Cdd.Core.Autopilot` | persistente, providerneutrale SDLC-Kette beschreiben | Controller- und Harness-Foundation, keine autonome Produktionsfreigabe |
+| [Loop Engineering](docs/loop-engineering.md) · [vorregistrierte Baseline](research/protocols/loop-engineering-v1.md) | begrenzte Ralph-artige Schleifen untersuchen | getestete Guards; vergleichende Ergebnisse noch offen |
 
 ```text
 Signal → Claim / Change Intent → Candidate → unabhängige Assurance
@@ -52,7 +69,7 @@ Der Vergleich mit Anthropic, OpenAI, formalen Methoden, FOSS-Werkzeugen und
 offenen SDLC-Standards steht in der
 **[Open-Control-Plane-Landschaft](docs/open-control-plane-landscape.md)**.
 
-## Was es sein soll
+## Was CDD sein soll
 
 Eine IDE/Framework-Hybrid für **AI-native Softwareentwicklung**. Statt iterativ Code zu
 tippen, beschreibst Du Intent, Constraints und Akzeptanz-Kriterien — AI-Agents liefern

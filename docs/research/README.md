@@ -1,5 +1,20 @@
 # Research Studio
 
+## Orientierung
+
+| Wenn du wissen willst … | Lies / öffne |
+|---|---|
+| was CDD aktuell öffentlich belegt und was offen bleibt | [Research Studio](index.html) |
+| wie Riftward als Fallstudie zu CDD passt | [CDD-Mapping](CDD_MAPPING.md) |
+| welche Evidenzklassen, Redaction- und Claim-Grenzen gelten | [Protokoll](PROTOCOL.md) |
+| welche öffentlichen Baselines tatsächlich vorliegen | [Case-study log](CASE_STUDY_LOG.md) |
+| wie Riftward selbst seinen Status dokumentiert | [Cockpit](https://koschnag.github.io/ai-fantasy-rts-rpg/) · [Registry](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/main/.ai/tasks) |
+
+Riftward ist eine dokumentierte Fallstudie, kein Nachweis allgemeiner
+Überlegenheit, autonomer Abnahme, 24/7-Aktivität, Kosten- oder
+Produktivitätsvorteile. Fehlende oder nicht freigegebene Messwerte bleiben
+`unknown`.
+
 Das Research Studio ist eine **read-only Projektion** des öffentlichen, versionierten
 SPOT-Snapshots in `docs/ide/_demo/spot.json`. Claims, Quellen, Risiken, Prämissen,
 Entscheidungen und Konvergenzstatus werden beim Laden abgeleitet; sie werden nicht als
