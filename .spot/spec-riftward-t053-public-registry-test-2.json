@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-t053-public-registry-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-t053-public-registry",
+        "Name": "Riftward T-053 Registry \u2014 when das Research Studio geladen wird then zeigt es die Quellenbindung und den gesperrten n\u00E4chsten Gate ohne Laufclaim",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

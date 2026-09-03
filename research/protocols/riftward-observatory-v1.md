@@ -9,15 +9,18 @@
 Dieser CDD-v1-Vertrag ist die sanitizierte Analyse- und
 Publikationsprojektion. Der authoritative operative Ereignis-, Metrik- und
 Reproduktionsvertrag ist Riftward
-`riftward-research-observability` 2.0.0 am Commit
-[`a8da858d9a25892a4671104c57f5edfe3c789a39`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/a8da858d9a25892a4671104c57f5edfe3c789a39),
+`riftward-research-observability` 2.0.1 am Commit
+[`d7d5f949758a3a38ca4238ceadfbbd83965eb71d`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/d7d5f949758a3a38ca4238ceadfbbd83965eb71d),
+mit öffentlichem Quellbaum `3ce6338f6524b9349af716755c91d01d77cd3b93` und
 Protokollbundle-SHA-256
-`a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65`.
-Siehe [Protokoll](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PROTOCOL.md),
-[Datenwörterbuch](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/OBSERVABILITY_DATA_DICTIONARY.md),
-[Metriken](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/METRICS.md),
-[Reproduktion](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/REPRODUCIBILITY.md) und
-[Privacy/Publikation](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PRIVACY_AND_PUBLICATION.md).
+`58b93d5a7ce8b0c1b182030d36eab9f156ff1aa8f2c2d246be54bcd53f3bf1de`.
+Diese Werte binden ausschließlich den veröffentlichten Quellenstand; sie sind
+keine Runtime-Commit-/Tree- oder Ergebnisdaten. Siehe
+[Protokoll](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/PROTOCOL.md),
+[Datenwörterbuch](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/OBSERVABILITY_DATA_DICTIONARY.md),
+[Metriken](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/METRICS.md),
+[Reproduktion](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/REPRODUCIBILITY.md) und
+[Privacy/Publikation](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/PRIVACY_AND_PUBLICATION.md).
 
 Diese Bindung beweist nur den eingefrorenen Vertrag. Sie beweist weder einen
 laufenden Collector noch `prospective-observed` Daten. Kompatibilität zwischen
@@ -52,29 +55,30 @@ Aggregate, abgekoppelte Summen oder Ratios. `Episode` entsteht erst als
 analytischer Join der rohen Run- und Promotion-Beobachtungen. Historische
 Runs ohne Task-Zuordnung behalten `TaskAttributionMissingReason`; CDD erfindet
 keine Task-ID.
-Öffentlich zulässig sind nur öffentliche Task-, Attempt- und Epoch-IDs,
+Der gegenwärtige T-053-Registry-Stand publiziert ausschließlich die Bindung
+oben und keine Episode, Messung oder Runtime-Identität. Für einen späteren,
+separat freigegebenen Datensatz gelten öffentliche Task-, Attempt- und Epoch-IDs,
 eine vollständige Multi-Agent-Konfiguration (Scout, Builder, Critic, Reviewer)
-oder eine explizite Nichtverfügbarkeit, terminale Disposition, sanitizierte
-Promotions-Beobachtungen mit Source-Event-ID, -Sequenz und SHA-256-Hash sowie
-Task-, Change-Set-, Promotion-, Candidate-, Commit- und Tree-Identifier sowie
-Dauer-, Token-, Kosten-, Repair-, Gate- und Interventionsmesswerte. Mehrere
-Episoden duerfen bewusst dieselbe Epoch-ID teilen. Jede Messung traegt
+oder eine explizite Nichtverfügbarkeit, terminale Disposition und sanitizierte
+Messqualitäten als Modellgrenze. Runtime-Commit-/Tree-, Candidate-, Session- und
+Host-Identifier bleiben lokal; sie sind nicht Teil der öffentlichen T-053-
+Registry. Mehrere Episoden duerfen bewusst dieselbe Epoch-ID teilen. Jede Messung traegt
 `Observed`, `Estimated`, `Unavailable` oder `NotApplicable`, eine nichtleere
 Unit und bei fehlenden Werten einen nichtleeren MissingReason; unbekannt wird
 nie zu null normalisiert. Kosten tragen zusaetzlich Currency, Source, Status
 und MissingReason. `Accepted` akzeptiert ausschließlich den geschlossenen
 Authority-Fall `RequiredGateReceipt`; freie Authority-Strings sind keine
 Evidenz. Candidate-Fingerprints und Source-Hashes sind exakt 64 lower-hex
-Zeichen; Commit und Tree sind entsprechend dem expliziten Git-Objektalgorithmus
-exakt 40 (SHA-1) oder 64 (SHA-256) lower-hex Zeichen. Evidenz-Task und
+Zeichen. Evidenz-Task und
 -Change-Set muessen zur Episode passen, und eine Promotion darf nicht vor dem
 beobachteten Run-Ende liegen.
 
 Quellen sind ausschließlich typisierte, bereits sanitizierte Projektionen:
 Riftward `RunRecord`, Promotion- und Gate-Receipts, OpenCode-Nutzungs-Export,
 Operator-Declaration oder explizite Ableitung. Prompts, Host-Pfade,
-Session-IDs, Rohlogs, interne/private IDs, Credentials und Freitext-Evidenz
-sind kein Feld des öffentlichen Modells und werden vor der Projektion verworfen.
+Session-IDs, Runtime-Commit-/Tree-IDs, Rohlogs, interne/private IDs,
+Credentials und Freitext-Evidenz sind kein Feld des öffentlichen Modells und
+werden vor der Projektion verworfen.
 
 ## Validität und Auswertung
 
@@ -108,10 +112,13 @@ Effekt- oder Kausalclaim.
 Riftward bearbeitet keine isolierte „KI schreibt ein Spiel“-Behauptung, sondern
 eine longitudinale Einzelfallstudie kontinuierlicher Software-Evolution.
 SWE-Milestone nutzt dafür Milestone-DAGs und berichtet neben Ergebniswerten
-Kosten, Dauer, Turns und Output-Token. TheBotCompany untersucht mehrtägige
-Entwicklung mit Strategy-, Execution- und Verification-Phasen sowie
-asynchroner menschlicher Aufsicht. Diese Arbeiten sind Vergleichspunkte, aber
-kein Beleg für Priorität oder Überlegenheit von Riftward.
+Kosten, Dauer, Turns und Output-Token. SWE-EVO und SWE-CI sind Vergleiche für
+langfristige beziehungsweise CI-gebundene Entwicklungssequenzen. GameXpert-
+Bench ergänzt den Vergleich um interaktive Game-Development-Kriterien.
+TheBotCompany untersucht mehrtägige Entwicklung mit Strategy-, Execution- und
+Verification-Phasen sowie asynchroner menschlicher Aufsicht. Diese Arbeiten
+sind Vergleichspunkte, aber kein Beleg für Priorität oder Überlegenheit von
+Riftward.
 
 Die Ereignishülle orientiert sich konzeptionell an W3C PROV
 (Entity/Activity/Agent und Derivation). Eine spätere OTLP-Projektion darf die
@@ -144,6 +151,9 @@ keinen allgemeinen Autonomie-, Qualitäts- oder Produktivitätsclaim.
 - `PUBLICATION_POLICY.md` (öffentliche Daten- und Prüfungsschranke)
 - `Cdd.Core.Riftward.RunRecord` (sanitisierte, terminale Run-Projektion)
 - [SWE-Milestone](https://swe-milestone.com/)
+- [SWE-EVO](https://arxiv.org/abs/2512.18470)
+- [SWE-CI](https://arxiv.org/abs/2603.03823)
+- [GameXpert-Bench](https://arxiv.org/abs/2608.21833)
 - [TheBotCompany paper](https://arxiv.org/abs/2603.25928)
 - [OpenTelemetry CI/CD spans](https://opentelemetry.io/docs/specs/semconv/cicd/cicd-spans/)
 - [W3C PROV-DM](https://www.w3.org/TR/prov-dm/)

@@ -1,0 +1,18 @@
+{
+  "Id": "kb-swe-evo",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "SWE-EVO: Long-Horizon Software Evolution",
+        "Source": "https://arxiv.org/abs/2512.18470",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Vergleichspunkt für aufeinander aufbauende Software-Evolutionsaufgaben und Wartbarkeit",
+          "Keine Riftward-Evidenz und kein Nachweis einer operativen oder kausalen Überlegenheit"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

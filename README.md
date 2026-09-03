@@ -242,7 +242,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 ## Status
 
 <!-- spot:status -->
-**221 Knoten im Selbstmodell** · 4 aktive Invarianten · 70/76 abgeleitete Tests automatisiert
+**227 Knoten im Selbstmodell** · 4 aktive Invarianten · 72/78 abgeleitete Tests automatisiert
 
 ### Kann es (Specs, gemessen Aligned)
 
@@ -281,6 +281,7 @@ IsA/PartOf/RelatesTo-Beziehungen.
 - 🔜 **Gate-Selbsthärtung** — Das Konvergenz-Orakel wird auf das eigene Modell angewendet: ein Test-Knoten gilt nur als Aligned, wenn ein echter Test-Marker existiert, nicht durch bloße Behauptung
 - 🔜 **Reproduzierbare Research Snapshots** — Regelmaessige Forschungsstaende pinnen Code, Claims, Protokolle, Checksummen und Build-Evidenz auf denselben Commit.
 - 🔜 **Repräsentative Evidence Fitness** — CDD verhindert Promotion durch grüne, aber am eigentlichen Claim vorbeimessende Proxy-Evidence
+- 🔜 **Riftward T-053: öffentliche Quellenregistry und geschlossenes Export-Gate** — CDD bindet ausschließlich den unveränderlichen öffentlichen Riftward-Protokollquellstand; es behauptet weder einen beobachteten Lauf noch Runtime-Commit-/Tree-Daten oder Laufmetriken und hält Raw-Export bis zu einem extern gelieferten, sanitisierten Exact-Roundtrip-Fixture gesperrt
 - 🔜 **Risikoadaptives Assurance-Portfolio** — CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 - 🔜 **SPOT-projiziertes Research Studio** — Eine Review-Oberfläche zeigt Forschungsstand, Lücken, Grenzen, Medien und Teilprojekte ohne zweite Wahrheit oder automatische Promotion
 - 🔜 **Semantische Foundation für Slice-Leases** — CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich

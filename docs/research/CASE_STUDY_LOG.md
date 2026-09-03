@@ -36,10 +36,8 @@ Private Rohbeobachtungen werden nicht in dieses Log kopiert.
 
 * Status: `retrospective-derived` Registry-Eintrag; kein beobachteter
   Autopilotlauf und kein Forschungsergebnis.
-* Gebundene Quelle: Riftward-Commit
-  [`a8da858d9a25892a4671104c57f5edfe3c789a39`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/a8da858d9a25892a4671104c57f5edfe3c789a39),
-  Protokoll `riftward-research-observability` 2.0.0, Bundle-SHA-256
-  `a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65`.
+* Der historische Registry-Stand wurde durch CS-003 ersetzt; er ist kein
+  aktueller Mess- oder Vergleichsstand.
 * Beobachtung: Abschnitt 0 ist als unveränderlicher Git-Baum veröffentlicht;
   Collector, Producer-Kompatibilität und erster prospektiver Echtlauf werden
   dadurch nicht als vorhanden behauptet.
@@ -47,3 +45,19 @@ Private Rohbeobachtungen werden nicht in dieses Log kopiert.
   Publikations-Gate-Draft, bis ein sanitisiertes operatives Fixture exakt
   parst und roundtrippt. Alle nicht gemessenen Betriebswerte bleiben
   `unknown`.
+
+## CS-003 — Öffentliche Quellenregistry T-053 korrigiert (2026-09-03)
+
+* Status: `retrospective-derived` Registry-Korrektur; kein beobachteter
+  Autopilotlauf, keine prospektive Behauptung und kein Forschungsergebnis.
+* Gebundene öffentliche Quelle: Riftward-Commit
+  [`d7d5f949758a3a38ca4238ceadfbbd83965eb71d`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/d7d5f949758a3a38ca4238ceadfbbd83965eb71d),
+  Quellbaum `3ce6338f6524b9349af716755c91d01d77cd3b93`, Protokoll
+  `riftward-research-observability` 2.0.1, Bundle-SHA-256
+  `58b93d5a7ce8b0c1b182030d36eab9f156ff1aa8f2c2d246be54bcd53f3bf1de`.
+* Aussagegrenze: Commit und Tree identifizieren ausschließlich den
+  veröffentlichten Protokollquellstand. Interne Runtime-Commit-/Tree-IDs und
+  alle Laufmetriken werden nicht exportiert und bleiben `unknown`.
+* Nächstes Gate: Ein extern bereitgestelltes, sanitisiertes Riftward-Fixture
+  muss in CDD exakt validieren und roundtrippen. Bis dahin bleibt Raw-Export
+  publikationsgesperrt.
