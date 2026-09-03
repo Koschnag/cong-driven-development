@@ -54,6 +54,9 @@ let entries =
       term "term-evidence-fitness" "Evidence Fitness" "Grad, zu dem ein Nachweis dieselbe Behauptung, Last, Systemgrenze, Umgebung und Fehlermöglichkeit prüft, für die er eine Promotion begründen soll" [ "Representative Evidence"; "Nachweispassung" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-assurance-portfolio") ]
       term "term-autopilot-run" "Autopilot Run" "Persistente, replaybare Ausführung einer Mission als Folge begrenzter Work Slices, Agenten-Turns, Gates, Reviews und Checkpoints" [ "Agentic SDLC Run"; "Durable Run" ] [ PartOf(EntityId "term-control-plane"); RelatesTo(EntityId "term-mission-order") ]
       term "term-work-slice" "Work Slice" "Kleinste einzeln prüf- und checkpointbare Änderungseinheit mit Scope, Akzeptanzkriterien und benötigten Gates" [ "Implementation Slice"; "Task Slice" ] [ PartOf(EntityId "term-autopilot-run") ]
+      term "term-slice-lease" "Slice Lease" "Zeitlich begrenzte, versuchsnummerierte Eigentumsbindung eines Work Slices an genau einen Owner und isolierten Worktree samt Base-, Candidate- und Scope-Bindung" [ "Worktree Lease"; "Ownership Lease" ] [ PartOf(EntityId "term-autopilot-run"); RelatesTo(EntityId "term-work-slice") ]
+      term "term-committed-bytes-portability" "Committed-Bytes-Portabilität" "Nachweis, dass exakt gebundene, versionierte Candidate-Bytes mit einem benannten Tool und reproduzierbaren Checks ohne unbeobachtete Worktree-Abhängigkeiten geprüft wurden" [ "Fresh-Checkout Evidence"; "Portability Evidence" ] [ RelatesTo(EntityId "term-evidence-pack"); RelatesTo(EntityId "term-slice-lease"); RelatesTo(EntityId "term-evidence-fitness") ]
+      term "term-loop-engineering" "Loop Engineering" "Entwurf langlebiger Agentenschleifen als deterministische Zustandsmaschine mit kleinen Iterationen, kandidatgebundener Evidenz, getrennten Fehlerklassen, harten Budgets und crash-sicherem Handoff" [ "Ralph Loop"; "Durable Agent Loop" ] [ PartOf(EntityId "term-autopilot-run"); RelatesTo(EntityId "term-evidence-pack") ]
 
       // ── Prämissen ──────────────────────────────────────────────────────
       premise "premise-kein-python" "Python-freier Vertrauenskern, polyglotte Adapter." "CDD-Domäne, Promotion und Persistenz bleiben .NET/F#; austauschbare externe Tooladapter dürfen ihre native Sprache nutzen, ohne zur Kernel- oder Runtime-Abhängigkeit zu werden"
@@ -100,6 +103,10 @@ let entries =
         "Builds, Unit-Tests und dokumentierte Budgets können grün sein, obwohl die behauptete Produkteigenschaft unter repräsentativer Last, Zielhardware oder realer Systemgrenze scheitert"
         "Jede Assurance Obligation benennt Claim, Systemgrenze, Szenario, Last, Umgebung, Metrik und zulässige Proxys; Promotion lehnt Evidence ab, deren Fitness die Obligation nicht erreicht"
         "CDD muss fehlende repräsentative Evidence als unknown erhalten, Evidence-Fitness und Abweichungen berichten und darf Proxy-Erfolg nicht zur Outcome-Aussage hochstufen"
+      decision "adr-011-cause-bound-loop-guards" "Loop-Recovery wird an Candidate, Stage und Fehlerursache gebunden"
+        "Globale Retry-Zähler und jeder beliebige Zwischenerfolg können einen persistenten Infrastruktur- oder Protokollfehler verdecken und Agenten ohne neue Information erneut dispatchen"
+        "CDD trennt Produkt-, Infrastruktur- und Protokollfehler, bindet Budgets an Run, Slice, Candidate, Stage und Fehlercode und hält administrative Holds unabhängig von Ressourcen-Mutexen"
+        "Die deterministische Foundation ist implementiert; Scheduler-, Publisher- und Workflow-Adapter müssen den Vertrag noch durchgängig persistieren und ausführen"
 
       // ── Risiken ────────────────────────────────────────────────────────
       risk "risk-mda-drift" "Modell und Code driften auseinander (der MDA-Friedhof)" Medium Critical
@@ -122,6 +129,10 @@ let entries =
         "Terminalmarker als Protokollsignal statt Erfolg; begrenztes Resume derselben Session, frischer Recovery-Start mit Checkpoint und danach fail-closed Eskalation"
       risk "risk-proxy-evidence" "Leicht verfügbare Proxy-Evidence ersetzt unbemerkt die repräsentative Prüfung des eigentlichen Claims" High Critical
         "Evidence Obligations binden Claim, Boundary, Szenario, Last, Umgebung und Metrik; Promotion vergleicht die geforderte mit der beobachteten Evidence Fitness und lässt Lücken unknown"
+      risk "risk-uncommitted-evidence-dependency" "Ein lokal grüner Nachweis hängt unbemerkt von ignorierten oder nicht versionierten Worktree-Bytes ab" High High
+        "Portabilitäts-Evidence aus einem frischen Checkout oder sauberen Archiv an Candidate, Tree, Tool und Log binden; stale, unvollständige und widersprüchliche Beobachtungen fail-closed ablehnen"
+      risk "risk-untyped-retry-loop" "Ein langlaufender Agenten-Loop deutet Infrastruktur- oder Protokollfehler als neue Produktarbeit und verbraucht Budget ohne neue Evidenz" High High
+        "Fehler nach Candidate, Stage und Cause isolieren; Infrastruktur modellfrei warten lassen, Protokoll-Recovery begrenzen und circuits unabhängig von Erfolgen anderer Stages erhalten"
 
       // ── Komponenten ───────────────────────────────────────────────────
       { Id = EntityId "comp-core"; Convergence = Aligned
@@ -231,7 +242,7 @@ let entries =
                   When = "die Control-Plane-Oberfläche im Browser geöffnet wird"
                   Then = "sind Mission, Runs, Quellen und austauschbare Verträge responsiv sichtbar ohne den lokalen Projektpfad auszugeben" } ] } }
 
-      { Id = EntityId "spec-full-agentic-sdlc-controller"; Convergence = Pending
+      { Id = EntityId "spec-full-agentic-sdlc-controller"; Convergence = Aligned
         Payload = SpecNode
           { Title = "Persistente Full-Agentic-SDLC-Kette"
             Intent = "CDD führt lange Software-Missionen providerneutral, resumierbar und evidenzgesteuert über kleine Work Slices statt über einen unkontrollierten Modell-Loop"
@@ -248,6 +259,93 @@ let entries =
                 { Given = "ein persistierter Run mit Agenten-, Gate-, Review- und Recovery-Beobachtungen"
                   When = "Status oder Evaluation abgefragt werden"
                   Then = "werden nächste Aktion, vollständiger Solve, Laufkosten, Toolaufrufe, Premature Stops, Recovery, Interventionen und Gate-Erfolg reproduzierbar projiziert" } ] } }
+
+      { Id = EntityId "spec-loop-engineering-guard"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Kandidat- und ursachengebundene Loop Guards"
+            Intent = "CDD stellt eine deterministisch getestete, serialisierbare Loop-Guard-Entscheidungsfoundation bereit; ihre Scheduler-, RunState-, CLI- und Publisher-Integration bleibt offen"
+            Criteria =
+              [ { Given = "ein expliziter administrativer Hold"
+                  When = "der Scheduler beliebig oft nach der nächsten Aktion fragt"
+                  Then = "entsteht kein Agenten-Turn, kein verbrauchter Retry und nur die exakt autorisierte Freigabe hebt den Hold auf" }
+                { Given = "ein Promotion-Infrastrukturfehler für einen unveränderten Candidate"
+                  When = "eine andere Stage wie Review erfolgreich endet"
+                  Then = "bleibt der Promotion-Counter erhalten und erzeugt ausschließlich modellfreies Backoff oder einen offenen Circuit" }
+                { Given = "wiederholte Produkt- oder Protokollfehler mit demselben Failure Key"
+                  When = "das jeweilige Budget erschöpft wird"
+                  Then = "Produktarbeit erhält nur begrenzte frische Versuche, Protokollverlust nur begrenzte Session-Resumes und danach öffnet der Circuit" }
+                { Given = "ein neuer Candidate-Digest oder ein persistierter Loop-Guard-Zustand"
+                  When = "Subject-Wechsel oder Replay erfolgt"
+                  Then = "werden alte Failure Counter invalidiert, administrative Autorität bleibt bestehen und dieselbe nächste Entscheidung wird reproduziert" } ] } }
+
+      { Id = EntityId "spec-slice-worktree-lease"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Semantische Foundation für Slice-Leases"
+            Intent = "CDD stellt einen getesteten fail-closed Entscheidungskern und eine typisierte äußere Vertragsnaht für zeitlich begrenzte Slice-Ownership bereit; Scheduling, atomare Registry und reale Worktree-Isolation bleiben vor parallelem Dispatch erforderlich"
+            Criteria =
+              [ { Given = "eine Lease-Anforderung mit Attempt, Owner, Worktree, Base-Digest, Candidate-Digest, Scope und Ablaufzeit"
+                  When = "der Autopilot sie gegen die vollständige Lease-Historie prüft"
+                  Then = "werden nur vollständig gültige Current-Leases, monotone Candidate- und Expiry-Versionen, kanonische repository-relative Scopes und der nächste Attempt ohne Überlappung zu einer lebenden Lease akzeptiert" }
+                { Given = "eine lebende Slice-Lease"
+                  When = "ein Heartbeat ihre Laufzeit verlängern soll"
+                  Then = "müssen Identität, Owner, Worktree, Base, Candidate und Scope exakt dem aktuellen Lease-Subjekt entsprechen; abgelaufene Leases werden nicht wiederbelebt" }
+                { Given = "ein Builder erzeugt einen neuen Candidate"
+                  When = "der Candidate an die Slice-Lease gebunden wird"
+                  Then = "akzeptiert CDD die Bindung nur für den exakten lebenden Attempt und lehnt alte Digests, Scope Drift und fremde Ownership fail-closed ab" }
+                { Given = "eine typisierte Lease-Transition als ControllerAction und die behauptete Antwort eines Adapters"
+                  When = "Action und RunObservation über Cdd.Core.Json ausgetauscht und gegen den erwarteten Auftrag validiert werden"
+                  Then = "roundtrippt der Vertrag verlustfrei und CDD lehnt eine andere Transition, ein gefälschtes Ergebnis oder eine unaufgeforderte Beobachtung fail-closed ab" } ] } }
+
+      { Id = EntityId "spec-committed-bytes-portability"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Typisierte Committed-Bytes-Portabilitäts-Evidence"
+            Intent = "CDD klassifiziert Portabilitätsnachweise über die tatsächlich versionierten Candidate-Bytes an einer fail-closed Action/Observation-Naht; reale Adapterplanung und persistente Ausführung bleiben getrennte nächste Schritte"
+            Criteria =
+              [ { Given = "eine lebende candidate-gebundene Slice-Lease und eine Obligation mit exaktem Candidate-, Tree-, Tool- und Check-Satz"
+                  When = "ein Adapter einen vollständig grünen Prozess samt Log-Bindung meldet"
+                  Then = "roundtrippen Action und Observation verlustfrei und CDD akzeptiert nur die unabhängig hergeleitete Succeeded-Evidence für exakt dieselben abstrakten Identitäten" }
+                { Given = "ein exakt gebundener Portabilitätslauf endet rot oder die Ausführungsinfrastruktur fällt aus"
+                  When = "CDD die typisierten Prozess- und Check-Fakten klassifiziert"
+                  Then = "führt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschließlich zum Infrastruktur-Retry" }
+                { Given = "ein Adapter behauptet ein anderes Ergebnis, beantwortet eine andere Obligation oder liefert Candidate-, Tree- oder Tool-Evidence für einen alten Stand"
+                  When = "der äußere Controller-Austausch validiert wird"
+                  Then = "werden gefälschte, unaufgeforderte und stale Beobachtungen ohne Evidence-Akzeptanz abgelehnt" }
+                { Given = "ein abgeschlossener Bericht lässt Checks aus, widerspricht seinem Exitcode, enthält pfadartige Adapter-Identitäten oder erreicht den seriellen Controller unaufgefordert"
+                  When = "CDD den Portabilitätsvertrag prüft"
+                  Then = "schlägt die Beobachtung fail-closed fehl und verändert keinen Run-Zustand" } ] } }
+
+      { Id = EntityId "spec-riftward-longitudinal-baseline"; Convergence = Aligned
+        Payload = SpecNode
+          { Title = "Sanitisierte longitudinale Riftward-Baseline"
+            Intent = "Terminierte Autopilot-Runs werden zu sanitisierten, deterministischen Baselines je Mission und explizit versioniertem Evaluationsprotokoll aggregiert, ohne Sessions, Scopes, Prompts oder Artefakte preiszugeben"
+            Criteria =
+              [ { Given = "ein terminierter Autopilot-Run mit rollenseparierten Worker-Profilen"
+                  When = "ein Forschungs-Record projiziert wird"
+                  Then = "trägt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatzähler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal" }
+                { Given = "mehrere terminierte Runs aus mehreren deklarierten Konfigurationen"
+                  When = "die Baseline-Aggregation läuft"
+                  Then = "werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widersprüchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl" }
+                { Given = "eine Baseline unterhalb des benannten Wiederholungsminimums"
+                  When = "ihre Repetitions-Fitness bewertet wird"
+                  Then = "gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl" } ] } }
+
+      { Id = EntityId "spec-riftward-baseline-comparison"; Convergence = Pending
+        Payload = SpecNode
+          { Title = "Zulässige Vergleiche sanitierter Riftward-Baselines"
+            Intent = "CDD gibt zwei deklarierte Konfigurationen nur dann als vergleichbar frei, wenn beide Seiten valide Aggregate derselben Mission und desselben Evaluationsprotokolls oberhalb des benannten Wiederholungsminimums sind und einen echten Kontrast bilden; Rangfolge, Kausalität oder Produktwirkung leitet der Kern daraus nicht ab"
+            Criteria =
+              [ { Given = "zwei valide Aggregate derselben Mission und desselben Evaluationsprotokolls, die das benannte Wiederholungsminimum erreichen und sich in der deklarierten Konfiguration unterscheiden"
+                  When = "die Vergleichszulässigkeit geprüft wird"
+                  Then = "trägt die freigegebene Vergleichsprojektion Mission, Protokoll-Digest, Minimum und beide unveränderten Aggregate deterministisch ohne abgeleitete Rangfolge" }
+                { Given = "eine anekdotische Seite unterhalb des benannten Minimums oder ein gefälschtes, inkonsistentes Aggregate"
+                  When = "der Vergleich angefragt wird"
+                  Then = "schlägt er fail-closed fehl und liefert keine vergleichbare Projektion" }
+                { Given = "zwei Baselines mit unterschiedlichen Missionen, unterschiedlichen Protokoll-Digests oder identischer Konfiguration"
+                  When = "ein Vergleich angefragt wird"
+                  Then = "wird er typisiert abgelehnt, weil Scope, Evidenzniveau oder Kontrast fehlen" }
+                { Given = "zwei ansonsten valide Baselines verschiedener Konfigurationen mit mindestens einer gemeinsamen Run-ID"
+                  When = "ein Vergleich angefragt wird"
+                  Then = "wird er abgelehnt, damit derselbe Lauf nicht auf beiden Seiten eines Kontrasts gezählt werden kann" } ] } }
 
       { Id = EntityId "spec-research-studio"; Convergence = Pending
         Payload = SpecNode
@@ -401,6 +499,25 @@ let entries =
                   When = "die Mission endet"
                   Then = "bleibt das Zielsystem unverändert und Event Ledger, Evidence und Recovery-Ergebnis sind replaybar" } ] } }
 
+      { Id = EntityId "claim-cause-bound-loop-guards-reduce-waste"; Convergence = Pending
+        Payload = ResearchClaimNode
+          { Statement = "Eine langlaufende Agentenschleife, die Recovery-Budgets an unveränderliche Candidates, Stages und maschinenlesbare Fehlerursachen bindet und Infrastrukturfehler modellfrei behandelt, reduziert verschwendete Agenten-Turns gegenüber einer statusglobalen Retry-Schleife, ohne die Promotion-Sicherheit zu schwächen."
+            Status = Proposed
+            Scope = "Langlaufende agentische Softwareentwicklung mit externen Gates und Publishern"
+            Provenance =
+              { SourceRefs =
+                  [ EntityId "kb-ralph-loop"
+                    EntityId "kb-anthropic-long-running-harness"
+                    EntityId "kb-temporal-durable-execution"
+                    EntityId "kb-swe-agent-aci"
+                    EntityId "kb-openhands-sdk" ]
+                DerivedFrom =
+                  [ EntityId "claim-harness-determines-effective-autonomy"
+                    EntityId "spec-loop-engineering-guard" ]
+                RecordedAt = "2026-08-27T00:00:00Z"
+                Method = "Design-Science-Hypothese mit deterministischer Fault-Injection-Foundation und vorregistriertem Vergleichsprotokoll" }
+            Rationale = Some "Technische Tests belegen heute nur die Zustandsmaschinen-Invarianten. Die behauptete Effizienz- und Sicherheitswirkung bleibt Proposed, bis wiederholte kontrollierte Baselines nach dem öffentlichen Loop-Engineering-Protokoll vorliegen." } }
+
       // ── Knowledge: wovon die Agents lernen sollen ─────────────────────
       { Id = EntityId "kb-fowler-blog"; Convergence = Aligned
         Payload = KnowledgeNode
@@ -485,6 +602,48 @@ let entries =
             MediaType = "longitudinal-case-study"
             Takeaways = [ "Ein dokumentiertes Performancebudget ist eine Hypothese, bis eine repräsentative Szene auf der behaupteten Zielgrenze gemessen wurde"
                           "Der Fall bindet sichtbare und simulierte Einheiten, Pfadfindung, Animation, Landschaft, Effekte, Quantile, RAM, VRAM, Draw Calls und Allokationen an denselben reproduzierbaren Frame" ] } }
+      { Id = EntityId "kb-ralph-loop"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Ralph: iterative agent loop"; Source = "https://github.com/snarktank/ralph"
+            MediaType = "reference implementation"
+            Takeaways = [ "Jede Iteration startet mit frischem Modellkontext und liest Fortschritt aus versionierten Artefakten statt aus einer unbounded Conversation"
+                          "Kleine Stories, deterministische Gates, Git-Checkpoints und ein Max-Iterations-Limit bilden den minimalen Loop" ] } }
+      { Id = EntityId "kb-anthropic-long-running-harness"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Anthropic: Effective harnesses for long-running agents"; Source = "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents"
+            MediaType = "engineering report"
+            Takeaways = [ "Initializer und inkrementelle Sessions teilen langlebige Arbeit in überprüfbare Fortschrittsstücke"
+                          "Strukturierte Fortschrittsartefakte, Git-Historie und ein sauber hinterlassener Zustand tragen den Handoff zwischen Kontextfenstern" ] } }
+      { Id = EntityId "kb-anthropic-long-running-apps"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Anthropic: Harness design for long-running apps"; Source = "https://www.anthropic.com/engineering/harness-design-long-running-apps"
+            MediaType = "engineering report"
+            Takeaways = [ "Planner, Generator und Evaluator profitieren von kleinen inkrementellen Chunks und strukturiertem Handoff"
+                          "Ablationen und vereinfachte Harness-Komponenten sind nötig, um Wirkung nicht nur der Gesamtschleife zuzuschreiben" ] } }
+      { Id = EntityId "kb-anthropic-parallel-agent-swarm"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Anthropic: Building a C compiler with parallel agents"; Source = "https://www.anthropic.com/engineering/building-c-compiler"
+            MediaType = "engineering report"
+            Takeaways = [ "Parallele Agenten arbeiteten in isolierten Containern und synchronisierten über versionierte Arbeitsstände und Tests"
+                          "Der berichtete Ressourcenverbrauch macht harte Budgets und verwertbare Zwischenstände zu einem Teil der Architektur" ] } }
+      { Id = EntityId "kb-temporal-durable-execution"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "Temporal: Durable workflow execution"; Source = "https://github.com/temporalio/documentation/blob/main/docs/encyclopedia/workflow/workflow-execution/workflow-execution.mdx"
+            MediaType = "official documentation"
+            Takeaways = [ "Deterministische Workflow-Logik wird von nichtdeterministischen Activities getrennt und aus einer Event History replayt"
+                          "Crash-Recovery und lange Wartezeiten gehören in eine durable Ausführungsschicht, nicht in Modellgedächtnis" ] } }
+      { Id = EntityId "kb-swe-agent-aci"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering"; Source = "https://arxiv.org/abs/2405.15793"
+            MediaType = "paper"
+            Takeaways = [ "Die Gestaltung der Agent-Computer-Schnittstelle beeinflusst die praktische Coding-Leistung materiell"
+                          "Harness-Vergleiche müssen Modell, Aufgaben, Budget und Interface kontrollieren" ] } }
+      { Id = EntityId "kb-openhands-sdk"; Convergence = Aligned
+        Payload = KnowledgeNode
+          { Title = "OpenHands Software Agent SDK"; Source = "https://arxiv.org/abs/2511.03690"
+            MediaType = "paper"
+            Takeaways = [ "Komponierbare Agenten benötigen explizite Lifecycle-, Sandbox-, Security- und Modell-Routing-Verträge"
+                          "CDD behandelt diese Ausführung als austauschbaren Adapter unter einem separaten semantischen Trust Core" ] } }
 
       // ── Tools: Capabilities für Agents ────────────────────────────────
       { Id = EntityId "tool-mermaid"; Convergence = Aligned

@@ -21,7 +21,9 @@ public_spot_tmp=$(mktemp -d /tmp/cdd-public-spot.XXXXXX)
 trap 'rm -rf -- "$public_spot_tmp"' EXIT
 
 cd "$public_spot_root"
-jq -s . .spot/*.json > "$public_spot_tmp/spot.json"
+# Shell glob order is locale-dependent. Canonicalize by the public node ID so
+# a fresh CI checkout and Terra produce byte-identical research projections.
+jq -s 'sort_by(.Id)' .spot/*.json > "$public_spot_tmp/spot.json"
 jq '{
   Aligned: [.[] | select(.Convergence == "Aligned")],
   Pending: [.[] | select(.Convergence == "Pending")],

@@ -1,0 +1,14 @@
+{
+  "Id": "spec-loop-engineering-guard-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-loop-engineering-guard",
+        "Name": "Kandidat- und ursachengebundene Loop Guards \u2014 when eine andere Stage wie Review erfolgreich endet then bleibt der Promotion-Counter erhalten und erzeugt ausschlie\u00DFlich modellfreies Backoff oder einen offenen Circuit",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

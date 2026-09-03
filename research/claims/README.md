@@ -28,3 +28,4 @@ Aktuelle Hypothesen:
 - `claim-essential-complexity-remains`
 - `claim-gates-bound-autonomy`
 - `claim-spot-traceability`
+- `claim-cause-bound-loop-guards-reduce-waste`

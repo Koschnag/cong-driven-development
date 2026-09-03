@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-longitudinal-baseline-test-3",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-longitudinal-baseline",
+        "Name": "Sanitisierte longitudinale Riftward-Baseline \u2014 when ihre Repetitions-Fitness bewertet wird then gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

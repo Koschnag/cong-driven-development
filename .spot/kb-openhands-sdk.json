@@ -1,0 +1,18 @@
+{
+  "Id": "kb-openhands-sdk",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "OpenHands Software Agent SDK",
+        "Source": "https://arxiv.org/abs/2511.03690",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Komponierbare Agenten ben\u00F6tigen explizite Lifecycle-, Sandbox-, Security- und Modell-Routing-Vertr\u00E4ge",
+          "CDD behandelt diese Ausf\u00FChrung als austauschbaren Adapter unter einem separaten semantischen Trust Core"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

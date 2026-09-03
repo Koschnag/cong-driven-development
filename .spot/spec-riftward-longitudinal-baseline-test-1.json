@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-longitudinal-baseline-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-longitudinal-baseline",
+        "Name": "Sanitisierte longitudinale Riftward-Baseline \u2014 when ein Forschungs-Record projiziert wird then tr\u00E4gt er nur Run- und Missions-ID, deklarierte Rollen-Konfiguration, Evaluationsprotokoll-Digest, Status und Aggregatz\u00E4hler; Session-IDs, Scope-Pfade, Prompts, Artefakt-Digests, Commit-Hashes und Freitext bleiben lokal",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

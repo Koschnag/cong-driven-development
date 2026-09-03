@@ -1,0 +1,18 @@
+{
+  "Id": "kb-anthropic-long-running-harness",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Anthropic: Effective harnesses for long-running agents",
+        "Source": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+        "MediaType": "engineering report",
+        "Takeaways": [
+          "Initializer und inkrementelle Sessions teilen langlebige Arbeit in \u00FCberpr\u00FCfbare Fortschrittsst\u00FCcke",
+          "Strukturierte Fortschrittsartefakte, Git-Historie und ein sauber hinterlassener Zustand tragen den Handoff zwischen Kontextfenstern"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

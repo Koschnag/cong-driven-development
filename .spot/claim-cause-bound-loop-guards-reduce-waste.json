@@ -1,0 +1,30 @@
+{
+  "Id": "claim-cause-bound-loop-guards-reduce-waste",
+  "Payload": {
+    "Case": "ResearchClaimNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Eine langlaufende Agentenschleife, die Recovery-Budgets an unver\u00E4nderliche Candidates, Stages und maschinenlesbare Fehlerursachen bindet und Infrastrukturfehler modellfrei behandelt, reduziert verschwendete Agenten-Turns gegen\u00FCber einer statusglobalen Retry-Schleife, ohne die Promotion-Sicherheit zu schw\u00E4chen.",
+        "Status": "Proposed",
+        "Scope": "Langlaufende agentische Softwareentwicklung mit externen Gates und Publishern",
+        "Provenance": {
+          "SourceRefs": [
+            "kb-ralph-loop",
+            "kb-anthropic-long-running-harness",
+            "kb-temporal-durable-execution",
+            "kb-swe-agent-aci",
+            "kb-openhands-sdk"
+          ],
+          "DerivedFrom": [
+            "claim-harness-determines-effective-autonomy",
+            "spec-loop-engineering-guard"
+          ],
+          "RecordedAt": "2026-08-27T00:00:00Z",
+          "Method": "Design-Science-Hypothese mit deterministischer Fault-Injection-Foundation und vorregistriertem Vergleichsprotokoll"
+        },
+        "Rationale": "Technische Tests belegen heute nur die Zustandsmaschinen-Invarianten. Die behauptete Effizienz- und Sicherheitswirkung bleibt Proposed, bis wiederholte kontrollierte Baselines nach dem \u00F6ffentlichen Loop-Engineering-Protokoll vorliegen."
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

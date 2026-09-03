@@ -1,0 +1,18 @@
+{
+  "Id": "kb-anthropic-parallel-agent-swarm",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "Anthropic: Building a C compiler with parallel agents",
+        "Source": "https://www.anthropic.com/engineering/building-c-compiler",
+        "MediaType": "engineering report",
+        "Takeaways": [
+          "Parallele Agenten arbeiteten in isolierten Containern und synchronisierten \u00FCber versionierte Arbeitsst\u00E4nde und Tests",
+          "Der berichtete Ressourcenverbrauch macht harte Budgets und verwertbare Zwischenst\u00E4nde zu einem Teil der Architektur"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

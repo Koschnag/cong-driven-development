@@ -50,5 +50,8 @@ output/playwright/
 # Local EIDOS mission ledgers and ZT2 sandboxes
 .eidos/
 
+# Local provider-neutral Autopilot run state and evidence projections
+.ai/runtime/
+
 # Homelab-Secrets
 .env

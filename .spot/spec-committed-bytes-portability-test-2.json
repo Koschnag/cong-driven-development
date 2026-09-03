@@ -1,0 +1,14 @@
+{
+  "Id": "spec-committed-bytes-portability-test-2",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-committed-bytes-portability",
+        "Name": "Typisierte Committed-Bytes-Portabilit\u00E4ts-Evidence \u2014 when CDD die typisierten Prozess- und Check-Fakten klassifiziert then f\u00FChrt ProductFailure zur Candidate-Reparatur, InfrastructureFailure dagegen ausschlie\u00DFlich zum Infrastruktur-Retry",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

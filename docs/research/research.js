@@ -246,6 +246,9 @@
       renderPremises(entries);
       renderProjects(entries);
       renderRoadmap(entries);
+      // These values describe the existing public CDD SPOT projection. They
+      // are not Riftward longitudinal metrics; those remain explicitly
+      // unknown in the Agentic-SDLC section until a reviewed export exists.
       byId("metric-nodes").textContent = entries.length;
       byId("metric-claims").textContent = claims;
       byId("metric-sources").textContent = sources;

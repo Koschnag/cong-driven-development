@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-baseline-comparison-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-baseline-comparison",
+        "Name": "Zul\u00E4ssige Vergleiche sanitierter Riftward-Baselines \u2014 when die Vergleichszul\u00E4ssigkeit gepr\u00FCft wird then tr\u00E4gt die freigegebene Vergleichsprojektion Mission, Protokoll-Digest, Minimum und beide unver\u00E4nderten Aggregate deterministisch ohne abgeleitete Rangfolge",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

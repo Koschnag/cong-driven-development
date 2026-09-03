@@ -1,0 +1,14 @@
+{
+  "Id": "spec-scientific-observatory-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-scientific-observatory",
+        "Name": "Scientific Observatory — derived same-epoch missingness, discarded work and complete-binding deduplication remain correct",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

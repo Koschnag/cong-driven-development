@@ -131,13 +131,6 @@ module Autopilot =
           HumanInterventions : int
           DurationMilliseconds : int64 }
 
-    type ControllerAction =
-        | DispatchAgent of AgentDispatch
-        | ExecuteGate of GateExecution
-        | CreateCheckpoint of CheckpointRequest
-        | MissionComplete of Evaluation
-        | Escalate of reasons: string list
-
     type AgentTerminal =
         | WorkCompleted
         | ChangesRequested
@@ -179,12 +172,6 @@ module Autopilot =
           CleanWorktree : bool
           Detail : string }
 
-    type RunObservation =
-        | AgentTurnObserved of AgentTurnObservation
-        | GateObserved of GateObservation
-        | CheckpointObserved of CheckpointObservation
-        | HumanInterventionObserved of reason: string
-
     type RecoveryState =
         { Role : AgentRole
           SessionId : string
@@ -216,6 +203,199 @@ module Autopilot =
           InputTokens : int64
           OutputTokens : int64 }
 
+    /// Stable identity of one ownership attempt for a bounded slice. Attempt
+    /// numbers are monotonic per run, mission and slice; an expired attempt is retained
+    /// as history and is never silently revived.
+    type SliceLeaseIdentity =
+        { RunId : string
+          MissionId : string
+          SliceId : string
+          Attempt : int
+          OwnerId : string
+          WorktreeId : string }
+
+    /// Request emitted by an execution adapter before it creates or assigns an
+    /// isolated worktree. Paths are repository-relative scope identifiers, not
+    /// host paths. The controller owns the semantic decision; atomic storage is
+    /// deliberately an adapter responsibility.
+    type SliceLeaseRequest =
+        { Identity : SliceLeaseIdentity
+          BaseDigest : string
+          CandidateDigest : string option
+          Scope : string list
+          ExpiresAtUtc : DateTimeOffset }
+
+    /// Persistable ownership fact. CandidateDigest advances explicitly when a
+    /// builder produces a new candidate; heartbeat alone cannot change it.
+    type SliceLease =
+        { Identity : SliceLeaseIdentity
+          BaseDigest : string
+          CandidateDigest : string option
+          Scope : string list
+          AcquiredAtUtc : DateTimeOffset
+          HeartbeatAtUtc : DateTimeOffset
+          ExpiresAtUtc : DateTimeOffset }
+
+    /// Every mutation, heartbeat or candidate binding must present the exact
+    /// lease subject it observed. A mismatch is stale evidence, not recovery.
+    type SliceLeaseSubject =
+        { Identity : SliceLeaseIdentity
+          BaseDigest : string
+          CandidateDigest : string option
+          Scope : string list }
+
+    /// Pure lease transition requested at the outer controller boundary. The
+    /// values contain no host paths or registry handles; IO adapters may carry
+    /// them, but the CDD domain remains the decision authority.
+    type SliceLeaseTransition =
+        | AcquireLease of history: SliceLease list * request: SliceLeaseRequest
+        | VerifyLease of current: SliceLease * subject: SliceLeaseSubject
+        | HeartbeatLease of current: SliceLease * subject: SliceLeaseSubject * expiresAtUtc: DateTimeOffset
+        | BindLeaseCandidate of current: SliceLease * subject: SliceLeaseSubject * candidateDigest: string
+
+    /// An adapter observation must echo the exact transition and its claimed
+    /// outcome. CDD recomputes the outcome before accepting the observation;
+    /// an adapter cannot turn rejection into ownership by assertion.
+    type SliceLeaseTransitionObservation =
+        { Transition : SliceLeaseTransition
+          Outcome : Result<SliceLease, string list> }
+
+    /// Content-addressed identity of a portability execution. All values are
+    /// opaque identifiers: host paths and adapter-local handles stay outside
+    /// the CDD domain boundary.
+    type CommittedBytesPortabilityBinding =
+        { CandidateDigest : string
+          TreeDigest : string
+          ToolDigest : string
+          LogDigest : string }
+
+    /// Exact portability obligation for the committed candidate bytes owned by
+    /// one live slice lease. Required checks are semantic ids, not commands or
+    /// host paths; an adapter remains replaceable behind this contract.
+    type CommittedBytesPortabilityRequest =
+        { Lease : SliceLease
+          Subject : SliceLeaseSubject
+          CandidateDigest : string
+          TreeDigest : string
+          ToolDigest : string
+          RequiredCheckIds : string list }
+
+    type PortabilityCheckObservation =
+        { CheckId : string
+          Passed : bool }
+
+    /// Process completion is evidence about the product candidate. Adapter
+    /// failure is evidence about the execution infrastructure and must never be
+    /// translated into a product-repair request.
+    type PortabilityExecutionState =
+        | ProcessExited of exitCode: int
+        | AdapterFailed of failureCode: string
+
+    type CommittedBytesPortabilityReport =
+        { Binding : CommittedBytesPortabilityBinding
+          Checks : PortabilityCheckObservation list
+          Execution : PortabilityExecutionState }
+
+    type CommittedBytesPortabilityOutcome =
+        | Succeeded
+        | ProductFailure
+        | Stale
+        | InfrastructureFailure
+
+    type CommittedBytesPortabilityEvidence =
+        { Binding : CommittedBytesPortabilityBinding
+          Outcome : CommittedBytesPortabilityOutcome
+          FailedCheckIds : string list
+          FailureCode : string option }
+
+    /// The adapter echoes the exact request, reports typed execution facts and
+    /// states its claimed outcome. CDD derives the outcome independently.
+    type CommittedBytesPortabilityObservation =
+        { Request : CommittedBytesPortabilityRequest
+          Report : CommittedBytesPortabilityReport
+          ClaimedOutcome : CommittedBytesPortabilityOutcome }
+
+    type PortabilityDisposition =
+        | AcceptPortabilityEvidence
+        | RepairProductCandidate
+        | RetryPortabilityInfrastructure
+
+    /// Stable stage identity for loop-engineering failure isolation. A success
+    /// in one stage cannot erase a failure budget in another stage.
+    type LoopStage =
+        | MutationStage
+        | GateStage
+        | AdvisoryStage
+        | ReviewStage
+        | PromotionStage
+        | PublicationStage
+
+    type LoopFailureClass =
+        | AgentProductFailure
+        | HarnessInfrastructureFailure
+        | AgentProtocolFailure
+
+    /// One retry budget belongs to one exact run, slice, immutable subject,
+    /// stage and machine-readable cause. Human prose is deliberately excluded.
+    type LoopFailureKey =
+        { RunId : string
+          SliceId : string
+          SubjectDigest : string
+          Stage : LoopStage
+          FailureCode : string }
+
+    type LoopGuardPolicy =
+        { MaxProductAttempts : int
+          MaxInfrastructureAttempts : int
+          MaxSameSessionResumes : int
+          InfrastructureBackoffSeconds : int }
+
+    type LoopFailureCounter =
+        { Key : LoopFailureKey
+          FailureClass : LoopFailureClass
+          Attempts : int }
+
+    /// Administrative authority is separate from a resource mutex. Holds have
+    /// no expiry field and therefore cannot silently release themselves.
+    type AdministrativeHold =
+        { HoldId : string
+          Authority : string
+          Reason : string
+          StartedAtUtc : DateTimeOffset }
+
+    type LoopGuardState =
+        { SubjectDigest : string
+          Failures : LoopFailureCounter list
+          AdministrativeHold : AdministrativeHold option }
+
+    type LoopWaitReason =
+        | AdministrativeHoldWait of holdId: string
+        | InfrastructureBackoff of key: LoopFailureKey * seconds: int
+
+    type LoopDisposition =
+        | Proceed
+        | RetryWithFreshAgent of key: LoopFailureKey * attempt: int
+        | ResumeBoundSession of key: LoopFailureKey * attempt: int
+        | WaitWithoutModel of LoopWaitReason
+        | CircuitOpen of key: LoopFailureKey * attempts: int
+
+    type ControllerAction =
+        | DispatchAgent of AgentDispatch
+        | ExecuteGate of GateExecution
+        | CreateCheckpoint of CheckpointRequest
+        | DecideSliceLease of SliceLeaseTransition
+        | EvaluateCommittedBytesPortability of CommittedBytesPortabilityRequest
+        | MissionComplete of Evaluation
+        | Escalate of reasons: string list
+
+    type RunObservation =
+        | AgentTurnObserved of AgentTurnObservation
+        | GateObserved of GateObservation
+        | CheckpointObserved of CheckpointObservation
+        | SliceLeaseTransitionObserved of SliceLeaseTransitionObservation
+        | CommittedBytesPortabilityObserved of CommittedBytesPortabilityObservation
+        | HumanInterventionObserved of reason: string
+
     type LedgerEntry =
         { Sequence : int
           At : DateTimeOffset
@@ -243,6 +423,692 @@ module Autopilot =
         values
         |> List.countBy id
         |> List.choose (fun (value, count) -> if count > 1 then Some value else None)
+
+    let private maximumLeaseDuration = TimeSpan.FromHours 24.0
+
+    let private normalizeLeaseScope (value: string) =
+        if blank value then Error "Lease scope entries cannot be blank."
+        else
+            let segments = value.Split('/', StringSplitOptions.None)
+            let windowsDrive =
+                value.Length >= 2 && Char.IsLetter value.[0] && value.[1] = ':'
+            if value <> value.Trim() || value.Contains('\\') || value.EndsWith("/", StringComparison.Ordinal)
+               || value |> Seq.exists Char.IsControl then
+                Error(sprintf "Lease scope is not canonical: %s" value)
+            elif value.StartsWith("/", StringComparison.Ordinal) || windowsDrive then
+                Error(sprintf "Lease scope must be repository-relative: %s" value)
+            elif segments |> Array.exists (fun segment -> segment = "" || segment = "." || segment = "..") then
+                Error(sprintf "Lease scope is not canonical: %s" value)
+            else Ok value
+
+    let private normalizeLeaseScopes values =
+        let normalized, errors =
+            values
+            |> List.fold (fun (accepted, rejected) value ->
+                match normalizeLeaseScope value with
+                | Ok scope -> scope :: accepted, rejected
+                | Error error -> accepted, error :: rejected) ([], [])
+        let scopes = normalized |> List.rev
+        let duplicateErrors =
+            duplicates scopes |> List.map (sprintf "Duplicate lease scope: %s")
+        if values.IsEmpty then Error [ "A slice lease requires explicit scope." ]
+        elif not errors.IsEmpty || not duplicateErrors.IsEmpty then
+            Error(List.rev errors @ duplicateErrors)
+        else Ok scopes
+
+    let private scopesOverlap (left: string) (right: string) =
+        left = right
+        || left.StartsWith(right + "/", StringComparison.Ordinal)
+        || right.StartsWith(left + "/", StringComparison.Ordinal)
+
+    let private leaseIsLive (at: DateTimeOffset) (lease: SliceLease) = at < lease.ExpiresAtUtc
+
+    let private validateLeaseIdentity (identity: SliceLeaseIdentity) =
+        [ if blank identity.RunId then yield "Lease RunId is required."
+          if blank identity.MissionId then yield "Lease MissionId is required."
+          if blank identity.SliceId then yield "Lease SliceId is required."
+          if identity.Attempt < 1 then yield "Lease attempt must be positive."
+          if blank identity.OwnerId then yield "Lease owner is required."
+          if blank identity.WorktreeId then yield "Lease worktree id is required." ]
+
+    let private validateLeaseExpiry at expiresAt =
+        [ if expiresAt <= at then yield "Lease expiry must be in the future."
+          if expiresAt - at > maximumLeaseDuration then
+              yield "Lease duration exceeds the 24-hour controller limit." ]
+
+    let private validateLeaseRecord at index (lease: SliceLease) =
+        [ for error in validateLeaseIdentity lease.Identity do
+              yield sprintf "Lease history entry %d: %s" index error
+          if blank lease.BaseDigest then
+              yield sprintf "Lease history entry %d has no base digest." index
+          match lease.CandidateDigest with
+          | Some digest when blank digest ->
+              yield sprintf "Lease history entry %d has a blank candidate digest." index
+          | _ -> ()
+          match normalizeLeaseScopes lease.Scope with
+          | Error errors ->
+              for error in errors do yield sprintf "Lease history entry %d: %s" index error
+          | Ok scope when scope <> lease.Scope ->
+              yield sprintf "Lease history entry %d has non-canonical scope." index
+          | Ok _ -> ()
+          if lease.HeartbeatAtUtc < lease.AcquiredAtUtc then
+              yield sprintf "Lease history entry %d has a heartbeat before acquisition." index
+          if lease.ExpiresAtUtc <= lease.HeartbeatAtUtc then
+              yield sprintf "Lease history entry %d is not live after its heartbeat." index
+          if lease.ExpiresAtUtc - lease.HeartbeatAtUtc > maximumLeaseDuration then
+              yield sprintf "Lease history entry %d exceeds the 24-hour controller limit." index
+          if at < lease.AcquiredAtUtc || at < lease.HeartbeatAtUtc then
+              yield sprintf "Lease history entry %d is newer than the acquisition observation." index ]
+
+    let private currentLeaseHistory at (history: SliceLease list) =
+        let entryErrors =
+            history
+            |> List.mapi (validateLeaseRecord at)
+            |> List.concat
+        let identityErrors =
+            history
+            |> List.groupBy (fun lease ->
+                lease.Identity.RunId, lease.Identity.MissionId,
+                lease.Identity.SliceId, lease.Identity.Attempt)
+            |> List.collect (fun ((runId, missionId, sliceId, attempt), entries) ->
+                let identities = entries |> List.map (fun lease -> lease.Identity) |> List.distinct
+                if identities.Length > 1 then
+                    [ sprintf "Lease history has conflicting ownership for attempt %s/%s/%s/%d."
+                        runId missionId sliceId attempt ]
+                else [])
+        let timelineErrors =
+            history
+            |> List.groupBy (fun lease -> lease.Identity)
+            |> List.collect (fun (identity, entries) ->
+                let immutableSubjects =
+                    entries
+                    |> List.map (fun lease -> lease.BaseDigest, lease.Scope, lease.AcquiredAtUtc)
+                    |> List.distinct
+                let sameHeartbeatConflicts =
+                    entries
+                    |> List.groupBy (fun lease -> lease.HeartbeatAtUtc)
+                    |> List.exists (fun (_, versions) -> versions |> List.distinct |> List.length > 1)
+                let transitionErrors =
+                    entries
+                    |> List.distinct
+                    |> List.sortBy (fun lease -> lease.HeartbeatAtUtc)
+                    |> List.pairwise
+                    |> List.collect (fun (previous, next) ->
+                        [ if next.CandidateDigest = previous.CandidateDigest then
+                              if next.ExpiresAtUtc <= previous.ExpiresAtUtc then
+                                  yield sprintf "Lease history does not monotonically extend expiry for %s/%s/%d."
+                                      identity.RunId identity.SliceId identity.Attempt
+                          else
+                              match next.CandidateDigest with
+                              | None ->
+                                  yield sprintf "Lease history rolls back the candidate for %s/%s/%d."
+                                      identity.RunId identity.SliceId identity.Attempt
+                              | Some _ when next.ExpiresAtUtc <> previous.ExpiresAtUtc ->
+                                  yield sprintf "Lease history changes candidate and expiry in one transition for %s/%s/%d."
+                                      identity.RunId identity.SliceId identity.Attempt
+                              | Some _ -> () ])
+                [ if immutableSubjects.Length > 1 then
+                      yield sprintf "Lease history drifts immutable subject for %s/%s/%d."
+                          identity.RunId identity.SliceId identity.Attempt
+                  if sameHeartbeatConflicts then
+                      yield sprintf "Lease history has conflicting versions at one heartbeat for %s/%s/%d."
+                          identity.RunId identity.SliceId identity.Attempt
+                  yield! transitionErrors ])
+        let current =
+            history
+            |> List.groupBy (fun lease -> lease.Identity)
+            |> List.map (fun (_, entries) -> entries |> List.maxBy (fun lease -> lease.HeartbeatAtUtc))
+        let attemptErrors =
+            current
+            |> List.groupBy (fun lease ->
+                lease.Identity.RunId, lease.Identity.MissionId, lease.Identity.SliceId)
+            |> List.collect (fun ((runId, missionId, sliceId), entries) ->
+                let attempts = entries |> List.map (fun lease -> lease.Identity.Attempt) |> List.distinct |> List.sort
+                let expected = if attempts.IsEmpty then [] else [ 1 .. List.last attempts ]
+                if attempts <> expected then
+                    [ sprintf "Lease history attempts are not contiguous for %s/%s/%s." runId missionId sliceId ]
+                else [])
+        let historyConflictErrors =
+            current
+            |> List.mapi (fun index left ->
+                current
+                |> List.skip (index + 1)
+                |> List.collect (fun right ->
+                    let ownershipIntervalsOverlap =
+                        left.AcquiredAtUtc < right.ExpiresAtUtc
+                        && right.AcquiredAtUtc < left.ExpiresAtUtc
+                    [ if ownershipIntervalsOverlap
+                         && left.Identity.RunId = right.Identity.RunId
+                         && left.Identity.MissionId = right.Identity.MissionId
+                         && left.Identity.SliceId = right.Identity.SliceId then
+                          yield sprintf "Lease history has overlapping ownership for slice %s/%s/%s."
+                              left.Identity.RunId left.Identity.MissionId left.Identity.SliceId
+                      if ownershipIntervalsOverlap
+                         && left.Identity.WorktreeId = right.Identity.WorktreeId then
+                          yield sprintf "Lease history has overlapping ownership for worktree %s."
+                              left.Identity.WorktreeId
+                      if ownershipIntervalsOverlap
+                         && left.Scope |> List.exists (fun a -> right.Scope |> List.exists (scopesOverlap a)) then
+                          yield sprintf "Lease history has overlapping scope ownership for %s/%s/%d and %s/%s/%d."
+                              left.Identity.RunId left.Identity.SliceId left.Identity.Attempt
+                              right.Identity.RunId right.Identity.SliceId right.Identity.Attempt ]))
+            |> List.concat
+        let errors = entryErrors @ identityErrors @ timelineErrors @ attemptErrors @ historyConflictErrors
+        if errors.IsEmpty then Ok current else Error errors
+
+    /// Acquire a lease against the complete retained lease history. Conflicting
+    /// live scope/worktree ownership and non-monotonic attempts fail closed.
+    let acquireSliceLease
+        (at: DateTimeOffset)
+        (history: SliceLease list)
+        (request: SliceLeaseRequest)
+        : Result<SliceLease, string list> =
+        let normalizedScope = normalizeLeaseScopes request.Scope
+        let currentHistory = currentLeaseHistory at history
+        let idempotentReplay =
+            match normalizedScope, currentHistory with
+            | Ok requestedScope, Ok current ->
+                current
+                |> List.tryFind (fun lease ->
+                    lease.Identity = request.Identity
+                    && lease.BaseDigest = request.BaseDigest
+                    && lease.CandidateDigest = request.CandidateDigest
+                    && lease.Scope = requestedScope
+                    && lease.ExpiresAtUtc = request.ExpiresAtUtc
+                    && leaseIsLive at lease)
+            | _ -> None
+        let priorAttempts =
+            Result.defaultValue [] currentHistory
+            |> List.filter (fun lease ->
+                lease.Identity.RunId = request.Identity.RunId
+                && lease.Identity.MissionId = request.Identity.MissionId
+                && lease.Identity.SliceId = request.Identity.SliceId)
+        let expectedAttempt =
+            priorAttempts
+            |> List.map (fun lease -> lease.Identity.Attempt)
+            |> List.sortDescending
+            |> List.tryHead
+            |> Option.map ((+) 1)
+            |> Option.defaultValue 1
+        let live = Result.defaultValue [] currentHistory |> List.filter (leaseIsLive at)
+        let conflictErrors =
+            match normalizedScope with
+            | Error _ -> []
+            | Ok requestedScope ->
+                live
+                |> List.collect (fun lease ->
+                    [ if lease.Identity.RunId = request.Identity.RunId
+                         && lease.Identity.MissionId = request.Identity.MissionId
+                         && lease.Identity.SliceId = request.Identity.SliceId then
+                          yield sprintf "Slice %s/%s/%s already has a live lease."
+                              request.Identity.RunId request.Identity.MissionId request.Identity.SliceId
+                      if lease.Identity.WorktreeId = request.Identity.WorktreeId then
+                          yield sprintf "Worktree %s already has a live lease." request.Identity.WorktreeId
+                      if requestedScope
+                         |> List.exists (fun requested -> lease.Scope |> List.exists (scopesOverlap requested)) then
+                          yield sprintf "Lease scope conflicts with live attempt %s/%s/%d."
+                              lease.Identity.RunId lease.Identity.SliceId lease.Identity.Attempt ])
+        let errors =
+            [ yield! validateLeaseIdentity request.Identity
+              if blank request.BaseDigest then yield "Lease base digest is required."
+              match request.CandidateDigest with
+              | Some digest when blank digest -> yield "Lease candidate digest cannot be blank."
+              | _ -> ()
+              yield! validateLeaseExpiry at request.ExpiresAtUtc
+              match normalizedScope with
+              | Error scopeErrors -> yield! scopeErrors
+              | Ok _ -> ()
+              match currentHistory with
+              | Error historyErrors -> yield! historyErrors
+              | Ok _ -> ()
+              if idempotentReplay.IsNone then
+                  if request.Identity.Attempt <> expectedAttempt then
+                      yield sprintf "Expected lease attempt %d, observed %d." expectedAttempt request.Identity.Attempt
+                  yield! conflictErrors ]
+        match idempotentReplay, errors with
+        | Some lease, [] -> Ok lease
+        | None, [] ->
+            Ok
+                { Identity = request.Identity
+                  BaseDigest = request.BaseDigest
+                  CandidateDigest = request.CandidateDigest
+                  Scope = Result.defaultValue [] normalizedScope
+                  AcquiredAtUtc = at
+                  HeartbeatAtUtc = at
+                  ExpiresAtUtc = request.ExpiresAtUtc }
+        | _, errors -> Error errors
+
+    let private validateLeaseSubject (subject: SliceLeaseSubject) (lease: SliceLease) =
+        let normalizedScope = normalizeLeaseScopes subject.Scope
+        [ if subject.Identity <> lease.Identity then yield "Lease identity is stale or conflicts with current ownership."
+          if subject.BaseDigest <> lease.BaseDigest then yield "Lease base digest is stale."
+          if subject.CandidateDigest <> lease.CandidateDigest then yield "Lease candidate digest is stale."
+          match normalizedScope with
+          | Error errors -> yield! errors
+          | Ok scope when scope <> lease.Scope -> yield "Lease scope is stale or has drifted."
+          | Ok _ -> () ]
+
+    /// Validate current ownership without mutation. Expired leases never regain
+    /// authority through a late observation.
+    let verifySliceLease at subject lease =
+        [ yield! validateLeaseRecord at 0 lease
+          yield! validateLeaseSubject subject lease
+          if not (leaseIsLive at lease) then yield "Slice lease is expired."
+          if at < lease.HeartbeatAtUtc then yield "Lease observation predates the current heartbeat." ]
+
+    /// Advance liveness only for the exact current subject. A heartbeat cannot
+    /// rebind base, candidate, scope, owner, worktree or attempt.
+    let heartbeatSliceLease at expiresAt subject lease =
+        let errors =
+            [ yield! verifySliceLease at subject lease
+              if at <= lease.HeartbeatAtUtc then
+                  yield "Heartbeat time must advance monotonically."
+              yield! validateLeaseExpiry at expiresAt
+              if expiresAt <= lease.ExpiresAtUtc then
+                  yield "Heartbeat must extend the existing lease expiry." ]
+        if errors.IsEmpty then
+            Ok { lease with HeartbeatAtUtc = at; ExpiresAtUtc = expiresAt }
+        else Error errors
+
+    /// Bind a newly produced candidate to the exact live attempt. Callers must
+    /// retain the previous lease as ledger evidence before persisting this one.
+    let bindSliceLeaseCandidate at subject candidateDigest lease =
+        let errors =
+            [ yield! verifySliceLease at subject lease
+              if at <= lease.HeartbeatAtUtc then
+                  yield "Candidate binding time must advance monotonically."
+              if blank candidateDigest then yield "Candidate digest is required."
+              if lease.CandidateDigest = Some candidateDigest then
+                  yield "Candidate digest must advance to a new value." ]
+        if errors.IsEmpty then
+            Ok { lease with CandidateDigest = Some candidateDigest; HeartbeatAtUtc = at }
+        else Error errors
+
+    /// Evaluate the typed outer-contract seam with the same pure lease rules
+    /// used by direct domain callers. This does not persist a registry entry or
+    /// create a worktree.
+    let decideSliceLeaseTransition at transition =
+        match transition with
+        | AcquireLease(history, request) -> acquireSliceLease at history request
+        | VerifyLease(current, subject) ->
+            match verifySliceLease at subject current with
+            | [] -> Ok current
+            | errors -> Error errors
+        | HeartbeatLease(current, subject, expiresAtUtc) ->
+            heartbeatSliceLease at expiresAtUtc subject current
+        | BindLeaseCandidate(current, subject, candidateDigest) ->
+            bindSliceLeaseCandidate at subject candidateDigest current
+
+    /// Accept an adapter claim only when it echoes the exact requested
+    /// transition and exactly matches CDD's recomputed semantic outcome.
+    let private validateSliceLeaseTransitionObservation at expectedTransition observation =
+        if observation.Transition <> expectedTransition then
+            Error [ "Slice lease observation does not match the requested transition." ]
+        else
+            let expectedOutcome = decideSliceLeaseTransition at expectedTransition
+            if observation.Outcome <> expectedOutcome then
+                Error [ "Slice lease observation outcome does not match the CDD decision." ]
+            else
+                expectedOutcome
+
+    /// Validate the complete outer controller exchange, including both DU
+    /// cases. A lease observation cannot answer another action, and another
+    /// observation cannot answer a lease action.
+    let validateSliceLeaseControllerExchange at expectedAction observation =
+        match expectedAction, observation with
+        | DecideSliceLease transition, SliceLeaseTransitionObserved leaseObservation ->
+            validateSliceLeaseTransitionObservation at transition leaseObservation
+        | DecideSliceLease _, _ ->
+            Error [ "Run observation does not answer the expected slice lease action." ]
+        | _, SliceLeaseTransitionObserved _ ->
+            Error [ "Slice lease observation was not requested by the expected controller action." ]
+        | _ ->
+            Error [ "Controller exchange does not contain a slice lease action and observation." ]
+
+    let private validateOpaqueIdentifier label (value: string) =
+        [ if blank value then
+              yield sprintf "%s is required." label
+          elif value.Length > 256
+               || value <> value.Trim()
+               || value.Contains('/')
+               || value.Contains('\\')
+               || value |> Seq.exists (fun character -> Char.IsControl character || Char.IsWhiteSpace character) then
+              yield sprintf "%s must be a bounded opaque identifier, not a path or free text." label ]
+
+    let private validateLoopGuardPolicy (policy: LoopGuardPolicy) =
+        [ if policy.MaxProductAttempts < 1 then
+              yield "Loop guard MaxProductAttempts must be at least one."
+          elif policy.MaxProductAttempts > 1000 then
+              yield "Loop guard MaxProductAttempts exceeds the hard safety bound."
+          if policy.MaxInfrastructureAttempts < 1 then
+              yield "Loop guard MaxInfrastructureAttempts must be at least one."
+          elif policy.MaxInfrastructureAttempts > 1000 then
+              yield "Loop guard MaxInfrastructureAttempts exceeds the hard safety bound."
+          if policy.MaxSameSessionResumes < 0 then
+              yield "Loop guard MaxSameSessionResumes cannot be negative."
+          elif policy.MaxSameSessionResumes > 1000 then
+              yield "Loop guard MaxSameSessionResumes exceeds the hard safety bound."
+          if policy.InfrastructureBackoffSeconds < 1 then
+              yield "Loop guard InfrastructureBackoffSeconds must be at least one."
+          elif bigint policy.MaxInfrastructureAttempts * bigint policy.InfrastructureBackoffSeconds > 86_400I then
+              yield "Loop guard infrastructure backoff exceeds the one-day hard safety bound." ]
+
+    let private validateLoopFailureKey (state: LoopGuardState) (key: LoopFailureKey) =
+        [ yield! validateOpaqueIdentifier "Loop run id" key.RunId
+          yield! validateOpaqueIdentifier "Loop slice id" key.SliceId
+          yield! validateOpaqueIdentifier "Loop subject digest" key.SubjectDigest
+          yield! validateOpaqueIdentifier "Loop failure code" key.FailureCode
+          if key.SubjectDigest <> state.SubjectDigest then
+              yield "Loop failure targets a stale subject digest." ]
+
+    let private validateAdministrativeHold (hold: AdministrativeHold) =
+        [ yield! validateOpaqueIdentifier "Administrative hold id" hold.HoldId
+          yield! validateOpaqueIdentifier "Administrative hold authority" hold.Authority
+          if blank hold.Reason then
+              yield "Administrative hold reason is required."
+          elif hold.Reason.Length > 500 || hold.Reason |> Seq.exists Char.IsControl then
+              yield "Administrative hold reason must be bounded text without control characters." ]
+
+    let private canonicalLoopFailures failures =
+        failures
+        |> List.sortBy (fun (item: LoopFailureCounter) ->
+            item.Key.RunId,
+            item.Key.SliceId,
+            item.Key.SubjectDigest,
+            item.Key.Stage,
+            item.Key.FailureCode)
+
+    /// Validate deserialized loop state before the scheduler derives any next
+    /// action. Duplicate, stale, zero or unbounded counters fail closed.
+    let validateLoopGuardState (state: LoopGuardState) =
+        let duplicateKeys =
+            state.Failures
+            |> List.map (fun counter -> counter.Key)
+            |> duplicates
+        [ yield! validateOpaqueIdentifier "Loop subject digest" state.SubjectDigest
+          match state.AdministrativeHold with
+          | Some hold -> yield! validateAdministrativeHold hold
+          | None -> ()
+          for counter in state.Failures do
+              yield! validateLoopFailureKey state counter.Key
+              if counter.Attempts < 1 then
+                  yield "Loop failure counters must contain at least one attempt."
+              elif counter.Attempts > 1001 then
+                  yield "Loop failure counter exceeds the hard persisted-state bound."
+          if state.Failures <> canonicalLoopFailures state.Failures then
+              yield "Loop failure counters must be in canonical order."
+          for key in duplicateKeys do
+              yield sprintf "Loop guard contains duplicate failure key %s/%A/%s." key.SubjectDigest key.Stage key.FailureCode ]
+
+    let private counterPolicyLimit policy failureClass =
+        match failureClass with
+        | AgentProductFailure -> policy.MaxProductAttempts
+        | HarnessInfrastructureFailure -> policy.MaxInfrastructureAttempts
+        | AgentProtocolFailure -> policy.MaxSameSessionResumes
+
+    let private validateLoopCountersAgainstPolicy policy state =
+        [ for counter in state.Failures do
+              let maximumPersisted = counterPolicyLimit policy counter.FailureClass + 1
+              if counter.Attempts > maximumPersisted then
+                  yield sprintf "Loop failure counter exceeds its policy bound for %s." counter.Key.FailureCode ]
+
+    let createLoopGuardState subjectDigest =
+        let errors = validateOpaqueIdentifier "Loop subject digest" subjectDigest
+        if errors.IsEmpty then
+            Ok
+                { SubjectDigest = subjectDigest
+                  Failures = []
+                  AdministrativeHold = None }
+        else Error errors
+
+    /// The scheduler asks this before every agent dispatch. Repeated ticks
+    /// under an administrative hold remain model-free and do not consume a
+    /// retry budget.
+    let nextLoopDisposition (policy: LoopGuardPolicy) (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardPolicy policy
+            @ validateLoopGuardState state
+            @ validateLoopCountersAgainstPolicy policy state
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | Some hold -> Ok(WaitWithoutModel(AdministrativeHoldWait hold.HoldId))
+            | None -> Ok Proceed
+
+    /// Recompute the exact next disposition for one persisted failure key.
+    /// This is the crash/replay seam; no model output participates.
+    let replayLoopDisposition (policy: LoopGuardPolicy) (key: LoopFailureKey) (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardPolicy policy
+            @ validateLoopGuardState state
+            @ validateLoopCountersAgainstPolicy policy state
+            @ validateLoopFailureKey state key
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | Some hold -> Ok(WaitWithoutModel(AdministrativeHoldWait hold.HoldId))
+            | None ->
+                match state.Failures |> List.tryFind (fun counter -> counter.Key = key) with
+                | None -> Ok Proceed
+                | Some counter ->
+                    let limit = counterPolicyLimit policy counter.FailureClass
+                    if counter.Attempts >= limit + 1 then
+                        Ok(CircuitOpen(key, counter.Attempts))
+                    else
+                        match counter.FailureClass with
+                        | AgentProductFailure -> Ok(RetryWithFreshAgent(key, counter.Attempts))
+                        | HarnessInfrastructureFailure ->
+                            Ok(
+                                WaitWithoutModel(
+                                    InfrastructureBackoff(
+                                        key,
+                                        policy.InfrastructureBackoffSeconds * counter.Attempts)))
+                        | AgentProtocolFailure -> Ok(ResumeBoundSession(key, counter.Attempts))
+
+    let placeAdministrativeHold (hold: AdministrativeHold) (state: LoopGuardState) =
+        let errors = validateLoopGuardState state @ validateAdministrativeHold hold
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | None -> Ok { state with AdministrativeHold = Some hold }
+            | Some current when current = hold -> Ok state
+            | Some _ -> Error [ "A different administrative hold is already active." ]
+
+    /// Release requires the exact typed authority. Time and resource-lock
+    /// state are intentionally irrelevant, so no timeout can auto-release it.
+    let releaseAdministrativeHold holdId authority (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardState state
+            @ validateOpaqueIdentifier "Administrative hold id" holdId
+            @ validateOpaqueIdentifier "Administrative hold authority" authority
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | None -> Error [ "No administrative hold is active." ]
+            | Some hold when hold.HoldId <> holdId ->
+                Error [ "Administrative hold id does not match the active hold." ]
+            | Some hold when hold.Authority <> authority ->
+                Error [ "Administrative hold authority does not match the active hold." ]
+            | Some _ -> Ok { state with AdministrativeHold = None }
+
+    /// New candidate bytes invalidate failure counters, while an explicit
+    /// administrative hold survives the subject change.
+    let advanceLoopSubject subjectDigest (state: LoopGuardState) =
+        let errors = validateLoopGuardState state @ validateOpaqueIdentifier "Loop subject digest" subjectDigest
+        if not errors.IsEmpty then Error errors
+        elif subjectDigest = state.SubjectDigest then Ok state
+        else
+            Ok
+                { state with
+                    SubjectDigest = subjectDigest
+                    Failures = [] }
+
+    /// Clear only the successful stage for the exact subject. This prevents a
+    /// reviewer success from hiding a persistent promotion failure.
+    let observeLoopStageSucceeded subjectDigest stage (state: LoopGuardState) =
+        let errors = validateLoopGuardState state @ validateOpaqueIdentifier "Loop subject digest" subjectDigest
+        if not errors.IsEmpty then Error errors
+        elif subjectDigest <> state.SubjectDigest then
+            Error [ "Loop stage success targets a stale subject digest." ]
+        else
+            Ok
+                { state with
+                    Failures =
+                        state.Failures
+                        |> List.filter (fun counter ->
+                            counter.Key.SubjectDigest <> subjectDigest || counter.Key.Stage <> stage) }
+
+    /// Record one cause-bound failure and derive the only permitted next
+    /// action. Product work may get a fresh attempt, protocol loss may resume
+    /// the bound session, and infrastructure always waits without a model.
+    let observeLoopFailure
+        (policy: LoopGuardPolicy)
+        (key: LoopFailureKey)
+        (failureClass: LoopFailureClass)
+        (state: LoopGuardState) =
+        let errors =
+            validateLoopGuardPolicy policy
+            @ validateLoopGuardState state
+            @ validateLoopCountersAgainstPolicy policy state
+            @ validateLoopFailureKey state key
+        if not errors.IsEmpty then Error errors
+        else
+            match state.AdministrativeHold with
+            | Some hold -> Ok(state, WaitWithoutModel(AdministrativeHoldWait hold.HoldId))
+            | None ->
+                let previous = state.Failures |> List.tryFind (fun counter -> counter.Key = key)
+                match previous with
+                | Some counter when counter.FailureClass <> failureClass ->
+                    Error [ "One loop failure key cannot change failure class." ]
+                | Some counter when counter.Attempts >= counterPolicyLimit policy failureClass + 1 ->
+                    Ok(state, CircuitOpen(key, counter.Attempts))
+                | _ ->
+                    let attempts = previous |> Option.map (fun counter -> counter.Attempts + 1) |> Option.defaultValue 1
+                    let counter =
+                        { Key = key
+                          FailureClass = failureClass
+                          Attempts = attempts }
+                    let failures =
+                        counter
+                        :: (state.Failures |> List.filter (fun item -> item.Key <> key))
+                        |> canonicalLoopFailures
+                    let next = { state with Failures = failures }
+                    replayLoopDisposition policy key next
+                    |> Result.map (fun disposition -> next, disposition)
+
+    let private validateCommittedBytesPortabilityRequest at request =
+        let candidateBindingErrors =
+            match request.Lease.CandidateDigest with
+            | None -> [ "Portability evidence requires a candidate-bound lease." ]
+            | Some digest when digest <> request.CandidateDigest ->
+                [ "Portability request targets a stale candidate digest." ]
+            | Some _ -> []
+        let checkIds = request.RequiredCheckIds
+        [ yield! verifySliceLease at request.Subject request.Lease
+          yield! candidateBindingErrors
+          yield! validateOpaqueIdentifier "Portability candidate digest" request.CandidateDigest
+          yield! validateOpaqueIdentifier "Portability tree digest" request.TreeDigest
+          yield! validateOpaqueIdentifier "Portability tool digest" request.ToolDigest
+          if checkIds.IsEmpty then
+              yield "Portability evidence requires at least one check id."
+          for checkId in checkIds do
+              yield! validateOpaqueIdentifier "Portability check id" checkId
+          for duplicate in duplicates checkIds do
+              yield sprintf "Duplicate portability check id: %s" duplicate ]
+
+    let private validateCommittedBytesPortabilityReport request report =
+        let reportedCheckIds = report.Checks |> List.map (fun check -> check.CheckId)
+        [ yield! validateOpaqueIdentifier "Observed portability candidate digest" report.Binding.CandidateDigest
+          yield! validateOpaqueIdentifier "Observed portability tree digest" report.Binding.TreeDigest
+          yield! validateOpaqueIdentifier "Observed portability tool digest" report.Binding.ToolDigest
+          yield! validateOpaqueIdentifier "Portability log digest" report.Binding.LogDigest
+          for checkId in reportedCheckIds do
+              yield! validateOpaqueIdentifier "Observed portability check id" checkId
+          for duplicate in duplicates reportedCheckIds do
+              yield sprintf "Duplicate observed portability check id: %s" duplicate
+          for unknown in reportedCheckIds |> List.filter (fun id -> not (List.contains id request.RequiredCheckIds)) do
+              yield sprintf "Observed unknown portability check id: %s" unknown
+          match report.Execution with
+          | ProcessExited _ -> ()
+          | AdapterFailed failureCode ->
+              yield! validateOpaqueIdentifier "Portability infrastructure failure code" failureCode ]
+
+    /// Classify a typed adapter report against the exact live lease, candidate,
+    /// tree and tool obligation. A report for other committed bytes is marked
+    /// stale so the outer exchange can reject it without confusing that race
+    /// with either a product defect or an infrastructure outage.
+    let decideCommittedBytesPortability at request report =
+        let errors =
+            validateCommittedBytesPortabilityRequest at request
+            @ validateCommittedBytesPortabilityReport request report
+        if not errors.IsEmpty then Error errors
+        else
+            let exactSubject =
+                report.Binding.CandidateDigest = request.CandidateDigest
+                && report.Binding.TreeDigest = request.TreeDigest
+                && report.Binding.ToolDigest = request.ToolDigest
+            let evidence outcome failedCheckIds failureCode =
+                { Binding = report.Binding
+                  Outcome = outcome
+                  FailedCheckIds = failedCheckIds
+                  FailureCode = failureCode }
+            if not exactSubject then
+                Ok(evidence Stale [] None)
+            else
+                match report.Execution with
+                | AdapterFailed failureCode ->
+                    Ok(evidence InfrastructureFailure [] (Some failureCode))
+                | ProcessExited exitCode ->
+                    let reportedCheckIds = report.Checks |> List.map (fun check -> check.CheckId) |> List.sort
+                    let requiredCheckIds = request.RequiredCheckIds |> List.sort
+                    let failedCheckIds =
+                        report.Checks
+                        |> List.filter (fun check -> not check.Passed)
+                        |> List.map (fun check -> check.CheckId)
+                        |> List.sort
+                    let completionErrors =
+                        [ if reportedCheckIds <> requiredCheckIds then
+                              yield "A completed portability process must report every required check exactly once."
+                          if exitCode = 0 && not failedCheckIds.IsEmpty then
+                              yield "A zero portability exit code conflicts with failed checks."
+                          if exitCode <> 0 && failedCheckIds.IsEmpty then
+                              yield "A non-zero portability exit code requires a failed product check." ]
+                    if not completionErrors.IsEmpty then Error completionErrors
+                    elif exitCode = 0 then Ok(evidence Succeeded [] None)
+                    else Ok(evidence ProductFailure failedCheckIds None)
+
+    /// Map accepted evidence to controller intent. Infrastructure failure is a
+    /// retry of the adapter lane, never a repair instruction for product bytes.
+    let portabilityDisposition evidence =
+        match evidence.Outcome with
+        | Succeeded -> Ok AcceptPortabilityEvidence
+        | ProductFailure -> Ok RepairProductCandidate
+        | InfrastructureFailure -> Ok RetryPortabilityInfrastructure
+        | Stale -> Error [ "Stale portability evidence has no executable disposition." ]
+
+    /// Validate the complete Action/Observation exchange. The adapter cannot
+    /// forge success, answer another request or submit evidence for superseded
+    /// committed bytes; only CDD's recomputed non-stale evidence is accepted.
+    let validateCommittedBytesPortabilityControllerExchange at expectedAction observation =
+        match expectedAction, observation with
+        | EvaluateCommittedBytesPortability request,
+          CommittedBytesPortabilityObserved portabilityObservation ->
+            if portabilityObservation.Request <> request then
+                Error [ "Committed-bytes portability observation does not match the requested obligation." ]
+            else
+                match decideCommittedBytesPortability at request portabilityObservation.Report with
+                | Error errors -> Error errors
+                | Ok evidence when evidence.Outcome <> portabilityObservation.ClaimedOutcome ->
+                    Error [ "Committed-bytes portability outcome does not match the CDD decision." ]
+                | Ok evidence when evidence.Outcome = Stale ->
+                    Error [ "Committed-bytes portability observation targets stale candidate, tree or tool identity." ]
+                | Ok evidence -> Ok evidence
+        | EvaluateCommittedBytesPortability _, _ ->
+            Error [ "Run observation does not answer the expected committed-bytes portability action." ]
+        | _, CommittedBytesPortabilityObserved _ ->
+            Error [ "Committed-bytes portability observation was not requested by the expected controller action." ]
+        | _ ->
+            Error [ "Controller exchange does not contain a committed-bytes portability action and observation." ]
 
     /// Validate the whole execution contract before any worker receives work.
     let validatePlan (plan: RunPlan) : string list =
@@ -279,6 +1145,8 @@ module Autopilot =
                   yield sprintf "Gate '%s' is incomplete." gate.Id
               if gate.TimeoutSeconds <= 0 then
                   yield sprintf "Gate %s must have a positive timeout." gate.Id
+              if gate.TimeoutSeconds > 86_400 then
+                  yield sprintf "Gate %s timeout exceeds the 24-hour controller limit." gate.Id
               if Set.contains gate.ValidatorId builders then
                   yield sprintf "Gate %s validator must be independent from the builder." gate.Id
           for slice in plan.Slices do
@@ -685,6 +1553,10 @@ module Autopilot =
                 | AgentTurnObserved turn -> applyAgent at turn run
                 | GateObserved gate -> applyGate at gate run
                 | CheckpointObserved checkpoint -> applyCheckpoint at checkpoint run
+                | SliceLeaseTransitionObserved _ ->
+                    Error [ "Slice lease transitions are not scheduled by the current serial controller." ]
+                | CommittedBytesPortabilityObserved _ ->
+                    Error [ "Committed-bytes portability is not scheduled by the current serial controller." ]
                 | HumanInterventionObserved reason ->
                     if blank reason then Error [ "Human intervention requires a reason." ]
                     else

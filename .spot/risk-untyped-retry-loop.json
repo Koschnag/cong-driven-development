@@ -1,0 +1,15 @@
+{
+  "Id": "risk-untyped-retry-loop",
+  "Payload": {
+    "Case": "RiskNode",
+    "Fields": {
+      "Item": {
+        "Statement": "Ein langlaufender Agenten-Loop deutet Infrastruktur- oder Protokollfehler als neue Produktarbeit und verbraucht Budget ohne neue Evidenz",
+        "Likelihood": "High",
+        "Impact": "High",
+        "Mitigation": "Fehler nach Candidate, Stage und Cause isolieren; Infrastruktur modellfrei warten lassen, Protokoll-Recovery begrenzen und circuits unabh\u00E4ngig von Erfolgen anderer Stages erhalten"
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

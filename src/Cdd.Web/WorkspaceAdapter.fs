@@ -164,6 +164,20 @@ module WorkspaceAdapter =
                               HasSummary = File.Exists(Path.Combine(directory, "summary.json")) })) None)
             |> Array.toList
 
+    let private readAgenticRuns (root: string) =
+        let runs = Path.Combine(root, ".ai", "runtime", "runs")
+        if not (Directory.Exists runs) then []
+        else
+            Directory.GetDirectories runs
+            |> Array.sort
+            |> Array.choose (fun directory ->
+                if not (File.Exists(Path.Combine(directory, "state.json"))) then None
+                else
+                    match Cdd.Core.Autopilot.load directory with
+                    | Ok run -> Some(Cdd.Core.Studio.projectAgenticRun run)
+                    | Error _ -> None)
+            |> Array.toList
+
     let private countSpot (root: string) =
         let directory = Path.Combine(root, ".spot")
         if Directory.Exists directory then Directory.GetFiles(directory, "*.json").Length else 0
@@ -177,12 +191,14 @@ module WorkspaceAdapter =
               if File.Exists(Path.Combine(safeRoot, ".ai", "config.json")) then ".ai/config.json"
               if Directory.Exists(Path.Combine(safeRoot, ".ai", "tasks")) then ".ai/tasks/*.json"
               if Directory.Exists(Path.Combine(safeRoot, ".ai", "runtime", "runs")) then ".ai/runtime/runs/*/run.json"
+              if Directory.Exists(Path.Combine(safeRoot, ".ai", "runtime", "runs")) then ".ai/runtime/runs/*/state.json"
               if Directory.Exists(Path.Combine(safeRoot, ".spot")) then ".spot/*.json" ]
         { Id = textOr (Path.GetFileName safeRoot) projectId
           Name = readName safeRoot projectId
           Git = observeGit safeRoot
           WorkItems = readWorkItems safeRoot
           Runs = readRuns safeRoot
+          AgenticRuns = readAgenticRuns safeRoot
           SpotNodes = countSpot safeRoot
           Sources = sources
           ObservedAt = observedAt }

@@ -24,9 +24,29 @@ await writeFile(join(dataRoot, ".ai", "tasks", "T-900.json"), JSON.stringify({
   objective: "Project a real mission without leaking its host path.", requiredGates: ["G-TEST", "G-EVIDENCE"],
 }));
 await writeFile(join(dataRoot, ".ai", "runtime", "runs", "run-e2e", "run.json"), JSON.stringify({
-  runId: "run-e2e", status: "succeeded", startedAtUtc: "2026-08-23T12:00:00Z", finishedAtUtc: "2026-08-23T12:01:00Z",
+  runId: "run-e2e", status: "running", startedAtUtc: "2026-08-23T12:00:00Z",
 }));
 await writeFile(join(dataRoot, ".ai", "runtime", "runs", "run-e2e", "summary.json"), "{}");
+await writeFile(join(dataRoot, ".ai", "runtime", "runs", "run-e2e", "state.json"), JSON.stringify({
+  SchemaVersion: "cdd.autopilot/v1", RunId: "run-e2e",
+  Plan: {
+    MissionId: "mission-e2e", Objective: "Project a durable full-agentic run.",
+    Slices: [{ Id: "slice-e2e", Stage: "Implement", Title: "Studio projection", Objective: "Expose only sanitized control state.", Scope: ["secret/local/path"], AcceptanceCriteria: ["The next action is visible."], RequiredGateIds: ["gate-e2e"] }],
+    Workers: [
+      { Id: "scout", Role: "Scout", Provider: "provider-a", Model: "scout-model", Harness: "harness/v1", ReadOnly: true, Capabilities: ["repo.read"] },
+      { Id: "builder", Role: "Builder", Provider: "provider-a", Model: "builder-model", Harness: "harness/v1", ReadOnly: false, Capabilities: ["artifact.write"] },
+      { Id: "critic", Role: "Critic", Provider: "provider-b", Model: "critic-model", Harness: "harness/v1", ReadOnly: true, Capabilities: ["repo.read"] },
+      { Id: "reviewer", Role: "Reviewer", Provider: "provider-c", Model: "review-model", Harness: "harness/v1", ReadOnly: true, Capabilities: ["repo.read"] },
+    ],
+    Gates: [{ Id: "gate-e2e", Name: "Browser fixture gate", Program: "dotnet", Arguments: ["test"], ValidatorId: "test-oracle", TimeoutSeconds: 60 }],
+    Recovery: { MaxSameSessionResumes: 1, MaxFreshStarts: 2, MaxRepairCycles: 2 },
+  },
+  Status: "Running", ActiveSliceIndex: 0,
+  SliceExecutions: [{ SliceId: "slice-e2e", Phase: "Gating", ContextDigest: "context-e2e", CandidateDigest: "candidate-e2e", PassedGateIds: [], OpenFindings: [], RepairCycles: 0, Recovery: null, CheckpointCommit: null }],
+  BlockReasons: [],
+  Metrics: { AgentTurns: 2, ToolCalls: 11, PrematureStops: 1, SameSessionResumes: 1, FreshStarts: 2, RepairCycles: 0, GateRuns: 0, GateFailures: 0, HumanInterventions: 0, DurationMilliseconds: 1200, InputTokens: 1000, OutputTokens: 200 },
+  Ledger: [], StartedAtUtc: "2026-08-23T12:00:00Z", UpdatedAtUtc: "2026-08-23T12:01:00Z", FinishedAtUtc: null,
+}));
 const server = spawn("dotnet", ["run", "-c", "Release", "--no-build", "--project", "src/Cdd.Web", "--", "--root", dataRoot, "--urls", `http://127.0.0.1:${PORT}`], {
   cwd: repo,
   stdio: "ignore",
@@ -143,10 +163,13 @@ try {
   await page.goto(`http://127.0.0.1:${PORT}/workspace.html`, { waitUntil: "networkidle2", timeout: 60000 });
   await page.waitForFunction(() => document.querySelector("#metric-workspaces")?.textContent === "1");
   ok(await page.evaluate(() => /T-900/.test(document.querySelector(".mission-id")?.textContent || "")), "Control Plane zeigt aktive Mission");
+  ok(await page.evaluate(() => /ExecuteGate/.test(document.querySelector(".agentic-now")?.textContent || "")), "Control Plane zeigt die nächste deterministische Autopilot-Aktion");
+  ok(await page.evaluate(() => /Gating/.test(document.querySelector(".phase.active")?.textContent || "")), "Control Plane markiert die aktive SDLC-Phase");
   ok(await page.evaluate(() => document.querySelectorAll("#assurance-list .assurance-item").length >= 10), "Assurance-Portfolio wird aus dem Kernel projiziert");
   ok(await page.evaluate(() => document.querySelectorAll("#contract-list .contract-item").length >= 6), "offene Adapterverträge werden projiziert");
   const workspacePayload = await (await fetch(`http://127.0.0.1:${PORT}/api/studio/workspaces`)).text();
   ok(!workspacePayload.includes(dataRoot), "Workspace-API legt keinen Hostpfad offen");
+  ok(!workspacePayload.includes("secret/local/path"), "Workspace-API legt keinen Slice-Scope offen");
   await page.setViewport({ width: 390, height: 844, isMobile: true });
   await page.reload({ waitUntil: "networkidle2" });
   ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "Control Plane mobil ohne horizontales Überlaufen");

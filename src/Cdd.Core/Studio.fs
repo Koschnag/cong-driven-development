@@ -257,12 +257,33 @@ module Studio =
           FinishedAt : string option
           HasSummary : bool }
 
+    /// Sanitized Studio projection of a durable Autopilot run. Scope paths,
+    /// prompts and raw agent output deliberately remain in the local run state.
+    type AgenticRunObservation =
+        { Id : string
+          MissionId : string
+          Objective : string
+          Status : string
+          ActiveSliceId : string
+          ActiveSliceTitle : string
+          LifecycleStage : string
+          Phase : string
+          NextAction : string
+          CurrentRole : string option
+          Provider : string option
+          Model : string option
+          Harness : string option
+          Evaluation : Autopilot.Evaluation
+          BlockReasons : string list
+          UpdatedAt : DateTimeOffset }
+
     type WorkspaceObservation =
         { Id : string
           Name : string
           Git : GitObservation
           WorkItems : WorkItemObservation list
           Runs : RunObservation list
+          AgenticRuns : AgenticRunObservation list
           SpotNodes : int
           Sources : string list
           ObservedAt : DateTimeOffset }
@@ -289,6 +310,15 @@ module Studio =
           Failed : int
           WithSummary : int }
 
+    type AgenticRunCounts =
+        { Total : int
+          Running : int
+          Completed : int
+          Blocked : int
+          FullSolves : int
+          PrematureStops : int
+          HumanInterventions : int }
+
     type WorkspaceSnapshot =
         { Id : string
           Name : string
@@ -299,6 +329,8 @@ module Studio =
           ActiveMission : WorkItemObservation option
           LatestRun : RunObservation option
           Runs : RunCounts
+          ActiveAgenticRun : AgenticRunObservation option
+          AgenticRuns : AgenticRunCounts
           SpotNodes : int
           Sources : string list
           ObservedAt : DateTimeOffset }
@@ -327,6 +359,46 @@ module Studio =
           Failed = count [ "failed"; "rejected"; "cancelled"; "aborted" ]
           WithSummary = runs |> List.filter (fun run -> run.HasSummary) |> List.length }
 
+    let private countAgenticRuns (runs: AgenticRunObservation list) =
+        let count expected = runs |> List.filter (fun run -> status run.Status = expected) |> List.length
+        { Total = runs.Length
+          Running = count "running"
+          Completed = count "completed"
+          Blocked = count "blocked"
+          FullSolves = runs |> List.filter (fun run -> run.Evaluation.FullSolve) |> List.length
+          PrematureStops = runs |> List.sumBy (fun run -> run.Evaluation.PrematureStops)
+          HumanInterventions = runs |> List.sumBy (fun run -> run.Evaluation.HumanInterventions) }
+
+    let projectAgenticRun (run: Autopilot.RunState) : AgenticRunObservation =
+        let slice = run.Plan.Slices.[run.ActiveSliceIndex]
+        let execution = run.SliceExecutions.[run.ActiveSliceIndex]
+        let action = Autopilot.nextAction run
+        let nextAction, worker =
+            match action with
+            | Autopilot.DispatchAgent dispatch -> "DispatchAgent", Some dispatch.Worker
+            | Autopilot.ExecuteGate _ -> "ExecuteGate", None
+            | Autopilot.CreateCheckpoint _ -> "CreateCheckpoint", None
+            | Autopilot.DecideSliceLease _ -> "DecideSliceLease", None
+            | Autopilot.EvaluateCommittedBytesPortability _ -> "EvaluateCommittedBytesPortability", None
+            | Autopilot.MissionComplete _ -> "MissionComplete", None
+            | Autopilot.Escalate _ -> "Escalate", None
+        { Id = run.RunId
+          MissionId = run.Plan.MissionId
+          Objective = run.Plan.Objective
+          Status = sprintf "%A" run.Status
+          ActiveSliceId = slice.Id
+          ActiveSliceTitle = slice.Title
+          LifecycleStage = sprintf "%A" slice.Stage
+          Phase = sprintf "%A" execution.Phase
+          NextAction = nextAction
+          CurrentRole = worker |> Option.map (fun item -> sprintf "%A" item.Role)
+          Provider = worker |> Option.map (fun item -> item.Provider)
+          Model = worker |> Option.map (fun item -> item.Model)
+          Harness = worker |> Option.map (fun item -> item.Harness)
+          Evaluation = Autopilot.evaluate run
+          BlockReasons = run.BlockReasons
+          UpdatedAt = run.UpdatedAtUtc }
+
     let private activeMission (items: WorkItemObservation list) =
         let rank (item: WorkItemObservation) =
             match status item.Status with
@@ -341,6 +413,7 @@ module Studio =
     let projectWorkspace (observation: WorkspaceObservation) : WorkspaceSnapshot =
         let workItems = countWorkItems observation.WorkItems
         let runs = countRuns observation.Runs
+        let agenticRuns = countAgenticRuns observation.AgenticRuns
         let mission = activeMission observation.WorkItems
         let reasons =
             [ if not observation.Git.Available then "Git state is unavailable."
@@ -351,9 +424,11 @@ module Studio =
               if workItems.Blocked > 0 then
                   sprintf "%d work item(s) are blocked." workItems.Blocked
               if runs.Failed > 0 && runs.Succeeded = 0 then
-                  "No successful evidence run is available." ]
+                  "No successful evidence run is available."
+              if agenticRuns.Blocked > 0 then
+                  sprintf "%d agentic run(s) are blocked." agenticRuns.Blocked ]
         let state =
-            if workItems.Blocked > 0 then Blocked
+            if workItems.Blocked > 0 || agenticRuns.Blocked > 0 then Blocked
             elif not observation.Git.Available then Unknown
             elif not reasons.IsEmpty then Attention
             else Ready
@@ -366,6 +441,11 @@ module Studio =
           ActiveMission = mission
           LatestRun = observation.Runs |> List.sortByDescending (fun run -> run.StartedAt, run.Id) |> List.tryHead
           Runs = runs
+          ActiveAgenticRun =
+            observation.AgenticRuns
+            |> List.sortBy (fun run -> (if status run.Status = "running" then 0 else 1), -run.UpdatedAt.UtcTicks)
+            |> List.tryHead
+          AgenticRuns = agenticRuns
           SpotNodes = observation.SpotNodes
           Sources = observation.Sources |> List.distinct |> List.sort
           ObservedAt = observation.ObservedAt }
