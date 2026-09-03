@@ -1,0 +1,25 @@
+{
+  "Id": "spec-riftward-t053-public-registry",
+  "Payload": {
+    "Case": "SpecNode",
+    "Fields": {
+      "Item": {
+        "Title": "Riftward T-053: öffentliche Quellenregistry und geschlossenes Export-Gate",
+        "Intent": "CDD bindet ausschließlich den unveränderlichen öffentlichen Riftward-Protokollquellstand; es behauptet weder einen beobachteten Lauf noch Runtime-Commit-/Tree-Daten oder Laufmetriken und hält Raw-Export bis zu einem extern gelieferten, sanitisierten Exact-Roundtrip-Fixture gesperrt",
+        "Criteria": [
+          {
+            "Given": "den verifizierten öffentlichen Riftward-Commit, Quellbaum, Protokoll und Bundle-Digest",
+            "When": "Registry und Protokolldokumentation geprüft werden",
+            "Then": "sind exakt diese Quellenwerte sichtbar, ausschließlich als Quellenbindung eingeordnet und ohne prospektiven Ergebnisclaim dargestellt"
+          },
+          {
+            "Given": "eine öffentliche Research-Studio-Projektion ohne externes sanitisiertes Producer-Fixture",
+            "When": "der nächste Veröffentlichungsschritt angezeigt wird",
+            "Then": "bleiben Raw-Export publikationsgesperrt und alle Laufmetriken unknown, bis ein extern geliefertes Fixture exakt validiert und roundtrippt"
+          }
+        ]
+      }
+    }
+  },
+  "Convergence": "Pending"
+}

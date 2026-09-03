@@ -1,0 +1,14 @@
+{
+  "Id": "spec-riftward-t053-public-registry-test-1",
+  "Payload": {
+    "Case": "TestNode",
+    "Fields": {
+      "Item": {
+        "SpecRef": "spec-riftward-t053-public-registry",
+        "Name": "Riftward T-053 Registry \u2014 when die Quellenbindung gelesen wird then sind nur der exakte \u00F6ffentliche Quellstand und das fail-closed Export-Gate dokumentiert",
+        "Derived": true
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

@@ -2547,6 +2547,22 @@ let ``draft public observation snapshot golden fixture round-trips without fabri
         | Ok _ -> failwith "legacy task attribution must remain an explicit non-episode projection"
         | Error errors -> failwith (String.concat " | " errors)
 
+[<Fact; Trait("spot", "spec-riftward-t053-public-registry-test-1")>]
+let ``Riftward T-053 registry fails closed to an immutable public source binding`` () =
+    let protocol =
+        Path.Combine(findRepoRoot (), "docs", "research", "PROTOCOL.md")
+        |> File.ReadAllText
+    [ "d7d5f949758a3a38ca4238ceadfbbd83965eb71d"
+      "3ce6338f6524b9349af716755c91d01d77cd3b93"
+      "riftward-research-observability` / `2.0.1"
+      "58b93d5a7ce8b0c1b182030d36eab9f156ff1aa8f2c2d246be54bcd53f3bf1de"
+      "Raw-Export"
+      "publikationsgesperrt"
+      "keine öffentliche `prospective-observed` Messung" ]
+    |> List.iter (fun required -> Assert.Contains(required, protocol))
+    Assert.DoesNotContain("a8da858d9a25892a4671104c57f5edfe3c789a39", protocol)
+    Assert.DoesNotContain("a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65", protocol)
+
 [<Fact; Trait("spot", "spec-scientific-observatory-test-3")>]
 let ``draft snapshot structurally validates and derives accepted episode only by join`` () =
     let run : Observatory.PublicRunObservationV1 =

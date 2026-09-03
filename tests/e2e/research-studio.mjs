@@ -43,6 +43,11 @@ try {
   ok(await page.evaluate(() => document.querySelectorAll(".risk").length >= 4), "Risiken projiziert");
   ok(await page.evaluate(() => document.querySelectorAll(".project").length === 8), "Teilprojekte vollständig");
 
+  // [spot: spec-riftward-t053-public-registry-test-2] Public source binding only; no runtime claim.
+  const registry = await page.evaluate(() => document.querySelector("[data-riftward-registry]")?.textContent || "");
+  ok(registry.includes("Raw-Export publikationsgesperrt") && registry.includes("unknown"), "T-053 Registry zeigt das fail-closed Export-Gate");
+  ok(await page.evaluate(() => document.body.textContent.includes("d7d5f949") && document.body.textContent.includes("riftward-research-observability") && document.body.textContent.includes("2.0.1")), "T-053 Registry zeigt die öffentliche Quellenbindung");
+
   // [spot: spec-research-studio-test-2]
   await page.evaluate(() => { window.open = url => { window.__researchIssueDraft = url; }; });
   await page.click('[data-feedback-ref="Gesamtprogramm"]');

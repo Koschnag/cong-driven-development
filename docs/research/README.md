@@ -42,16 +42,20 @@ nicht gemessene Werte bleiben `unknown`.
 
 CDD beschreibt die öffentliche, sanitizierte Analysegrenze. Der operative,
 vorregistrierte Messvertrag liegt dagegen im Riftward-Produktrepository. Die
-aktuelle Bindung ist Riftward-Commit
-[`a8da858d9a25892a4671104c57f5edfe3c789a39`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/a8da858d9a25892a4671104c57f5edfe3c789a39),
-Protokoll `riftward-research-observability` 2.0.0 und Bundle-SHA-256
-`a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65`.
+aktuelle, öffentliche Quellenbindung ist Riftward-Commit
+[`d7d5f949758a3a38ca4238ceadfbbd83965eb71d`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/d7d5f949758a3a38ca4238ceadfbbd83965eb71d),
+Quellbaum `3ce6338f6524b9349af716755c91d01d77cd3b93`, Protokoll
+`riftward-research-observability` 2.0.1 und Bundle-SHA-256
+`58b93d5a7ce8b0c1b182030d36eab9f156ff1aa8f2c2d246be54bcd53f3bf1de`.
+Diese Werte bezeichnen nur den veröffentlichten Protokollquellstand, keine
+Runtime- oder Ergebnisdaten.
 
-Direkte Quellen: [Protokoll](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PROTOCOL.md),
-[Datenwörterbuch](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/OBSERVABILITY_DATA_DICTIONARY.md),
-[Metriken](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/METRICS.md),
-[Reproduktion](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/REPRODUCIBILITY.md) und
-[Privacy/Publikation](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/a8da858d9a25892a4671104c57f5edfe3c789a39/docs/research/PRIVACY_AND_PUBLICATION.md).
+Direkte Quellen: [Protokoll](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/PROTOCOL.md),
+[Datenwörterbuch](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/OBSERVABILITY_DATA_DICTIONARY.md),
+[Metriken](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/METRICS.md),
+[Reproduktion](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/REPRODUCIBILITY.md) und
+[Privacy/Publikation](https://github.com/Koschnag/ai-fantasy-rts-rpg/blob/d7d5f949758a3a38ca4238ceadfbbd83965eb71d/docs/research/PRIVACY_AND_PUBLICATION.md).
 Noch existiert daraus kein öffentliches `prospective-observed` Ergebnis. Die
 CDD-v1-Producer-Kompatibilität bleibt bis zu einem sanitisierten, exakt
-roundtrippenden Riftward-/Ops-Fixture offen.
+roundtrippenden Riftward-Fixture offen; bis dahin bleiben alle Laufmetriken
+`unknown` und Raw-Export bleibt publikationsgesperrt.

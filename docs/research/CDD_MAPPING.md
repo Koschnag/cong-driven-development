@@ -17,7 +17,7 @@ Zeile bereits prospektiv gemessen wurde.
 
 | Ebene | Vertrag | Rolle | Aktueller Nachweis |
 | --- | --- | --- | --- |
-| Riftward Produkt | `riftward-research-observability` 2.0.0 | autoritatives, vorregistriertes Event-, Metrik- und Reproduktionsprotokoll | Commit [`a8da858`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/a8da858d9a25892a4671104c57f5edfe3c789a39), Bundle `a127ab37de6752a6defd8b9ebcb04c37cba0e3343863b5c10f53a9d109e20a65` |
+| Riftward Produkt | `riftward-research-observability` 2.0.1 | autoritatives, vorregistriertes Event-, Metrik- und Reproduktionsprotokoll | Öffentliche Quellenbindung: Commit [`d7d5f949`](https://github.com/Koschnag/ai-fantasy-rts-rpg/tree/d7d5f949758a3a38ca4238ceadfbbd83965eb71d), Tree `3ce6338f6524b9349af716755c91d01d77cd3b93`, Bundle `58b93d5a7ce8b0c1b182030d36eab9f156ff1aa8f2c2d246be54bcd53f3bf1de` |
 | Private Ops-Grenze | künftiger sanitizierender Producer | Rohcollection und explizite Public-Ableitung; keine CDD-Promotion | Producer-Fixture `unknown` |
 | CDD öffentlich | `riftward-observatory-v1` | Analysemodell und Publikationsgate für bereits sanitizierte Daten | Draft implementiert; Producer-Kompatibilität offen |
 | CDD Research Studio | read-only SPOT-/Dokuprojektion | erklärt Claims, Quellen und Lücken | keine Runtime- oder Steuerungsautorität |
@@ -27,4 +27,6 @@ Transformvertrag als kompatibel gelten. Insbesondere ersetzt CDD-Missingness
 mit `Observed`/`Estimated`/`Unavailable`/`NotApplicable` nicht Riftwards
 literal `unknown`; eine Public-Projektion muss diese Semantik nachweislich und
 verlustfrei abbilden. Bis zum Golden-Producer-Fixture werden keine Ereignisse
-automatisch importiert oder veröffentlicht.
+automatisch importiert oder veröffentlicht. Die öffentliche Quellenbindung ist
+keine Laufbindung: Runtime-Commit-/Tree-IDs und alle Laufmetriken bleiben lokal
+beziehungsweise `unknown`.

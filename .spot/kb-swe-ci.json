@@ -1,0 +1,18 @@
+{
+  "Id": "kb-swe-ci",
+  "Payload": {
+    "Case": "KnowledgeNode",
+    "Fields": {
+      "Item": {
+        "Title": "SWE-CI: Continuous-Integration Software Evolution",
+        "Source": "https://arxiv.org/abs/2603.03823",
+        "MediaType": "paper",
+        "Takeaways": [
+          "Vergleichspunkt für CI-gebundene historische Änderungssequenzen und Evaluationsdesign",
+          "Keine Riftward-Evidenz und keine behauptete Producer-Kompatibilität"
+        ]
+      }
+    }
+  },
+  "Convergence": "Aligned"
+}

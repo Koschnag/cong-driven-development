@@ -671,6 +671,24 @@
     "Convergence": "Aligned"
   },
   {
+    "Id": "kb-gamexpert-bench",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "GameXpert-Bench: Interactive Game Development Evaluation",
+          "Source": "https://arxiv.org/abs/2608.21833",
+          "MediaType": "paper",
+          "Takeaways": [
+            "Vergleichspunkt für interaktive Game-Development-Kriterien",
+            "Ein Benchmarkvergleich, keine longitudinale Riftward-Fallstudie"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
     "Id": "kb-intent-debt",
     "Payload": {
       "Case": "KnowledgeNode",
@@ -955,6 +973,42 @@
           "Takeaways": [
             "Die Gestaltung der Agent-Computer-Schnittstelle beeinflusst die praktische Coding-Leistung materiell",
             "Harness-Vergleiche müssen Modell, Aufgaben, Budget und Interface kontrollieren"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-swe-ci",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "SWE-CI: Continuous-Integration Software Evolution",
+          "Source": "https://arxiv.org/abs/2603.03823",
+          "MediaType": "paper",
+          "Takeaways": [
+            "Vergleichspunkt für CI-gebundene historische Änderungssequenzen und Evaluationsdesign",
+            "Keine Riftward-Evidenz und keine behauptete Producer-Kompatibilität"
+          ]
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "kb-swe-evo",
+    "Payload": {
+      "Case": "KnowledgeNode",
+      "Fields": {
+        "Item": {
+          "Title": "SWE-EVO: Long-Horizon Software Evolution",
+          "Source": "https://arxiv.org/abs/2512.18470",
+          "MediaType": "paper",
+          "Takeaways": [
+            "Vergleichspunkt für aufeinander aufbauende Software-Evolutionsaufgaben und Wartbarkeit",
+            "Keine Riftward-Evidenz und kein Nachweis einer operativen oder kausalen Überlegenheit"
           ]
         }
       }
@@ -2887,6 +2941,59 @@
         "Item": {
           "SpecRef": "spec-riftward-longitudinal-baseline",
           "Name": "Sanitisierte longitudinale Riftward-Baseline — when ihre Repetitions-Fitness bewertet wird then gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-riftward-t053-public-registry",
+    "Payload": {
+      "Case": "SpecNode",
+      "Fields": {
+        "Item": {
+          "Title": "Riftward T-053: öffentliche Quellenregistry und geschlossenes Export-Gate",
+          "Intent": "CDD bindet ausschließlich den unveränderlichen öffentlichen Riftward-Protokollquellstand; es behauptet weder einen beobachteten Lauf noch Runtime-Commit-/Tree-Daten oder Laufmetriken und hält Raw-Export bis zu einem extern gelieferten, sanitisierten Exact-Roundtrip-Fixture gesperrt",
+          "Criteria": [
+            {
+              "Given": "den verifizierten öffentlichen Riftward-Commit, Quellbaum, Protokoll und Bundle-Digest",
+              "When": "Registry und Protokolldokumentation geprüft werden",
+              "Then": "sind exakt diese Quellenwerte sichtbar, ausschließlich als Quellenbindung eingeordnet und ohne prospektiven Ergebnisclaim dargestellt"
+            },
+            {
+              "Given": "eine öffentliche Research-Studio-Projektion ohne externes sanitisiertes Producer-Fixture",
+              "When": "der nächste Veröffentlichungsschritt angezeigt wird",
+              "Then": "bleiben Raw-Export publikationsgesperrt und alle Laufmetriken unknown, bis ein extern geliefertes Fixture exakt validiert und roundtrippt"
+            }
+          ]
+        }
+      }
+    },
+    "Convergence": "Pending"
+  },
+  {
+    "Id": "spec-riftward-t053-public-registry-test-1",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-riftward-t053-public-registry",
+          "Name": "Riftward T-053 Registry — when die Quellenbindung gelesen wird then sind nur der exakte öffentliche Quellstand und das fail-closed Export-Gate dokumentiert",
+          "Derived": true
+        }
+      }
+    },
+    "Convergence": "Aligned"
+  },
+  {
+    "Id": "spec-riftward-t053-public-registry-test-2",
+    "Payload": {
+      "Case": "TestNode",
+      "Fields": {
+        "Item": {
+          "SpecRef": "spec-riftward-t053-public-registry",
+          "Name": "Riftward T-053 Registry — when das Research Studio geladen wird then zeigt es die Quellenbindung und den gesperrten nächsten Gate ohne Laufclaim",
           "Derived": true
         }
       }

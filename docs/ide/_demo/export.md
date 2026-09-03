@@ -1,8 +1,8 @@
 # SPOT-Kontext
 
-Generiert aus 221 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
+Generiert aus 227 Knoten (`cdd export-context`). Der SPOT-Graph ist die Quelle — dieses Dokument ist Derivat und ersetzt handgepflegte Doku.
 
-**Konvergenz:** Aligned 201 · Pending 20 · Diverged 0 · Orphaned 0
+**Konvergenz:** Aligned 206 · Pending 21 · Diverged 0 · Orphaned 0
 
 ## Ubiquitäre Sprache (Ontologie)
 
@@ -324,6 +324,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - GIVEN mehrere terminierte Runs aus mehreren deklarierten Konfigurationen WHEN die Baseline-Aggregation läuft THEN werden eindeutige Run-IDs, Ganzzahl-Summen und Mediane je Mission, Rollen-Konfiguration und Evaluationsprotokoll deterministisch ausgewiesen; widersprüchliche Duplikate sowie nichtterminale, negative oder inkonsistente Records schlagen fehl
 - GIVEN eine Baseline unterhalb des benannten Wiederholungsminimums WHEN ihre Repetitions-Fitness bewertet wird THEN gilt sie als anekdotisch und darf erst ab Erreichen des Minimums als wiederholt verglichen werden; inkonsistente Aggregate schlagen typisiert fehl
 
+### Riftward T-053: öffentliche Quellenregistry und geschlossenes Export-Gate (`spec-riftward-t053-public-registry`, Pending)
+**Intent:** CDD bindet ausschließlich den unveränderlichen öffentlichen Riftward-Protokollquellstand; es behauptet weder einen beobachteten Lauf noch Runtime-Commit-/Tree-Daten oder Laufmetriken und hält Raw-Export bis zu einem extern gelieferten, sanitisierten Exact-Roundtrip-Fixture gesperrt
+
+- GIVEN den verifizierten öffentlichen Riftward-Commit, Quellbaum, Protokoll und Bundle-Digest WHEN Registry und Protokolldokumentation geprüft werden THEN sind exakt diese Quellenwerte sichtbar, ausschließlich als Quellenbindung eingeordnet und ohne prospektiven Ergebnisclaim dargestellt
+- GIVEN eine öffentliche Research-Studio-Projektion ohne externes sanitisiertes Producer-Fixture WHEN der nächste Veröffentlichungsschritt angezeigt wird THEN bleiben Raw-Export publikationsgesperrt und alle Laufmetriken unknown, bis ein extern geliefertes Fixture exakt validiert und roundtrippt
+
 ### Risikoadaptives Assurance-Portfolio (`spec-risk-adaptive-assurance-portfolio`, Pending)
 **Intent:** CDD wählt komplementäre offene Nachweisverfahren nach Risiko und Systemform, statt einen Formalismus oder das erzeugende Modell zum universellen Orakel zu machen
 
@@ -433,6 +439,9 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
   - Refactoring-Katalog
   - Evolutionäre Architektur
   - Spec-by-Example
+- **GameXpert-Bench: Interactive Game Development Evaluation** (paper, https://arxiv.org/abs/2608.21833)
+  - Vergleichspunkt für interaktive Game-Development-Kriterien
+  - Ein Benchmarkvergleich, keine longitudinale Riftward-Fallstudie
 - **Cognitive and Intent Debt** (paper, https://arxiv.org/abs/2603.22106)
   - Fehlendes externalisiertes Rationale erzeugt Intent Debt
   - Softwaregesundheit umfasst Code, gemeinsames Verständnis und explizites Intent-Wissen
@@ -484,6 +493,12 @@ Diese Begriffe sind verbindlich — in Code, Antworten und allen Artefakten:
 - **SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering** (paper, https://arxiv.org/abs/2405.15793)
   - Die Gestaltung der Agent-Computer-Schnittstelle beeinflusst die praktische Coding-Leistung materiell
   - Harness-Vergleiche müssen Modell, Aufgaben, Budget und Interface kontrollieren
+- **SWE-CI: Continuous-Integration Software Evolution** (paper, https://arxiv.org/abs/2603.03823)
+  - Vergleichspunkt für CI-gebundene historische Änderungssequenzen und Evaluationsdesign
+  - Keine Riftward-Evidenz und keine behauptete Producer-Kompatibilität
+- **SWE-EVO: Long-Horizon Software Evolution** (paper, https://arxiv.org/abs/2512.18470)
+  - Vergleichspunkt für aufeinander aufbauende Software-Evolutionsaufgaben und Wartbarkeit
+  - Keine Riftward-Evidenz und kein Nachweis einer operativen oder kausalen Überlegenheit
 - **Temporal: Durable workflow execution** (official documentation, https://github.com/temporalio/documentation/blob/main/docs/encyclopedia/workflow/workflow-execution/workflow-execution.mdx)
   - Deterministische Workflow-Logik wird von nichtdeterministischen Activities getrennt und aus einer Event History replayt
   - Crash-Recovery und lange Wartezeiten gehören in eine durable Ausführungsschicht, nicht in Modellgedächtnis
@@ -582,6 +597,7 @@ Der Status beschreibt die Erkenntnislage, nicht Marketing-Reife oder Implementie
 - `spec-research-snapshots` (spec, Pending)
 - `spec-research-studio` (spec, Pending)
 - `spec-riftward-baseline-comparison` (spec, Pending)
+- `spec-riftward-t053-public-registry` (spec, Pending)
 - `spec-risk-adaptive-assurance-portfolio` (spec, Pending)
 - `spec-slice-worktree-lease` (spec, Pending)
 
