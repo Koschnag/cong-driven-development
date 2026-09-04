@@ -86,7 +86,7 @@ Implementierung, Tests, Doku, Infrastruktur. Du monitorst, gibst Feedback, manag
 | **Test-Driven Development** | Tests sind aus Spec abgeleitet, nicht handgeschrieben |
 | **Mathematisch-philosophische Modellierung** | Typen + Axiome + Beweisbarkeit (F#/Lean-Pfad) |
 | **AI Agents als Worker** | Implementations-, Test-, Doku-, Review-Agents kollaborativ |
-| **RAG + Vector-DB + Knowledge-Base** | SPOT ist gleichzeitig Dokumentation + Embeddings + Code |
+| **Knowledge-Knoten + Suchprojektion** | Getypte Knowledge-Knoten mit optionaler, standardmäßig verweigerter sanitisierter FTS-/Embedding-Projektion; keine allgemeine Vector-DB-Vollständigkeitsbehauptung |
 | **Business Analyst** | Domain-Modell als Sprache zwischen Fachseite und Technik |
 | **DevOps / GitOps / Infrastruktur** | Infrastruktur ist Teil des SPOT, nicht separat |
 | **Security** | Threat-Model, Risk-Tracking, MFA-Audit nativ im Modell |
@@ -255,6 +255,16 @@ SPOT, jede Sicht ist eine Projektion desselben Modells. → Volle Beschreibung i
 Knotenarten: Spec, Test, Risk, Infra, Component, Prämisse, Entscheidung (ADR),
 Knowledge-Quelle, Tool und **Begriff** — die ubiquitäre Sprache als Ontologie mit
 IsA/PartOf/RelatesTo-Beziehungen.
+
+## Grenzen der offenen Legacy-Issues
+
+Die folgenden Punkte sind bewusst als präzise Capability-Grenzen dokumentiert. Ein
+vorhandener Teilpfad wird nicht als vollständige Produktintegration behauptet:
+
+- [#7 Kontextexport](https://github.com/Koschnag/cong-driven-development/issues/7) funktioniert als Markdown; ein eigenständiges JSON-Bundle bleibt offen.
+- [#8 Knowledge-Ingestion](https://github.com/Koschnag/cong-driven-development/issues/8) bietet getypte Knowledge-Knoten sowie optional eine sanitisierte FTS-/Embedding-Projektion; automatisierte PDF-, Link- und Buch-Provenienz-Ingestion bleibt offen.
+- [#9 Agent-Interface und Tool-Registry](https://github.com/Koschnag/cong-driven-development/issues/9) stellt SPOT-Tools über MCP/CLI/REST und den aktuellen Agenten-Loop bereit; ein breiterer Katalog von Provider-Adaptern bleibt offen.
+- [#10 Code-Modell-Roundtrip](https://github.com/Koschnag/cong-driven-development/issues/10) unterstützt die Konvergenz von Projekt-Referenzen; eine vollständige semantische AST-/Code-zu-SPOT-Reflexion bleibt offen.
 
 ## Status
 
