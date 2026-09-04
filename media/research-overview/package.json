@@ -6,10 +6,10 @@
   "license": "MPL-2.0",
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.515",
+    "@remotion/cli": "4.0.518",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "remotion": "4.0.515"
+    "remotion": "4.0.518"
   },
   "devDependencies": {
     "@types/react": "19.2.18",
